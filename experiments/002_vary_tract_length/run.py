@@ -9,7 +9,10 @@ from morphoacoustics import (
     GestureScore,
     simulate_snapshot,
 )
-from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.acoustics import (
+    ImpedanceRequest,
+    SegmentedTubeBackend,
+)
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.realization import Tract1DRealizer
 
@@ -35,8 +38,8 @@ def first_peak_hz(length_m: float) -> float:
         score=GestureScore(()),
         realizer=Tract1DRealizer(geometry(length_m)),
         acoustic_backend=SegmentedTubeBackend(),
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.0,
-        frequencies_hz=frequencies,
     )
     assert result.acoustics is not None
     return float(
