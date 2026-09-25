@@ -11,11 +11,11 @@ from morphoacoustics import (
     GestureScore,
     Task,
     TaskParameter,
-    Tract1DRealizer,
-    TractGeometry,
-    TubeSection,
     simulate_snapshot,
 )
+from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.realization import Tract1DRealizer
 
 
 def creature() -> CreatureSpec:
@@ -34,8 +34,8 @@ def creature() -> CreatureSpec:
     )
 
 
-def rest_geometry() -> TractGeometry:
-    return TractGeometry(
+def rest_geometry() -> Tract1DGeometry:
+    return Tract1DGeometry(
         cavity_id="oral",
         sections=tuple(
             TubeSection(length_m=0.017, area_m2=3e-4)
@@ -62,26 +62,29 @@ def score(location: float) -> GestureScore:
 def main() -> None:
     geometry = rest_geometry()
     frequencies = np.linspace(200.0, 2000.0, 1801)
+    backend = SegmentedTubeBackend()
 
     reachable = simulate_snapshot(
         creature=creature(),
         score=score(0.65),
         realizer=Tract1DRealizer(geometry),
+        acoustic_backend=backend,
         time_s=0.1,
         frequencies_hz=frequencies,
     )
     index = geometry.section_index_at(0.65)
-    assert reachable.realization.geometry is not None
+    assert reachable.realization.state is not None
     print("reachable status:", reachable.realization.feasibility.status)
     print("constricted section:", index)
     print("rest area m2:", geometry.sections[index].area_m2)
-    print("realized area m2:", reachable.realization.geometry.sections[index].area_m2)
+    print("realized area m2:", reachable.realization.state.sections[index].area_m2)
     print("acoustics evaluated:", reachable.has_acoustic_result)
 
     unreachable = simulate_snapshot(
         creature=creature(),
         score=score(0.95),
         realizer=Tract1DRealizer(geometry),
+        acoustic_backend=backend,
         time_s=0.1,
         frequencies_hz=frequencies,
     )
