@@ -1,55 +1,49 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
-import numpy as np
 import numpy.typing as npt
 
-from morphoacoustics.acoustics.segmented_tube import SegmentedTube
+from morphoacoustics.acoustics.protocol import AcousticBackend, AcousticResponse
 from morphoacoustics.domain.creature import CreatureSpec
 from morphoacoustics.domain.gesture import GestureScore
 from morphoacoustics.realization.protocol import RealizationResult, Realizer
 
+StateT = TypeVar("StateT")
+
 
 @dataclass(frozen=True, slots=True)
-class AcousticSnapshotResult:
-    """One-time geometry realization plus its fidelity-0 acoustic response."""
+class SnapshotSimulationResult(Generic[StateT]):
+    """One-time physical realization plus an optional acoustic observation."""
 
-    realization: RealizationResult
-    frequencies_hz: np.ndarray | None
-    input_impedance_pa_s_m3: np.ndarray | None
+    realization: RealizationResult[StateT]
+    acoustics: AcousticResponse | None
 
     @property
     def has_acoustic_result(self) -> bool:
-        return self.input_impedance_pa_s_m3 is not None
+        return self.acoustics is not None
 
 
 def simulate_snapshot(
     *,
     creature: CreatureSpec,
     score: GestureScore,
-    realizer: Realizer,
+    realizer: Realizer[StateT],
+    acoustic_backend: AcousticBackend[StateT],
     time_s: float,
     frequencies_hz: npt.ArrayLike,
-) -> AcousticSnapshotResult:
-    """Run the first complete causal slice without synthesizing a waveform.
+) -> SnapshotSimulationResult[StateT]:
+    """Run one causal snapshot without assuming a specific fidelity backend.
 
-    If physical realization fails or is unsupported, acoustics are not run.
+    Realization happens first. If realization is infeasible, unsupported, or
+    invalid, acoustics are not evaluated. Otherwise the realized physical state
+    is passed to the supplied acoustic backend.
     """
 
     realization = realizer.realize_snapshot(creature, score, time_s)
-    if realization.geometry is None:
-        return AcousticSnapshotResult(
-            realization=realization,
-            frequencies_hz=None,
-            input_impedance_pa_s_m3=None,
-        )
+    if realization.state is None:
+        return SnapshotSimulationResult(realization=realization, acoustics=None)
 
-    tube = SegmentedTube.from_geometry(realization.geometry)
-    frequencies = np.asarray(frequencies_hz, dtype=np.float64)
-    impedance = tube.input_impedance(frequencies)
-    return AcousticSnapshotResult(
-        realization=realization,
-        frequencies_hz=frequencies,
-        input_impedance_pa_s_m3=impedance,
-    )
+    acoustics = acoustic_backend.simulate_snapshot(realization.state, frequencies_hz)
+    return SnapshotSimulationResult(realization=realization, acoustics=acoustics)
