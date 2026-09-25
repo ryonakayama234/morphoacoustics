@@ -7,15 +7,15 @@ from morphoacoustics import (
     CavitySpec,
     CreatureSpec,
     GestureScore,
-    Tract1DRealizer,
-    TractGeometry,
-    TubeSection,
     simulate_snapshot,
 )
+from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.realization import Tract1DRealizer
 
 
-def geometry(length_m: float, count: int = 10) -> TractGeometry:
-    return TractGeometry(
+def geometry(length_m: float, count: int = 10) -> Tract1DGeometry:
+    return Tract1DGeometry(
         cavity_id="oral",
         sections=tuple(
             TubeSection(length_m=length_m / count, area_m2=3e-4)
@@ -34,11 +34,16 @@ def first_peak_hz(length_m: float) -> float:
         creature=creature,
         score=GestureScore(()),
         realizer=Tract1DRealizer(geometry(length_m)),
+        acoustic_backend=SegmentedTubeBackend(),
         time_s=0.0,
         frequencies_hz=frequencies,
     )
-    assert result.input_impedance_pa_s_m3 is not None
-    return float(frequencies[np.nanargmax(np.abs(result.input_impedance_pa_s_m3))])
+    assert result.acoustics is not None
+    return float(
+        frequencies[
+            np.nanargmax(np.abs(result.acoustics.input_impedance_pa_s_m3))
+        ]
+    )
 
 
 def main() -> None:
