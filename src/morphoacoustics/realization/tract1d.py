@@ -147,23 +147,9 @@ class Tract1DRealizer:
                 gesture_index,
             )
 
-        compatible = [
-            articulator
-            for articulator in creature.articulators
-            if articulator.cavity_id == target_cavity
-            and articulator.reachable_start <= gesture.location <= articulator.reachable_end
-        ]
-        if not compatible:
-            return _issue(
-                FeasibilityStatus.INFEASIBLE,
-                "LOCATION_UNREACHABLE",
-                (
-                    f"no articulator in cavity {target_cavity!r} can reach "
-                    f"location {gesture.location:.3f}"
-                ),
-                gesture_index,
-            )
-
+        # Validate the request before consulting morphology-dependent reachability.
+        # INVALID must not turn into INFEASIBLE merely because a body cannot reach
+        # the requested location.
         target_area = gesture.parameter("target_area")
         if target_area is None:
             return _issue(
@@ -196,6 +182,23 @@ class Tract1DRealizer:
                 (
                     f"target area {target_area.value:g} m2 exceeds rest area "
                     f"{rest_section.area_m2:g} m2"
+                ),
+                gesture_index,
+            )
+
+        compatible = [
+            articulator
+            for articulator in creature.articulators
+            if articulator.cavity_id == target_cavity
+            and articulator.reachable_start <= gesture.location <= articulator.reachable_end
+        ]
+        if not compatible:
+            return _issue(
+                FeasibilityStatus.INFEASIBLE,
+                "LOCATION_UNREACHABLE",
+                (
+                    f"no articulator in cavity {target_cavity!r} can reach "
+                    f"location {gesture.location:.3f}"
                 ),
                 gesture_index,
             )
