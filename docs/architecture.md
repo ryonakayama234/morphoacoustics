@@ -51,7 +51,7 @@ This distinction is important for morphology-transfer experiments and future inv
 
 Backends are interchangeable behind common realization and acoustic contracts.
 
-`simulate_snapshot()` is the application-level façade. It first asks a `Realizer[TState]` for a physical state and, only on successful realization, passes that state to a compatible `AcousticBackend[TState]`.
+`simulate_snapshot()` is the application-level façade. It first asks a `Realizer[TState]` for a physical state and, only on successful realization, passes that state plus an opaque backend-specific request to a compatible acoustic backend.
 
 ```text
 simulate_snapshot
@@ -60,12 +60,12 @@ simulate_snapshot
       │       ↓
       │      TState
       │
-      └── AcousticBackend[TState]
-              ↓
-         AcousticResponse
+      └── AcousticBackend[TState, TRequest, TObservation]
+              ↑                    ↓
+           TRequest            TObservation
 ```
 
-The façade does not construct a concrete transmission-line solver itself.
+The façade does not know whether an acoustic request means a frequency grid, field probe, modal query, or another future observation request. It also does not require every backend to return input impedance. Fidelity 0 concretizes this boundary as `ImpedanceRequest -> ImpedanceResponse`.
 
 - **Fidelity 0:** static prepared 1D tract state + lossless segmented transmission-line acoustics.
 - **Fidelity 1:** time-varying tract, losses, noise sources, side branches, source-filter coupling.
@@ -75,7 +75,7 @@ The same `CreatureSpec` and `GestureScore` should remain meaningful across fidel
 
 ## Public API boundary
 
-The package root exports domain contracts and stable orchestration. Concrete Fidelity-0 state, realizer, and acoustic solver types live in their respective subpackages so experimental backend details do not accidentally become the permanent top-level API.
+The package root exports domain contracts and stable orchestration. Concrete Fidelity-0 state, request/response, realizer, and acoustic solver types live in their respective subpackages so experimental backend details do not accidentally become the permanent top-level API.
 
 ## UI boundary
 
