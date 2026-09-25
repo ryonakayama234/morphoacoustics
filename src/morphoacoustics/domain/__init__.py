@@ -6,6 +6,7 @@ from .creature import (
     CreatureSpec,
     SourceOrganSpec,
 )
+from .geometry import TractGeometry, TubeSection
 from .gesture import Gesture, GestureScore, Task, TaskParameter
 from .result import (
     FeasibilityIssue,
@@ -33,4 +34,6 @@ __all__ = [
     "Task",
     "TaskParameter",
     "TraceSeries",
+    "TractGeometry",
+    "TubeSection",
 ]
