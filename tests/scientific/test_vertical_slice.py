@@ -76,7 +76,8 @@ def test_shorter_tract_moves_first_resonance_upward() -> None:
     short_peak = _first_impedance_peak_hz(0.12)
 
     assert long_peak < short_peak
-    assert long_peak == np.testing.assert_allclose(long_peak, 343.0 / (4.0 * 0.17), rtol=0.01)
+    np.testing.assert_allclose(long_peak, 343.0 / (4.0 * 0.17), rtol=0.01)
+    np.testing.assert_allclose(short_peak, 343.0 / (4.0 * 0.12), rtol=0.01)
 
 
 def test_same_gesture_preserves_task_but_changes_physical_scale() -> None:
