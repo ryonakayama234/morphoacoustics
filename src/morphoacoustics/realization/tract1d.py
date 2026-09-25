@@ -17,8 +17,9 @@ from .protocol import RealizationResult
 class Tract1DRealizer:
     """Realize a small task vocabulary onto a serial 1D tract snapshot.
 
-    Fidelity-0 deliberately implements only CONSTRICT.  Other active tasks are
-    reported as unsupported rather than silently approximated.
+    Fidelity-0 deliberately implements only CONSTRICT. Other active tasks or
+    representations outside this backend's scope are reported as UNSUPPORTED;
+    failures caused by the creature's physical reach are INFEASIBLE.
     """
 
     def __init__(self, rest_geometry: TractGeometry) -> None:
@@ -57,17 +58,18 @@ class Tract1DRealizer:
                     gesture_index,
                 )
 
-            issue = self._apply_constriction(
+            failure = self._apply_constriction(
                 creature=creature,
                 gesture=gesture,
                 gesture_index=gesture_index,
                 sections=sections,
             )
-            if issue is not None:
+            if failure is not None:
+                status, issue = failure
                 return RealizationResult(
                     geometry=None,
                     feasibility=FeasibilityReport(
-                        status=FeasibilityStatus.INFEASIBLE,
+                        status=status,
                         issues=(issue,),
                     ),
                 )
@@ -86,23 +88,25 @@ class Tract1DRealizer:
         gesture: Gesture,
         gesture_index: int,
         sections: list[TubeSection],
-    ) -> FeasibilityIssue | None:
+    ) -> tuple[FeasibilityStatus, FeasibilityIssue] | None:
         target_cavity = gesture.target or self.rest_geometry.cavity_id
         if target_cavity != self.rest_geometry.cavity_id:
-            return FeasibilityIssue(
-                code="CAVITY_UNSUPPORTED_BY_REALIZER",
-                message=(
+            return _issue(
+                FeasibilityStatus.UNSUPPORTED,
+                "CAVITY_UNSUPPORTED_BY_REALIZER",
+                (
                     f"1D realizer owns cavity {self.rest_geometry.cavity_id!r}, "
                     f"not {target_cavity!r}"
                 ),
-                gesture_index=gesture_index,
+                gesture_index,
             )
 
         if gesture.location is None:
-            return FeasibilityIssue(
-                code="MISSING_LOCATION",
-                message="CONSTRICT requires a normalized location",
-                gesture_index=gesture_index,
+            return _issue(
+                FeasibilityStatus.UNSUPPORTED,
+                "MISSING_LOCATION",
+                "CONSTRICT requires a normalized location",
+                gesture_index,
             )
 
         compatible = [
@@ -112,45 +116,50 @@ class Tract1DRealizer:
             and articulator.reachable_start <= gesture.location <= articulator.reachable_end
         ]
         if not compatible:
-            return FeasibilityIssue(
-                code="LOCATION_UNREACHABLE",
-                message=(
+            return _issue(
+                FeasibilityStatus.INFEASIBLE,
+                "LOCATION_UNREACHABLE",
+                (
                     f"no articulator in cavity {target_cavity!r} can reach "
                     f"location {gesture.location:.3f}"
                 ),
-                gesture_index=gesture_index,
+                gesture_index,
             )
 
         target_area = gesture.parameter("target_area")
         if target_area is None:
-            return FeasibilityIssue(
-                code="MISSING_TARGET_AREA",
-                message="CONSTRICT requires target_area",
-                gesture_index=gesture_index,
+            return _issue(
+                FeasibilityStatus.UNSUPPORTED,
+                "MISSING_TARGET_AREA",
+                "CONSTRICT requires target_area",
+                gesture_index,
             )
         if target_area.unit != "m2":
-            return FeasibilityIssue(
-                code="UNSUPPORTED_TARGET_AREA_UNIT",
-                message="fidelity-0 CONSTRICT requires target_area in m2",
-                gesture_index=gesture_index,
+            return _issue(
+                FeasibilityStatus.UNSUPPORTED,
+                "UNSUPPORTED_TARGET_AREA_UNIT",
+                "fidelity-0 CONSTRICT requires target_area in m2",
+                gesture_index,
             )
         if target_area.value <= 0.0:
-            return FeasibilityIssue(
-                code="NONPOSITIVE_TARGET_AREA",
-                message="target_area must be > 0",
-                gesture_index=gesture_index,
+            return _issue(
+                FeasibilityStatus.INFEASIBLE,
+                "NONPOSITIVE_TARGET_AREA",
+                "target_area must be > 0",
+                gesture_index,
             )
 
         section_index = self.rest_geometry.section_index_at(gesture.location)
         current = sections[section_index]
         if target_area.value > current.area_m2:
-            return FeasibilityIssue(
-                code="TARGET_AREA_NOT_CONSTRICTIVE",
-                message=(
+            return _issue(
+                FeasibilityStatus.INFEASIBLE,
+                "TARGET_AREA_NOT_CONSTRICTIVE",
+                (
                     f"target area {target_area.value:g} m2 exceeds rest area "
                     f"{current.area_m2:g} m2"
                 ),
-                gesture_index=gesture_index,
+                gesture_index,
             )
 
         sections[section_index] = TubeSection(
@@ -158,6 +167,22 @@ class Tract1DRealizer:
             area_m2=target_area.value,
         )
         return None
+
+
+def _issue(
+    status: FeasibilityStatus,
+    code: str,
+    message: str,
+    gesture_index: int,
+) -> tuple[FeasibilityStatus, FeasibilityIssue]:
+    return (
+        status,
+        FeasibilityIssue(
+            code=code,
+            message=message,
+            gesture_index=gesture_index,
+        ),
+    )
 
 
 def _failed(
