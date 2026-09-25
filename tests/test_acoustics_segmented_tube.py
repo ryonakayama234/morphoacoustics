@@ -1,6 +1,13 @@
 import numpy as np
+import pytest
 
-from morphoacoustics.acoustics import SegmentedTube, UniformTube
+from morphoacoustics.acoustics import (
+    ImpedanceRequest,
+    SegmentedTube,
+    SegmentedTubeBackend,
+    UniformTube,
+)
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
 
 
 def test_single_segment_matches_uniform_tube() -> None:
@@ -66,3 +73,30 @@ def test_unequal_sections_preserve_inlet_to_outlet_order() -> None:
 
     reversed_impedance = reversed_tube.input_impedance(np.array([frequency_hz]))[0]
     assert not np.isclose(measured, reversed_impedance, rtol=1e-6, atol=1e-6)
+
+
+def test_backend_response_detaches_and_freezes_observation_arrays() -> None:
+    request_frequencies = np.array([500.0, 1000.0], dtype=np.float64)
+    geometry = Tract1DGeometry(
+        cavity_id="oral",
+        sections=(TubeSection(length_m=0.17, area_m2=3e-4),),
+    )
+
+    response = SegmentedTubeBackend().simulate_snapshot(
+        geometry,
+        ImpedanceRequest(request_frequencies),
+    )
+    recorded_frequencies = response.frequencies_hz.copy()
+    recorded_impedance = response.input_impedance_pa_s_m3.copy()
+
+    request_frequencies[0] = 1234.0
+
+    np.testing.assert_array_equal(response.frequencies_hz, recorded_frequencies)
+    np.testing.assert_array_equal(
+        response.input_impedance_pa_s_m3,
+        recorded_impedance,
+    )
+    with pytest.raises(ValueError, match="read-only"):
+        response.frequencies_hz[0] = 750.0
+    with pytest.raises(ValueError, match="read-only"):
+        response.input_impedance_pa_s_m3[0] = 0.0j

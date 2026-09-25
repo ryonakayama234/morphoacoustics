@@ -21,15 +21,30 @@ class ImpedanceRequest:
 
 @dataclass(frozen=True, slots=True)
 class ImpedanceResponse:
-    """Frequency-domain input-impedance observation for one tract snapshot."""
+    """Frequency-domain input-impedance observation for one tract snapshot.
+
+    Response arrays are detached from caller-owned inputs and made read-only so
+    the frequency grid cannot diverge from the impedance values after creation.
+    """
 
     frequencies_hz: np.ndarray
     input_impedance_pa_s_m3: np.ndarray
     provenance: Provenance
 
     def __post_init__(self) -> None:
-        if self.frequencies_hz.shape != self.input_impedance_pa_s_m3.shape:
+        frequencies = np.array(self.frequencies_hz, dtype=np.float64, copy=True)
+        impedance = np.array(
+            self.input_impedance_pa_s_m3,
+            dtype=np.complex128,
+            copy=True,
+        )
+        if frequencies.shape != impedance.shape:
             raise ValueError("frequency and impedance arrays must have identical shape")
+
+        frequencies.setflags(write=False)
+        impedance.setflags(write=False)
+        object.__setattr__(self, "frequencies_hz", frequencies)
+        object.__setattr__(self, "input_impedance_pa_s_m3", impedance)
 
 
 @dataclass(frozen=True, slots=True)
