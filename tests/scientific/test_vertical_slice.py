@@ -80,6 +80,35 @@ def test_shorter_tract_moves_first_resonance_upward() -> None:
     np.testing.assert_allclose(short_peak, 343.0 / (4.0 * 0.12), rtol=0.01)
 
 
+def test_constriction_changes_acoustic_response() -> None:
+    frequencies = np.linspace(250.0, 1800.0, 256)
+    geometry = _uniform_geometry(0.17)
+
+    rest = simulate_snapshot(
+        creature=_creature(),
+        score=GestureScore(()),
+        realizer=Tract1DRealizer(geometry),
+        time_s=0.1,
+        frequencies_hz=frequencies,
+    )
+    constricted = simulate_snapshot(
+        creature=_creature(),
+        score=_constriction(),
+        realizer=Tract1DRealizer(geometry),
+        time_s=0.1,
+        frequencies_hz=frequencies,
+    )
+
+    assert rest.input_impedance_pa_s_m3 is not None
+    assert constricted.input_impedance_pa_s_m3 is not None
+    assert not np.allclose(
+        rest.input_impedance_pa_s_m3,
+        constricted.input_impedance_pa_s_m3,
+        rtol=1e-9,
+        atol=1e-6,
+    )
+
+
 def test_same_gesture_preserves_task_but_changes_physical_scale() -> None:
     score = _constriction()
     long_result = Tract1DRealizer(_uniform_geometry(0.17)).realize_snapshot(
