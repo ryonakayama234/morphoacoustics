@@ -24,4 +24,22 @@ Waveform, spectrogram, F0, formants, and perceptual features are downstream obse
 
 ## I6. Backend capability is separate from domain expressivity
 
-A backend may reject a morphology or phenomenon that it cannot solve. Solver limitations must not be encoded as universal restrictions on the domain schema.
+A backend may reject a morphology or phenomenon that it cannot solve. Solver limitations must not be encoded as universal restrictions on the domain schema. Unsupported morphology must not be silently simplified into a different morphology.
+
+## I7. Failure categories preserve causal meaning
+
+`INFEASIBLE`, `UNSUPPORTED`, and `INVALID` are not interchangeable.
+
+- `INFEASIBLE` means a valid, supported task cannot be realized by the specified morphology.
+- `UNSUPPORTED` means the chosen backend lacks the required capability.
+- `INVALID` means the request or prepared backend state violates the simulation contract.
+
+Request validity must be established before morphology-dependent feasibility is interpreted. An invalid request must not become `INFEASIBLE` merely because a particular morphology cannot realize it.
+
+Only `INFEASIBLE` should be interpreted as evidence about what the body itself can or cannot do.
+
+## I8. Realization status and physical state are coherent
+
+A `FEASIBLE` realization must contain a physical state. `INFEASIBLE`, `UNSUPPORTED`, `INVALID`, and `NOT_EVALUATED` realizations must not contain one.
+
+Acoustic simulation is gated by the realization status, not merely by whether a state object happens to be present.

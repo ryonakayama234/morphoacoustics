@@ -1,29 +1,78 @@
-# Fidelity 0 acoustics
+# Fidelity 0 contract
 
-Fidelity 0 is the smallest falsifiable acoustic model in `morphoacoustics`.
+Fidelity 0 is the smallest falsifiable end-to-end model in `morphoacoustics`.
 It is not intended to be a realistic voice synthesizer. Its purpose is to
-establish a validated physical path from simple morphology to acoustic
-behavior before source models, gestures, losses, radiation, and coupling are
-added.
+establish a validated causal path from task-level gesture through a simple
+morphology-specific physical state to a simple acoustic observation.
 
-## Uniform-tube assumptions
+The limitations below are part of the Fidelity-0 model contract. They are not
+universal restrictions on `CreatureSpec`, `GestureScore`, or future backends.
 
-The first primitive is a stationary tube with:
+## Contract summary
 
-- one-dimensional plane-wave propagation,
-- constant cross-sectional area,
-- rigid walls,
-- linear acoustics,
-- no viscothermal or wall losses,
-- no source-filter feedback,
-- no time-varying geometry,
-- an ideal pressure-release outlet when the default load is used.
+Fidelity 0 is deliberately:
 
-These are fidelity-0 assumptions, not restrictions on the domain model.
-`CreatureSpec` remains free to represent morphologies that this backend cannot
-solve.
+- **static snapshot only** — no physical time evolution,
+- **one-dimensional** — plane-wave propagation in a discretized tract,
+- **rigid-wall**,
+- **lossless** — no viscothermal, wall, or other dissipative losses,
+- **serial tract only** — no branching/side cavities,
+- **CONSTRICT-only realization** for active gestures,
+- **source-free** — no glottal or other acoustic source,
+- **waveform-free** — it returns a frequency-domain acoustic response rather than synthesized audio,
+- terminated by an **ideal pressure-release outlet** in the Fidelity-0 acoustic backend.
 
-## State and convention
+A morphology or task outside these capabilities must be reported as
+`UNSUPPORTED`; unsupported structure must not be silently ignored.
+
+## Physical state
+
+Fidelity 0 represents one selected cavity as `Tract1DGeometry`: an ordered
+sequence of rigid, constant-area tube sections. This type is a backend-specific
+physical representation, not a domain morphology primitive.
+
+The prepared `Tract1DGeometry` is currently supplied separately from
+`CreatureSpec`. Fidelity 0 therefore does not yet claim that tract dimensions
+are derived from, or identity-bound to, the domain morphology. Scientific tests
+that vary tract length are tests of different prepared 1D geometries; deriving
+and binding prepared geometry from `CreatureSpec` is deferred to a later step.
+
+Normalized axial coordinates use:
+
+```text
+0 = inlet / source side
+1 = outlet / radiation side
+```
+
+Internal section boundaries belong to the downstream section. The current
+`CONSTRICT` realization changes one discrete section. Consequently, the axial
+extent of a constriction is mesh-dependent in Fidelity 0; mesh-independent
+constriction width is intentionally deferred to a later physical model.
+
+## Realization semantics
+
+Fidelity 0 evaluates the entire active gesture set in ordered phases:
+
+1. validate the prepared state and all supported request parameters,
+2. reject unsupported topology, target cavity, or task capability,
+3. check morphology-dependent articulator reachability,
+4. map each validated constriction to one 1D section and apply it.
+
+This ordering applies across the whole active gesture set, not gesture-by-gesture.
+An invalid active request therefore cannot be hidden by an earlier unreachable
+gesture, and an unsupported capability cannot be mislabeled as physical
+infeasibility merely because of tuple order.
+
+Simultaneous constrictions mapped to the same section are combined
+commutatively: the tightest target area wins. Gesture tuple order therefore
+does not act as an implicit physical priority.
+
+Other active task kinds such as `PHONATE`, `OPEN`, and `PRESSURIZE` are
+`UNSUPPORTED` at Fidelity 0. Invalid parameters are `INVALID`, not
+`INFEASIBLE`. A valid supported constriction outside the creature's articulator
+reach is `INFEASIBLE`.
+
+## Acoustic state and convention
 
 The acoustic state is pressure `p` and volume velocity `U`. Solver internals
 use SI units. The Fourier convention is
@@ -32,7 +81,7 @@ use SI units. The Fourier convention is
 exp(+j omega t)
 ```
 
-and a tube transfer matrix maps the outlet state to the inlet state:
+and each tube transfer matrix maps the outlet state to the inlet state:
 
 ```text
 [p_in]   [A B] [p_out]
@@ -50,42 +99,54 @@ T = [[cos(kL),      j Zc sin(kL)],
      [j sin(kL)/Zc,    cos(kL)   ]]
 ```
 
+For serial sections ordered inlet to outlet, the composite matrix is
+
+```text
+T_total = T1 @ T2 @ ... @ Tn
+```
+
 The determinant is one for this reciprocal lossless two-port.
 
-## Ideal closed-open resonances
+## Outlet boundary and ideal resonances
 
-With an acoustically closed glottal end and an ideal pressure-release outlet,
-the uniform tube is a quarter-wave resonator:
+The Fidelity-0 acoustic backend uses an ideal pressure-release outlet:
+
+```text
+Z_load = 0
+```
+
+This is a deliberate ideal boundary condition, not a model of realistic lip
+radiation. Radiation impedance and end correction belong to a later fidelity.
+
+For a uniform tract with an acoustically closed input and this pressure-release
+outlet, the impedance maxima follow the quarter-wave pattern:
 
 ```text
 f_n = (2n - 1)c / (4L),  n = 1, 2, 3, ...
 ```
 
-The analytical prediction is intentionally kept separate from the numerical
-input-impedance calculation. `tests/scientific/test_uniform_tube.py` checks
-that impedance maxima occur at the analytical frequencies within the scan-grid
-resolution.
+Scientific tests compare this analytical prediction, written independently in
+the test, with maxima obtained numerically from the transfer-matrix impedance.
+An additional asymmetric unequal-area test checks section ordering against an
+independent outlet-to-inlet impedance recursion.
 
-This gives the next solver an oracle: a piecewise-constant transmission-line
-implementation must reduce to the same result when every section has the same
-area.
+## Explicitly outside Fidelity 0
 
-## Deliberately deferred physics
+The following are not partially approximated by this backend:
 
-Fidelity 0 does not yet include:
-
+- physical state trajectories or tissue dynamics,
+- branching oral/nasal/side cavities,
+- viscothermal, wall, or radiation losses,
+- compliant walls,
 - glottal or other acoustic sources,
 - waveform synthesis,
 - radiation impedance,
-- area-function realization from `CreatureSpec`,
-- gesture-driven geometry,
-- branching cavities,
-- losses or compliant walls,
+- turbulent noise,
 - nonlinear acoustics,
-- source-filter coupling.
+- source-filter coupling,
+- mesh-independent constriction extent.
 
-Each of these should be introduced as a separate intervention whose effect can
-be compared against the validated simpler model.
+These are later-fidelity interventions, not bugs in Fidelity 0.
 
 ## References
 

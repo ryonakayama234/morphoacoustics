@@ -10,6 +10,7 @@ class FeasibilityStatus(StrEnum):
     FEASIBLE = "FEASIBLE"
     INFEASIBLE = "INFEASIBLE"
     UNSUPPORTED = "UNSUPPORTED"
+    INVALID = "INVALID"
 
 
 @dataclass(frozen=True, slots=True)

@@ -18,6 +18,7 @@ from .domain import (
     TaskParameter,
     TraceSeries,
 )
+from .simulation import SnapshotSimulationResult, simulate_snapshot
 
 __all__ = [
     "ArticulatorSpec",
@@ -32,10 +33,12 @@ __all__ = [
     "GestureScore",
     "Provenance",
     "SimulationResult",
+    "SnapshotSimulationResult",
     "SourceOrganSpec",
     "Task",
     "TaskParameter",
     "TraceSeries",
+    "simulate_snapshot",
 ]
 
 __version__ = "0.1.0"

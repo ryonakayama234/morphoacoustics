@@ -10,6 +10,8 @@ The initial API represents motor intent as task-level gestures. Muscle activatio
 
 When a gesture needs a location along an ordered tract, the initial representation may use a normalized coordinate in `[0, 1]`. This is a task-space convenience, not a claim that every morphology is a single tube.
 
+For the Fidelity-0 serial tract, `0` is the inlet/source side and `1` is the outlet/radiation side. If a normalized location lies exactly on an internal discretization boundary, it belongs to the downstream section. This boundary rule is part of the Fidelity-0 mapping convention, not a universal biological claim.
+
 ## A3. Morphology is graph-shaped
 
 The domain model permits cavities and connections rather than assuming one vocal-tract tube. Early solvers may support only a subset of these topologies.
