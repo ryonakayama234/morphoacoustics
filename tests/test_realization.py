@@ -1,9 +1,12 @@
+import pytest
+
 from morphoacoustics import (
     ArticulatorSpec,
     CavityConnection,
     CavityKind,
     CavitySpec,
     CreatureSpec,
+    FeasibilityReport,
     FeasibilityStatus,
     Gesture,
     GestureScore,
@@ -11,7 +14,7 @@ from morphoacoustics import (
     TaskParameter,
 )
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
-from morphoacoustics.realization import Tract1DRealizer
+from morphoacoustics.realization import RealizationResult, Tract1DRealizer
 
 
 def _creature() -> CreatureSpec:
@@ -119,6 +122,18 @@ def test_invalid_target_area_is_not_reported_as_physical_infeasibility() -> None
     assert result.feasibility.issues[0].code == "NONPOSITIVE_TARGET_AREA"
 
 
+def test_invalid_request_takes_precedence_over_unreachable_morphology() -> None:
+    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
+        _creature(),
+        GestureScore((_constriction(0.95, area_m2=-1e-5),)),
+        time_s=0.20,
+    )
+
+    assert result.feasibility.status is FeasibilityStatus.INVALID
+    assert result.state is None
+    assert result.feasibility.issues[0].code == "NONPOSITIVE_TARGET_AREA"
+
+
 def test_connected_cavity_is_explicitly_unsupported_by_fidelity0() -> None:
     creature = CreatureSpec(
         name="branched",
@@ -166,3 +181,17 @@ def test_simultaneous_constrictions_are_order_independent() -> None:
     assert first.state == second.state
     assert first.state is not None
     assert first.state.sections[6].area_m2 == 1e-5
+
+
+def test_realization_result_requires_state_exactly_when_feasible() -> None:
+    with pytest.raises(ValueError, match="FEASIBLE realization must contain state"):
+        RealizationResult[Tract1DGeometry](
+            state=None,
+            feasibility=FeasibilityReport(status=FeasibilityStatus.FEASIBLE),
+        )
+
+    with pytest.raises(ValueError, match="FEASIBLE realization must contain state"):
+        RealizationResult(
+            state=_rest_geometry(),
+            feasibility=FeasibilityReport(status=FeasibilityStatus.INFEASIBLE),
+        )
