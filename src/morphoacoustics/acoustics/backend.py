@@ -9,8 +9,27 @@ import numpy.typing as npt
 from morphoacoustics.domain.result import Provenance
 from morphoacoustics.physical import Tract1DGeometry
 
-from .protocol import AcousticResponse
 from .segmented_tube import SegmentedTube
+
+
+@dataclass(frozen=True, slots=True)
+class ImpedanceRequest:
+    """Fidelity-0 request for input impedance over a frequency grid."""
+
+    frequencies_hz: npt.ArrayLike
+
+
+@dataclass(frozen=True, slots=True)
+class ImpedanceResponse:
+    """Frequency-domain input-impedance observation for one tract snapshot."""
+
+    frequencies_hz: np.ndarray
+    input_impedance_pa_s_m3: np.ndarray
+    provenance: Provenance
+
+    def __post_init__(self) -> None:
+        if self.frequencies_hz.shape != self.input_impedance_pa_s_m3.shape:
+            raise ValueError("frequency and impedance arrays must have identical shape")
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,16 +53,16 @@ class SegmentedTubeBackend:
     def simulate_snapshot(
         self,
         state: Tract1DGeometry,
-        frequencies_hz: npt.ArrayLike,
-    ) -> AcousticResponse:
+        request: ImpedanceRequest,
+    ) -> ImpedanceResponse:
         tube = SegmentedTube.from_geometry(
             state,
             sound_speed_m_s=self.sound_speed_m_s,
             air_density_kg_m3=self.air_density_kg_m3,
         )
-        frequencies = np.asarray(frequencies_hz, dtype=np.float64)
+        frequencies = np.asarray(request.frequencies_hz, dtype=np.float64)
         impedance = tube.input_impedance(frequencies, load_impedance_pa_s_m3=0.0)
-        return AcousticResponse(
+        return ImpedanceResponse(
             frequencies_hz=frequencies,
             input_impedance_pa_s_m3=impedance,
             provenance=Provenance(
