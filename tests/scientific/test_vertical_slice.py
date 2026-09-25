@@ -113,7 +113,7 @@ def test_constriction_changes_acoustic_response() -> None:
     )
 
 
-def test_same_task_changes_physical_realization_and_acoustics_with_morphology() -> None:
+def test_same_task_changes_acoustics_with_different_prepared_geometry() -> None:
     score = _constriction()
     long_geometry = _uniform_geometry(0.17)
     short_geometry = _uniform_geometry(0.12)

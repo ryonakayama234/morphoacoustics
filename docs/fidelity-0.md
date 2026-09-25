@@ -31,6 +31,12 @@ Fidelity 0 represents one selected cavity as `Tract1DGeometry`: an ordered
 sequence of rigid, constant-area tube sections. This type is a backend-specific
 physical representation, not a domain morphology primitive.
 
+The prepared `Tract1DGeometry` is currently supplied separately from
+`CreatureSpec`. Fidelity 0 therefore does not yet claim that tract dimensions
+are derived from, or identity-bound to, the domain morphology. Scientific tests
+that vary tract length are tests of different prepared 1D geometries; deriving
+and binding prepared geometry from `CreatureSpec` is deferred to a later step.
+
 Normalized axial coordinates use:
 
 ```text
@@ -45,12 +51,17 @@ constriction width is intentionally deferred to a later physical model.
 
 ## Realization semantics
 
-Fidelity 0 realizes an active `CONSTRICT(location, target_area)` by:
+Fidelity 0 evaluates the entire active gesture set in ordered phases:
 
-1. checking that the selected cavity is representable as an isolated serial tract,
-2. checking that an articulator in that cavity can reach the normalized location,
-3. mapping the location to one 1D section,
-4. replacing that section area with the requested smaller target area.
+1. validate the prepared state and all supported request parameters,
+2. reject unsupported topology, target cavity, or task capability,
+3. check morphology-dependent articulator reachability,
+4. map each validated constriction to one 1D section and apply it.
+
+This ordering applies across the whole active gesture set, not gesture-by-gesture.
+An invalid active request therefore cannot be hidden by an earlier unreachable
+gesture, and an unsupported capability cannot be mislabeled as physical
+infeasibility merely because of tuple order.
 
 Simultaneous constrictions mapped to the same section are combined
 commutatively: the tightest target area wins. Gesture tuple order therefore

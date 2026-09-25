@@ -34,9 +34,9 @@ The first end-to-end implementation deliberately keeps the physics small:
 3. A rigid, lossless segmented transmission-line backend evaluates the resulting frequency-domain input impedance with an ideal pressure-release outlet.
 4. `simulate_snapshot()` orchestrates realization and acoustics without depending on the concrete Fidelity-0 solver.
 5. Invalid requests, unsupported backend capability, and physical infeasibility are reported with distinct meanings.
-6. The same normalized gesture can be applied to differently scaled 1D morphologies, producing different physical and acoustic outcomes.
+6. The same normalized gesture can be applied to differently scaled prepared 1D tract geometries, producing different physical and acoustic outcomes.
 
-Fidelity 0 is intentionally static, one-dimensional, rigid-wall, lossless, serial-tract, source-free, and waveform-free. Those properties are its model contract, not restrictions on the domain schema. See `docs/fidelity-0.md`.
+Fidelity 0 is intentionally static, one-dimensional, rigid-wall, lossless, serial-tract, source-free, and waveform-free. Those properties are its model contract, not restrictions on the domain schema. Its prepared 1D geometry is currently supplied separately from `CreatureSpec`; deriving and binding that geometry from morphology is a later step. See `docs/fidelity-0.md`.
 
 No UI is included here. A future site/application should consume the stable simulation API rather than becoming part of the physics kernel.
 
