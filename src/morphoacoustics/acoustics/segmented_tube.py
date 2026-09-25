@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-from morphoacoustics.domain.geometry import TractGeometry
+from morphoacoustics.physical import Tract1DGeometry
 
 from .uniform_tube import UniformTube, _validated_frequencies
 
@@ -23,7 +23,7 @@ class SegmentedTube:
     @classmethod
     def from_geometry(
         cls,
-        geometry: TractGeometry,
+        geometry: Tract1DGeometry,
         *,
         sound_speed_m_s: float = 343.0,
         air_density_kg_m3: float = 1.21,
@@ -45,6 +45,8 @@ class SegmentedTube:
         return sum(section.length_m for section in self.sections)
 
     def transfer_matrix(self, frequencies_hz: npt.ArrayLike) -> np.ndarray:
+        """Compose inlet-to-outlet ordered section matrices as T1 @ T2 @ ... @ Tn."""
+
         frequencies = _validated_frequencies(frequencies_hz)
         total = np.broadcast_to(
             np.eye(2, dtype=np.complex128),
