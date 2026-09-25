@@ -34,3 +34,35 @@ def test_equal_area_segments_compose_to_equivalent_uniform_tube() -> None:
         rtol=1e-12,
         atol=1e-12,
     )
+
+
+def _recursive_input_impedance(
+    sections: tuple[UniformTube, ...],
+    frequency_hz: float,
+) -> complex:
+    """Independent outlet-to-inlet impedance recursion for a pressure-release load."""
+
+    load = 0.0j
+    omega = 2.0 * np.pi * frequency_hz
+    for section in reversed(sections):
+        phase = omega * section.length_m / section.sound_speed_m_s
+        tangent = np.tan(phase)
+        zc = section.characteristic_impedance_pa_s_m3
+        load = zc * (load + 1j * zc * tangent) / (zc + 1j * load * tangent)
+    return complex(load)
+
+
+def test_unequal_sections_preserve_inlet_to_outlet_order() -> None:
+    inlet = UniformTube(length_m=0.061, area_m2=1.5e-4)
+    outlet = UniformTube(length_m=0.109, area_m2=6.0e-4)
+    frequency_hz = 733.0
+
+    forward = SegmentedTube((inlet, outlet))
+    reversed_tube = SegmentedTube((outlet, inlet))
+
+    measured = forward.input_impedance(np.array([frequency_hz]))[0]
+    expected = _recursive_input_impedance((inlet, outlet), frequency_hz)
+    np.testing.assert_allclose(measured, expected, rtol=1e-12, atol=1e-9)
+
+    reversed_impedance = reversed_tube.input_impedance(np.array([frequency_hz]))[0]
+    assert not np.isclose(measured, reversed_impedance, rtol=1e-6, atol=1e-6)
