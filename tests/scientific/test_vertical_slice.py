@@ -9,11 +9,11 @@ from morphoacoustics import (
     GestureScore,
     Task,
     TaskParameter,
-    Tract1DRealizer,
-    TractGeometry,
-    TubeSection,
     simulate_snapshot,
 )
+from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.realization import Tract1DRealizer
 
 
 def _creature(reachable_end: float = 0.80) -> CreatureSpec:
@@ -32,8 +32,8 @@ def _creature(reachable_end: float = 0.80) -> CreatureSpec:
     )
 
 
-def _uniform_geometry(total_length_m: float, count: int = 10) -> TractGeometry:
-    return TractGeometry(
+def _uniform_geometry(total_length_m: float, count: int = 10) -> Tract1DGeometry:
+    return Tract1DGeometry(
         cavity_id="oral",
         sections=tuple(
             TubeSection(length_m=total_length_m / count, area_m2=3e-4)
@@ -63,11 +63,12 @@ def _first_impedance_peak_hz(length_m: float) -> float:
         creature=_creature(),
         score=GestureScore(()),
         realizer=Tract1DRealizer(_uniform_geometry(length_m)),
+        acoustic_backend=SegmentedTubeBackend(),
         time_s=0.0,
         frequencies_hz=frequencies,
     )
-    assert result.input_impedance_pa_s_m3 is not None
-    magnitude = np.abs(result.input_impedance_pa_s_m3)
+    assert result.acoustics is not None
+    magnitude = np.abs(result.acoustics.input_impedance_pa_s_m3)
     return float(frequencies[np.nanargmax(magnitude)])
 
 
@@ -83,11 +84,13 @@ def test_shorter_tract_moves_first_resonance_upward() -> None:
 def test_constriction_changes_acoustic_response() -> None:
     frequencies = np.linspace(250.0, 1800.0, 256)
     geometry = _uniform_geometry(0.17)
+    backend = SegmentedTubeBackend()
 
     rest = simulate_snapshot(
         creature=_creature(),
         score=GestureScore(()),
         realizer=Tract1DRealizer(geometry),
+        acoustic_backend=backend,
         time_s=0.1,
         frequencies_hz=frequencies,
     )
@@ -95,36 +98,59 @@ def test_constriction_changes_acoustic_response() -> None:
         creature=_creature(),
         score=_constriction(),
         realizer=Tract1DRealizer(geometry),
+        acoustic_backend=backend,
         time_s=0.1,
         frequencies_hz=frequencies,
     )
 
-    assert rest.input_impedance_pa_s_m3 is not None
-    assert constricted.input_impedance_pa_s_m3 is not None
+    assert rest.acoustics is not None
+    assert constricted.acoustics is not None
     assert not np.allclose(
-        rest.input_impedance_pa_s_m3,
-        constricted.input_impedance_pa_s_m3,
+        rest.acoustics.input_impedance_pa_s_m3,
+        constricted.acoustics.input_impedance_pa_s_m3,
         rtol=1e-9,
         atol=1e-6,
     )
 
 
-def test_same_gesture_preserves_task_but_changes_physical_scale() -> None:
+def test_same_task_changes_physical_realization_and_acoustics_with_morphology() -> None:
     score = _constriction()
-    long_result = Tract1DRealizer(_uniform_geometry(0.17)).realize_snapshot(
-        _creature(), score, time_s=0.1
+    long_geometry = _uniform_geometry(0.17)
+    short_geometry = _uniform_geometry(0.12)
+    frequencies = np.array([350.0, 700.0, 1100.0])
+    backend = SegmentedTubeBackend()
+
+    long_result = simulate_snapshot(
+        creature=_creature(),
+        score=score,
+        realizer=Tract1DRealizer(long_geometry),
+        acoustic_backend=backend,
+        time_s=0.1,
+        frequencies_hz=frequencies,
     )
-    short_result = Tract1DRealizer(_uniform_geometry(0.12)).realize_snapshot(
-        _creature(), score, time_s=0.1
+    short_result = simulate_snapshot(
+        creature=_creature(),
+        score=score,
+        realizer=Tract1DRealizer(short_geometry),
+        acoustic_backend=backend,
+        time_s=0.1,
+        frequencies_hz=frequencies,
     )
 
-    assert long_result.geometry is not None
-    assert short_result.geometry is not None
-    assert long_result.geometry.total_length_m > short_result.geometry.total_length_m
-    long_index = long_result.geometry.section_index_at(0.65)
-    short_index = short_result.geometry.section_index_at(0.65)
-    assert long_result.geometry.sections[long_index].area_m2 == 2e-5
-    assert short_result.geometry.sections[short_index].area_m2 == 2e-5
+    assert long_result.realization.state is not None
+    assert short_result.realization.state is not None
+    assert long_result.acoustics is not None
+    assert short_result.acoustics is not None
+
+    assert long_geometry.axial_position_m(0.65) > short_geometry.axial_position_m(0.65)
+    assert long_result.realization.state.sections[6].area_m2 == 2e-5
+    assert short_result.realization.state.sections[6].area_m2 == 2e-5
+    assert not np.allclose(
+        long_result.acoustics.input_impedance_pa_s_m3,
+        short_result.acoustics.input_impedance_pa_s_m3,
+        rtol=1e-9,
+        atol=1e-6,
+    )
 
 
 def test_infeasible_realization_stops_before_acoustics() -> None:
@@ -132,10 +158,10 @@ def test_infeasible_realization_stops_before_acoustics() -> None:
         creature=_creature(reachable_end=0.80),
         score=_constriction(location=0.95),
         realizer=Tract1DRealizer(_uniform_geometry(0.17)),
+        acoustic_backend=SegmentedTubeBackend(),
         time_s=0.1,
         frequencies_hz=np.array([500.0]),
     )
 
     assert not result.has_acoustic_result
-    assert result.frequencies_hz is None
-    assert result.input_impedance_pa_s_m3 is None
+    assert result.acoustics is None
