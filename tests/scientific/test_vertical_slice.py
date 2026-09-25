@@ -11,7 +11,7 @@ from morphoacoustics import (
     TaskParameter,
     simulate_snapshot,
 )
-from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.acoustics import ImpedanceRequest, SegmentedTubeBackend
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.realization import Tract1DRealizer
 
@@ -64,8 +64,8 @@ def _first_impedance_peak_hz(length_m: float) -> float:
         score=GestureScore(()),
         realizer=Tract1DRealizer(_uniform_geometry(length_m)),
         acoustic_backend=SegmentedTubeBackend(),
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.0,
-        frequencies_hz=frequencies,
     )
     assert result.acoustics is not None
     magnitude = np.abs(result.acoustics.input_impedance_pa_s_m3)
@@ -91,16 +91,16 @@ def test_constriction_changes_acoustic_response() -> None:
         score=GestureScore(()),
         realizer=Tract1DRealizer(geometry),
         acoustic_backend=backend,
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
     constricted = simulate_snapshot(
         creature=_creature(),
         score=_constriction(),
         realizer=Tract1DRealizer(geometry),
         acoustic_backend=backend,
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
 
     assert rest.acoustics is not None
@@ -125,16 +125,16 @@ def test_same_task_changes_physical_realization_and_acoustics_with_morphology() 
         score=score,
         realizer=Tract1DRealizer(long_geometry),
         acoustic_backend=backend,
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
     short_result = simulate_snapshot(
         creature=_creature(),
         score=score,
         realizer=Tract1DRealizer(short_geometry),
         acoustic_backend=backend,
+        acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
 
     assert long_result.realization.state is not None
@@ -159,8 +159,8 @@ def test_infeasible_realization_stops_before_acoustics() -> None:
         score=_constriction(location=0.95),
         realizer=Tract1DRealizer(_uniform_geometry(0.17)),
         acoustic_backend=SegmentedTubeBackend(),
+        acoustic_request=ImpedanceRequest(np.array([500.0])),
         time_s=0.1,
-        frequencies_hz=np.array([500.0]),
     )
 
     assert not result.has_acoustic_result
