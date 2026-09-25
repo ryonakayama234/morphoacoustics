@@ -1,3 +1,5 @@
+from itertools import permutations
+
 import pytest
 
 from morphoacoustics import (
@@ -132,6 +134,31 @@ def test_invalid_request_takes_precedence_over_unreachable_morphology() -> None:
     assert result.feasibility.status is FeasibilityStatus.INVALID
     assert result.state is None
     assert result.feasibility.issues[0].code == "NONPOSITIVE_TARGET_AREA"
+
+
+def test_failure_classification_is_independent_of_gesture_order() -> None:
+    unreachable = _constriction(0.95)
+    unsupported = Gesture(task=Task.PHONATE, onset_s=0.10, offset_s=0.30)
+    invalid = _constriction(0.65, area_m2=-1e-5)
+    realizer = Tract1DRealizer(_rest_geometry())
+
+    for gesture_order in permutations((unreachable, unsupported, invalid)):
+        result = realizer.realize_snapshot(
+            _creature(), GestureScore(gesture_order), time_s=0.20
+        )
+        assert result.feasibility.status is FeasibilityStatus.INVALID
+        assert result.state is None
+        assert [issue.code for issue in result.feasibility.issues] == [
+            "NONPOSITIVE_TARGET_AREA"
+        ]
+
+    for gesture_order in permutations((unreachable, unsupported)):
+        result = realizer.realize_snapshot(
+            _creature(), GestureScore(gesture_order), time_s=0.20
+        )
+        assert result.feasibility.status is FeasibilityStatus.UNSUPPORTED
+        assert result.state is None
+        assert [issue.code for issue in result.feasibility.issues] == ["TASK_UNSUPPORTED"]
 
 
 def test_connected_cavity_is_explicitly_unsupported_by_fidelity0() -> None:
