@@ -13,7 +13,10 @@ from morphoacoustics import (
     TaskParameter,
     simulate_snapshot,
 )
-from morphoacoustics.acoustics import SegmentedTubeBackend
+from morphoacoustics.acoustics import (
+    ImpedanceRequest,
+    SegmentedTubeBackend,
+)
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.realization import Tract1DRealizer
 
@@ -63,14 +66,15 @@ def main() -> None:
     geometry = rest_geometry()
     frequencies = np.linspace(200.0, 2000.0, 1801)
     backend = SegmentedTubeBackend()
+    request = ImpedanceRequest(frequencies)
 
     reachable = simulate_snapshot(
         creature=creature(),
         score=score(0.65),
         realizer=Tract1DRealizer(geometry),
         acoustic_backend=backend,
+        acoustic_request=request,
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
     index = geometry.section_index_at(0.65)
     assert reachable.realization.state is not None
@@ -85,8 +89,8 @@ def main() -> None:
         score=score(0.95),
         realizer=Tract1DRealizer(geometry),
         acoustic_backend=backend,
+        acoustic_request=request,
         time_s=0.1,
-        frequencies_hz=frequencies,
     )
     print("unreachable status:", unreachable.realization.feasibility.status)
     print("issue:", unreachable.realization.feasibility.issues[0].code)
