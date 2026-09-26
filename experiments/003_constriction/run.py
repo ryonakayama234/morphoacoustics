@@ -13,11 +13,9 @@ from morphoacoustics import (
     TaskParameter,
     simulate_snapshot,
 )
-from morphoacoustics.acoustics import (
-    ImpedanceRequest,
-    SegmentedTubeBackend,
-)
+from morphoacoustics.acoustics import ImpedanceRequest, SegmentedTubeBackend
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 from morphoacoustics.realization import Tract1DRealizer
 
 
@@ -64,14 +62,23 @@ def score(location: float) -> GestureScore:
 
 def main() -> None:
     geometry = rest_geometry()
+    morphology = prepare_tract1d(
+        creature(),
+        geometry,
+        provenance=PreparationProvenance(
+            source="experiment",
+            model="simple-human-uniform-tract",
+        ),
+    )
     frequencies = np.linspace(200.0, 2000.0, 1801)
     backend = SegmentedTubeBackend()
     request = ImpedanceRequest(frequencies)
+    realizer = Tract1DRealizer()
 
     reachable = simulate_snapshot(
-        creature=creature(),
+        morphology=morphology,
         score=score(0.65),
-        realizer=Tract1DRealizer(geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
@@ -85,9 +92,9 @@ def main() -> None:
     print("acoustics evaluated:", reachable.has_acoustic_result)
 
     unreachable = simulate_snapshot(
-        creature=creature(),
+        morphology=morphology,
         score=score(0.95),
-        realizer=Tract1DRealizer(geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
