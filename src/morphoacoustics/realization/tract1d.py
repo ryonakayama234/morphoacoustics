@@ -45,10 +45,7 @@ class Tract1DRealizer:
             if gesture.onset_s <= time_s < gesture.offset_s
         ]
 
-        invalid_issues = self._validate_prepared_state(
-            creature,
-            rest_geometry,
-        )
+        invalid_issues = self._validate_prepared_state(morphology)
         invalid_issues += self._validate_requests(
             creature,
             rest_geometry,
@@ -90,19 +87,36 @@ class Tract1DRealizer:
 
     def _validate_prepared_state(
         self,
-        creature: CreatureSpec,
-        rest_geometry: Tract1DGeometry,
+        morphology: PreparedMorphology[Tract1DGeometry],
     ) -> tuple[FeasibilityIssue, ...]:
+        issues: list[FeasibilityIssue] = []
+        creature = morphology.creature
+        rest_geometry = morphology.rest_state
+
+        if morphology.backend_id != TRACT1D_BACKEND_ID:
+            issues.append(
+                FeasibilityIssue(
+                    code="PREPARED_BACKEND_MISMATCH",
+                    message=(
+                        f"Tract1DRealizer requires backend_id {TRACT1D_BACKEND_ID!r}, "
+                        f"got {morphology.backend_id!r}"
+                    ),
+                )
+            )
+
         known_cavities = {cavity.id for cavity in creature.cavities}
         cavity_id = rest_geometry.cavity_id
-        if cavity_id in known_cavities:
-            return ()
-        return (
-            FeasibilityIssue(
-                code="PREPARED_GEOMETRY_CAVITY_UNKNOWN",
-                message=f"prepared 1D geometry cavity {cavity_id!r} is not in creature",
-            ),
-        )
+        if cavity_id not in known_cavities:
+            issues.append(
+                FeasibilityIssue(
+                    code="PREPARED_GEOMETRY_CAVITY_UNKNOWN",
+                    message=(
+                        f"prepared 1D geometry cavity {cavity_id!r} is not in creature"
+                    ),
+                )
+            )
+
+        return tuple(issues)
 
     def _validate_requests(
         self,
@@ -196,17 +210,6 @@ class Tract1DRealizer:
         issues: list[FeasibilityIssue] = []
         creature = morphology.creature
         cavity_id = morphology.rest_state.cavity_id
-
-        if morphology.backend_id != TRACT1D_BACKEND_ID:
-            issues.append(
-                FeasibilityIssue(
-                    code="PREPARED_BACKEND_MISMATCH",
-                    message=(
-                        f"Tract1DRealizer requires backend_id {TRACT1D_BACKEND_ID!r}, "
-                        f"got {morphology.backend_id!r}"
-                    ),
-                )
-            )
 
         connected = [
             connection
