@@ -123,6 +123,26 @@ def test_active_unsupported_task_is_reported_not_approximated() -> None:
     assert result.feasibility.issues[0].code == "TASK_UNSUPPORTED"
 
 
+def test_prepared_backend_mismatch_is_invalid() -> None:
+    prepared = _prepared()
+    mismatched = PreparedMorphology(
+        creature=prepared.creature,
+        rest_state=prepared.rest_state,
+        backend_id="other.backend",
+        provenance=prepared.provenance,
+    )
+
+    result = Tract1DRealizer().realize_snapshot(
+        mismatched,
+        GestureScore(()),
+        time_s=0.0,
+    )
+
+    assert result.feasibility.status is FeasibilityStatus.INVALID
+    assert result.state is None
+    assert result.feasibility.issues[0].code == "PREPARED_BACKEND_MISMATCH"
+
+
 def test_invalid_target_area_is_not_reported_as_physical_infeasibility() -> None:
     result = Tract1DRealizer().realize_snapshot(
         _prepared(),
