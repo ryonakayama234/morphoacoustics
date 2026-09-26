@@ -14,6 +14,7 @@ from morphoacoustics.acoustics import (
     SegmentedTubeBackend,
 )
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 from morphoacoustics.realization import Tract1DRealizer
 
 
@@ -32,11 +33,20 @@ def first_peak_hz(length_m: float) -> float:
         name=f"uniform-{length_m:.2f}m",
         cavities=(CavitySpec(id="oral", kind=CavityKind.ORAL),),
     )
+    morphology = prepare_tract1d(
+        creature,
+        geometry(length_m),
+        provenance=PreparationProvenance(
+            source="experiment",
+            model="uniform-tract",
+            notes=(f"total_length_m={length_m:g}",),
+        ),
+    )
     frequencies = np.linspace(300.0, 900.0, 6001)
     result = simulate_snapshot(
-        creature=creature,
+        morphology=morphology,
         score=GestureScore(()),
-        realizer=Tract1DRealizer(geometry(length_m)),
+        realizer=Tract1DRealizer(),
         acoustic_backend=SegmentedTubeBackend(),
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.0,
