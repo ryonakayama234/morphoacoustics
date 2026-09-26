@@ -18,6 +18,7 @@ from .domain import (
     TaskParameter,
     TraceSeries,
 )
+from .preparation import PreparationProvenance, PreparedMorphology
 from .simulation import SnapshotSimulationResult, simulate_snapshot
 
 __all__ = [
@@ -31,6 +32,8 @@ __all__ = [
     "FeasibilityStatus",
     "Gesture",
     "GestureScore",
+    "PreparationProvenance",
+    "PreparedMorphology",
     "Provenance",
     "SimulationResult",
     "SnapshotSimulationResult",
