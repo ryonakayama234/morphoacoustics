@@ -10,16 +10,17 @@ from morphoacoustics.domain.result import (
     FeasibilityStatus,
 )
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import TRACT1D_BACKEND_ID, PreparedMorphology
 
 from .protocol import RealizationResult
 
 
 class Tract1DRealizer:
-    """Realize Fidelity-0 CONSTRICT tasks onto a prepared serial 1D tract.
+    """Realize Fidelity-0 CONSTRICT tasks on a prepared serial 1D tract.
 
-    ``rest_geometry`` is a backend-specific prepared physical representation;
-    it is deliberately separate from ``CreatureSpec`` so the domain schema does
-    not become a 1D tube schema.
+    The realizer is an algorithm, not a body container.  Backend-specific rest
+    geometry arrives through ``PreparedMorphology`` so the numerical body and
+    the ``CreatureSpec`` it represents are explicitly bound and inspectable.
 
     Failure classification is phase-ordered across the entire active gesture
     set: invalid requests are reported before backend capability failures, and
@@ -27,44 +28,61 @@ class Tract1DRealizer:
     This keeps the status independent of gesture tuple order.
     """
 
-    def __init__(self, rest_geometry: Tract1DGeometry) -> None:
-        self.rest_geometry = rest_geometry
-
     def realize_snapshot(
         self,
-        creature: CreatureSpec,
+        morphology: PreparedMorphology[Tract1DGeometry],
         score: GestureScore,
         time_s: float,
     ) -> RealizationResult[Tract1DGeometry]:
         if not isfinite(time_s) or time_s < 0.0:
             raise ValueError("time_s must be finite and >= 0")
 
+        creature = morphology.creature
+        rest_geometry = morphology.rest_state
         active = [
             (index, gesture)
             for index, gesture in enumerate(score.gestures)
             if gesture.onset_s <= time_s < gesture.offset_s
         ]
 
-        invalid_issues = self._validate_prepared_state(creature)
-        invalid_issues += self._validate_requests(creature, active)
+        invalid_issues = self._validate_prepared_state(
+            creature,
+            rest_geometry,
+        )
+        invalid_issues += self._validate_requests(
+            creature,
+            rest_geometry,
+            active,
+        )
         if invalid_issues:
             return _failed_many(FeasibilityStatus.INVALID, invalid_issues)
 
-        unsupported_issues = self._check_capability(creature, active)
+        unsupported_issues = self._check_capability(
+            morphology,
+            active,
+        )
         if unsupported_issues:
             return _failed_many(FeasibilityStatus.UNSUPPORTED, unsupported_issues)
 
-        infeasible_issues = self._check_reachability(creature, active)
+        infeasible_issues = self._check_reachability(
+            creature,
+            rest_geometry,
+            active,
+        )
         if infeasible_issues:
             return _failed_many(FeasibilityStatus.INFEASIBLE, infeasible_issues)
 
-        sections = list(self.rest_geometry.sections)
+        sections = list(rest_geometry.sections)
         for _, gesture in active:
-            self._apply_validated_constriction(gesture, sections)
+            self._apply_validated_constriction(
+                gesture,
+                rest_geometry,
+                sections,
+            )
 
         return RealizationResult(
             state=Tract1DGeometry(
-                cavity_id=self.rest_geometry.cavity_id,
+                cavity_id=rest_geometry.cavity_id,
                 sections=tuple(sections),
             ),
             feasibility=FeasibilityReport(status=FeasibilityStatus.FEASIBLE),
@@ -73,9 +91,10 @@ class Tract1DRealizer:
     def _validate_prepared_state(
         self,
         creature: CreatureSpec,
+        rest_geometry: Tract1DGeometry,
     ) -> tuple[FeasibilityIssue, ...]:
         known_cavities = {cavity.id for cavity in creature.cavities}
-        cavity_id = self.rest_geometry.cavity_id
+        cavity_id = rest_geometry.cavity_id
         if cavity_id in known_cavities:
             return ()
         return (
@@ -88,13 +107,14 @@ class Tract1DRealizer:
     def _validate_requests(
         self,
         creature: CreatureSpec,
+        rest_geometry: Tract1DGeometry,
         active: list[tuple[int, Gesture]],
     ) -> tuple[FeasibilityIssue, ...]:
         issues: list[FeasibilityIssue] = []
         known_cavities = {cavity.id for cavity in creature.cavities}
 
         for gesture_index, gesture in active:
-            target_cavity = gesture.target or self.rest_geometry.cavity_id
+            target_cavity = gesture.target or rest_geometry.cavity_id
             if target_cavity not in known_cavities:
                 issues.append(
                     FeasibilityIssue(
@@ -152,8 +172,8 @@ class Tract1DRealizer:
             if location is None:
                 continue
 
-            section_index = self.rest_geometry.section_index_at(location)
-            rest_section = self.rest_geometry.sections[section_index]
+            section_index = rest_geometry.section_index_at(location)
+            rest_section = rest_geometry.sections[section_index]
             if target_area.value > rest_section.area_m2:
                 issues.append(
                     FeasibilityIssue(
@@ -170,11 +190,23 @@ class Tract1DRealizer:
 
     def _check_capability(
         self,
-        creature: CreatureSpec,
+        morphology: PreparedMorphology[Tract1DGeometry],
         active: list[tuple[int, Gesture]],
     ) -> tuple[FeasibilityIssue, ...]:
         issues: list[FeasibilityIssue] = []
-        cavity_id = self.rest_geometry.cavity_id
+        creature = morphology.creature
+        cavity_id = morphology.rest_state.cavity_id
+
+        if morphology.backend_id != TRACT1D_BACKEND_ID:
+            issues.append(
+                FeasibilityIssue(
+                    code="PREPARED_BACKEND_MISMATCH",
+                    message=(
+                        f"Tract1DRealizer requires backend_id {TRACT1D_BACKEND_ID!r}, "
+                        f"got {morphology.backend_id!r}"
+                    ),
+                )
+            )
 
         connected = [
             connection
@@ -224,6 +256,7 @@ class Tract1DRealizer:
     def _check_reachability(
         self,
         creature: CreatureSpec,
+        rest_geometry: Tract1DGeometry,
         active: list[tuple[int, Gesture]],
     ) -> tuple[FeasibilityIssue, ...]:
         issues: list[FeasibilityIssue] = []
@@ -233,7 +266,7 @@ class Tract1DRealizer:
             if location is None:
                 raise RuntimeError("validated CONSTRICT gesture must have location")
 
-            target_cavity = gesture.target or self.rest_geometry.cavity_id
+            target_cavity = gesture.target or rest_geometry.cavity_id
             compatible = [
                 articulator
                 for articulator in creature.articulators
@@ -257,6 +290,7 @@ class Tract1DRealizer:
     def _apply_validated_constriction(
         self,
         gesture: Gesture,
+        rest_geometry: Tract1DGeometry,
         sections: list[TubeSection],
     ) -> None:
         location = gesture.location
@@ -264,7 +298,7 @@ class Tract1DRealizer:
         if location is None or target_area is None:
             raise RuntimeError("validated CONSTRICT gesture is incomplete")
 
-        section_index = self.rest_geometry.section_index_at(location)
+        section_index = rest_geometry.section_index_at(location)
         current = sections[section_index]
         sections[section_index] = TubeSection(
             length_m=current.length_m,
