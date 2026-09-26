@@ -25,17 +25,23 @@ Fidelity 0 is deliberately:
 A morphology or task outside these capabilities must be reported as
 `UNSUPPORTED`; unsupported structure must not be silently ignored.
 
-## Physical state
+## Physical state and preparation
 
 Fidelity 0 represents one selected cavity as `Tract1DGeometry`: an ordered
 sequence of rigid, constant-area tube sections. This type is a backend-specific
 physical representation, not a domain morphology primitive.
 
-The prepared `Tract1DGeometry` is currently supplied separately from
-`CreatureSpec`. Fidelity 0 therefore does not yet claim that tract dimensions
-are derived from, or identity-bound to, the domain morphology. Scientific tests
-that vary tract length are tests of different prepared 1D geometries; deriving
-and binding prepared geometry from `CreatureSpec` is deferred to a later step.
+The numerical `Tract1DGeometry` is still supplied manually rather than derived
+from metric anatomy in `CreatureSpec`. Before simulation, `prepare_tract1d()`
+explicitly binds that numerical rest state to one `CreatureSpec`, a backend
+identifier, and preparation provenance in `PreparedMorphology[Tract1DGeometry]`.
+This makes body/backend identity inspectable while preserving an important
+limitation: Fidelity 0 does **not** yet claim that tract dimensions can be
+derived from `CreatureSpec`. Anatomical derivation is a later preparation model.
+
+Preparation validates binding coherence, such as the prepared cavity existing
+in the creature, but does not erase solver capability limits. Unsupported
+morphology remains present and is reported as `UNSUPPORTED` during realization.
 
 Normalized axial coordinates use:
 
@@ -51,10 +57,12 @@ constriction width is intentionally deferred to a later physical model.
 
 ## Realization semantics
 
-Fidelity 0 evaluates the entire active gesture set in ordered phases:
+`Tract1DRealizer` is stateless with respect to body geometry: it consumes a
+`PreparedMorphology[Tract1DGeometry]` plus a `GestureScore` and time. Fidelity 0
+evaluates the entire active gesture set in ordered phases:
 
 1. validate the prepared state and all supported request parameters,
-2. reject unsupported topology, target cavity, or task capability,
+2. reject unsupported topology, target cavity, task capability, or prepared-backend mismatch,
 3. check morphology-dependent articulator reachability,
 4. map each validated constriction to one 1D section and apply it.
 
