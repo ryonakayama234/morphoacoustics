@@ -13,6 +13,7 @@ from morphoacoustics import (
 )
 from morphoacoustics.acoustics import ImpedanceRequest, SegmentedTubeBackend
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import prepare_tract1d
 from morphoacoustics.realization import Tract1DRealizer
 
 
@@ -59,10 +60,11 @@ def _constriction(location: float = 0.65) -> GestureScore:
 
 def _first_impedance_peak_hz(length_m: float) -> float:
     frequencies = np.linspace(300.0, 900.0, 6001)
+    morphology = prepare_tract1d(_creature(), _uniform_geometry(length_m))
     result = simulate_snapshot(
-        creature=_creature(),
+        morphology=morphology,
         score=GestureScore(()),
-        realizer=Tract1DRealizer(_uniform_geometry(length_m)),
+        realizer=Tract1DRealizer(),
         acoustic_backend=SegmentedTubeBackend(),
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.0,
@@ -84,20 +86,22 @@ def test_shorter_tract_moves_first_resonance_upward() -> None:
 def test_constriction_changes_acoustic_response() -> None:
     frequencies = np.linspace(250.0, 1800.0, 256)
     geometry = _uniform_geometry(0.17)
+    morphology = prepare_tract1d(_creature(), geometry)
     backend = SegmentedTubeBackend()
+    realizer = Tract1DRealizer()
 
     rest = simulate_snapshot(
-        creature=_creature(),
+        morphology=morphology,
         score=GestureScore(()),
-        realizer=Tract1DRealizer(geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
     )
     constricted = simulate_snapshot(
-        creature=_creature(),
+        morphology=morphology,
         score=_constriction(),
-        realizer=Tract1DRealizer(geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
@@ -117,21 +121,24 @@ def test_same_task_changes_acoustics_with_different_prepared_geometry() -> None:
     score = _constriction()
     long_geometry = _uniform_geometry(0.17)
     short_geometry = _uniform_geometry(0.12)
+    long_morphology = prepare_tract1d(_creature(), long_geometry)
+    short_morphology = prepare_tract1d(_creature(), short_geometry)
     frequencies = np.array([350.0, 700.0, 1100.0])
     backend = SegmentedTubeBackend()
+    realizer = Tract1DRealizer()
 
     long_result = simulate_snapshot(
-        creature=_creature(),
+        morphology=long_morphology,
         score=score,
-        realizer=Tract1DRealizer(long_geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
     )
     short_result = simulate_snapshot(
-        creature=_creature(),
+        morphology=short_morphology,
         score=score,
-        realizer=Tract1DRealizer(short_geometry),
+        realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=ImpedanceRequest(frequencies),
         time_s=0.1,
@@ -154,10 +161,14 @@ def test_same_task_changes_acoustics_with_different_prepared_geometry() -> None:
 
 
 def test_infeasible_realization_stops_before_acoustics() -> None:
+    morphology = prepare_tract1d(
+        _creature(reachable_end=0.80),
+        _uniform_geometry(0.17),
+    )
     result = simulate_snapshot(
-        creature=_creature(reachable_end=0.80),
+        morphology=morphology,
         score=_constriction(location=0.95),
-        realizer=Tract1DRealizer(_uniform_geometry(0.17)),
+        realizer=Tract1DRealizer(),
         acoustic_backend=SegmentedTubeBackend(),
         acoustic_request=ImpedanceRequest(np.array([500.0])),
         time_s=0.1,
