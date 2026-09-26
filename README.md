@@ -30,21 +30,41 @@ The project treats waveform and spectrograms as downstream observations, not as 
 The first end-to-end implementation deliberately keeps the physics small:
 
 1. `CreatureSpec` and `GestureScore` remain backend-independent domain contracts.
-2. Fidelity 0 realizes active `CONSTRICT` gestures onto a prepared serial 1D tract state.
-3. A rigid, lossless segmented transmission-line backend evaluates the resulting frequency-domain input impedance with an ideal pressure-release outlet.
-4. `simulate_snapshot()` orchestrates realization and acoustics without depending on the concrete Fidelity-0 solver.
-5. Invalid requests, unsupported backend capability, and physical infeasibility are reported with distinct meanings.
-6. The same normalized gesture can be applied to differently scaled prepared 1D tract geometries, producing different physical and acoustic outcomes.
+2. `PreparedMorphology[T]` explicitly binds a `CreatureSpec` to a backend-specific rest state plus preparation provenance without moving backend geometry into the universal morphology schema.
+3. Fidelity 0 realizes active `CONSTRICT` gestures onto a prepared serial 1D tract state.
+4. A rigid, lossless segmented transmission-line backend evaluates the resulting frequency-domain input impedance with an ideal pressure-release outlet.
+5. `simulate_snapshot()` orchestrates realization and acoustics without depending on the concrete Fidelity-0 solver.
+6. Invalid requests, unsupported backend capability, and physical infeasibility are reported with distinct meanings.
+7. The same normalized gesture can be applied unchanged to differently prepared morphologies, producing morphology-specific physical and acoustic outcomes or an explicit `INFEASIBLE` result.
 
-Fidelity 0 is intentionally static, one-dimensional, rigid-wall, lossless, serial-tract, source-free, and waveform-free. Those properties are its model contract, not restrictions on the domain schema. Its prepared 1D geometry is currently supplied separately from `CreatureSpec`; deriving and binding that geometry from morphology is a later step. See `docs/fidelity-0.md`.
+Fidelity 0 is intentionally static, one-dimensional, rigid-wall, lossless, serial-tract, source-free, and waveform-free. Those properties are its model contract, not restrictions on the domain schema. Its numerical geometry is currently prepared manually and explicitly bound to `CreatureSpec`; deriving geometry from richer morphology parameters is a later step. See `docs/fidelity-0.md`.
 
 No UI is included here. A future site/application should consume the stable simulation API rather than becoming part of the physics kernel.
+
+## Preparation boundary
+
+`CreatureSpec` describes morphology semantics while numerical solvers consume backend-specific rest states. These are joined explicitly before simulation:
+
+```text
+CreatureSpec + backend-specific rest state
+                 ↓
+          preparation / binding
+                 ↓
+       PreparedMorphology[T]
+                 +
+            GestureScore
+                 ↓
+              Realizer
+```
+
+Preparation validates that a numerical state can coherently be bound to the creature and records provenance. It does not silently erase morphology that Fidelity 0 cannot solve: solver capability limits remain explicit `UNSUPPORTED` realization outcomes.
 
 ## Repository layout
 
 ```text
 docs/                  architecture, invariants, assumptions
 src/morphoacoustics/   research kernel
+  preparation/         explicit CreatureSpec ↔ backend-state binding
 experiments/            executable research experiments
 tests/                  software and scientific tests
 ```
