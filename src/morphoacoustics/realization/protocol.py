@@ -3,10 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Generic, Protocol, TypeVar
 
-from morphoacoustics.domain.creature import CreatureSpec
 from morphoacoustics.domain.gesture import GestureScore
 from morphoacoustics.domain.result import FeasibilityReport, FeasibilityStatus
+from morphoacoustics.preparation.protocol import PreparedMorphology
 
+PreparedStateT_contra = TypeVar("PreparedStateT_contra", contravariant=True)
 StateT_co = TypeVar("StateT_co", covariant=True)
 
 
@@ -26,12 +27,12 @@ class RealizationResult(Generic[StateT_co]):
             )
 
 
-class Realizer(Protocol[StateT_co]):
-    """Translate morphology-independent tasks into backend-specific physical state."""
+class Realizer(Protocol[PreparedStateT_contra, StateT_co]):
+    """Translate task-level gestures on a prepared body into physical state."""
 
     def realize_snapshot(
         self,
-        creature: CreatureSpec,
+        morphology: PreparedMorphology[PreparedStateT_contra],
         score: GestureScore,
         time_s: float,
     ) -> RealizationResult[StateT_co]:
