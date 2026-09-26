@@ -28,12 +28,15 @@ Waveforms and spectrograms are observations. They are not allowed to become the 
 
 ## Representation layers
 
+The causal representation remains five-layered:
+
 1. **Morphology** — cavities, source organs, articulators, materials, and constraints.
-2. **Preparation** — an explicit, provenance-carrying binding between universal morphology semantics and a backend-specific numerical rest state.
-3. **Task / motor program** — morphology-independent gestures such as constriction, opening, phonation, and pressurization.
-4. **Physical state** — morphology-specific positions, deformation, contact, pressure, flow, or a backend-specific approximation of them.
-5. **Acoustic field** — source generation, propagation, resonances, losses, radiation, and eventually source-filter coupling.
-6. **Observation** — waveform and derived analyses.
+2. **Task / motor program** — morphology-independent gestures such as constriction, opening, phonation, and pressurization.
+3. **Physical state** — morphology-specific positions, deformation, contact, pressure, flow, or a backend-specific approximation of them.
+4. **Acoustic field** — source generation, propagation, resonances, losses, radiation, and eventually source-filter coupling.
+5. **Observation** — waveform and derived analyses.
+
+Preparation is a software binding stage between universal morphology semantics and a backend-specific numerical rest state. It carries provenance and configuration identity, but it is not an additional causal representation layer.
 
 ## Boundary rule
 
