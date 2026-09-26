@@ -41,6 +41,12 @@ Fidelity 0 is intentionally static, one-dimensional, rigid-wall, lossless, seria
 
 No UI is included here. A future site/application should consume the stable simulation API rather than becoming part of the physics kernel.
 
+## Creative integration boundary
+
+The repository also carries a versioned **Performance Contract v0** as an external integration contract for future creative applications. It defines creator-facing `CharacterSpec`, `Script`, `Direction`, `PerformanceRequest`, and `PerformanceResult` JSON Schemas without importing those concepts into `src/morphoacoustics`.
+
+See `docs/performance-contract-v0.md` and `contracts/performance/v0/`.
+
 ## Preparation boundary
 
 `CreatureSpec` describes morphology semantics while numerical solvers consume backend-specific rest states. These are joined explicitly before simulation:
@@ -62,11 +68,12 @@ Preparation validates that a numerical state can coherently be bound to the crea
 ## Repository layout
 
 ```text
-docs/                  architecture, invariants, assumptions
-src/morphoacoustics/   research kernel
-  preparation/         explicit CreatureSpec ↔ backend-state binding
-experiments/            executable research experiments
-tests/                  software and scientific tests
+contracts/performance/  versioned external creative integration contracts
+docs/                   architecture, invariants, assumptions
+src/morphoacoustics/    research kernel
+  preparation/          explicit CreatureSpec ↔ backend-state binding
+experiments/             executable research experiments
+tests/                   software and scientific tests
 ```
 
 ## Status
