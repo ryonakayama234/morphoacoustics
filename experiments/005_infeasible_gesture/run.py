@@ -19,9 +19,9 @@ from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 from morphoacoustics.realization import Tract1DRealizer
 
 
-def creature() -> CreatureSpec:
+def creature(name: str, reachable_end: float) -> CreatureSpec:
     return CreatureSpec(
-        name="simple-human",
+        name=name,
         cavities=(CavitySpec(id="oral", kind=CavityKind.ORAL),),
         articulators=(
             ArticulatorSpec(
@@ -29,13 +29,13 @@ def creature() -> CreatureSpec:
                 cavity_id="oral",
                 kind="tongue",
                 reachable_start=0.30,
-                reachable_end=0.80,
+                reachable_end=reachable_end,
             ),
         ),
     )
 
 
-def rest_geometry() -> Tract1DGeometry:
+def geometry() -> Tract1DGeometry:
     return Tract1DGeometry(
         cavity_id="oral",
         sections=tuple(
@@ -45,7 +45,7 @@ def rest_geometry() -> Tract1DGeometry:
     )
 
 
-def score(location: float) -> GestureScore:
+def score() -> GestureScore:
     return GestureScore(
         (
             Gesture(
@@ -53,55 +53,55 @@ def score(location: float) -> GestureScore:
                 onset_s=0.0,
                 offset_s=0.3,
                 target="oral",
-                location=location,
+                location=0.70,
                 parameters=(TaskParameter("target_area", 2e-5, "m2"),),
             ),
         )
     )
 
 
-def main() -> None:
-    geometry = rest_geometry()
-    morphology = prepare_tract1d(
-        creature(),
-        geometry,
+def prepared(name: str, reachable_end: float):
+    return prepare_tract1d(
+        creature(name, reachable_end),
+        geometry(),
         provenance=PreparationProvenance(
             source="experiment",
-            model="simple-human-uniform-tract",
+            model="uniform-tract",
+            notes=(f"tongue_reachable_end={reachable_end:g}",),
         ),
     )
-    frequencies = np.linspace(200.0, 2000.0, 1801)
-    backend = SegmentedTubeBackend()
-    request = ImpedanceRequest(frequencies)
+
+
+def main() -> None:
+    gesture_score = score()
+    capable = prepared("capable-body", 0.80)
+    limited = prepared("limited-body", 0.55)
     realizer = Tract1DRealizer()
+    backend = SegmentedTubeBackend()
+    request = ImpedanceRequest(np.array([500.0]))
 
-    reachable = simulate_snapshot(
-        morphology=morphology,
-        score=score(0.65),
+    capable_result = simulate_snapshot(
+        morphology=capable,
+        score=gesture_score,
         realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
     )
-    index = geometry.section_index_at(0.65)
-    assert reachable.realization.state is not None
-    print("reachable status:", reachable.realization.feasibility.status)
-    print("constricted section:", index)
-    print("rest area m2:", geometry.sections[index].area_m2)
-    print("realized area m2:", reachable.realization.state.sections[index].area_m2)
-    print("acoustics evaluated:", reachable.has_acoustic_result)
-
-    unreachable = simulate_snapshot(
-        morphology=morphology,
-        score=score(0.95),
+    limited_result = simulate_snapshot(
+        morphology=limited,
+        score=gesture_score,
         realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
     )
-    print("unreachable status:", unreachable.realization.feasibility.status)
-    print("issue:", unreachable.realization.feasibility.issues[0].code)
-    print("acoustics evaluated:", unreachable.has_acoustic_result)
+
+    print("capable status:", capable_result.realization.feasibility.status)
+    print("capable acoustics:", capable_result.has_acoustic_result)
+    print("limited status:", limited_result.realization.feasibility.status)
+    print("limited acoustics:", limited_result.has_acoustic_result)
+    print("limited issue:", limited_result.realization.feasibility.issues[0].code)
 
 
 if __name__ == "__main__":

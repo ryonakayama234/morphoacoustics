@@ -19,9 +19,9 @@ from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 from morphoacoustics.realization import Tract1DRealizer
 
 
-def creature() -> CreatureSpec:
+def creature(name: str) -> CreatureSpec:
     return CreatureSpec(
-        name="simple-human",
+        name=name,
         cavities=(CavitySpec(id="oral", kind=CavityKind.ORAL),),
         articulators=(
             ArticulatorSpec(
@@ -35,17 +35,17 @@ def creature() -> CreatureSpec:
     )
 
 
-def rest_geometry() -> Tract1DGeometry:
+def geometry(total_length_m: float) -> Tract1DGeometry:
     return Tract1DGeometry(
         cavity_id="oral",
         sections=tuple(
-            TubeSection(length_m=0.017, area_m2=3e-4)
+            TubeSection(length_m=total_length_m / 10.0, area_m2=3e-4)
             for _ in range(10)
         ),
     )
 
 
-def score(location: float) -> GestureScore:
+def score() -> GestureScore:
     return GestureScore(
         (
             Gesture(
@@ -53,55 +53,68 @@ def score(location: float) -> GestureScore:
                 onset_s=0.0,
                 offset_s=0.3,
                 target="oral",
-                location=location,
+                location=0.65,
                 parameters=(TaskParameter("target_area", 2e-5, "m2"),),
             ),
         )
     )
 
 
-def main() -> None:
-    geometry = rest_geometry()
-    morphology = prepare_tract1d(
-        creature(),
-        geometry,
+def prepared(name: str, total_length_m: float):
+    return prepare_tract1d(
+        creature(name),
+        geometry(total_length_m),
         provenance=PreparationProvenance(
             source="experiment",
-            model="simple-human-uniform-tract",
+            model="uniform-tract",
+            notes=(f"total_length_m={total_length_m:g}",),
         ),
     )
-    frequencies = np.linspace(200.0, 2000.0, 1801)
+
+
+def main() -> None:
+    gesture_score = score()
+    long_body = prepared("long-human", 0.17)
+    short_body = prepared("short-human", 0.12)
+    frequencies = np.array([350.0, 700.0, 1100.0])
     backend = SegmentedTubeBackend()
-    request = ImpedanceRequest(frequencies)
     realizer = Tract1DRealizer()
+    request = ImpedanceRequest(frequencies)
 
-    reachable = simulate_snapshot(
-        morphology=morphology,
-        score=score(0.65),
+    long_result = simulate_snapshot(
+        morphology=long_body,
+        score=gesture_score,
         realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
     )
-    index = geometry.section_index_at(0.65)
-    assert reachable.realization.state is not None
-    print("reachable status:", reachable.realization.feasibility.status)
-    print("constricted section:", index)
-    print("rest area m2:", geometry.sections[index].area_m2)
-    print("realized area m2:", reachable.realization.state.sections[index].area_m2)
-    print("acoustics evaluated:", reachable.has_acoustic_result)
-
-    unreachable = simulate_snapshot(
-        morphology=morphology,
-        score=score(0.95),
+    short_result = simulate_snapshot(
+        morphology=short_body,
+        score=gesture_score,
         realizer=realizer,
         acoustic_backend=backend,
         acoustic_request=request,
         time_s=0.1,
     )
-    print("unreachable status:", unreachable.realization.feasibility.status)
-    print("issue:", unreachable.realization.feasibility.issues[0].code)
-    print("acoustics evaluated:", unreachable.has_acoustic_result)
+
+    assert long_result.realization.state is not None
+    assert short_result.realization.state is not None
+    assert long_result.acoustics is not None
+    assert short_result.acoustics is not None
+
+    print("gesture normalized location:", gesture_score.gestures[0].location)
+    print("long axial position m:", long_body.rest_state.axial_position_m(0.65))
+    print("short axial position m:", short_body.rest_state.axial_position_m(0.65))
+    print("long status:", long_result.realization.feasibility.status)
+    print("short status:", short_result.realization.feasibility.status)
+    print(
+        "same acoustic response:",
+        np.allclose(
+            long_result.acoustics.input_impedance_pa_s_m3,
+            short_result.acoustics.input_impedance_pa_s_m3,
+        ),
+    )
 
 
 if __name__ == "__main__":

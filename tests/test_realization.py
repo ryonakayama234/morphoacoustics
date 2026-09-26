@@ -16,6 +16,7 @@ from morphoacoustics import (
     TaskParameter,
 )
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import PreparedMorphology, prepare_tract1d
 from morphoacoustics.realization import RealizationResult, Tract1DRealizer
 
 
@@ -45,6 +46,16 @@ def _rest_geometry(cavity_id: str = "oral") -> Tract1DGeometry:
     )
 
 
+def _prepared(
+    creature: CreatureSpec | None = None,
+    geometry: Tract1DGeometry | None = None,
+) -> PreparedMorphology[Tract1DGeometry]:
+    return prepare_tract1d(
+        creature or _creature(),
+        geometry or _rest_geometry(),
+    )
+
+
 def _constriction(location: float, area_m2: float = 2e-5) -> Gesture:
     return Gesture(
         task=Task.CONSTRICT,
@@ -57,9 +68,9 @@ def _constriction(location: float, area_m2: float = 2e-5) -> Gesture:
 
 
 def test_active_constriction_changes_body_specific_geometry() -> None:
-    rest = _rest_geometry()
-    result = Tract1DRealizer(rest).realize_snapshot(
-        _creature(),
+    prepared = _prepared()
+    result = Tract1DRealizer().realize_snapshot(
+        prepared,
         GestureScore((_constriction(0.65),)),
         time_s=0.20,
     )
@@ -73,8 +84,8 @@ def test_active_constriction_changes_body_specific_geometry() -> None:
 
 def test_inactive_gesture_leaves_rest_geometry_unchanged() -> None:
     rest = _rest_geometry()
-    result = Tract1DRealizer(rest).realize_snapshot(
-        _creature(),
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(geometry=rest),
         GestureScore((_constriction(0.65),)),
         time_s=0.05,
     )
@@ -84,8 +95,8 @@ def test_inactive_gesture_leaves_rest_geometry_unchanged() -> None:
 
 
 def test_unreachable_constriction_is_explicitly_infeasible() -> None:
-    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
-        _creature(),
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(),
         GestureScore((_constriction(0.95),)),
         time_s=0.20,
     )
@@ -101,8 +112,8 @@ def test_active_unsupported_task_is_reported_not_approximated() -> None:
         onset_s=0.0,
         offset_s=0.2,
     )
-    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
-        _creature(),
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(),
         GestureScore((phonate,)),
         time_s=0.1,
     )
@@ -112,9 +123,29 @@ def test_active_unsupported_task_is_reported_not_approximated() -> None:
     assert result.feasibility.issues[0].code == "TASK_UNSUPPORTED"
 
 
+def test_prepared_backend_mismatch_is_invalid() -> None:
+    prepared = _prepared()
+    mismatched = PreparedMorphology(
+        creature=prepared.creature,
+        rest_state=prepared.rest_state,
+        backend_id="other.backend",
+        provenance=prepared.provenance,
+    )
+
+    result = Tract1DRealizer().realize_snapshot(
+        mismatched,
+        GestureScore(()),
+        time_s=0.0,
+    )
+
+    assert result.feasibility.status is FeasibilityStatus.INVALID
+    assert result.state is None
+    assert result.feasibility.issues[0].code == "PREPARED_BACKEND_MISMATCH"
+
+
 def test_invalid_target_area_is_not_reported_as_physical_infeasibility() -> None:
-    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
-        _creature(),
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(),
         GestureScore((_constriction(0.65, area_m2=-1e-5),)),
         time_s=0.20,
     )
@@ -125,8 +156,8 @@ def test_invalid_target_area_is_not_reported_as_physical_infeasibility() -> None
 
 
 def test_invalid_request_takes_precedence_over_unreachable_morphology() -> None:
-    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
-        _creature(),
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(),
         GestureScore((_constriction(0.95, area_m2=-1e-5),)),
         time_s=0.20,
     )
@@ -140,11 +171,12 @@ def test_failure_classification_is_independent_of_gesture_order() -> None:
     unreachable = _constriction(0.95)
     unsupported = Gesture(task=Task.PHONATE, onset_s=0.10, offset_s=0.30)
     invalid = _constriction(0.65, area_m2=-1e-5)
-    realizer = Tract1DRealizer(_rest_geometry())
+    realizer = Tract1DRealizer()
+    prepared = _prepared()
 
     for gesture_order in permutations((unreachable, unsupported, invalid)):
         result = realizer.realize_snapshot(
-            _creature(), GestureScore(gesture_order), time_s=0.20
+            prepared, GestureScore(gesture_order), time_s=0.20
         )
         assert result.feasibility.status is FeasibilityStatus.INVALID
         assert result.state is None
@@ -154,7 +186,7 @@ def test_failure_classification_is_independent_of_gesture_order() -> None:
 
     for gesture_order in permutations((unreachable, unsupported)):
         result = realizer.realize_snapshot(
-            _creature(), GestureScore(gesture_order), time_s=0.20
+            prepared, GestureScore(gesture_order), time_s=0.20
         )
         assert result.feasibility.status is FeasibilityStatus.UNSUPPORTED
         assert result.state is None
@@ -180,8 +212,8 @@ def test_connected_cavity_is_explicitly_unsupported_by_fidelity0() -> None:
         ),
     )
 
-    result = Tract1DRealizer(_rest_geometry()).realize_snapshot(
-        creature,
+    result = Tract1DRealizer().realize_snapshot(
+        _prepared(creature=creature),
         GestureScore(()),
         time_s=0.0,
     )
@@ -194,13 +226,14 @@ def test_connected_cavity_is_explicitly_unsupported_by_fidelity0() -> None:
 def test_simultaneous_constrictions_are_order_independent() -> None:
     tighter = _constriction(0.65, area_m2=1e-5)
     looser = _constriction(0.65, area_m2=2e-5)
-    realizer = Tract1DRealizer(_rest_geometry())
+    realizer = Tract1DRealizer()
+    prepared = _prepared()
 
     first = realizer.realize_snapshot(
-        _creature(), GestureScore((tighter, looser)), time_s=0.20
+        prepared, GestureScore((tighter, looser)), time_s=0.20
     )
     second = realizer.realize_snapshot(
-        _creature(), GestureScore((looser, tighter)), time_s=0.20
+        prepared, GestureScore((looser, tighter)), time_s=0.20
     )
 
     assert first.feasibility.status is FeasibilityStatus.FEASIBLE

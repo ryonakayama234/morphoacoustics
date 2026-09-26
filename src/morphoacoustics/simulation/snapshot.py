@@ -4,11 +4,12 @@ from dataclasses import dataclass
 from typing import Generic, TypeVar
 
 from morphoacoustics.acoustics.protocol import AcousticBackend
-from morphoacoustics.domain.creature import CreatureSpec
 from morphoacoustics.domain.gesture import GestureScore
 from morphoacoustics.domain.result import FeasibilityStatus
+from morphoacoustics.preparation.protocol import PreparedMorphology
 from morphoacoustics.realization.protocol import RealizationResult, Realizer
 
+PreparedStateT = TypeVar("PreparedStateT")
 StateT = TypeVar("StateT")
 RequestT = TypeVar("RequestT")
 ObservationT = TypeVar("ObservationT")
@@ -28,21 +29,23 @@ class SnapshotSimulationResult(Generic[StateT, ObservationT]):
 
 def simulate_snapshot(
     *,
-    creature: CreatureSpec,
+    morphology: PreparedMorphology[PreparedStateT],
     score: GestureScore,
-    realizer: Realizer[StateT],
+    realizer: Realizer[PreparedStateT, StateT],
     acoustic_backend: AcousticBackend[StateT, RequestT, ObservationT],
     acoustic_request: RequestT,
     time_s: float,
 ) -> SnapshotSimulationResult[StateT, ObservationT]:
     """Run one causal snapshot without assuming a specific fidelity backend.
 
-    Realization happens first. If realization is infeasible, unsupported, or
-    invalid, acoustics are not evaluated. Otherwise the realized physical state
-    and opaque acoustic request are passed to the supplied backend.
+    A prepared morphology explicitly binds the universal ``CreatureSpec`` to
+    the backend-specific rest state used by the realizer.  Realization happens
+    first. If realization is infeasible, unsupported, or invalid, acoustics are
+    not evaluated. Otherwise the realized physical state and opaque acoustic
+    request are passed to the supplied backend.
     """
 
-    realization = realizer.realize_snapshot(creature, score, time_s)
+    realization = realizer.realize_snapshot(morphology, score, time_s)
     if realization.feasibility.status is not FeasibilityStatus.FEASIBLE:
         return SnapshotSimulationResult(realization=realization, acoustics=None)
 
