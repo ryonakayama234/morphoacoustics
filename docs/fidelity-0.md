@@ -42,6 +42,8 @@ derived from `CreatureSpec`. Anatomical derivation is a later preparation model.
 Preparation validates binding coherence, such as the prepared cavity existing
 in the creature, but does not erase solver capability limits. Unsupported
 morphology remains present and is reported as `UNSUPPORTED` during realization.
+A prepared state carrying a backend identifier for a different solver violates
+the realization configuration contract and is reported as `INVALID`.
 
 Normalized axial coordinates use:
 
@@ -61,24 +63,25 @@ constriction width is intentionally deferred to a later physical model.
 `PreparedMorphology[Tract1DGeometry]` plus a `GestureScore` and time. Fidelity 0
 evaluates the entire active gesture set in ordered phases:
 
-1. validate the prepared state and all supported request parameters,
-2. reject unsupported topology, target cavity, task capability, or prepared-backend mismatch,
+1. validate the prepared state, backend identity, and supported request parameters,
+2. reject unsupported topology, target cavity, or task capability,
 3. check morphology-dependent articulator reachability,
 4. map each validated constriction to one 1D section and apply it.
 
 This ordering applies across the whole active gesture set, not gesture-by-gesture.
-An invalid active request therefore cannot be hidden by an earlier unreachable
-gesture, and an unsupported capability cannot be mislabeled as physical
-infeasibility merely because of tuple order.
+An invalid active request or prepared-state configuration therefore cannot be
+hidden by an earlier unsupported or unreachable condition, and an unsupported
+capability cannot be mislabeled as physical infeasibility merely because of
+tuple order.
 
 Simultaneous constrictions mapped to the same section are combined
 commutatively: the tightest target area wins. Gesture tuple order therefore
 does not act as an implicit physical priority.
 
 Other active task kinds such as `PHONATE`, `OPEN`, and `PRESSURIZE` are
-`UNSUPPORTED` at Fidelity 0. Invalid parameters are `INVALID`, not
-`INFEASIBLE`. A valid supported constriction outside the creature's articulator
-reach is `INFEASIBLE`.
+`UNSUPPORTED` at Fidelity 0. Invalid parameters and prepared-backend mismatches
+are `INVALID`, not `INFEASIBLE`. A valid supported constriction outside the
+creature's articulator reach is `INFEASIBLE`.
 
 ## Acoustic state and convention
 
