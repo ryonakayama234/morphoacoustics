@@ -9,6 +9,7 @@ Current sequence:
 3. `003_constriction` — map a `CONSTRICT` gesture to a prepared 1D tract state.
 4. `004_same_gesture_two_morphologies` — execute one unchanged gesture score on two explicitly prepared bodies and compare physical/acoustic outcomes.
 5. `005_infeasible_gesture` — demonstrate that the same valid gesture can be feasible for one body and physically infeasible for another.
+6. `006_gesture_timecourse` — compare binary and smooth temporal activation above the existing snapshot primitive before promoting any temporal API into the core package.
 
 Each experiment should state:
 
