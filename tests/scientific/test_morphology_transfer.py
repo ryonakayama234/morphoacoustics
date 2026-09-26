@@ -14,7 +14,11 @@ from morphoacoustics import (
 )
 from morphoacoustics.acoustics import ImpedanceRequest, SegmentedTubeBackend
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
-from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
+from morphoacoustics.preparation import (
+    PreparationProvenance,
+    PreparedMorphology,
+    prepare_tract1d,
+)
 from morphoacoustics.realization import Tract1DRealizer
 
 
@@ -59,7 +63,11 @@ def _score(location: float = 0.65) -> GestureScore:
     )
 
 
-def _prepared(name: str, length_m: float, reachable_end: float = 0.80):
+def _prepared(
+    name: str,
+    length_m: float,
+    reachable_end: float = 0.80,
+) -> PreparedMorphology[Tract1DGeometry]:
     return prepare_tract1d(
         _creature(name, reachable_end=reachable_end),
         _geometry(length_m),
@@ -104,8 +112,8 @@ def test_same_gesture_preserves_task_but_changes_physical_realization_and_acoust
     assert short_result.acoustics is not None
 
     assert score.gestures[0].location == 0.65
-    assert long_body.rest_state.axial_position_m(0.65) == 0.1105
-    assert short_body.rest_state.axial_position_m(0.65) == 0.078
+    np.testing.assert_allclose(long_body.rest_state.axial_position_m(0.65), 0.1105)
+    np.testing.assert_allclose(short_body.rest_state.axial_position_m(0.65), 0.078)
     assert long_result.realization.state.sections[6].area_m2 == 2e-5
     assert short_result.realization.state.sections[6].area_m2 == 2e-5
     assert not np.allclose(
