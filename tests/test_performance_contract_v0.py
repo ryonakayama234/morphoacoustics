@@ -1,8 +1,19 @@
 import json
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
+
 
 CONTRACT_ROOT = Path(__file__).resolve().parents[1] / "contracts" / "performance" / "v0"
+SCHEMA_NAMES = (
+    "common.schema.json",
+    "character.schema.json",
+    "script.schema.json",
+    "direction.schema.json",
+    "performance-request.schema.json",
+    "performance-result.schema.json",
+)
 
 
 def _load(name: str) -> dict:
@@ -15,18 +26,30 @@ def _fixture(name: str) -> dict:
         return json.load(f)
 
 
-def test_contract_schema_files_are_json_schema_2020_12() -> None:
-    for name in (
-        "common.schema.json",
-        "character.schema.json",
-        "script.schema.json",
-        "direction.schema.json",
-        "performance-request.schema.json",
-        "performance-result.schema.json",
-    ):
+def _registry() -> Registry:
+    resources = []
+    for name in SCHEMA_NAMES:
+        schema = _load(name)
+        resources.append((schema["$id"], Resource.from_contents(schema)))
+    return Registry().with_resources(resources)
+
+
+def _validate(instance: dict, schema_name: str) -> None:
+    schema = _load(schema_name)
+    Draft202012Validator(schema, registry=_registry()).validate(instance)
+
+
+def test_contract_schema_files_are_valid_json_schema_2020_12() -> None:
+    for name in SCHEMA_NAMES:
         schema = _load(name)
         assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
         assert schema["$id"].endswith(name)
+        Draft202012Validator.check_schema(schema)
+
+
+def test_request_and_result_fixtures_validate_against_contract() -> None:
+    _validate(_fixture("request.json"), "performance-request.schema.json")
+    _validate(_fixture("result.mock.json"), "performance-result.schema.json")
 
 
 def test_request_fixture_preserves_creator_domain_boundaries() -> None:
@@ -96,5 +119,6 @@ def test_physical_infeasibility_is_not_an_execution_failure() -> None:
     result["job_status"] = "SUCCEEDED"
     result["realization_outcome"] = "INFEASIBLE"
 
+    _validate(result, "performance-result.schema.json")
     assert result["job_status"] == "SUCCEEDED"
     assert result["realization_outcome"] == "INFEASIBLE"
