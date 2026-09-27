@@ -45,7 +45,7 @@ No UI is included here. A future site/application should consume the stable simu
 
 The repository also carries a versioned **Performance Contract v0** as an external integration contract for future creative applications. It defines creator-facing `CharacterSpec`, `Script`, `Direction`, `PerformanceRequest`, and `PerformanceResult` JSON Schemas without importing those concepts into `src/morphoacoustics`.
 
-See `docs/performance-contract-v0.md` and `contracts/performance/v0/`.
+See `docs/performance-contract-v0.md` and `contracts/performance/v0/`. The first creator-facing Sites/Work implementation handoff is `docs/sites-performance-studio-v0.md`.
 
 ## Preparation boundary
 
