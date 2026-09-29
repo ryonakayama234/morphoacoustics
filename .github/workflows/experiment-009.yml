@@ -1,0 +1,40 @@
+name: experiment-009
+
+on:
+  push:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-009.yml"
+  pull_request:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-009.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 009
+        run: |
+          python experiments/009_fixed_tract_waveform/run.py \
+            --output-dir experiment-009-output
+      - name: Show scientific summary
+        run: |
+          cat experiment-009-output/summary.csv
+          cat experiment-009-output/spectral_peaks.csv
+          cat experiment-009-output/decision.json
+      - name: Upload experiment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-009-output
+          path: experiment-009-output/

@@ -1,0 +1,10 @@
+{
+  "frequency_step_hz": 0.25,
+  "peaks": [
+    {"frequency_hz": 504.5, "magnitude": 8.462500665089207},
+    {"frequency_hz": 1513.25, "magnitude": 8.46252285217748},
+    {"frequency_hz": 2522.0, "magnitude": 8.462513343403861},
+    {"frequency_hz": 3531.0, "magnitude": 8.46248291554502},
+    {"frequency_hz": 4539.75, "magnitude": 8.462517780827536}
+  ]
+}
