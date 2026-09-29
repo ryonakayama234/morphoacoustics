@@ -169,6 +169,115 @@ A trajectory-only representation is considered insufficient for discontinuities 
 
 Even if the continuous trajectory candidate succeeds, the core temporal API is deferred if the step experiment indicates that explicit event semantics still need their own representation.
 
+## Results
+
+Run: GitHub Actions `experiment-007`, PR #12, 2026-09-29.
+
+All 32 conditions completed successfully. All 500 Hz impedance observations were finite. The repository's ordinary pytest matrix on Python 3.11 / 3.12 / 3.13 and mypy type checking also passed without changing production APIs.
+
+### Smoothstep activation
+
+For the boundary-aligned smoothstep cases, measured maximum activation errors were:
+
+| h | measured max error | Wolfram bound |
+|---:|---:|---:|
+| 10 ms | 0.024041472 | 0.03 |
+| 5 ms | 0.00675 | 0.0075 |
+| 2.5 ms | 0.001779648 | 0.001875 |
+| 1.25 ms | 0.000456456 | 0.00046875 |
+
+All four remain inside the independent pre-registered Wolfram bounds.
+
+The pairwise observed convergence orders were:
+
+```text
+1.8326
+1.9233
+1.9630
+```
+
+They approach the expected second-order behavior as the grid is refined. This supports sampled linear reconstruction as a viable representation for the **continuous smooth component** of gesture activation.
+
+### Morphology-specific realization
+
+The physical-area error followed
+
+```text
+|Delta A| = |A_target - A_rest| |Delta activation|
+```
+
+for both prepared morphologies, with maximum residual only at floating-point roundoff (about `5.6e-20 m2` or less across the recorded cases).
+
+This confirms that the observed body differences are the expected morphology-specific scaling of a shared task-level activation error rather than a hidden timing discrepancy.
+
+### Discontinuous step activation
+
+The step control behaved fundamentally differently.
+
+For the half-step-shifted grids, maximum activation error remained:
+
+```text
+0.5, 0.5, 0.5, 0.5
+```
+
+for 10 / 5 / 2.5 / 1.25 ms, while integrated activation error decreased:
+
+```text
+0.005000 s
+0.002500 s
+0.001252 s
+0.000628 s
+```
+
+The aligned case likewise retained a large local maximum error near the discontinuity (`0.99 -> 0.92` on the fixed 0.1 ms evaluation grid) while its integrated error shrank.
+
+Therefore grid refinement narrows the corrupted time interval but does not make a linearly reconstructed trajectory faithfully represent an unresolved discontinuity in maximum norm.
+
+**Interpretation:** exact onset/offset-like discontinuities should not be encoded only as ordinary continuous samples. A future temporal representation should test explicit event timing alongside the continuous trajectory.
+
+### Acoustic sensitivity near 500 Hz
+
+The acoustic observation was finite in every case, but its error did **not** converge monotonically with activation error.
+
+A particularly clear example is the narrow-body, aligned smoothstep condition:
+
+| h | max absolute impedance error (Pa s / m3) | max relative error |
+|---:|---:|---:|
+| 10 ms | `1.70e10` | 1.81 |
+| 5 ms | `2.51e12` | 59.38 |
+| 2.5 ms | `2.78e10` | 0.657 |
+| 1.25 ms | `6.79e9` | 0.160 |
+
+The 5 ms reconstruction is therefore acoustically much worse than the coarser 10 ms case despite having substantially smaller activation error.
+
+This does **not** contradict the activation convergence result. The 500 Hz observation lies close to the ideal 504.41 Hz first quarter-wave resonance, so small geometry changes can move the snapshot across a high-sensitivity part of the impedance response.
+
+The experiment therefore rejects any attempt to turn the activation interpolation bound into a downstream acoustic-error guarantee.
+
+## Decision
+
+```text
+Decision: MORE_DATA
+
+continuous sampled trajectory candidate: SUPPORTED
+discontinuous event semantics: REQUIRED
+core temporal API promotion: DEFER
+```
+
+The evidence supports a sampled trajectory for smooth continuous gesture activation, but not as the entire temporal representation.
+
+Before a core temporal API is promoted, the next discriminating experiment should test:
+
+```text
+explicit onset/offset events
+        +
+sampled continuous activation
+```
+
+and separately characterize the near-resonance acoustic sensitivity across frequency and morphology rather than relying on the single 500 Hz observation.
+
+This is a successful research result: the experiment narrowed the representation choice without prematurely changing the core API.
+
 ## Outputs
 
 Running the experiment writes:
