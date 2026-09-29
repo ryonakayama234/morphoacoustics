@@ -1,0 +1,19 @@
+{
+  "oracle": "Wolfram Language",
+  "purpose": "Independent oracle for Experiment 007 smoothstep interpolation bounds and the 0.17 m quarter-wave reference.",
+  "smoothstep": "s(x) = 3 x^2 - 2 x^3",
+  "max_abs_second_derivative": 6.0,
+  "ramp_s": 0.05,
+  "smoothstep_linear_interpolation_abs_error_bounds": {
+    "10": 0.03,
+    "5": 0.0075,
+    "2.5": 0.001875,
+    "1.25": 0.00046875
+  },
+  "quarter_wave": {
+    "sound_speed_m_s": 343.0,
+    "length_m": 0.17,
+    "fundamental_hz": 504.4117647058823
+  },
+  "notes": "The interpolation bound is pre-registered for boundary-aligned smoothstep ramps only. It is not an acoustic-error bound and is not applied to discontinuous step activation."
+}

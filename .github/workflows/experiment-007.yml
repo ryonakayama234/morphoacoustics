@@ -1,0 +1,39 @@
+name: experiment-007
+
+on:
+  push:
+    paths:
+      - "experiments/007_gesture_sampling_convergence/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-007.yml"
+  pull_request:
+    paths:
+      - "experiments/007_gesture_sampling_convergence/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-007.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 007
+        run: |
+          python experiments/007_gesture_sampling_convergence/run.py \
+            --output-dir experiment-007-output
+      - name: Show summary
+        run: |
+          cat experiment-007-output/summary.csv
+          cat experiment-007-output/decision.json
+      - name: Upload experiment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-007-output
+          path: experiment-007-output/
