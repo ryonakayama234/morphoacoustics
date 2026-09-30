@@ -1,0 +1,19 @@
+{
+  "source": "Wolfram Language independent analytic check",
+  "smoothstep": "s(x)=3 x^2-2 x^3",
+  "smoothstep_second_derivative_max_abs": 6,
+  "ramp_s": 0.05,
+  "smoothstep_linear_interpolation_abs_error_bounds": {
+    "0.01": 0.03,
+    "0.005": 0.0075,
+    "0.0025": 0.001875,
+    "0.00125": 0.00046875
+  },
+  "explicit_event_reference": {
+    "onset_s": 0.05,
+    "offset_s": 0.35,
+    "onset_abs_error_s": 0,
+    "offset_abs_error_s": 0,
+    "event_order_preserved": true
+  }
+}
