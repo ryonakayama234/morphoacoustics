@@ -23,6 +23,8 @@ HERE = Path(__file__).resolve().parent
 EXPERIMENTS = HERE.parent
 ORACLE_PATH = HERE / "wolfram" / "activation_oracle.json"
 
+ONSET_S = 0.08
+OFFSET_S = 0.42
 CONTROL_STEP_S = 0.005
 REFERENCE_CONTROL_STEP_S = 0.0025
 FRAME_SIZE = 1024
@@ -60,12 +62,12 @@ def smoothstep01(x: float) -> float:
 
 
 def analytic_activation(time_s: float, ramp_s: float) -> float:
-    if time_s < EXP8.ONSET_S or time_s >= EXP8.OFFSET_S:
+    if time_s < ONSET_S or time_s >= OFFSET_S:
         return 0.0
-    if time_s < EXP8.ONSET_S + ramp_s:
-        return smoothstep01((time_s - EXP8.ONSET_S) / ramp_s)
-    if time_s > EXP8.OFFSET_S - ramp_s:
-        return smoothstep01((EXP8.OFFSET_S - time_s) / ramp_s)
+    if time_s < ONSET_S + ramp_s:
+        return smoothstep01((time_s - ONSET_S) / ramp_s)
+    if time_s > OFFSET_S - ramp_s:
+        return smoothstep01((OFFSET_S - time_s) / ramp_s)
     return 1.0
 
 
@@ -84,7 +86,7 @@ def reconstructed_activation(
         dtype=np.float64,
     )
     interpolated = np.interp(times_s, sample_times, sample_values)
-    active = (times_s >= EXP8.ONSET_S) & (times_s < EXP8.OFFSET_S)
+    active = (times_s >= ONSET_S) & (times_s < OFFSET_S)
     return np.where(active, interpolated, 0.0)
 
 
@@ -279,6 +281,7 @@ def run(output_dir: Path) -> dict[str, object]:
         "decision": decision_name,
         "model_class": "quasi-stationary time-varying transfer filter; no acoustic state propagation between frames",
         "temporal_representation": "explicit onset/offset events + sampled continuous trajectory",
+        "event_window_s": {"onset": ONSET_S, "offset": OFFSET_S},
         "intervention": "gesture ramp duration only: fast=30 ms, slow=90 ms",
         "observed_activation_max_abs_error": observed_activation_error,
         "wolfram_activation_error_bounds": bounds,
