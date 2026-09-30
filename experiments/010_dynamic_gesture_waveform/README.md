@@ -19,7 +19,7 @@ This experiment is the implementation vehicle for M3. It does **not** promote a 
 - duration: 0.50 s
 - deterministic harmonic inlet volume-velocity source: F0 = 100 Hz, 40 harmonics
 - source peak volume velocity: `1e-5 m^3/s`
-- gesture onset / offset: `0.08 / 0.42 s`
+- gesture onset / offset: `0.05 / 0.35 s` (inherited from the Experiment-008 fixture)
 - normalized constriction location: `0.55`
 - target area: `5e-5 m^2`
 - 10 × 17 mm serial 1D sections
