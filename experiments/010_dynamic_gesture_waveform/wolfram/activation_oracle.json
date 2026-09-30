@@ -1,0 +1,19 @@
+{
+  "smoothstep": "3 x^2 - 2 x^3",
+  "endpoint_values": [0, 1],
+  "endpoint_first_derivatives": [0, 0],
+  "max_abs_second_derivative_unit_interval": 6,
+  "linear_interpolation_activation_max_abs_error_bounds": {
+    "fast": {
+      "ramp_s": 0.03,
+      "5ms": 0.020833333333333336,
+      "2.5ms": 0.005208333333333334
+    },
+    "slow": {
+      "ramp_s": 0.09,
+      "5ms": 0.0023148148148148147,
+      "2.5ms": 0.0005787037037037037
+    }
+  },
+  "note": "Independent Wolfram evaluation of max|S''| and the linear-interpolation bound (max|f''| h^2 / 8)."
+}
