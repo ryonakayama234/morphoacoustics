@@ -3,12 +3,16 @@ name: experiment-010
 on:
   push:
     paths:
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
       - "experiments/010_dynamic_gesture_waveform/**"
       - "src/morphoacoustics/**"
       - "pyproject.toml"
       - ".github/workflows/experiment-010.yml"
   pull_request:
     paths:
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
       - "experiments/010_dynamic_gesture_waveform/**"
       - "src/morphoacoustics/**"
       - "pyproject.toml"
