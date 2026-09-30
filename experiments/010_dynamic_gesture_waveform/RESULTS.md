@@ -8,9 +8,19 @@ This result supports using the Experiment-008 temporal representation (`explicit
 
 ## CI run
 
-GitHub Actions `experiment-010` completed successfully on Python 3.11.16 / NumPy 2.4.6. The ordinary repository test workflow also passed on the PR head.
+GitHub Actions `experiment-010` completed successfully on Python 3.11.16 / NumPy 2.4.6 after correcting the implementation to use the preregistered Experiment-010 event window (`onset=0.08 s`, `offset=0.42 s`). The ordinary repository test workflow also passed on the corrected PR head.
 
 ## Preregistered gates
+
+### Event window
+
+The corrected run uses the preregistered event times:
+
+- onset: `0.08 s`
+- offset: `0.42 s`
+- active-window duration: `0.34 s`
+
+These values are defined locally by Experiment 010 rather than inherited from Experiment 008.
 
 ### Motion intervention
 
@@ -18,8 +28,8 @@ Same body, ramp duration only changed (`fast=30 ms`, `slow=90 ms`):
 
 | Body | normalized RMS waveform difference |
 |---|---:|
-| wide-body | 0.0399458 |
-| narrow-body | 0.0346814 |
+| wide-body | 0.0398919 |
+| narrow-body | 0.0343889 |
 
 Both exceed the preregistered `> 0.01` gate.
 
@@ -29,8 +39,8 @@ Same motion, prepared body changed:
 
 | Motion | normalized RMS waveform difference |
 |---|---:|
-| fast | 0.0329942 |
-| slow | 0.0264181 |
+| fast | 0.0355333 |
+| slow | 0.0294974 |
 
 Both exceed the preregistered `> 0.01` gate.
 
@@ -40,16 +50,16 @@ Candidate rendering used a 5 ms control grid / 256-sample hop and was compared w
 
 | Condition | normalized RMS difference |
 |---|---:|
-| wide-body / fast | 0.00191447 |
-| wide-body / slow | 0.00145651 |
-| narrow-body / fast | 0.00165585 |
-| narrow-body / slow | 0.00133992 |
+| wide-body / fast | 0.00190442 |
+| wide-body / slow | 0.00147658 |
+| narrow-body / fast | 0.00164118 |
+| narrow-body / slow | 0.00133553 |
 
 All are well below the preregistered `< 0.20` gate.
 
 ### Independent Wolfram temporal oracle
 
-For `S(x)=3x^2-2x^3`, Wolfram independently confirmed endpoint values/slopes and `max |S''| = 6` on `[0,1]`. The resulting 5 ms linear-interpolation bounds were:
+For `S(x)=3x^2-2x^3`, Wolfram independently confirmed endpoint values/slopes `{0,1,0,0}` and `max |S''| = 6` on `[0,1]`. The resulting 5 ms linear-interpolation bounds were:
 
 - fast 30 ms ramp: `0.0208333333`
 - slow 90 ms ramp: `0.00231481481`
@@ -59,7 +69,7 @@ Observed maximum activation errors were:
 - fast: `0.0173795556`
 - slow: `0.00218621399`
 
-Both remain inside the independent bounds.
+Both remain inside the independent bounds. The bound depends on the normalized smoothstep curvature and sampling/ramp ratio, so correcting the absolute onset/offset times does not change it.
 
 ### Finite output
 
@@ -67,7 +77,7 @@ All four body × motion waveform conditions were finite. No NaN/Inf gate failed.
 
 ## Interpretation
 
-The experiment distinguishes the intended interventions under the current fixture:
+The corrected experiment distinguishes the intended interventions under the current fixture:
 
 - changing only gesture timecourse changes the resulting waveform;
 - changing only prepared morphology also changes the resulting waveform;
