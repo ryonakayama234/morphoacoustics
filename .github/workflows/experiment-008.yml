@@ -1,0 +1,39 @@
+name: experiment-008
+
+on:
+  push:
+    paths:
+      - "experiments/008_event_trajectory/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-008.yml"
+  pull_request:
+    paths:
+      - "experiments/008_event_trajectory/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-008.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 008
+        run: |
+          python experiments/008_event_trajectory/run.py \
+            --output-dir experiment-008-output
+      - name: Show summary
+        run: |
+          cat experiment-008-output/summary.csv
+          cat experiment-008-output/decision.json
+      - name: Upload experiment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-008-output
+          path: experiment-008-output/
