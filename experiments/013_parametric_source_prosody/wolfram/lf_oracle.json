@@ -1,0 +1,24 @@
+{
+  "description": "Independent Wolfram reference for Fant-style Rd mapping and LF integral constraint; Rd=1, F0=100 Hz.",
+  "rd": 1.0,
+  "f0_hz": 100.0,
+  "ra": 0.038,
+  "rk": 0.342,
+  "rg": 1.0322844169071468,
+  "t0_s": 0.01,
+  "tp_s": 0.004843626347650026,
+  "te_s": 0.006500146558546335,
+  "ta_s": 0.00038,
+  "tp_over_t0": 0.4843626347650026,
+  "te_over_t0": 0.6500146558546335,
+  "ta_over_t0": 0.038,
+  "oqe": 0.6500146558546335,
+  "alpha_per_s": 280.661359614419,
+  "alpha_times_t0": 2.80661359614419,
+  "net_derivative_integral": 0.0,
+  "tolerance": {
+    "dimensionless_absolute": 1e-9,
+    "alpha_times_t0_absolute": 1e-8,
+    "normalized_net_integral_absolute": 1e-8
+  }
+}
