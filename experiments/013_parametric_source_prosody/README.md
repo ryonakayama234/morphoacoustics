@@ -8,7 +8,7 @@ This experiment is preregistered before Python results are inspected.
 
 Experiment 012 removed pitch-synchronous snap and renderer-startup artifacts, but the low-artifact smooth periodic source sounded buzzer/alarm-like in human listening and lost much of the perceived fluctuation / word-boundary impression.
 
-R1 concluded that the next controlled question is not yet “1D tract vs 3D tract”.  We first isolate three upstream layers:
+R1 concluded that the next controlled question is not yet “1D tract vs 3D tract”. We first isolate three upstream layers:
 
 1. glottal pulse shape;
 2. macroprosodic time variation;
@@ -61,7 +61,7 @@ Te/T0 = (Tp/T0) (1 + Rk)
 Ta/T0 = Ra
 ```
 
-The LF derivative uses an exponentially weighted sinusoidal open phase and exponential return phase.  Its cycle integral is constrained to zero; the flow waveform is obtained by integration and normalized to nonnegative unit peak before the common source scale is applied.
+The LF derivative uses an exponentially weighted sinusoidal open phase and exponential return phase. Its cycle integral is constrained to zero; the flow waveform is obtained by integration and normalized to nonnegative unit peak before the common source scale is applied.
 
 ### C2 `lf_macroprosody`
 
@@ -106,7 +106,7 @@ C2 plus two separately identified small interventions:
 - deterministic micro-F0 term: `0.08 sin(2π·7t) + 0.04 sin(2π·13t)` semitones;
 - aspiration component: seeded Gaussian noise at 2% of the deterministic source peak before final common peak normalization, weighted by the square root of the instantaneous normalized glottal-flow opening.
 
-These values are fixed before results.  They are experiment-local probes, not proposed production defaults.
+These values are fixed before results. They are experiment-local probes, not proposed production defaults.
 
 ## Rendering / comparisons
 
@@ -116,11 +116,11 @@ Measure every generated inlet-flow source directly.
 
 ### Fixed tract
 
-Render all four sources through the same fixed uniform tract with Experiment-012 preroll edge handling.  This removes oral coordination as a confound.
+Render all four sources through the same fixed uniform tract with Experiment-012 preroll edge handling. This removes oral coordination as a confound.
 
 ### Listening render
 
-Render all four sources through the **same Experiment-011 sequential oral condition**.  This is used only to make the perceptual comparison more informative; source/prosody condition remains the intervention.
+Render all four sources through the **same Experiment-011 sequential oral condition**. This is used only to make the perceptual comparison more informative; source/prosody condition remains the intervention.
 
 ### Existing coordination retention
 
@@ -128,9 +128,9 @@ Under C3, render Experiment-011 `sequential` and `overlap` at candidate and fine
 
 ## Independent Wolfram oracle
 
-For `Rd = 1`, `F0 = 100 Hz`, Wolfram independently evaluated the Fant-style Rd mapping and LF open/return integral constraint.  Reference values are checked in `wolfram/lf_oracle.json`.
+For `Rd = 1`, `F0 = 100 Hz`, Wolfram independently evaluated the Fant-style Rd mapping and LF open/return integral constraint. Reference values are checked in `wolfram/lf_oracle.json`.
 
-The Python implementation must reproduce the dimensionless mapping / root quantities within numerical tolerance.  The oracle does not provide listening judgments.
+The Python implementation must reproduce the dimensionless mapping / root quantities within numerical tolerance. The oracle does not provide listening judgments.
 
 ## Metrics
 
@@ -140,8 +140,9 @@ The Python implementation must reproduce the dimensionless mapping / root quanti
 - max absolute derivative / RMS
 - energy fraction >= 2 kHz
 - cycle-boundary jump / RMS
-- fixed 10 ms lag correlation
+- fixed 10 ms lag correlation measured on the steady interior
 - 20 ms RMS-envelope coefficient of variation
+- spectral flatness
 - deterministic/noise RMS ratio where applicable
 
 ### Fixed-tract metrics
@@ -173,7 +174,8 @@ For C2/C3:
 C1 must produce a valid LF flow with:
 
 - oracle-consistent Rd mapping / integral constraint;
-- negligible cycle-boundary discontinuity;
+- cycle-boundary jump `< 0.01 × source RMS`;
+- fixed-tract startup peak / steady RMS `< 20` under the already-adopted preroll renderer;
 - finite fixed-tract output.
 
 A larger legitimate within-cycle closure excitation is not itself classified as an artifact.
@@ -182,19 +184,24 @@ A larger legitimate within-cycle closure excitation is not itself classified as 
 
 C2 must:
 
-- realize the planned F0 trajectory with numerical error <= 0.1 Hz RMS;
-- produce nonzero envelope variation and a measurable boundary-aligned amplitude/F0 reset;
-- reduce fixed-period stationarity relative to C1;
-- remain finite and free of renderer-startup regression.
+- realize the planned F0 trajectory with numerical error `<= 0.1 Hz RMS`;
+- achieve normalized 20 ms source-RMS-envelope correlation `>= 0.95` against the planned amplitude envelope over active regions;
+- lower steady-interior fixed-10-ms-lag correlation by at least `0.01` relative to C1;
+- produce a post-boundary mean F0 at least `5 Hz` above the pre-boundary mean F0 using the preregistered windows `0.20–0.235 s` and `0.285–0.320 s`;
+- produce boundary-region mean amplitude no more than `0.8 ×` the mean of pre/post amplitude using boundary window `0.242–0.258 s`;
+- remain finite and keep fixed-tract startup peak / steady RMS `< 20`.
 
 ### H3 — micro/aspiration realization
 
 C3 must:
 
-- increase aperiodic/noise energy relative to C2;
-- not introduce a material cycle/file-boundary jump;
-- remain finite;
-- preserve the macroprosody control trajectory.
+- have whole-source spectral flatness greater than C2;
+- have nonzero recorded aspiration-noise RMS;
+- keep cycle-boundary jump `< 0.01 × source RMS`;
+- retain F0 realization error `<= 0.1 Hz RMS` and envelope correlation `>= 0.95`;
+- remain finite.
+
+The higher derivative/noise bandwidth of C3 is not itself a failure unless it creates boundary discontinuities or audible click artifacts.
 
 ### H4 — oral coordination survives
 
