@@ -1,0 +1,32 @@
+{
+  "sample_rate_hz": 48000.0,
+  "f0_hz": 100.0,
+  "duration_s": 0.5,
+  "smooth_flow_open_quotient": 0.6,
+  "sources": [
+    {
+      "name": "current40_p1.2",
+      "crest_factor": 1.4855884522342828,
+      "max_abs_derivative_per_rms": 17472.14814084908,
+      "energy_ratio_ge_2khz": 0.00518196872407472
+    },
+    {
+      "name": "harmonic10_p1.2",
+      "crest_factor": 1.6586715357904078,
+      "max_abs_derivative_per_rms": 5690.882215448292,
+      "energy_ratio_ge_2khz": 5.505083844848668e-28
+    },
+    {
+      "name": "harmonic40_p2.0",
+      "crest_factor": 1.38003295368178,
+      "max_abs_derivative_per_rms": 3634.5151130639665,
+      "energy_ratio_ge_2khz": 3.684630627932877e-05
+    },
+    {
+      "name": "smooth_flow_oq0.6",
+      "crest_factor": 2.1081851067789183,
+      "max_abs_derivative_per_rms": 1103.7555776657186,
+      "energy_ratio_ge_2khz": 3.8599729761654195e-08
+    }
+  ]
+}
