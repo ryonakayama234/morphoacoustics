@@ -28,11 +28,11 @@ All candidates use the same `F0 = 100 Hz`, 48 kHz sample rate, 0.50 s duration a
 - `harmonic40_p2.0`: 40 harmonics with stronger rolloff `k^-2.0`.
 - `smooth_flow_oq0.6`: experiment-local smooth nonnegative glottal-flow surrogate; in each 10 ms period it is `sin^2(pi * phase / 0.6)` for normalized phase `< 0.6`, and zero otherwise. This is a comparison waveform, not a physiological LF-model claim.
 
-A 10 ms onset/offset envelope is applied consistently to all candidates.
+A 10 ms onset/offset envelope is applied consistently to all candidates for rendered comparisons.
 
 ## Independent Wolfram preregistration
 
-A Wolfram calculation over the candidate definitions, normalized to equal peak, gave the following source-only reference values before Python implementation:
+A Wolfram calculation over the **steady periodic core before the common onset/offset envelope**, normalized to equal peak, gave the following source-only reference values before Python implementation. The envelope is intentionally excluded from this oracle so that source-shape differences are not confounded with the shared file-boundary taper.
 
 | source | crest factor | max `|dx/dt|` / RMS | one-sided energy ratio >= 2 kHz |
 |---|---:|---:|---:|
@@ -41,7 +41,7 @@ A Wolfram calculation over the candidate definitions, normalized to equal peak, 
 | harmonic40_p2.0 | 1.38003295 | 3634.51511 | 0.0000368463 |
 | smooth_flow_oq0.6 | 2.10818511 | 1103.75558 | 3.86e-8 |
 
-The Python experiment must independently reproduce the qualitative ordering; these values are not copied into implementation logic.
+The Python experiment must independently reproduce the qualitative ordering on the untapered core. Rendered metrics are computed separately after the same 10 ms envelope is applied to every candidate; oracle values are not copied into implementation logic.
 
 ## Work plan
 
@@ -58,16 +58,17 @@ For each source, compute:
 
 Render every source through one fixed prepared tract using the same Experiment-009 acoustic assumptions. No Gesture is active. If the approximately 10 ms snap signature persists with a fixed tract and follows the source candidate, it is not a coordination artifact.
 
+The preregistered fixed-tract periodic-transient metric is:
+
+`pitch_phase_peak_ratio = max(mean(|Δp| grouped by sample-index mod 480)) / mean(|Δp|)`
+
+computed on the 50–450 ms steady interval. A sharper pitch-synchronous event gives a larger value.
+
 ### C. Hop test
 
 For the current source, render the same fixed tract with hop sizes 256, 128 and 64 samples while keeping frame size 1024.
 
-Compare derivative concentration aligned to:
-
-- 100 Hz pitch period (480 samples), and
-- each hop boundary.
-
-A source-driven artifact should remain phase-locked to the pitch period rather than move with hop size.
+For each output compute the same phase-peak ratio using both the 480-sample pitch period and the relevant hop period. The source-attribution condition is considered satisfied when the pitch-phase ratio is larger than the hop-phase ratio for all three hop sizes; this rule is fixed before running Python results.
 
 ### D. Startup-edge test
 
@@ -76,7 +77,9 @@ Compare two renderer edge modes with otherwise identical source/tract/frame/hop 
 - `legacy_edge`: current finite signal starts at renderer sample zero;
 - `preroll_edge`: prepend and append one frame of zeros, run the same overlap-add path, then crop back to the original duration.
 
-Measure the first-20-ms peak/RMS relative to a steady 50–200 ms reference interval.
+The startup statistic is:
+
+`startup_peak_over_steady_rms = max(|p| in first 20 ms) / RMS(p in 50–200 ms)`.
 
 ### E. Coordination-effect retention
 
@@ -92,11 +95,11 @@ Measure sequential-vs-overlap normalized RMS difference and discretization sensi
 
 ### H1 — source attribution
 
-At least one smoother source reduces both source max-derivative/RMS and fixed-tract periodic-transient metric by at least 50% relative to `current40_p1.2`, while hop-size changes do not move the dominant transient pattern from pitch-period phase to hop phase.
+At least one smoother source reduces both source max-derivative/RMS and fixed-tract periodic-transient metric by at least 50% relative to `current40_p1.2`, while the pitch-phase ratio remains larger than the hop-phase ratio for current-source fixed-tract renders at hop sizes 256, 128 and 64.
 
 ### H2 — renderer edge attribution
 
-`preroll_edge` reduces the startup first-20-ms peak/RMS statistic by at least 50% relative to `legacy_edge` without non-finite output.
+`preroll_edge` reduces `startup_peak_over_steady_rms` by at least 50% relative to `legacy_edge` without non-finite output.
 
 ### H3 — coordination survives cleanup
 
@@ -110,18 +113,18 @@ With the objectively selected cleaned source + preroll renderer:
 
 Among source candidates that:
 
-1. reduce fixed-tract periodic-transient metric by >= 50%, and
+1. reduce fixed-tract `pitch_phase_peak_ratio` by >= 50%, and
 2. reduce source derivative/RMS by >= 50%,
 
-select the candidate with the smallest fixed-tract periodic-transient metric. Ties are broken by lower >=2 kHz energy ratio.
+select the candidate with the smallest fixed-tract `pitch_phase_peak_ratio`. Ties are broken by lower >=2 kHz energy ratio.
 
 This selection is intentionally independent of listening preference.
 
 ## Attribution decision
 
-- `SOURCE_CONFIRMED`: H1 passes, H2 does not materially contribute to periodic snaps; startup may still be separately renderer-derived.
-- `RENDERER_CONFIRMED`: periodic snap tracks renderer boundaries/edge processing rather than source structure.
-- `MIXED`: source structure explains the frequent snap and renderer edge handling independently explains a startup artifact.
+- `SOURCE_CONFIRMED`: H1 passes and H2 fails; startup behavior is recorded separately.
+- `RENDERER_CONFIRMED`: H1 fails and H2 passes with evidence that hop/edge structure dominates.
+- `MIXED`: H1 and H2 both pass — source structure explains the frequent snap while renderer edge handling independently explains startup artifact.
 - `MORE_DATA`: the preregistered tests do not separate the causes.
 
 H3 is reported separately and does not change the attribution label.
