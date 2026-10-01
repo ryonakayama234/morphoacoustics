@@ -1,0 +1,12 @@
+{
+  "activation_integral_s": 0.15000000000000001,
+  "activation_squared_integral_s": 0.1422857142857143,
+  "sequential_overlap_integral_s": 0.0,
+  "sequential_normalized_overlap": 0.0,
+  "overlap_overlap_integral_s": 0.03,
+  "overlap_normalized_overlap": 0.2108433734939759,
+  "linear_interpolation_activation_max_abs_error_bounds": {
+    "5ms": 0.020833333333333336,
+    "2.5ms": 0.005208333333333334
+  }
+}
