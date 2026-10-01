@@ -1,0 +1,49 @@
+name: experiment-012
+
+on:
+  push:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-012.yml"
+  pull_request:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-012.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 012
+        run: |
+          python experiments/012_source_renderer_artifacts/run.py \
+            --output-dir experiment-012-output
+      - name: Show scientific summary
+        run: |
+          cat experiment-012-output/source_metrics.csv
+          cat experiment-012-output/fixed_tract_metrics.csv
+          cat experiment-012-output/hop_metrics.csv
+          cat experiment-012-output/edge_metrics.csv
+          if [ -f experiment-012-output/cleaned_coordination_summary.csv ]; then
+            cat experiment-012-output/cleaned_coordination_summary.csv
+          fi
+          cat experiment-012-output/decision.json
+      - name: Upload experiment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-012-output
+          path: experiment-012-output/
