@@ -15,6 +15,7 @@ Current sequence:
 9. `009_fixed_tract_waveform` — excite fixed prepared tracts with an explicit source and generate the first raw/listening waveforms with independent resonance checks.
 10. `010_dynamic_gesture_waveform` — propagate one validated Gesture timecourse through quasi-stationary physical/acoustic rendering and separate motion effects from morphology effects.
 11. `011_gesture_coordination_overlap` — compare sequential and overlapping execution of two spatially distinct Gestures before promoting any general coordination or coarticulation API.
+12. `012_source_renderer_artifacts` — attribute the blind-listening periodic snap and startup transient to source structure versus short-time renderer edges, then verify coordination effects after objective cleanup.
 
 Each experiment should state:
 
