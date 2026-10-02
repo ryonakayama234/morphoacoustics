@@ -347,7 +347,7 @@ def run(output_dir: Path) -> dict[str, object]:
 
     for vowel in ("a", "i", "u"):
         primary = peak_frequencies(primary_geometries[vowel])
-        refined = peak_frequencies(refined_geometries[vowel])
+        refined = peak_frequencies(refined_geometries[vowel], count=2)
         primary_peaks[vowel] = primary
         refined_peaks[vowel] = refined
 
