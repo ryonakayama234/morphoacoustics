@@ -307,6 +307,19 @@ def make_blind_trials(
         )
 
     write_csv(blind_dir / "manifest.csv", public_rows)
+    response_rows = [
+        {
+            "trial_id": row["trial_id"],
+            "file": row["file"],
+            "perceived_vowel": "",
+            "confidence": "",
+            "click_snap": "",
+            "voice_like_vs_alarm_buzzer": "",
+            "notes": "",
+        }
+        for row in public_rows
+    ]
+    write_csv(blind_dir / "response_template.csv", response_rows)
     write_csv(output_dir / "blind_key.csv", key_rows)
     (blind_dir / "README.txt").write_text(
         "Experiment 015 primary blind vowel identification\n"
