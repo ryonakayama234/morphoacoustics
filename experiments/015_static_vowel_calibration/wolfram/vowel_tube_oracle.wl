@@ -68,7 +68,7 @@ Module[
         "scan_end_hz" -> Last[frequencies],
         "scan_step_hz" -> 0.25
       |>,
-      "peaks" -> AssociationMap[calculatePeaks, fixtures]
+      "peaks" -> AssociationThread[Keys[fixtures], calculatePeaks /@ Values[fixtures]]
     |>,
     "RawJSON"
   ]
