@@ -106,10 +106,18 @@ All must pass before listening.
 1. Fixture provenance is serialized and diameter arrays match the published table exactly.
 2. Reversed geometry is finite and positive and contains exactly 16 sections of 0.01 m each.
 3. Python transfer peaks match the checked-in Wolfram oracle within 0.5 Hz, following the existing Experiment-009 scan tolerance.
-4. The first three resonance patterns remain distinguishable under a preregistered spatial-discretization perturbation.
+4. The resonance pattern remains distinguishable under the following frozen spatial-discretization perturbation:
+   - treat the published 16 diameters as samples at the centers of 16 equal 10 mm cells;
+   - linearly interpolate diameter along axial position with endpoint clamping;
+   - resample at the centers of 32 equal 5 mm cells;
+   - rebuild the 32-section tract from those diameters;
+   - measure the Euclidean displacement of (P1, P2) between 16-section and 32-section versions for each vowel;
+   - require the minimum pairwise distance between primary 16-section vowel (P1, P2) points to exceed 5x the maximum 16-vs-32 regrid displacement.
 5. All rendered pressure arrays are finite.
 6. No clipping occurs before listening normalization.
-7. Experiment-012/013 cycle/startup artifact regressions do not reappear.
+7. Inherited artifact regression thresholds are fixed before results:
+   - LF source cycle-boundary jump / source RMS < 0.01;
+   - rendered startup peak / steady RMS < 20 for every vowel.
 8. A single common listening gain rule is applied across all primary vowel stimuli.
 9. Raw pressure is retained separately from listening WAVs.
 10. Calibration outputs and blinded confirmation outputs are separate and the confirmation key is not inspected before responses are frozen.
@@ -117,6 +125,12 @@ All must pass before listening.
 Objective success yields only:
 
 ACOUSTIC_VOWEL_FIXTURE_VALIDATED_AWAITING_LISTENING
+
+## Spatial-discretization interpretation
+
+The 32-section condition is not a second physical reference and is not claimed to be more accurate than the published plate model. It is an engineering sensitivity perturbation of the area-profile discretization. The primary oracle remains the literal published 16-plate fixture.
+
+The 5x margin is inherited as an engineering discrimination convention from the prior coordination experiments; it is not a psychoacoustic threshold.
 
 ## Human Gate
 
