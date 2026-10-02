@@ -1,0 +1,17 @@
+{
+  "nominal_unit_s": 0.05,
+  "early_nominal_boundary_s": 0.2,
+  "late_nominal_boundary_s": 0.3,
+  "duration_scale": 1.2,
+  "target_unit_s": 0.06,
+  "early_post_boundary_unit_s": 0.048000000000000015,
+  "late_post_boundary_unit_s": 0.04666666666666667,
+  "early_realized_boundary_s": 0.21000000000000002,
+  "late_realized_boundary_s": 0.31,
+  "active_duration_s": 0.4,
+  "low_f0_hz": 96.59363289248456,
+  "high_f0_hz": 103.52649238413775,
+  "reset_hz": 6.93285949165319,
+  "binomial_ge_7_of_8": 0.03515625,
+  "absolute_tolerance": 1e-12
+}
