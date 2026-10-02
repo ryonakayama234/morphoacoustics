@@ -1,0 +1,43 @@
+{
+  "model": {
+    "sound_speed_m_s": 343,
+    "air_density_kg_m3": 1.21,
+    "attenuation_np_m": 0.4,
+    "section_length_m": 0.01,
+    "load_fraction_of_outlet_zc": 0.05,
+    "scan_start_hz": 100,
+    "scan_end_hz": 5000,
+    "scan_step_hz": 0.25
+  },
+  "peak_frequencies_hz": {
+    "a": [
+      720.25,
+      1288.5,
+      2918.25,
+      4196,
+      4657.25
+    ],
+    "i": [
+      281.25,
+      2309.25,
+      3212,
+      4102,
+      4899.25
+    ],
+    "u": [
+      419.25,
+      1481.75,
+      3106.5,
+      3892.75,
+      4580.25
+    ]
+  },
+  "uniform_17cm_regression_hz": [
+    504.4117647058823,
+    1513.2352941176468,
+    2522.0588235294117,
+    3530.882352941176,
+    4539.7058823529405
+  ],
+  "peak_tolerance_hz": 0.5
+}
