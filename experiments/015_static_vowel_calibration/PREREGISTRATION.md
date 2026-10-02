@@ -97,7 +97,7 @@ Fixed across /a i u/:
 - renderer
 - observer
 - sample rate
-- gain normalization rule
+- listening level-normalization rule
 
 ## Objective preregistered Gate
 
@@ -118,8 +118,12 @@ All must pass before listening.
 7. Inherited artifact regression thresholds are fixed before results:
    - LF source cycle-boundary jump / source RMS < 0.01;
    - rendered startup peak / steady RMS < 20 for every vowel.
-8. A single common listening gain rule is applied across all primary vowel stimuli.
-9. Raw pressure is retained separately from listening WAVs.
+8. Listening level cannot be used as the primary vowel cue:
+   - measure each raw-pressure steady-state RMS over 0.05–0.45 s;
+   - divide each stimulus by its own steady-state RMS;
+   - compute one common safety gain across the three RMS-normalized waveforms so the largest absolute sample is 0.90 full scale;
+   - use these level-matched waveforms for both named calibration and blinded confirmation.
+9. Raw pressure is retained separately from listening WAVs, and all normalization factors are recorded.
 10. Calibration outputs and blinded confirmation outputs are separate and the confirmation key is not inspected before responses are frozen.
 
 Objective success yields only:
