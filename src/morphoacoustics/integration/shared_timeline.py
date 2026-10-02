@@ -314,25 +314,25 @@ def compile_shared_timeline(
                 )
 
     resolved_prosody: list[ResolvedProsodyEvent] = []
-    for event in sorted(
+    for prosody_event in sorted(
         prosody.events,
         key=lambda item: (item.anchor_id, item.kind.value, f"{item.value:.17g}"),
     ):
-        anchor = anchors_by_id.get(event.anchor_id)
-        if anchor is None:
+        prosody_anchor = anchors_by_id.get(prosody_event.anchor_id)
+        if prosody_anchor is None:
             diagnostics.append(
                 PlanDiagnostic(
                     "UNKNOWN_ANCHOR",
-                    f"unknown prosody anchor: {event.anchor_id}",
+                    f"unknown prosody anchor: {prosody_event.anchor_id}",
                 )
             )
             continue
         resolved_prosody.append(
             ResolvedProsodyEvent(
-                anchor_id=event.anchor_id,
-                kind=event.kind,
-                value=event.value,
-                time_s=anchor.time_s,
+                anchor_id=prosody_event.anchor_id,
+                kind=prosody_event.kind,
+                value=prosody_event.value,
+                time_s=prosody_anchor.time_s,
             )
         )
 
