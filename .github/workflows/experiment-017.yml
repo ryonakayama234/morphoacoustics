@@ -1,0 +1,43 @@
+name: experiment-017
+
+on:
+  push:
+    paths:
+      - "experiments/017_embodied_infeasibility_boundary/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-017.yml"
+  pull_request:
+    paths:
+      - "experiments/017_embodied_infeasibility_boundary/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-017.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 017
+        run: |
+          python experiments/017_embodied_infeasibility_boundary/run.py \
+            --output-dir experiment-017-output
+      - name: Show scientific summary
+        if: always()
+        run: |
+          test -f experiment-017-output/conditions.csv && cat experiment-017-output/conditions.csv || true
+          test -f experiment-017-output/feasible_null_control.csv && cat experiment-017-output/feasible_null_control.csv || true
+          test -f experiment-017-output/decision.json && cat experiment-017-output/decision.json || true
+      - name: Upload research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-017-output
+          path: experiment-017-output/
+          if-no-files-found: warn
