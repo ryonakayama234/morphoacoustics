@@ -16,7 +16,24 @@ The system must be able to return an explicit infeasibility result. It must not 
 
 ## I4. Neural components do not bypass the physical causal path
 
-Neural components may propose latent physical parameters, estimate inverse solutions, or improve a downstream residual. They must not replace the central causal path with direct motor-to-audio generation while claiming to be the physical simulator.
+Neural components may:
+
+- propose task-level or physical latent variables;
+- estimate inverse solutions or posterior candidates;
+- approximate a validated physical subsystem within a declared domain;
+- model explicitly identified unresolved physical residuals;
+- add bounded downstream microtexture or stochastic detail;
+- evaluate perceptual objectives outside the causal state.
+
+They must not:
+
+- repair a physically `INFEASIBLE` gesture into a plausible utterance;
+- overwrite morphology-dependent acoustic consequences;
+- introduce linguistic content primarily through an acoustic residual path;
+- silently extrapolate a learned surrogate outside its validated domain;
+- replace the central causal path with direct motor-to-audio generation while claiming to be the physical simulator.
+
+Turning the neural component off may reduce fidelity or naturalness, but it must not reverse the causal interpretation of what the body did. Detailed rationale and falsification tests are recorded in `docs/research/neural-causal-boundary.md`.
 
 ## I5. Observations are not latent state
 
