@@ -18,14 +18,14 @@ It does not establish arbitrary morphology transfer.
 
 ## Provenance
 
-Objective run:
+Final code-equivalent objective run before this results record:
 
-- GitHub Actions run: `37113792715`
-- source head: `5bfd0da02a2548a3f5d927eaf71d40953c20ef10`
+- GitHub Actions run: `37113957333`
+- source head: `2bf67aa5c878b5fc4546b2301eb63cb674b7169c`
 - artifact: `experiment-016-output`
-- artifact ID: `11270297105`
+- artifact ID: `11271107111`
 - artifact ZIP SHA-256:
-  `9be63225b4d051655a12f37022668d44fd29c36e092dea7b6a6f34e860e12360`
+  `fcc252502a8253e94ac6af36bda14052c2afb7f806dcaef2c8c364c53af5dd2d`
 - Python: 3.11.16
 - NumPy: 2.4.6
 
