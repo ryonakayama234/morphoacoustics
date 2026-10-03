@@ -250,7 +250,7 @@ Requires all of:
 
 Ordered classification:
 
-- `MEASUREMENT_REGRESSION` — oracle/observer checks fail;
+- `MEASUREMENT_REGRESSION` — oracle/observer checks fail when resonance peaks are evaluable;
 - `REPRESENTATION_LEAK` — the canonical score changes or differs by body;
 - `TASK_REALIZATION_FAILED` — expected-feasible task fails or task residuals
   exceed tolerance;
