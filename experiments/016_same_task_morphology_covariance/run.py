@@ -391,6 +391,17 @@ def _failure_decision(
 def run(output_dir: Path) -> dict[str, Any]:
     started = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
+    for filename in (
+        "conditions.csv",
+        "task_residuals.csv",
+        "effects.csv",
+        "covariance.csv",
+        "decision.json",
+    ):
+        path = output_dir / filename
+        if path.exists():
+            path.unlink()
+
     oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
 
     creature = _creature()
