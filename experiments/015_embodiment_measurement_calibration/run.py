@@ -498,7 +498,10 @@ def main() -> None:
         default=Path("experiment-015-output"),
     )
     args = parser.parse_args()
-    print(json.dumps(run(args.output_dir), ensure_ascii=False, indent=2))
+    decision = run(args.output_dir)
+    print(json.dumps(decision, ensure_ascii=False, indent=2))
+    if decision["decision"] != "SUPPORT_EMBODIMENT_MEASUREMENT":
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
