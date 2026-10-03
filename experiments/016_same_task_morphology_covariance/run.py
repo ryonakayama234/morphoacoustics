@@ -522,11 +522,14 @@ def run(output_dir: Path) -> dict[str, Any]:
 
     _write_csv(output_dir / "conditions.csv", condition_rows)
 
+    measurement_evaluable = feasibility_ok
     measurement_ok = (
-        feasibility_ok
-        and finite_ok
-        and candidate_oracle_ok
-        and reference_oracle_ok
+        not measurement_evaluable
+        or (
+            finite_ok
+            and candidate_oracle_ok
+            and reference_oracle_ok
+        )
     )
 
     task_rows: list[dict[str, Any]] = []
@@ -882,6 +885,7 @@ def run(output_dir: Path) -> dict[str, Any]:
         },
         "gates": {
             "feasibility_all_four_conditions": feasibility_ok,
+            "measurement_evaluable": measurement_evaluable,
             "finite_peaks": finite_ok,
             "candidate_peaks_match_wolfram_oracle": candidate_oracle_ok,
             "reference_peaks_match_wolfram_oracle": reference_oracle_ok,
