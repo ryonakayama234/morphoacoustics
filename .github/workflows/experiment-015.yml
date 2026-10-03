@@ -4,21 +4,13 @@ on:
   push:
     paths:
       - "experiments/015_embodiment_measurement_calibration/**"
-      - "src/morphoacoustics/acoustics/**"
-      - "src/morphoacoustics/physical/**"
-      - "src/morphoacoustics/preparation/**"
-      - "src/morphoacoustics/realization/**"
-      - "src/morphoacoustics/simulation/**"
+      - "src/morphoacoustics/**"
       - "pyproject.toml"
       - ".github/workflows/experiment-015.yml"
   pull_request:
     paths:
       - "experiments/015_embodiment_measurement_calibration/**"
-      - "src/morphoacoustics/acoustics/**"
-      - "src/morphoacoustics/physical/**"
-      - "src/morphoacoustics/preparation/**"
-      - "src/morphoacoustics/realization/**"
-      - "src/morphoacoustics/simulation/**"
+      - "src/morphoacoustics/**"
       - "pyproject.toml"
       - ".github/workflows/experiment-015.yml"
 
