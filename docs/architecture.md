@@ -111,6 +111,26 @@ Expected outcomes are deliberately not acoustic invariance. Instead:
 
 This makes morphology transfer an experimental test of whether the canonical task representation is truly less body-specific than actuator or joint coordinates.
 
+
+## Neural integration boundary
+
+Neural components may participate around or inside the causal simulator, but they do not own the embodied causal transition.
+
+Allowed roles include:
+
+- proposing task-level gestures, timing, coordination, or physically meaningful control variables;
+- estimating inverse solutions or posterior candidates from observations;
+- modeling explicitly identified unresolved physical terms as learned closure;
+- approximating a higher-fidelity solver with a validated, domain-bounded surrogate;
+- adding bounded downstream microtexture that does not overwrite task, morphology, feasibility, or major source/acoustic consequences;
+- evaluating perceptual objectives outside the causal state.
+
+A learned component must not silently convert an `INFEASIBLE` realization into plausible speech, normalize away morphology-dependent consequences, or inject linguistic content through a residual path. Surrogates must declare a validated domain and must not silently extrapolate beyond it.
+
+Turning neural components off may reduce fidelity or naturalness, but it must not change the causal interpretation of what the body did.
+
+The detailed rationale, candidate mechanisms, and falsification tests are recorded in `docs/research/neural-causal-boundary.md`.
+
 ## Public API boundary
 
 The package root exports domain contracts, generic preparation contracts, and stable orchestration. Concrete Fidelity-0 state, preparation helper, request/response, realizer, and acoustic solver types live in their respective subpackages so experimental backend details do not accidentally become the permanent top-level API.
