@@ -25,9 +25,9 @@ Experiment 020 tests a different proposition:
 
 R2 therefore carries the experiment-local state
 
-\`\`\`text
+```text
 (activation, activation_velocity)
-\`\`\`
+```
 
 across onset and offset events.
 
@@ -52,19 +52,19 @@ The Experiment-019 R1 equilibrium geometry remains the physical endpoint.
 
 The task intent is fixed across all conditions:
 
-\`\`\`text
+```text
 CONSTRICT(
     target="oral",
     location=0.65,
     target_area=5e-5 m²
 )
-\`\`\`
+```
 
 Only Gesture duration changes:
 
-\`\`\`text
+```text
 40, 80, 120, 200, 320 ms
-\`\`\`
+```
 
 The full GestureScore hashes differ because offset time is the intervention. A separate task-intent hash excludes onset/offset and must remain identical across every condition.
 
@@ -74,17 +74,17 @@ No omega, velocity, solver state, area vector, resonance target, or waveform tar
 
 R1 uses the same convex minimum-energy equilibrium as Experiment 019:
 
-\`\`\`text
+```text
 E(q) =
     1/2 sum_i (q_i - 1)^2
   + 1/2 sum_i (q_{i+1} - q_i)^2
-\`\`\`
+```
 
 subject to
 
-\`\`\`text
+```text
 q_6 = 1/6
-\`\`\`
+```
 
 R1 predicts:
 
@@ -98,18 +98,18 @@ The equilibrium state and first three resonances must regress to the independent
 
 R2 introduces one dimensionless task activation state a with velocity v:
 
-\`\`\`text
+```text
 a'' + 2 omega a' + omega² (a - u) = 0
-\`\`\`
+```
 
 with:
 
-\`\`\`text
+```text
 omega = 25 s^-1
 u = 1 during the active Gesture
 u = 0 after offset
 initial state = (a=0, v=0)
-\`\`\`
+```
 
 The rate constant is a fixture parameter, not a biological tissue or muscle parameter.
 
@@ -117,22 +117,22 @@ For a constant target u, Python uses the exact state transition of the criticall
 
 The realized geometry is:
 
-\`\`\`text
+```text
 q(t) = 1 + a(t) (q_R1 - 1)
-\`\`\`
+```
 
 so R1 remains the body/material-specific endpoint and R2 only adds finite-time task state.
 
 ## Independent Wolfram oracle
 
-\`wolfram/stateful_dynamics_oracle.wl\` independently derives the critically damped step/release response, recomputes the Experiment-019 R1 equilibrium, and evaluates the resulting offset-minus geometries with an independently written lossless transfer-matrix model.
+`wolfram/stateful_dynamics_oracle.wl` independently derives the critically damped step/release response, recomputes the Experiment-019 R1 equilibrium, and evaluates the resulting offset-minus geometries with an independently written lossless transfer-matrix model.
 
 For onset from rest:
 
-\`\`\`text
+```text
 a(t) = 1 - (1 + omega t) exp(-omega t)
 v(t) = omega² t exp(-omega t)
-\`\`\`
+```
 
 The preregistered duration sweep predicts:
 
@@ -146,33 +146,33 @@ The preregistered duration sweep predicts:
 
 The same oracle gives 95% / 99% step-settling times of approximately:
 
-\`\`\`text
+```text
 189.755 ms
 265.534 ms
-\`\`\`
+```
 
 ## Stateful release prediction
 
 At the exact offset event the target changes from 1 to 0, but the R2 state must not jump:
 
-\`\`\`text
+```text
 a(T+) = a(T-)
 v(T+) = v(T-)
-\`\`\`
+```
 
 The subsequent state is history-dependent.
 
 For example, 50 ms after release the activation oracle predicts approximately:
 
-\`\`\`text
+```text
 40 ms prior Gesture  -> 0.302088
 80 ms prior Gesture  -> 0.479845
 120 ms prior Gesture -> 0.569749
 200 ms prior Gesture -> 0.630640
 320 ms prior Gesture -> 0.643651
-\`\`\`
+```
 
-At that observation time every condition has the same current input \`u=0\`, yet the states differ because their prior durations differ.
+At that observation time every condition has the same current input `u=0`, yet the states differ because their prior durations differ.
 
 That is the primary state-memory discriminator.
 
@@ -205,13 +205,13 @@ Reference grid: 0.01 Hz.
 - only Gesture offset/duration changes;
 - dynamics parameters remain experiment-local.
 
-Failure: \`REPRESENTATION_LEAK\`.
+Failure: `REPRESENTATION_LEAK`.
 
 ### G1 — Request validity
 
 Every duration-specific Gesture remains a valid FEASIBLE CONSTRICT request and resolves to section 6 under the production Fidelity-0 validator.
 
-Failure: \`TASK_REQUEST_INVALID\`.
+Failure: `TASK_REQUEST_INVALID`.
 
 ### G2 — R1 regression
 
@@ -219,25 +219,25 @@ R1 equilibrium state must match the Wolfram oracle within max absolute error <= 
 
 Candidate/reference R1 resonance peaks must match within 0.05 / 0.01 Hz.
 
-Failure: \`R1_REGRESSION\`.
+Failure: `R1_REGRESSION`.
 
 ### G3 — Dynamic oracle
 
 For every duration, offset-minus activation/velocity/task error and 50/100 ms release state must match the independent Wolfram oracle within 1e-12.
 
-Failure: \`DYNAMIC_ORACLE_MISMATCH\`.
+Failure: `DYNAMIC_ORACLE_MISMATCH`.
 
 ### G4 — Stateful propagation consistency
 
 One exact propagation over T and four exact propagations over T/4 must agree within 1e-12.
 
-Failure: \`DYNAMIC_PROPAGATION_INCONSISTENT\`.
+Failure: `DYNAMIC_PROPAGATION_INCONSISTENT`.
 
 ### G5 — Event continuity
 
 Changing the target at offset must introduce no jump in activation or velocity within 1e-12.
 
-Failure: \`EVENT_CONTINUITY_FAILED\`.
+Failure: `EVENT_CONTINUITY_FAILED`.
 
 ### G6 — Duration ordering / convergence
 
@@ -250,7 +250,7 @@ Across 40 -> 320 ms:
 - 40 ms task error > 0.50;
 - 320 ms task error < 0.005.
 
-Failure: \`DURATION_ORDERING_FAILED\`.
+Failure: `DURATION_ORDERING_FAILED`.
 
 ### G7 — State memory
 
@@ -261,25 +261,25 @@ At both 50 and 100 ms after offset:
 
 The corresponding R1 comparison state is rest immediately after offset.
 
-Failure: \`STATE_MEMORY_FAILED\`.
+Failure: `STATE_MEMORY_FAILED`.
 
 ### G8 — Acoustic oracle
 
 Every duration-specific candidate/reference resonance must match Wolfram within 0.05 / 0.01 Hz.
 
-Failure: \`ACOUSTIC_ORACLE_MISMATCH\`.
+Failure: `ACOUSTIC_ORACLE_MISMATCH`.
 
 ### G9 — R1 vs R2 discrimination
 
 At every duration and for all three modes:
 
-\`\`\`text
+```text
 |f_R2 - f_R1| / local_numerical_floor > 5
-\`\`\`
+```
 
 and the measured shift sign must match the independent oracle.
 
-Failure: \`MODEL_DISCRIMINATION_UNRESOLVED\`.
+Failure: `MODEL_DISCRIMINATION_UNRESOLVED`.
 
 ## Decision
 
@@ -303,15 +303,15 @@ It does not establish:
 
 ## Run
 
-\`\`\`bash
+```bash
 python experiments/020_stateful_finite_time_realization/run.py \
   --output-dir experiment-020-output
-\`\`\`
+```
 
 Outputs:
 
-- \`duration_summary.csv\`
-- \`state_trace.csv\`
-- \`resonances.csv\`
-- \`effects.csv\`
-- \`decision.json\`
+- `duration_summary.csv`
+- `state_trace.csv`
+- `resonances.csv`
+- `effects.csv`
+- `decision.json`
