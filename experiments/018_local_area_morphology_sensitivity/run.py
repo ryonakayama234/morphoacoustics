@@ -299,6 +299,38 @@ def _central_log_sensitivity(
     )
 
 
+def _log_frequency_uncertainty_bound(
+    frequency_hz: float,
+    floor_hz: float,
+) -> float:
+    if not 0.0 < floor_hz < frequency_hz:
+        raise ValueError("log uncertainty requires 0 < floor < frequency")
+    return math.log(frequency_hz / (frequency_hz - floor_hz))
+
+
+def _sensitivity_uncertainty_bound(
+    *,
+    negative_hz: float,
+    positive_hz: float,
+    negative_floor_hz: float,
+    positive_floor_hz: float,
+    epsilon: float,
+) -> float:
+    denominator = abs(
+        math.log(1.0 + epsilon) - math.log(1.0 - epsilon)
+    )
+    return (
+        _log_frequency_uncertainty_bound(
+            negative_hz,
+            negative_floor_hz,
+        )
+        + _log_frequency_uncertainty_bound(
+            positive_hz,
+            positive_floor_hz,
+        )
+    ) / denominator
+
+
 def _condition_key(task_condition: str, relative_change: float) -> tuple[str, float]:
     return (task_condition, round(relative_change, 8))
 
@@ -784,17 +816,37 @@ def run(output_dir: Path) -> dict[str, Any]:
                     - float(row5["reference_sensitivity"])
                 )
                 oracle_n = float(oracle[oracle_n_key][mode - 1])
-                sensitivity_observer_floor = max(
-                    abs(
-                        float(row5["candidate_sensitivity"])
-                        - float(row5["reference_sensitivity"])
-                    ),
-                    abs(
-                        float(row10["candidate_sensitivity"])
-                        - float(row10["reference_sensitivity"])
-                    ),
-                    1.0e-12,
+                uncertainty_5 = _sensitivity_uncertainty_bound(
+                    negative_hz=candidate_peaks[
+                        (task_condition, -0.05, mode)
+                    ],
+                    positive_hz=candidate_peaks[
+                        (task_condition, 0.05, mode)
+                    ],
+                    negative_floor_hz=floors[
+                        (task_condition, -0.05, mode)
+                    ],
+                    positive_floor_hz=floors[
+                        (task_condition, 0.05, mode)
+                    ],
+                    epsilon=0.05,
                 )
+                uncertainty_10 = _sensitivity_uncertainty_bound(
+                    negative_hz=candidate_peaks[
+                        (task_condition, -0.10, mode)
+                    ],
+                    positive_hz=candidate_peaks[
+                        (task_condition, 0.10, mode)
+                    ],
+                    negative_floor_hz=floors[
+                        (task_condition, -0.10, mode)
+                    ],
+                    positive_floor_hz=floors[
+                        (task_condition, 0.10, mode)
+                    ],
+                    epsilon=0.10,
+                )
+                sensitivity_observer_floor = uncertainty_5 + uncertainty_10
                 resolution_ratio = oracle_n / sensitivity_observer_floor
                 classification = (
                     "RESOLVED_AT_5X"
@@ -809,6 +861,8 @@ def run(output_dir: Path) -> dict[str, Any]:
                         "candidate_abs_s10_minus_s5": candidate_n,
                         "reference_abs_s10_minus_s5": reference_n,
                         "oracle_abs_s10_minus_s5": oracle_n,
+                        "sensitivity_uncertainty_bound_eps_0_05": uncertainty_5,
+                        "sensitivity_uncertainty_bound_eps_0_10": uncertainty_10,
                         "sensitivity_observer_floor": (
                             sensitivity_observer_floor
                         ),
