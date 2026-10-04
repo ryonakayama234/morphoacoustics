@@ -180,13 +180,14 @@ N = |S(0.10) - S(0.05)|
 
 for every mode/task condition.
 
-It also records a sensitivity observer floor from candidate/reference
-differences.
+It also records a conservative sensitivity observer bound by propagating the
+declared per-frequency numerical floors through each log-sensitivity estimate
+and summing the epsilon=0.05 and epsilon=0.10 bounds.
 
 **N is diagnostic, not a PASS gate.**
 
-The independent oracle predicts N around 6e-5 to 2.5e-4, comparable to the
-observer uncertainty at this resolution. Therefore this experiment must not
+The independent oracle predicts N around 6e-5 to 2.5e-4, below the conservative
+propagated uncertainty at this resolution. Therefore this experiment must not
 claim resolved nonlinearity merely because the two finite-difference estimates
 are unequal.
 
