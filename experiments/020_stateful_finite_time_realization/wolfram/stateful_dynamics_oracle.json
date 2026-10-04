@@ -1,0 +1,128 @@
+{
+  "parameters": {
+    "omega_per_s": 25.0,
+    "tract_length_m": 0.17,
+    "section_count": 10,
+    "rest_area_m2": 0.0003,
+    "target_section_index_zero_based": 6,
+    "target_area_ratio": 0.166666666666666667,
+    "target_area_m2": 0.00005,
+    "smoothness_lambda": 1.0
+  },
+  "r1_equilibrium_state_ratio": [
+    0.996423462088698140,
+    0.992846924177396280,
+    0.982117310443490701,
+    0.953505007153075823,
+    0.878397711015736767,
+    0.681688125894134478,
+    0.166666666666666667,
+    0.679487179487179487,
+    0.871794871794871795,
+    0.935897435897435897
+  ],
+  "r1_equilibrium_resonances_hz": [
+    383.922015483293223,
+    1735.11056172990399,
+    2205.58146767747068
+  ],
+  "settling_95_ms": 189.75458073562314,
+  "settling_99_ms": 265.53408271975246,
+  "duration_rows": [
+    {
+      "duration_s": 0.04,
+      "duration_ms": 40.0,
+      "omegaT": 1.0,
+      "activation_offset_minus": 0.264241117657115357,
+      "velocity_offset_minus_per_s": 9.19698602928605804,
+      "task_error_fraction_offset_minus": 0.735758882342884643,
+      "target_area_m2_offset_minus": 0.000233939720585721161,
+      "target_area_abs_error_m2": 0.000183939720585721161,
+      "release_50ms_activation": 0.302088313109368631,
+      "release_50ms_velocity_per_s": -3.02456852027607169,
+      "release_100ms_activation": 0.151409269783212530,
+      "release_100ms_velocity_per_s": -2.48804136454080588,
+      "resonances_hz_offset_minus": [
+        492.228061526074427,
+        1556.12605002585056,
+        2490.45283176104942
+      ]
+    },
+    {
+      "duration_s": 0.08,
+      "duration_ms": 80.0,
+      "omegaT": 2.0,
+      "activation_offset_minus": 0.593994150290161924,
+      "velocity_offset_minus_per_s": 6.76676416183063459,
+      "task_error_fraction_offset_minus": 0.406005849709838076,
+      "target_area_m2_offset_minus": 0.000151501462427459519,
+      "target_area_abs_error_m2": 0.000101501462427459519,
+      "release_50ms_activation": 0.479845409650609184,
+      "release_50ms_velocity_per_s": -5.80287051555352733,
+      "release_100ms_activation": 0.226198014223313097,
+      "release_100ms_velocity_per_s": -3.88055030344141522,
+      "resonances_hz_offset_minus": [
+        467.770624174637706,
+        1623.55808211992127,
+        2424.80045234159346
+      ]
+    },
+    {
+      "duration_s": 0.12,
+      "duration_ms": 120.0,
+      "omegaT": 3.0,
+      "activation_offset_minus": 0.800851726528544228,
+      "velocity_offset_minus_per_s": 3.73403012758979572,
+      "task_error_fraction_offset_minus": 0.199148273471455772,
+      "target_area_m2_offset_minus": 0.0000997870683678639430,
+      "target_area_abs_error_m2": 0.0000497870683678639430,
+      "release_50ms_activation": 0.569748564913181636,
+      "release_50ms_velocity_per_s": -7.43770004904976976,
+      "release_100ms_activation": 0.260733480833629348,
+      "release_100ms_velocity_per_s": -4.56838134120486549,
+      "resonances_hz_offset_minus": [
+        440.025299077592291,
+        1675.97963742836964,
+        2348.53178800748452
+      ]
+    },
+    {
+      "duration_s": 0.20,
+      "duration_ms": 200.0,
+      "omegaT": 5.0,
+      "activation_offset_minus": 0.959572318005487197,
+      "velocity_offset_minus_per_s": 0.842243374885683387,
+      "task_error_fraction_offset_minus": 0.0404276819945128026,
+      "target_area_m2_offset_minus": 0.0000601069204986282006,
+      "target_area_abs_error_m2": 0.0000101069204986282006,
+      "release_50ms_activation": 0.630640000447776834,
+      "release_50ms_velocity_per_s": -8.65164144309536107,
+      "release_100ms_activation": 0.282596278037389198,
+      "release_100ms_velocity_per_s": -5.02660909459095590,
+      "resonances_hz_offset_minus": [
+        400.093132178984546,
+        1722.43834569783260,
+        2244.19240910890932
+      ]
+    },
+    {
+      "duration_s": 0.32,
+      "duration_ms": 320.0,
+      "omegaT": 8.0,
+      "activation_offset_minus": 0.996980836348877393,
+      "velocity_offset_minus_per_s": 0.0670925255805023678,
+      "task_error_fraction_offset_minus": 0.00301916365112260655,
+      "target_area_m2_offset_minus": 0.0000507547909127806516,
+      "target_area_abs_error_m2": 7.54790912780651637e-7,
+      "release_50ms_activation": 0.643650648501798430,
+      "release_50ms_velocity_per_s": -8.93104908234174311,
+      "release_100ms_activation": 0.286980826016123691,
+      "release_100ms_velocity_per_s": -5.12308409603936607,
+      "resonances_hz_offset_minus": [
+        385.268546449774435,
+        1734.15443409797358,
+        2208.70285090966215
+      ]
+    }
+  ]
+}
