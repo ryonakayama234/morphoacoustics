@@ -16,14 +16,14 @@ condition does not proceed into acoustic evaluation.
 
 ## Provenance
 
-Objective run:
+Final code-equivalent objective run before this results record:
 
-- GitHub Actions run: `37161947396`
-- source head: `b3ff791264344e8944f8989c438b299cfa8c136c`
+- GitHub Actions run: `37171645071`
+- source head: `0aa930181cd587be548a4546ac07aff9a70c0019`
 - artifact: `experiment-017-output`
-- artifact ID: `11288011699`
+- artifact ID: `11291751448`
 - artifact ZIP SHA-256:
-  `780a4bf25f05f8150a43a92d4ba213aada4fc87bf9dfd5bd581d12ce8a0b6677`
+  `31b03996fb9e2bbe1f86fe21b49db1b88db80a4fdcbb68dc53cbd7b6ccf22a8e`
 - Python: 3.11.16
 - NumPy: 2.4.6
 
