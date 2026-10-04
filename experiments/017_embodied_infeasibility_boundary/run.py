@@ -513,7 +513,7 @@ def run(output_dir: Path) -> dict[str, Any]:
         and boundary_state is not None
         and plus_state == boundary_state
     )
-    feasible_acoustics_valid = (
+    feasible_acoustics_valid = bool(
         isinstance(plus_acoustics, ImpedanceResponse)
         and isinstance(boundary_acoustics, ImpedanceResponse)
         and np.array_equal(plus_acoustics.frequencies_hz, PROBE_FREQUENCIES_HZ)
