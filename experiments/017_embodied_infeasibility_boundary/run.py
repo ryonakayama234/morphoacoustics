@@ -513,9 +513,25 @@ def run(output_dir: Path) -> dict[str, Any]:
         and boundary_state is not None
         and plus_state == boundary_state
     )
-    acoustics_exactly_equal = (
+    feasible_acoustics_valid = (
         isinstance(plus_acoustics, ImpedanceResponse)
         and isinstance(boundary_acoustics, ImpedanceResponse)
+        and np.array_equal(plus_acoustics.frequencies_hz, PROBE_FREQUENCIES_HZ)
+        and np.array_equal(
+            boundary_acoustics.frequencies_hz,
+            PROBE_FREQUENCIES_HZ,
+        )
+        and np.all(np.isfinite(plus_acoustics.input_impedance_pa_s_m3.real))
+        and np.all(np.isfinite(plus_acoustics.input_impedance_pa_s_m3.imag))
+        and np.all(
+            np.isfinite(boundary_acoustics.input_impedance_pa_s_m3.real)
+        )
+        and np.all(
+            np.isfinite(boundary_acoustics.input_impedance_pa_s_m3.imag)
+        )
+    )
+    acoustics_exactly_equal = (
+        feasible_acoustics_valid
         and np.array_equal(
             plus_acoustics.frequencies_hz,
             boundary_acoustics.frequencies_hz,
@@ -523,7 +539,6 @@ def run(output_dir: Path) -> dict[str, Any]:
         and np.array_equal(
             plus_acoustics.input_impedance_pa_s_m3,
             boundary_acoustics.input_impedance_pa_s_m3,
-            equal_nan=True,
         )
     )
     feasible_backend_calls_ok = (
@@ -548,6 +563,7 @@ def run(output_dir: Path) -> dict[str, Any]:
 
     null_control_ok = (
         states_exactly_equal
+        and feasible_acoustics_valid
         and acoustics_exactly_equal
         and feasible_backend_calls_ok
         and results["M_plus"]["response_sha256"]
@@ -636,6 +652,7 @@ def run(output_dir: Path) -> dict[str, Any]:
                 failure_attribution_ok
             ),
             "negative_condition_has_no_state_or_acoustics": no_fallback_ok,
+            "feasible_acoustic_probe_valid_and_finite": feasible_acoustics_valid,
             "feasible_capability_null_control_exact": null_control_ok,
         },
         "status_by_condition": {
