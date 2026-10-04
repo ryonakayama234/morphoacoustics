@@ -1,0 +1,44 @@
+name: experiment-020
+
+on:
+  push:
+    paths:
+      - "experiments/020_stateful_finite_time_realization/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-020.yml"
+  pull_request:
+    paths:
+      - "experiments/020_stateful_finite_time_realization/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-020.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 020
+        run: |
+          python experiments/020_stateful_finite_time_realization/run.py \
+            --output-dir experiment-020-output
+      - name: Show scientific summary
+        if: always()
+        run: |
+          test -f experiment-020-output/duration_summary.csv && cat experiment-020-output/duration_summary.csv || true
+          test -f experiment-020-output/resonances.csv && cat experiment-020-output/resonances.csv || true
+          test -f experiment-020-output/effects.csv && cat experiment-020-output/effects.csv || true
+          test -f experiment-020-output/decision.json && cat experiment-020-output/decision.json || true
+      - name: Upload research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-020-output
+          path: experiment-020-output/
+          if-no-files-found: warn
