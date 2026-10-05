@@ -88,13 +88,18 @@ null400 = nullState[a400, b400];
 
 scale = Norm[qAB - q0];
 
+oracleNumber[x_] := Module[{value = N[x, 18]},
+  If[Abs[value] < 10^-30, 0.0, value]
+];
+
 eventMetrics[t_, shared_, independent_] := <|
   "time_s" -> N[t, 18],
-  "shared_null_l2" -> N[Norm[shared[[1]] - independent[[1]]], 18],
+  "shared_null_l2" ->
+    oracleNumber[Norm[shared[[1]] - independent[[1]]]],
   "normalized_shared_null" ->
-    N[Norm[shared[[1]] - independent[[1]]] / scale, 18],
+    oracleNumber[Norm[shared[[1]] - independent[[1]]] / scale],
   "shared_null_velocity_l2" ->
-    N[Norm[shared[[2]] - independent[[2]]], 18],
+    oracleNumber[Norm[shared[[2]] - independent[[2]]]],
   "minimum_shared_ratio" -> N[Min[shared[[1]]], 18],
   "minimum_null_ratio" -> N[Min[independent[[1]]], 18]
 |>;
