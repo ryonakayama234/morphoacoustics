@@ -20,6 +20,7 @@ Current sequence:
 14. `014_structure_aligned_prosody` — anchor matched-range pitch and duration cues to movable semantic boundaries, validate their realization, and prepare blinded early/late boundary listening.
 15. `015_embodiment_measurement_calibration` — calibrate the Embodiment measurement harness with an analytical tract-length sensitivity sweep, observer-grid floor, and section-partition control.
 16. `016_same_task_morphology_covariance` — apply one unchanged non-empty CONSTRICT task across a preregistered 10% prepared-tract length intervention and test task residuals, body-specific physical scaling, acoustic scale covariance, and preservation of the dimensionless Gesture effect.
+17. `017_embodied_infeasibility_boundary` — hold one valid non-empty CONSTRICT task and acoustic geometry fixed while only articulator reach crosses the task boundary; require explicit INFEASIBLE with no physical/acoustic fallback on the unreachable body.
 
 Each experiment should state:
 

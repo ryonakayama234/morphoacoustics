@@ -1,0 +1,38 @@
+{
+  "tract_length_m": 0.17,
+  "gesture_location": 0.65,
+  "boundary_rule": "reachable_start <= location <= reachable_end",
+  "conditions": [
+    {
+      "reachable_end": 0.7,
+      "gesture_location": 0.65,
+      "normalized_reach_margin": 0.05,
+      "gesture_position_m": 0.1105,
+      "reach_end_position_m": 0.119,
+      "physical_reach_margin_m": 0.0085,
+      "expected_status": "FEASIBLE"
+    },
+    {
+      "reachable_end": 0.65,
+      "gesture_location": 0.65,
+      "normalized_reach_margin": 0.0,
+      "gesture_position_m": 0.1105,
+      "reach_end_position_m": 0.1105,
+      "physical_reach_margin_m": 0.0,
+      "expected_status": "FEASIBLE"
+    },
+    {
+      "reachable_end": 0.6,
+      "gesture_location": 0.65,
+      "normalized_reach_margin": -0.05,
+      "gesture_position_m": 0.1105,
+      "reach_end_position_m": 0.102,
+      "physical_reach_margin_m": -0.0085,
+      "expected_status": "INFEASIBLE"
+    }
+  ],
+  "positive_and_negative_physical_margin_symmetry_m": [
+    0.0085,
+    -0.0085
+  ]
+}
