@@ -482,14 +482,6 @@ def run(output_dir: Path) -> dict[str, Any]:
         "r1_baseline": r1_baseline,
         "r1_candidate": r1_candidate,
     }
-    for name, result in results.items():
-        if result.feasibility.status is not FeasibilityStatus.FEASIBLE:
-            raise RuntimeError(
-                f"{name} unexpectedly returned "
-                f"{result.feasibility.status.value}"
-            )
-        if result.state is None:
-            raise RuntimeError(f"{name} FEASIBLE result lacks state")
 
     score_hash_after = _score_sha256(score)
     representation_ok = (
@@ -497,6 +489,83 @@ def run(output_dir: Path) -> dict[str, Any]:
         and score_hash_before
         == _score_sha256(_canonical_score())
     )
+
+    realization_statuses = {
+        name: result.feasibility.status.value
+        for name, result in results.items()
+    }
+    missing_state_conditions = [
+        name
+        for name, result in results.items()
+        if result.state is None
+    ]
+    task_realization_ok = all(
+        result.feasibility.status is FeasibilityStatus.FEASIBLE
+        and result.state is not None
+        for result in results.values()
+    )
+    if not task_realization_ok:
+        decision_name = _failure_decision(
+            representation_ok=representation_ok,
+            baseline_null_ok=True,
+            task_ok=False,
+            state_oracle_ok=True,
+            physical_effect_ok=True,
+            locality_ok=True,
+            acoustic_oracle_ok=True,
+            acoustic_effect_ok=True,
+        )
+        decision: dict[str, Any] = {
+            "decision": decision_name,
+            "issue": 40,
+            "experiment": 19,
+            "research_question": (
+                "whether an experiment-local reduced stiffness intervention "
+                "changes body-specific quasi-static realization while the exact "
+                "same task target remains achieved"
+            ),
+            "claim_scope": (
+                "reduced dimensionless stiffness field in a 10-section "
+                "Fidelity-0 tract; not biological tissue mechanics"
+            ),
+            "canonical_score_sha256": score_hash_before,
+            "representation_ok": representation_ok,
+            "baseline_null_ok": None,
+            "task_ok": False,
+            "state_oracle_ok": None,
+            "physical_effect_ok": None,
+            "locality_ok": None,
+            "acoustic_oracle_ok": None,
+            "acoustic_effect_ok": None,
+            "realization_statuses": realization_statuses,
+            "missing_state_conditions": missing_state_conditions,
+            "parameters": {
+                "tract_length_m": TRACT_LENGTH_M,
+                "section_count": SECTION_COUNT,
+                "rest_area_m2": REST_AREA_M2,
+                "gesture_location": GESTURE_LOCATION,
+                "target_section_index": TARGET_SECTION_INDEX,
+                "target_area_m2": TARGET_AREA_M2,
+                "smoothness_lambda": SMOOTHNESS_LAMBDA,
+                "left_neighbor_index": LEFT_NEIGHBOR_INDEX,
+                "baseline_left_relative_stiffness": (
+                    BASELINE_LEFT_RELATIVE_STIFFNESS
+                ),
+                "candidate_left_relative_stiffness": (
+                    CANDIDATE_LEFT_RELATIVE_STIFFNESS
+                ),
+            },
+            "environment": {
+                "python": platform.python_version(),
+                "numpy": np.__version__,
+            },
+            "elapsed_s": time.perf_counter() - started,
+        }
+        (output_dir / "decision.json").write_text(
+            json.dumps(decision, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return decision
 
     r0_base_state = r0_baseline.state
     r0_candidate_state = r0_candidate.state
