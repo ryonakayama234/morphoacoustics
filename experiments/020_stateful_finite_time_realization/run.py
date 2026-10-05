@@ -621,9 +621,10 @@ def run(output_dir: Path) -> dict[str, Any]:
             target=1.0,
             duration_s=duration_s,
         )
-        offset_plus = DynamicTaskState(
-            activation=offset_minus.activation,
-            velocity_per_s=offset_minus.velocity_per_s,
+        offset_plus = dynamics.advance(
+            offset_minus,
+            target=0.0,
+            duration_s=0.0,
         )
         release_50 = dynamics.advance(
             offset_plus,
@@ -1018,7 +1019,7 @@ def run(output_dir: Path) -> dict[str, Any]:
             )
             target = (
                 1.0
-                if trace_time <= duration_s
+                if trace_time < duration_s
                 else 0.0
             )
             trace_rows.append(
