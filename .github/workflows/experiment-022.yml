@@ -1,0 +1,47 @@
+name: experiment-022
+
+on:
+  push:
+    paths:
+      - "experiments/022_shared_body_multigesture/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-022.yml"
+  pull_request:
+    paths:
+      - "experiments/022_shared_body_multigesture/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-022.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 022
+        run: |
+          python experiments/022_shared_body_multigesture/run.py \
+            --output-dir experiment-022-output
+      - name: Show scientific summary
+        if: always()
+        run: |
+          test -f experiment-022-output/equilibrium_effects.csv && cat experiment-022-output/equilibrium_effects.csv || true
+          test -f experiment-022-output/event_summary.csv && cat experiment-022-output/event_summary.csv || true
+          test -f experiment-022-output/task_residuals.csv && cat experiment-022-output/task_residuals.csv || true
+          test -f experiment-022-output/resonances.csv && cat experiment-022-output/resonances.csv || true
+          test -f experiment-022-output/acoustic_effects.csv && cat experiment-022-output/acoustic_effects.csv || true
+          test -f experiment-022-output/conflict_case.json && cat experiment-022-output/conflict_case.json || true
+          test -f experiment-022-output/decision.json && cat experiment-022-output/decision.json || true
+      - name: Upload research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-022-output
+          path: experiment-022-output/
+          if-no-files-found: warn
