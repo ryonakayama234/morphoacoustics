@@ -19,6 +19,7 @@ Current sequence:
 13. `013_parametric_source_prosody` — isolate LF-family pulse shape, macroprosody, and small microprosody/aspiration before considering a reduced self-oscillating vocal-fold model.
 14. `014_structure_aligned_prosody` — anchor matched-range pitch and duration cues to movable semantic boundaries, validate their realization, and prepare blinded early/late boundary listening.
 15. `015_embodiment_measurement_calibration` — calibrate the Embodiment measurement harness with an analytical tract-length sensitivity sweep, observer-grid floor, and section-partition control.
+16. `016_same_task_morphology_covariance` — apply one unchanged non-empty CONSTRICT task across a preregistered 10% prepared-tract length intervention and test task residuals, body-specific physical scaling, acoustic scale covariance, and preservation of the dimensionless Gesture effect.
 
 Each experiment should state:
 
