@@ -389,6 +389,23 @@ def _rest_state() -> VectorState:
     )
 
 
+def _shared_active_target_name(time_s: float) -> str:
+    """Return half-open target ownership at an exact timeline instant."""
+    if (
+        not math.isfinite(time_s)
+        or time_s < GESTURE_A_ONSET_S
+        or time_s > END_TIME_S
+    ):
+        raise ValueError("time_s outside experiment timeline")
+    if time_s < GESTURE_B_ONSET_S:
+        return "A"
+    if time_s < GESTURE_A_OFFSET_S:
+        return "A+B"
+    if time_s < GESTURE_B_OFFSET_S:
+        return "B"
+    return "REST"
+
+
 def _shared_state_at_time(
     dynamics: ModalCriticallyDampedDynamics,
     *,
@@ -406,7 +423,7 @@ def _shared_state_at_time(
         target_ratios=q_a,
         duration_s=first,
     )
-    if time_s <= GESTURE_B_ONSET_S:
+    if time_s < GESTURE_B_ONSET_S:
         return state
 
     second_end = min(time_s, GESTURE_A_OFFSET_S)
@@ -415,7 +432,7 @@ def _shared_state_at_time(
         target_ratios=q_ab,
         duration_s=second_end - GESTURE_B_ONSET_S,
     )
-    if time_s <= GESTURE_A_OFFSET_S:
+    if time_s < GESTURE_A_OFFSET_S:
         return state
 
     third_end = min(time_s, GESTURE_B_OFFSET_S)
@@ -424,7 +441,7 @@ def _shared_state_at_time(
         target_ratios=q_b,
         duration_s=third_end - GESTURE_A_OFFSET_S,
     )
-    if time_s <= GESTURE_B_OFFSET_S:
+    if time_s < GESTURE_B_OFFSET_S:
         return state
 
     return dynamics.advance(
@@ -444,7 +461,7 @@ def _single_gesture_state_at_time(
 ) -> VectorState:
     state = _rest_state()
     rest = np.ones(SECTION_COUNT, dtype=np.float64)
-    if time_s <= onset_s:
+    if time_s < onset_s:
         return state
 
     active_end = min(time_s, offset_s)
@@ -453,7 +470,7 @@ def _single_gesture_state_at_time(
         target_ratios=equilibrium,
         duration_s=active_end - onset_s,
     )
-    if time_s <= offset_s:
+    if time_s < offset_s:
         return state
 
     return dynamics.advance(
@@ -1097,15 +1114,37 @@ def run(output_dir: Path) -> dict[str, Any]:
             )
         ),
     )
+    boundary_ownership = {
+        "0.00": _shared_active_target_name(GESTURE_A_ONSET_S),
+        "0.08": _shared_active_target_name(GESTURE_B_ONSET_S),
+        "0.20": _shared_active_target_name(GESTURE_A_OFFSET_S),
+        "0.28": _shared_active_target_name(GESTURE_B_OFFSET_S),
+        "0.40": _shared_active_target_name(END_TIME_S),
+    }
+    expected_boundary_ownership = {
+        "0.00": "A",
+        "0.08": "A+B",
+        "0.20": "B",
+        "0.28": "REST",
+        "0.40": "REST",
+    }
+    half_open_event_ownership_ok = (
+        boundary_ownership == expected_boundary_ownership
+    )
     state_propagation_ok = (
         split_error <= PROPAGATION_TOLERANCE
         and switch_jump <= EVENT_CONTINUITY_TOLERANCE
         and pre_overlap_match <= ORACLE_TOLERANCE
+        and half_open_event_ownership_ok
     )
     gates["state_propagation_ok"] = state_propagation_ok
     diagnostics["max_split_propagation_error"] = split_error
     diagnostics["max_zero_duration_switch_jump"] = switch_jump
     diagnostics["pre_overlap_shared_null_error"] = pre_overlap_match
+    diagnostics["half_open_event_ownership"] = boundary_ownership
+    diagnostics["half_open_event_ownership_ok"] = (
+        half_open_event_ownership_ok
+    )
     if not state_propagation_ok:
         return _fail(
             output_dir=output_dir,
@@ -1315,17 +1354,32 @@ def run(output_dir: Path) -> dict[str, Any]:
         _constraints_consistent(conflict_constraints)
     )
     oracle_conflict = oracle["constraint_consistency"]
+
+    solver_conflict_diagnostic: str | None = None
+    downstream_evaluation_reached = False
+    try:
+        _solve_equilibrium(conflict_constraints)
+    except ValueError as error:
+        solver_conflict_diagnostic = str(error)
+    else:
+        downstream_evaluation_reached = True
+
+    solver_rejected_conflict = (
+        solver_conflict_diagnostic == "TASK_CONFLICT"
+    )
     conflict_rejected = (
         not conflict_consistent
         and conflict_rank_c
         == int(oracle_conflict["conflict_rank_c"])
         and conflict_rank_augmented
         == int(oracle_conflict["conflict_rank_augmented"])
+        and solver_rejected_conflict
+        and not downstream_evaluation_reached
     )
     conflict_case = {
         "diagnostic": (
-            "TASK_CONFLICT"
-            if conflict_rejected
+            solver_conflict_diagnostic
+            if solver_conflict_diagnostic is not None
             else "CONFLICT_NOT_DETECTED"
         ),
         "rank_c": conflict_rank_c,
@@ -1334,8 +1388,11 @@ def run(output_dir: Path) -> dict[str, Any]:
             GESTURE_B_AREA_M2 / REST_AREA_M2
             - GESTURE_A_AREA_M2 / REST_AREA_M2
         ),
-        "dynamics_called": False,
-        "acoustics_called": False,
+        "equilibrium_solver_called": True,
+        "equilibrium_solver_rejected": solver_rejected_conflict,
+        "downstream_evaluation_reached": downstream_evaluation_reached,
+        "dynamics_called": downstream_evaluation_reached,
+        "acoustics_called": downstream_evaluation_reached,
         "last_wins_used": False,
         "averaging_used": False,
         "target_coercion_used": False,
