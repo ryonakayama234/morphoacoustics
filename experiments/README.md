@@ -23,7 +23,7 @@ Current sequence:
 17. `017_embodied_infeasibility_boundary` — hold one valid non-empty CONSTRICT task and acoustic geometry fixed while only articulator reach crosses the task boundary; require explicit INFEASIBLE with no physical/acoustic fallback on the unreachable body.
 18. `018_local_area_morphology_sensitivity` — sweep one non-self-similar prepared rest-area axis at -10/-5/0/+5/+10% while preserving the same task; measure resolved effects, monotonicity, dimensionless sensitivity, and nonlinear departure against an independent Wolfram oracle.
 19. `019_material_conditioned_realization` — compare the production hard-projector null model against an experiment-local quasi-static minimum-energy realizer under one dimensionless stiffness intervention while preserving the exact same task target.
-20. `020_stateful_finite_time_realization` — distinguish the Experiment-019 quasi-static equilibrium from an experiment-local critically damped stateful task model using duration, event continuity, post-release memory, and convergence-to-equilibrium gates.
+20. `020_stateful_finite_time_realization` — distinguish the Experiment-019 quasi-static equilibrium from an experiment-local critically damped stateful task model using duration, event continuity, post-release memory, and convergence-to-equilibrium gates.\n21. `021_material_conditioned_multimode_transient` — compare the scalar-path null against an experiment-local material-conditioned exact modal transient while preserving one unchanged CONSTRICT task and the Experiment-019 equilibrium endpoints.
 
 Each experiment should state:
 

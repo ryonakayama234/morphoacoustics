@@ -1,0 +1,46 @@
+name: experiment-021
+
+on:
+  push:
+    paths:
+      - "experiments/021_material_conditioned_multimode_transient/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-021.yml"
+  pull_request:
+    paths:
+      - "experiments/021_material_conditioned_multimode_transient/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-021.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 021
+        run: |
+          python experiments/021_material_conditioned_multimode_transient/run.py \
+            --output-dir experiment-021-output
+      - name: Show scientific summary
+        if: always()
+        run: |
+          test -f experiment-021-output/modal_spectrum.csv && cat experiment-021-output/modal_spectrum.csv || true
+          test -f experiment-021-output/duration_summary.csv && cat experiment-021-output/duration_summary.csv || true
+          test -f experiment-021-output/physical_effects.csv && cat experiment-021-output/physical_effects.csv || true
+          test -f experiment-021-output/resonances.csv && cat experiment-021-output/resonances.csv || true
+          test -f experiment-021-output/acoustic_effects.csv && cat experiment-021-output/acoustic_effects.csv || true
+          test -f experiment-021-output/decision.json && cat experiment-021-output/decision.json || true
+      - name: Upload research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-021-output
+          path: experiment-021-output/
+          if-no-files-found: warn
