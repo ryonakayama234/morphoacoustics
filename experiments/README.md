@@ -22,6 +22,7 @@ Current sequence:
 16. `016_same_task_morphology_covariance` — apply one unchanged non-empty CONSTRICT task across a preregistered 10% prepared-tract length intervention and test task residuals, body-specific physical scaling, acoustic scale covariance, and preservation of the dimensionless Gesture effect.
 17. `017_embodied_infeasibility_boundary` — hold one valid non-empty CONSTRICT task and acoustic geometry fixed while only articulator reach crosses the task boundary; require explicit INFEASIBLE with no physical/acoustic fallback on the unreachable body.
 18. `018_local_area_morphology_sensitivity` — sweep one non-self-similar prepared rest-area axis at -10/-5/0/+5/+10% while preserving the same task; measure resolved effects, monotonicity, dimensionless sensitivity, and nonlinear departure against an independent Wolfram oracle.
+19. `019_material_conditioned_realization` — compare the production hard-projector null model against an experiment-local quasi-static minimum-energy realizer under one dimensionless stiffness intervention while preserving the exact same task target.
 
 Each experiment should state:
 
