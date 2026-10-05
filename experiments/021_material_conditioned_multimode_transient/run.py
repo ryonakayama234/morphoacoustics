@@ -617,6 +617,17 @@ def _initial_gates() -> dict[str, bool | None]:
     }
 
 
+
+def _json_default(value: Any) -> Any:
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    raise TypeError(
+        f"Object of type {type(value).__name__} is not JSON serializable"
+    )
+
+
 def _persist_decision(
     *,
     output_dir: Path,
@@ -680,6 +691,7 @@ def _persist_decision(
             decision,
             indent=2,
             sort_keys=True,
+            default=_json_default,
         )
         + "\n",
         encoding="utf-8",
