@@ -2072,6 +2072,7 @@ def main() -> None:
             decision,
             indent=2,
             sort_keys=True,
+            default=_json_default,
         )
     )
     if (
