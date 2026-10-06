@@ -1,0 +1,31 @@
+trial_id,response,response_note,truth,correct
+T01,u,low confidence,i,false
+T02,a,,a,true
+T03,u,low confidence,u,true
+T04,i,,i,true
+T05,UNIDENTIFIABLE,,i,false
+T06,a,,a,true
+T07,a,,a,true
+T08,UNIDENTIFIABLE,"listener reported i/u mixture; frozen as UNIDENTIFIABLE before key reveal",i,false
+T09,a,,a,true
+T10,u,low confidence,u,true
+T11,u,low confidence,u,true
+T12,u,low confidence,u,true
+T13,u,low confidence,u,true
+T14,a,,a,true
+T15,u,low confidence,u,true
+T16,u,low confidence,u,true
+T17,a,,a,true
+T18,a,,a,true
+T19,i,,i,true
+T20,a,,a,true
+T21,u,low confidence,u,true
+T22,i,,i,true
+T23,a,,a,true
+T24,u,,u,true
+T25,i,,i,true
+T26,a,,a,true
+T27,i,,i,true
+T28,i,,i,true
+T29,i,,i,true
+T30,u,,u,true
