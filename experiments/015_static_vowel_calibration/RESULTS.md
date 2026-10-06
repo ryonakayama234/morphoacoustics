@@ -1,36 +1,37 @@
-# Experiment 015 results — static vowel calibration objective gate
+# Experiment 015 results — static vowel calibration
 
 Issue: #31
 
 ## Current decision
 
-**ACOUSTIC_VOWEL_FIXTURE_VALIDATED_AWAITING_LISTENING**
+**ACOUSTICS_VALID_PERCEPTION_FAILED**
 
-The preregistered objective gate passed for the published Arai /a i u/ plate-model fixtures under the current low-fidelity acoustic path.
+The preregistered objective gate passed, but the blinded human gate did not: overall identification was 27/30, while /i/ reached only 7/10 and therefore missed the preregistered per-vowel threshold of >=8/10.
 
-This establishes only that:
+This establishes that:
 
 - the published 16-section fixtures were reproduced deterministically;
 - the Python transfer response matches the independent Wolfram oracle;
 - the /a i u/ low-order resonance patterns remain separated under the preregistered 32-section regrid perturbation;
 - the inherited LF source / renderer artifact gates pass;
-- level-matched blinded listening stimuli were generated without clipping.
+- /a/ and /u/ were identified 10/10 in this single-listener engineering gate;
+- the current complete source/filter/rendering path does **not** yet satisfy the frozen three-vowel perceptual criterion because /i/ was identified 7/10.
 
-It does **not** establish that the outputs are perceived as /a/, /i/, and /u/. The primary blinded human gate remains outstanding.
+The failed per-vowel gate is not relaxed post hoc. This revision does not proceed to #32.
 
 ## Provenance
 
-Successful objective CI run:
+Canonical completed objective run used for the human gate:
 
-- GitHub Actions run: 37069840637
+- GitHub Actions run: 37070023407
 - branch: `v1-static-vowel-calibration`
-- source commit: `53000ef5c835dac0d136808b1ccf51fae67eb5a4`
-- full output artifact ID: `11254585474`
-- full output artifact digest: `sha256:3bd01186376dccd3d874b8495a5a8ab557dcca50062a90dccc780f9828ce0608`
-- primary blind-listening artifact ID: `11254460679`
-- primary blind-listening artifact digest: `sha256:f38a6ca7bc7cb3d89a2fb9d9fb200909265253d1c902eaf9c11aa7439e81a1ed`
+- source commit: `4b9eacee8076b9cf285d24f79b6d6daa26d71449`
+- full output artifact ID: `11254830785`
+- full output artifact digest: `sha256:b3e520dca05dd59bb0faede7ddce8b739a25e9ddf6563a21da880ccca5371129`
+- primary blind-listening artifact ID: `11255010363`
+- primary blind-listening artifact digest: `sha256:24c57931f542e9b0264e6ea83cbf21ae137d6f7f07bdf96d2cc49f5bd3bb97b7`
 
-Repository tests also passed for the same PR head.
+Repository tests and Experiment 015 workflow passed for the same PR head. A later same-head workflow produced byte-identical uncompressed blind entries; the canonical human gate remained tied to the PR-body artifact above.
 
 ## Reference fixture
 
@@ -158,6 +159,53 @@ The independent-unbiased three-choice chance references remain:
 
 These are not population-level p-values.
 
+## Blinded human gate result
+
+Responses were frozen in Issue #31 before the blind key was opened. Ambiguous notation was resolved before reveal: entries marked `u ?` counted as /u/ with low confidence; T08 (`i u 混ざった感じ`) was frozen as UNIDENTIFIABLE.
+
+The exact decoded trial record is checked in as `human_gate.csv`.
+
+Confusion matrix, rows = true class and columns = response `a / i / u / UNIDENTIFIABLE`:
+
+| truth | a | i | u | UNIDENTIFIABLE | correct |
+|---|---:|---:|---:|---:|---:|
+| /a/ | 10 | 0 | 0 | 0 | **10/10** |
+| /i/ | 0 | 7 | 1 | 2 | **7/10** |
+| /u/ | 0 | 0 | 10 | 0 | **10/10** |
+
+Overall: **27/30 = 90%**.
+
+Preregistered gate:
+
+- each vowel >=8/10: **FAIL** because /i/ = 7/10;
+- total >=24/30: PASS.
+
+Final decision: **ACOUSTICS_VALID_PERCEPTION_FAILED**.
+
+The qualitative listener report ranked clarity as `a > i > u`: /a/ sounded clearly identifiable, /i/ reasonably identifiable, and /u/ noticeably lower in quality. This is importantly different from categorical accuracy: /u/ was nevertheless identified 10/10, while /i/ caused all three categorical errors. Therefore intelligibility/identity and voice quality must remain separate evaluation axes.
+
+### Post-reveal diagnostic analysis
+
+The /i/ failure has a concrete source/filter hypothesis worth testing before changing geometry.
+
+Using the checked-in segmented-tube model, independent Wolfram evaluation at the nearest 100 Hz source harmonics gives the tract transfer ratio near P2 versus P1:
+
+- /a/: +1.33 dB
+- /i/: **+3.82 dB**
+- /u/: -3.27 dB
+
+But analysis of the rendered steady-state listening WAVs gives P2-near versus P1-near harmonic levels of approximately:
+
+- /a/: -10.55 dB
+- /i/: **-28.80 dB**
+- /u/: -23.56 dB
+
+For /i/, the tract itself therefore does not explain a weak P2 cue: the current complete rendering is approximately 32.6 dB lower at the 2.3 kHz source harmonic than at the 300 Hz harmonic after subtracting the tract-transfer ratio. This is consistent with the fixed LF-family source spectral tilt starving the high-F2 cue required by this /i/ fixture.
+
+This is a **diagnostic hypothesis**, not a proven cause. The next experiment should change the excitation spectrum only while keeping vowel geometry, acoustic backend, observer/radiation, level normalization, and blind evaluation fixed.
+
+The listener also hypothesized that /u/ quality may relate to stronger mouth/lip-shaping demands. The Arai fixture already contains both a mid-tract constriction and a narrower lip-end opening for /u/, so coarse lip narrowing is present in the current 1D geometry. A remaining /u/ quality gap could instead involve source spectrum, radiation, 3D/protrusion detail, or the difference between coarse tube opening and real articulatory lip configuration. Because /u/ categorical identification was 10/10, this quality question should not be conflated with the /i/ gate failure.
+
 ## Implementation correction before successful run
 
 The first implementation attempted to require five response peaks below 5 kHz for the refined 32-section perturbation. The preregistered discretization gate uses only P1/P2. The refined /i/ fixture exposes only four local maxima below 5 kHz, so the run stopped before producing a scientific decision.
@@ -166,14 +214,16 @@ The code was corrected to require only the preregistered P1/P2 for the refined c
 
 ## Claim boundary
 
-The strongest objective claim before human listening is:
+The strongest completed claim is:
 
-> The current morphoacoustics acoustic path reproduces three published plate-model vowel tract fixtures with exact agreement to the independent transfer-response oracle on the chosen scan grid, preserves their low-order resonance separation beyond the preregistered discretization margin, and renders finite artifact-controlled level-matched listening stimuli.
+> The current morphoacoustics acoustic path numerically reproduces three published plate-model vowel tract fixtures and yields strong but incomplete single-listener vowel identification under the frozen LF/rendering path: /a/ 10/10, /i/ 7/10, /u/ 10/10. Because /i/ missed the preregistered 8/10 per-vowel threshold, this revision does not establish the three-vowel perceptual capability required to proceed to continuous vowel motion.
 
-Whether those stimuli actually carry vowel identity perceptually remains an empirical human question.
+This result supports a narrow follow-up on excitation-spectrum versus high-F2 cue availability rather than immediate expansion to Gesture realization, general TTS, or higher-fidelity anatomy.
 
 ## Next branch
 
-- human Gate passes -> SUPPORT_STATIC_VOWEL -> #32
-- objective path valid but identification fails -> ACOUSTICS_VALID_PERCEPTION_FAILED
-- do not introduce task-level Gesture realization until the perceptual result is known
+- record this revision as **ACOUSTICS_VALID_PERCEPTION_FAILED**;
+- do **not** start #32 yet;
+- run a narrow V1b diagnostic holding tract geometry fixed and intervening on source spectral tilt / high-frequency excitation;
+- only after the frozen three-vowel human gate is satisfied should #32 begin;
+- keep /u/ voice-quality investigation separate from categorical vowel identity unless a later experiment links them.
