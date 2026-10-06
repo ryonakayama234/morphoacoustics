@@ -1,0 +1,1 @@
+Experiment 024 preregistration was corrected before implementation because the existing listening observer includes frequency-proportional scaling. The corrected oracle is recorded on issue #55 before any Experiment 024 outputs were generated.
