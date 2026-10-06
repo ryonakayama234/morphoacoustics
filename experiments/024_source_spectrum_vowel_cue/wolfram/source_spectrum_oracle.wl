@@ -2,7 +2,7 @@ Module[
   {
     c = 343., rho = 1.21, alpha = 0.4, dx = 0.01,
     loadFraction = 0.05, f0 = 100., fixtures, harmonics,
-    transferMagnitude, sourceRatioDb, tractRatioDb, predictedDb
+    transferMagnitude, sourceRatioDb, observerRatioDb, tractRatioDb, predictedDb
   },
 
   fixtures = <|
@@ -42,14 +42,14 @@ Module[
     20 Log10[n1/n2]
   ];
 
-  tractRatioDb[v_] := Module[{n1, n2, h1, h2},
+  observerRatioDb[v_] := Module[{n1, n2},\n    {n1, n2} = harmonics[v];\n    20 Log10[n2/n1]\n  ];\n\n  tractRatioDb[v_] := Module[{n1, n2, h1, h2},
     {n1, n2} = harmonics[v];
     h1 = transferMagnitude[fixtures[v], n1 f0];
     h2 = transferMagnitude[fixtures[v], n2 f0];
     20 Log10[h2/h1]
   ];
 
-  predictedDb[v_] := sourceRatioDb[v] + tractRatioDb[v];
+  predictedDb[v_] := sourceRatioDb[v] + observerRatioDb[v] + tractRatioDb[v];
 
   Export[
     "source_spectrum_oracle.json",
@@ -58,7 +58,7 @@ Module[
       "harmonic_count" -> 40,
       "source_model" -> "A_n proportional to 1/n",
       "source_p2_over_p1_db" -> AssociationMap[sourceRatioDb, Keys[fixtures]],
-      "tract_p2_over_p1_db" -> AssociationMap[tractRatioDb, Keys[fixtures]],
+      "observer_scaling_p2_over_p1_db" -> AssociationMap[observerRatioDb, Keys[fixtures]],\n      "tract_p2_over_p1_db" -> AssociationMap[tractRatioDb, Keys[fixtures]],
       "predicted_rendered_p2_over_p1_db" -> AssociationMap[predictedDb, Keys[fixtures]]
     |>,
     "RawJSON"
