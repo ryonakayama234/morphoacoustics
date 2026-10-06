@@ -1,0 +1,54 @@
+name: experiment-023
+
+on:
+  push:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-023.yml"
+  pull_request:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-023.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 023
+        run: |
+          python experiments/023_static_vowel_calibration/run.py \
+            --output-dir experiment-023-output
+      - name: Show scientific summary
+        run: |
+          cat experiment-023-output/resonance_peaks.csv
+          cat experiment-023-output/discretization_metrics.csv
+          cat experiment-023-output/signal_metrics.csv
+          cat experiment-023-output/decision.json
+      - name: Upload primary blind listening set
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-023-primary-blind-listening
+          path: experiment-023-output/listening/primary_blind/
+      - name: Upload full research outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-023-output
+          path: experiment-023-output/
