@@ -198,9 +198,9 @@ play "wet_contact.wav"
 
 This preserves the project invariant that the physical causal path cannot be bypassed.
 
-## Propagation remains separate from source generation
+## Source generation and propagation remain semantically distinguishable
 
-Source generation and acoustic propagation must remain separate concerns.
+Source generation and acoustic propagation must remain distinguishable in model semantics and provenance. This does not require separate numerical backends: a higher-fidelity backend may solve them jointly or with bidirectional coupling.
 
 A source may be represented at different fidelity levels as, for example:
 
@@ -209,7 +209,7 @@ A source may be represented at different fidelity levels as, for example:
 - a distributed source patch;
 - a local field extracted from a higher-fidelity coupled simulation.
 
-Propagation may independently vary in fidelity:
+When represented separately, propagation may vary in fidelity:
 
 - reduced cavity / transmission-line model;
 - loss / radiation model;
@@ -217,7 +217,7 @@ Propagation may independently vary in fidelity:
 - local near-field model;
 - higher-fidelity FEM validation.
 
-This separation is consistent with standard computational-acoustics formulations in which source terms / source boundary conditions and propagation-domain boundary conditions are modeled independently.
+This distinction is consistent with computational-acoustics formulations that expose source terms / source boundary conditions and propagation-domain conditions as distinct model ingredients. It does not require them to be solved by independent numerical systems.
 
 Wolfram references:
 
@@ -227,7 +227,7 @@ Wolfram references:
 - `AcousticRadiationValue`: https://reference.wolfram.com/language/ref/AcousticRadiationValue.html
 - `AcousticImpedanceValue`: https://reference.wolfram.com/language/ref/AcousticImpedanceValue.html
 
-The purpose of these references is architectural: they support keeping sources, propagation, and boundaries distinct. They do not validate a specific wet-contact model.
+The purpose of these references is architectural: they support keeping sources, propagation, and boundaries semantically identifiable as model ingredients without requiring separate numerical solvers. They do not validate a specific wet-contact model.
 
 ## Near-field receiver candidate
 
@@ -276,17 +276,32 @@ Very-close oral/contact events should not be assumed to be point sources in the 
 
 A tongue or contact patch may occupy a spatially extended area.
 
-The conceptual receiver observation may therefore be written as a distributed-source integral:
+The conceptual receiver observation may therefore be written using a causal temporal transfer operator over a distributed source:
 
 ~~~text
 p_receiver(t)
   = integral_over_source_surface(
-      transfer(source_position, receiver_state)
-      * local_source(source_position, t)
+      receiver_transfer(source_position, receiver_state)
+        [local_source(source_position, ·)](t)
     )
 ~~~
 
-A low-fidelity backend may approximate this with one or several source patches.
+Here `receiver_transfer` is a causal temporal operator, not necessarily an instantaneous scalar gain. It may include propagation delay, frequency-dependent phase, filtering, and interference.
+
+For a linear time-invariant or frozen receiver state, the same idea may be written explicitly as an impulse-response convolution:
+
+~~~text
+p_receiver(t)
+  = integral_over_source_surface(
+      integral_over_delay(
+        h(source_position, receiver_state; delay)
+        * local_source(source_position, t - delay)
+        d_delay
+      )
+    )
+~~~
+
+A memoryless scalar gain is only a low-fidelity special case. A low-fidelity backend may also approximate the source surface with one or several source patches.
 
 The approximation level belongs to the backend, not to the canonical task representation.
 
@@ -365,7 +380,7 @@ This research track should preserve the following invariants.
 1. **Motor intent does not directly specify waveform samples.**
 2. **A non-vocal task is not an audio sample trigger.**
 3. **Wet-contact parameters belong to physical state / material / closure models, not to linguistic or creative labels by default.**
-4. **Source generation and propagation remain separable backend responsibilities.**
+4. **Source-generation and propagation semantics remain distinguishable, even when a backend solves them jointly or with bidirectional coupling.**
 5. **Receiver semantics are distinct from source morphology.**
 6. **Web/Studio may execute rendering but must not silently redefine scientific receiver assumptions.**
 7. **Non-acoustic observables are not collapsed into audio parameters.**
