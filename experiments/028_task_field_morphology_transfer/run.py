@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import importlib.util
+import inspect
 import json
 import math
 import platform
@@ -19,6 +20,8 @@ from morphoacoustics.physical import Tract1DGeometry, TubeSection
 HERE = Path(__file__).resolve().parent
 EXPERIMENTS = HERE.parent
 ORACLE_PATH = HERE / "wolfram" / "v3b_oracle.json"
+FROZEN_REFERENCE_PATH = HERE / "frozen_reference.json"
+REPOSITORY_ROOT = EXPERIMENTS.parent
 
 M0_SECTION_LENGTH_M = 0.010
 M1_SECTION_LENGTH_M = 0.011
@@ -28,6 +31,20 @@ ENDPOINT_ERROR_RATIO_LIMIT = 0.20
 TRANSFER_ERROR_RATIO_DELTA_LIMIT = 0.005
 MORPHOLOGY_EFFECT_MARGIN = 5.0
 RESONANCE_STEP_S = 0.010
+TRAJECTORY_STEP_RATIO_LIMIT = 0.20
+ARTIFACT_JUMP_RATIO_LIMIT = 3.0
+TEMPORAL_STABILITY_LIMIT = 0.20
+LISTENING_PEAK = 0.90
+
+FROZEN_GATE = {
+    "M1_endpoint_error_ratio_max": ENDPOINT_ERROR_RATIO_LIMIT,
+    "cross_body_endpoint_error_ratio_delta_max": TRANSFER_ERROR_RATIO_DELTA_LIMIT,
+    "metric_coordinate_scale_abs_tolerance": METRIC_SCALE_ATOL,
+    "body_effect_min_over_peak_tolerance": MORPHOLOGY_EFFECT_MARGIN,
+    "trajectory_step_ratio_max": TRAJECTORY_STEP_RATIO_LIMIT,
+    "artifact_jump_ratio_max": ARTIFACT_JUMP_RATIO_LIMIT,
+    "temporal_normalized_rms_floor_max": TEMPORAL_STABILITY_LIMIT,
+}
 
 
 def load_experiment_module(name: str, path: Path) -> ModuleType:
@@ -75,6 +92,132 @@ def canonical_json_bytes(value: object) -> bytes:
 
 def sha256_json(value: object) -> str:
     return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
+
+
+def implementation_identity() -> dict[str, object]:
+    """Fingerprint files actually loaded and the live realizer callables.
+
+    The checked-in expected hashes were captured from audited head 990e602,
+    not from the current working tree at experiment execution time.
+    """
+    modules: dict[str, ModuleType] = {}
+
+    def visit(module: ModuleType) -> None:
+        path = Path(module.__file__).resolve()
+        relative = path.relative_to(REPOSITORY_ROOT).as_posix()
+        if relative in modules:
+            return
+        modules[relative] = module
+        for name, child in vars(module).items():
+            if name.startswith("EXP") and isinstance(child, ModuleType):
+                visit(child)
+
+    visit(EXP27)
+    files = {
+        relative: hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
+        for relative, module in sorted(modules.items())
+    }
+    for directory in ("acoustics", "physical"):
+        for path in sorted((REPOSITORY_ROOT / "src" / "morphoacoustics" / directory).glob("*.py")):
+            files[path.relative_to(REPOSITORY_ROOT).as_posix()] = (
+                hashlib.sha256(path.read_bytes()).hexdigest()
+            )
+
+    functions = {}
+    for name in (
+        "section_coordinates", "gaussian_kernel", "task_log_diameter_delta_for",
+        "analytic_task_activation_scalar", "task_activation_at_time",
+        "task_activations_at_time", "realize_task_geometry_from_activations",
+        "realize_task_geometry", "task_geometry_for_time", "render_task_continuous",
+    ):
+        try:
+            function = getattr(EXP27, name)
+            source = inspect.getsource(function)
+            code = function.__code__
+            functions[name] = {
+                "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+                # inspect can unwrap decorated functions. Bind the live code
+                # location too, so a replacement wrapper still fails.
+                "code_path": Path(code.co_filename).resolve().relative_to(REPOSITORY_ROOT).as_posix(),
+                "code_first_line": code.co_firstlineno,
+                "code_name": code.co_name,
+            }
+        except (AttributeError, OSError, TypeError, ValueError):
+            functions[name] = None
+
+    constants = {
+        relative: {
+            name: value for name, value in sorted(vars(module).items())
+            if name.isupper() and isinstance(value, (str, int, float, bool))
+        }
+        for relative, module in sorted(modules.items())
+    }
+    return {"files_sha256": files, "realizer_functions_sha256": functions,
+            "runtime_constants": constants}
+
+
+def frozen_m0_matches(
+    m0_a: Tract1DGeometry,
+    m0_i: Tract1DGeometry,
+    frozen: dict[str, object],
+) -> bool:
+    expected = frozen["M0"]
+    return all(
+        np.array_equal(EXP26.geometry_lengths(geometry), expected["section_lengths_m"])
+        and np.array_equal(EXP26.geometry_areas(geometry), expected[f"{vowel}_areas_m2"])
+        for vowel, geometry in (("a", m0_a), ("i", m0_i))
+    )
+
+
+def frozen_preflight(
+    oracle: dict[str, object],
+    frozen: dict[str, object],
+    m0_a: Tract1DGeometry,
+    m0_i: Tract1DGeometry,
+) -> dict[str, object]:
+    identity = implementation_identity()
+    checks = {
+        "executed_implementation_matches": identity == frozen["implementation"],
+        "M0_matches_frozen_body": frozen_m0_matches(m0_a, m0_i, frozen),
+        "oracle_gate_matches_local_limits": oracle.get("frozen_gate") == FROZEN_GATE,
+        "runtime_gate_matches_frozen_limits": {
+            "M1_endpoint_error_ratio_max": ENDPOINT_ERROR_RATIO_LIMIT,
+            "cross_body_endpoint_error_ratio_delta_max": TRANSFER_ERROR_RATIO_DELTA_LIMIT,
+            "metric_coordinate_scale_abs_tolerance": METRIC_SCALE_ATOL,
+            "body_effect_min_over_peak_tolerance": MORPHOLOGY_EFFECT_MARGIN,
+            "trajectory_step_ratio_max": TRAJECTORY_STEP_RATIO_LIMIT,
+            "artifact_jump_ratio_max": ARTIFACT_JUMP_RATIO_LIMIT,
+            "temporal_normalized_rms_floor_max": TEMPORAL_STABILITY_LIMIT,
+        } == oracle.get("frozen_gate"),
+        "oracle_matches_frozen_record": sha256_json(oracle) == frozen["oracle_sha256_canonical_json"],
+        "execution_schedule_matches": {
+            "sample_rate_hz": SAMPLE_RATE_HZ, "duration_s": DURATION_S,
+            "primary_control_step_s": PRIMARY_CONTROL_STEP_S,
+            "reference_control_step_s": REFERENCE_CONTROL_STEP_S,
+            "primary_hop_size": PRIMARY_HOP_SIZE,
+            "reference_hop_size": REFERENCE_HOP_SIZE,
+            "resonance_step_s": RESONANCE_STEP_S, "listening_peak": LISTENING_PEAK,
+        } == frozen["execution_schedule"],
+    }
+    return {"checks": checks, "pass": all(checks.values()),
+            "implementation_sha256": sha256_json(identity), "implementation": identity,
+            "reference_commit": frozen["reference_commit"]}
+
+
+def reject_preflight(output_dir: Path, preflight: dict[str, object]) -> dict[str, object]:
+    decision = {
+        "decision": (
+            "MORPHOLOGY_INTERVENTION_INVALID"
+            if not preflight["checks"]["M0_matches_frozen_body"]
+            else "IMPLEMENTATION_MISMATCH"
+        ),
+        "preflight": preflight,
+        "gates": {"frozen_reference_preflight": False},
+        "claim_boundary": "No transfer claim: frozen input or implementation changed.",
+    }
+    for name in ("decision.json", "provenance.json"):
+        (output_dir / name).write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
+    return decision
 
 
 def realizer_payload() -> dict[str, object]:
@@ -352,12 +495,20 @@ def run(output_dir: Path) -> dict[str, object]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+    frozen = json.loads(FROZEN_REFERENCE_PATH.read_text(encoding="utf-8"))
     v3a_oracle = json.loads(Path(EXP27.ORACLE_PATH).read_text(encoding="utf-8"))
+
+    m0_a = EXP26.EXP23.primary_geometry("a")
+    m0_i = EXP26.EXP23.primary_geometry("i")
+    preflight = frozen_preflight(oracle, frozen, m0_a, m0_i)
+    if not preflight["pass"]:
+        return reject_preflight(output_dir, preflight)
 
     task_plan = EXP27.task_plan_payload()
     realizer = realizer_payload()
     task_digest = sha256_json(task_plan)
-    realizer_digest = sha256_json(realizer)
+    realizer_parameter_digest = sha256_json(realizer)
+    realizer_digest = preflight["implementation_sha256"]
 
     (output_dir / "task_plan.json").write_text(
         json.dumps(task_plan, ensure_ascii=False, indent=2) + "\n",
@@ -410,8 +561,6 @@ def run(output_dir: Path) -> dict[str, object]:
         for row in schedule_checks
     )
 
-    m0_a = EXP26.EXP23.primary_geometry("a")
-    m0_i = EXP26.EXP23.primary_geometry("i")
     m1_a = with_section_length(
         m0_a,
         M1_SECTION_LENGTH_M,
@@ -600,7 +749,7 @@ def run(output_dir: Path) -> dict[str, object]:
     trajectory_stable = bool(
         np.all(np.isfinite(m1_peaks))
         and m1_peaks.shape[1] >= 3
-        and m1_step_ratio < EXP27.TRAJECTORY_STEP_RATIO_LIMIT
+        and m1_step_ratio < TRAJECTORY_STEP_RATIO_LIMIT
     )
 
     sources, _ = EXP26.EXP13.build_sources()
@@ -608,6 +757,7 @@ def run(output_dir: Path) -> dict[str, object]:
     source = np.asarray(source_result.source, dtype=np.float64)
     source_regression = EXP26.source_regression(source_result)
     source_hash = EXP26.sha256_float64(source)
+    source_identity_pass = source_hash == frozen["source_sha256_float64"]
 
     t0 = EXP27.render_task_continuous(
         source,
@@ -646,12 +796,12 @@ def run(output_dir: Path) -> dict[str, object]:
     transition_jump, endpoint_jump, artifact_ratio = EXP26.artifact_jump_ratio(t1)
     artifact_pass = bool(
         math.isfinite(artifact_ratio)
-        and artifact_ratio < EXP27.ARTIFACT_JUMP_RATIO_LIMIT
+        and artifact_ratio < ARTIFACT_JUMP_RATIO_LIMIT
     )
     temporal_floor = EXP26.normalized_rms_difference(t1, t1_ref)
     temporal_pass = bool(
         math.isfinite(temporal_floor)
-        and temporal_floor < EXP27.TEMPORAL_STABILITY_LIMIT
+        and temporal_floor < TEMPORAL_STABILITY_LIMIT
     )
     body_waveform_effect = EXP26.normalized_rms_difference(t1, t0)
 
@@ -666,7 +816,7 @@ def run(output_dir: Path) -> dict[str, object]:
         "T1_M1_task_field": np.asarray(t1 * listening_gain, dtype=np.float64),
     }
     listening_no_clipping = all(
-        float(np.max(np.abs(values))) <= EXP27.LISTENING_PEAK + 1e-7
+        float(np.max(np.abs(values))) <= LISTENING_PEAK + 1e-7
         for values in listening.values()
     )
     listening_dir = output_dir / "listening" / "named"
@@ -712,6 +862,7 @@ def run(output_dir: Path) -> dict[str, object]:
         oracle_pass
         and m0_v3a_peak_match
         and source_regression["pass"]
+        and source_identity_pass
     )
     numerical_pass = bool(
         geometry_valid
@@ -746,6 +897,9 @@ def run(output_dir: Path) -> dict[str, object]:
         "issue": 64,
         "parent_issue": 33,
         "reference_experiment": 27,
+        "frozen_reference_preflight": preflight,
+        "realizer_parameters_sha256": realizer_parameter_digest,
+        "frozen_gate": FROZEN_GATE,
         "task_plan_sha256": {
             "M0": task_digest,
             "M1": task_digest,
@@ -764,6 +918,7 @@ def run(output_dir: Path) -> dict[str, object]:
             "f0_hz": EXP26.BASE_F0_HZ,
             "rd": EXP26.EXP13.RD,
             "sha256_float64": source_hash,
+            "matches_frozen_source": source_identity_pass,
         },
         "renderer": {
             "transfer": "Experiment-009 far_field_pressure_transfer",
@@ -790,6 +945,7 @@ def run(output_dir: Path) -> dict[str, object]:
 
     decision = {
         "decision": decision_name,
+        "preflight": preflight,
         "gates": {
             "representation_invariant": representation_pass,
             "morphology_intervention_isolated": morphology_isolated,
@@ -812,6 +968,8 @@ def run(output_dir: Path) -> dict[str, object]:
             "sha256_M0": realizer_digest,
             "sha256_M1": realizer_digest,
             "frozen_core_match": realizer_core_match,
+            "parameters_sha256": realizer_parameter_digest,
+            "executed_implementation_matches_frozen_reference": True,
         },
         "morphology": {
             "isolated": morphology_isolated,
@@ -838,7 +996,7 @@ def run(output_dir: Path) -> dict[str, object]:
         },
         "trajectory": {
             "M1_max_adjacent_p1p2_step_ratio": m1_step_ratio,
-            "step_ratio_limit": EXP27.TRAJECTORY_STEP_RATIO_LIMIT,
+            "step_ratio_limit": TRAJECTORY_STEP_RATIO_LIMIT,
             "max_matched_time_M0_M1_p1p2_distance_hz": float(np.max(matched)),
         },
         "body_effect": {
@@ -859,9 +1017,9 @@ def run(output_dir: Path) -> dict[str, object]:
             "transition_max_adjacent_sample_jump_pa": transition_jump,
             "endpoint_region_max_adjacent_sample_jump_pa": endpoint_jump,
             "artifact_jump_ratio": artifact_ratio,
-            "artifact_jump_ratio_limit": EXP27.ARTIFACT_JUMP_RATIO_LIMIT,
+            "artifact_jump_ratio_limit": ARTIFACT_JUMP_RATIO_LIMIT,
             "M1_temporal_normalized_rms_floor": temporal_floor,
-            "temporal_stability_limit": EXP27.TEMPORAL_STABILITY_LIMIT,
+            "temporal_stability_limit": TEMPORAL_STABILITY_LIMIT,
             "M0_M1_normalized_rms_difference": body_waveform_effect,
             "listening_no_clipping": listening_no_clipping,
         },

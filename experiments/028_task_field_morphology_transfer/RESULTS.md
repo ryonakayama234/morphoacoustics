@@ -8,7 +8,46 @@ Parent: #33
 
 **SUPPORT_TASK_TRANSFER**
 
-All frozen objective Gates passed without changing the Experiment-027 task plan, realizer constants, M1 morphology intervention, or scientific thresholds after Python execution.
+The initial objective checks passed without changing the Experiment-027 task plan,
+realizer constants, M1 morphology intervention, or scientific thresholds. Review
+found incomplete enforcement of frozen implementation/body/threshold identity;
+the stronger checks and rerun below supersede that enforcement claim.
+
+## Review correction and rerun (2026-10-07)
+
+All four findings from the review of `990e602` are addressed:
+
+- The actual imported implementation/dependency files, live realizer functions,
+  their code origins, and runtime constants are pinned to `frozen_reference.json`.
+- M0 /a/ and /i/ area/length vectors are compared exactly with the audited record,
+  independently of the live M0/M1 pair comparison and resonance peak oracle.
+- The trajectory/artifact/temporal limits are local to 028 and exactly matched
+  against the frozen oracle. A canonical oracle digest prevents simultaneous
+  edits to the oracle and local limits from silently rescuing this experiment.
+- The Wolfram source constructs and exports the complete consumed JSON schema.
+  A fresh evaluation through the Wolfram Language evaluator on 2026-10-07
+  reproduced every field exactly after JSON parsing, including all six sets of
+  five peaks, all metrics, model metadata, and thresholds.
+
+The strengthened baseline rerun remains **SUPPORT_TASK_TRANSFER**. All scientific
+metrics and raw waveforms match the original run. No task, geometry parameter,
+source, backend, oracle value, or scientific threshold was retuned.
+
+The executed implementation identity SHA-256 is now:
+
+```text
+045b298d4feb6a559a65a643a79510b985ae5c2eb01baac85f588c23cc84f629
+```
+
+The historical `bf666498...` hash recorded below identifies only the parameter
+dictionary, not the executed code. It is retained separately for traceability.
+
+Regression checks cover the original body-specific activation-squaring example
+(including a decorated replacement), uniform area drift in /a/, /i/, and both,
+dependency-file changes, local and upstream relaxation of all three dynamic
+limits, oracle-limit edits, and source waveform drift. All such conditions are
+rejected; input-preflight violations produce no pressure waveforms. The narrow
+claim boundary remains unchanged.
 
 This supports the narrow claim:
 

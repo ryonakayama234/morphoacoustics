@@ -46,3 +46,27 @@ The body-specific /i/ fixtures are observer references only; the realizer receiv
 ## Claim boundary
 
 A pass establishes only the frozen V3b 1.10x axial-length TASK_TRANSFER fixture. Explicit INFEASIBLE/no-fallback behavior remains V3c.
+
+## Review enforcement
+
+`frozen_reference.json` captures the audited input implementation and M0 body
+from commit `990e602f260b84f7aa7279d332fba90f26feac7d`. Execution compares live
+inputs to that record before rendering. The `realizer_sha256` fields now refer
+to the executed implementation identity; the original parameter-only digest is
+retained separately as `realizer_parameters_sha256` in provenance.
+
+Run the regression checks with:
+
+```sh
+python -m pytest tests/test_experiment_028_frozen_gate.py
+```
+
+Regenerate the complete Wolfram oracle without overwriting the frozen JSON:
+
+```sh
+wolframscript -file experiments/028_task_field_morphology_transfer/wolfram/v3b_oracle.wl /tmp/v3b_regenerated.json
+python experiments/028_task_field_morphology_transfer/wolfram/verify_oracle.py /tmp/v3b_regenerated.json
+```
+
+The verifier compares all fields exactly after JSON parsing. Formatting and
+scientific-notation spelling can differ; no numeric threshold is relaxed.

@@ -52,21 +52,25 @@ delta = kappa (
 );
 taskEndpoint = a Exp[2 delta];
 
-peaks[areas_, sectionLen_] := Module[{mag, zcOut, load, m, sec, k, idx},
+(* Vectorize across frequencies; retain the same 2x2 section-matrix product. *)
+peaks[areas_, sectionLen_] := Module[
+  {mag, zcOut, load, k, idx, cs, sn, aa, bb, cc, dd, zc},
   zcOut = rho c/Last[areas];
   load = loadFrac zcOut;
-  mag = Table[
-    k = 2 Pi f/c - I att;
-    m = IdentityMatrix[2];
-    Do[
-      sec = {{Cos[k sectionLen], I (rho c/ar) Sin[k sectionLen]},
-             {I Sin[k sectionLen]/(rho c/ar), Cos[k sectionLen]}};
-      m = m.sec,
-      {ar, areas}
-    ];
-    Abs[1/(m[[2, 1]] load + m[[2, 2]])],
-    {f, freqs}
+  k = 2 Pi freqs/c - I att;
+  cs = Cos[k sectionLen];
+  sn = I Sin[k sectionLen];
+  aa = dd = ConstantArray[1., Length[freqs]];
+  bb = cc = ConstantArray[0., Length[freqs]];
+  Do[
+    zc = rho c/ar;
+    {aa, bb, cc, dd} = {
+      aa cs + bb sn/zc, aa zc sn + bb cs,
+      cc cs + dd sn/zc, cc zc sn + dd cs
+    },
+    {ar, areas}
   ];
+  mag = Abs[1/(cc load + dd)];
   idx = Select[Range[2, Length[mag] - 1],
     mag[[#]] > mag[[# - 1]] && mag[[#]] >= mag[[# + 1]] &];
   Take[freqs[[idx]], UpTo[5]]
@@ -93,17 +97,67 @@ scaleResiduals = Abs[Join[
   pT1[[1 ;; 3]] - pT0[[1 ;; 3]]/1.1
 ]];
 
-<|
+(* Provenance below describes the original preregistered oracle freeze, not
+   the timing of a later regeneration/verification run. *)
+oracle = <|
+  "provenance" -> <|
+    "tool" -> "Wolfram Language evaluator",
+    "evaluated_before_python_experiment" -> True,
+    "date" -> "2026-10-07",
+    "purpose" -> "independent V3b axial-length morphology-transfer oracle for the frozen Experiment-027 task plan"
+  |>,
+  "model" -> <|
+    "sound_speed_m_s" -> c, "air_density_kg_m3" -> rho,
+    "attenuation_np_m" -> att, "load_fraction_of_outlet_zc" -> loadFrac,
+    "frequency_scan_start_hz" -> First[freqs],
+    "frequency_scan_end_hz" -> Last[freqs],
+    "frequency_scan_step_hz" -> 0.25, "peak_tolerance_hz" -> 0.5
+  |>,
+  "morphologies" -> <|
+    "M0" -> <|"section_count" -> 16, "section_length_m" -> sectionLength0,
+      "total_length_m" -> totalLength0|>,
+    "M1" -> <|"section_count" -> 16, "section_length_m" -> sectionLength1,
+      "total_length_m" -> totalLength1, "axial_scale_over_M0" -> 1.1|>
+  |>,
+  "realizer" -> <|
+    "field_space" -> "log_diameter",
+    "coordinate_mapping" -> "section slots mapped uniformly to x=j/(N-1)",
+    "kappa" -> kappa, "sigma" -> sigma, "sigma_lip" -> sigmaLip
+  |>,
   "task_plan" -> taskPlan,
   "metric_task_coordinates_m" -> <|"M0" -> N[coords0, 17], "M1" -> N[coords1, 17]|>,
-  "M0_a_peaks_hz" -> pA0,
-  "M0_i_peaks_hz" -> pI0,
-  "M0_task_endpoint_peaks_hz" -> pT0,
-  "M1_a_peaks_hz" -> pA1,
-  "M1_i_peaks_hz" -> pI1,
-  "M1_task_endpoint_peaks_hz" -> pT1,
-  "M0_endpoint_error_ratio" -> N[e0, 17],
-  "M1_endpoint_error_ratio" -> N[e1, 17],
-  "cross_body_endpoint_error_ratio_delta" -> N[Abs[e1 - e0], 17],
-  "max_first_three_mode_residual_from_exact_1_over_1p1_scaling_hz" -> Max[scaleResiduals]
-|>
+  "peak_frequencies_hz" -> <|
+    "M0_a" -> pA0, "M0_i" -> pI0, "M0_task_endpoint" -> pT0,
+    "M1_a" -> pA1, "M1_i" -> pI1, "M1_task_endpoint" -> pT1
+  |>,
+  "metrics" -> <|
+    "M0_endpoint_error_ratio" -> N[e0, 17],
+    "M1_endpoint_error_ratio" -> N[e1, 17],
+    "cross_body_endpoint_error_ratio_delta" -> N[Abs[e1 - e0], 17],
+    "max_first_three_mode_residual_from_exact_1_over_1p1_scaling_hz" -> Max[scaleResiduals]
+  |>,
+  "frozen_gate" -> <|
+    "M1_endpoint_error_ratio_max" -> 0.20,
+    "cross_body_endpoint_error_ratio_delta_max" -> 0.005,
+    "metric_coordinate_scale_abs_tolerance" -> 10.^-12,
+    "body_effect_min_over_peak_tolerance" -> 5.,
+    "trajectory_step_ratio_max" -> 0.20,
+    "artifact_jump_ratio_max" -> 3.,
+    "temporal_normalized_rms_floor_max" -> 0.20
+  |>
+|>;
+
+(* Never overwrite the frozen record by default. With wolframscript:
+   wolframscript -file wolfram/v3b_oracle.wl /tmp/v3b_regenerated.json
+   python wolfram/verify_oracle.py /tmp/v3b_regenerated.json
+   The comparison is schema-complete and exact after JSON parsing. Whitespace
+   and JSON number spelling do not matter; numeric tolerances are not relaxed. *)
+If[StringQ[$InputFileName] && StringLength[$InputFileName] > 0,
+  outputPath = If[Length[$ScriptCommandLine] >= 2 &&
+      StringEndsQ[Last[$ScriptCommandLine], ".json"],
+    Last[$ScriptCommandLine],
+    FileNameJoin[{DirectoryName[$InputFileName], "v3b_oracle.regenerated.json"}]
+  ];
+  Export[outputPath, oracle, "RawJSON"]
+];
+oracle
