@@ -3,7 +3,9 @@ name: experiment-029
 on:
   push:
     paths:
-      - "experiments/008_event_trajectory/**"\n      - "experiments/009_fixed_tract_waveform/**"\n      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
       - "experiments/012_source_renderer_artifacts/**"
       - "experiments/013_parametric_source_prosody/**"
       - "experiments/023_static_vowel_calibration/**"
@@ -19,7 +21,9 @@ on:
       - ".github/workflows/experiment-029.yml"
   pull_request:
     paths:
-      - "experiments/008_event_trajectory/**"\n      - "experiments/009_fixed_tract_waveform/**"\n      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
       - "experiments/012_source_renderer_artifacts/**"
       - "experiments/013_parametric_source_prosody/**"
       - "experiments/023_static_vowel_calibration/**"
