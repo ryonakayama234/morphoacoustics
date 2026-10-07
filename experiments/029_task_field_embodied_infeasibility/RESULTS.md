@@ -36,6 +36,30 @@ Repository CI on the same head:
 - Python 3.13: PASS
 - typecheck: PASS
 
+## Codex review hardening
+
+The first ready-for-review head received two Codex findings:
+
+- **P1:** Experiment 028's runner/preflight had to be pinned *before import*, not merely checked after its live preflight function had executed.
+- **P2:** the Experiment-029 workflow path filters had to include the transitive Experiment-008 and Experiment-011 dependencies recorded in the frozen implementation manifest.
+
+Both findings were addressed without changing any scientific task value, morphology reach endpoint, oracle value, or Gate threshold.
+
+Implementation hardening:
+
+- Experiment-028 runner blob is now verified before dynamic import/execution;
+- the Git blob hash uses the canonical `blob <size>\0<bytes>` representation;
+- push and pull-request workflow filters include Experiments 008 and 011.
+
+An intermediate CI attempt exposed an implementation mistake in the new pre-import guard (missing constant definition) and failed before Experiment 029 executed. That code defect was corrected; no scientific parameter was changed.
+
+Final post-review-fix validation before this results update:
+
+- scientific workflow: `37703773885` — PASS
+- repository tests/typecheck: `37703773989` — PASS
+
+These runs preserve the same scientific decision and outputs while exercising the strengthened audit boundary.
+
 ## Frozen upstream preflight: PASS
 
 Experiment 029 reused Experiment 028's frozen-input preflight and additionally pinned the merged Experiment-028 runner blob.
