@@ -16,6 +16,8 @@ HERE = Path(__file__).resolve().parent
 EXPERIMENTS = HERE.parent
 ORACLE_PATH = HERE / "wolfram" / "source_spectrum_oracle.json"
 
+BASELINE_PATH = HERE / "s0_baseline.json"
+
 HARMONIC_COUNT = 40
 RNG_SEED = 24024
 SOURCE_RATIO_TOLERANCE_DB = 0.25
@@ -97,6 +99,41 @@ def harmonic_ratio_db(values: np.ndarray, n1: int, n2: int) -> float:
     if a1 <= 0.0 or a2 <= 0.0:
         return -math.inf
     return 20.0 * math.log10(a2 / a1)
+
+
+def baseline_reproduction(
+    source_ratios: dict[str, float], rendered_ratios: dict[str, float],
+) -> dict[str, object]:
+    frozen = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+    tolerance = float(frozen["ratio_tolerance_db"])
+    errors: dict[str, dict[str, float | None]] = {}
+    passed = True
+    for key, actual in (
+        ("s0_source_p2_over_p1_db", source_ratios),
+        ("s0_rendered_p2_over_p1_db", rendered_ratios),
+    ):
+        errors[key] = {}
+        for vowel in HARMONICS:
+            value = actual[vowel]
+            expected = float(frozen[key][vowel])
+            error = abs(value - expected) if math.isfinite(value) else None
+            errors[key][vowel] = error
+            passed = passed and error is not None and error <= tolerance
+    return {
+        "pass": passed,
+        "ratio_tolerance_db": tolerance,
+        "abs_errors_db": errors,
+        "provenance": frozen["provenance"],
+    }
+
+
+def i_cue_improvement(s0: float, s1: float) -> tuple[float | None, bool]:
+    if not (math.isfinite(s0) and math.isfinite(s1)):
+        return None, False
+    improvement = s1 - s0
+    return improvement, bool(
+        math.isfinite(improvement) and improvement >= MIN_I_IMPROVEMENT_DB
+    )
 
 
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -236,8 +273,10 @@ def run(output_dir: Path) -> dict[str, object]:
 
     source_rows: list[dict[str, object]] = []
     source_ratio_errors: dict[str, float] = {}
+    s0_source_ratios: dict[str, float] = {}
     for vowel, (n1, n2) in HARMONICS.items():
         s0_ratio = harmonic_ratio_db(s0.source, n1, n2)
+        s0_source_ratios[vowel] = s0_ratio
         s1_ratio = harmonic_ratio_db(s1.source, n1, n2)
         expected = float(oracle["source_p2_over_p1_db"][vowel])
         error = abs(s1_ratio - expected)
@@ -315,8 +354,10 @@ def run(output_dir: Path) -> dict[str, object]:
             )
     write_csv(output_dir / "rendered_cue_metrics.csv", rendered_rows)
 
-    i_improvement_db = s1_ratios["i"] - s0_ratios["i"]
-    i_improvement_pass = bool(i_improvement_db >= MIN_I_IMPROVEMENT_DB)
+    baseline = baseline_reproduction(s0_source_ratios, s0_ratios)
+    i_improvement_db, i_improvement_pass = i_cue_improvement(
+        s0_ratios["i"], s1_ratios["i"]
+    )
 
     listening, normalization = normalize_listening(rendered["S1_1_over_n"])
     level_match_pass = bool(
@@ -336,6 +377,7 @@ def run(output_dir: Path) -> dict[str, object]:
 
     objective_pass = all(
         (
+            bool(baseline["pass"]),
             tract_oracle_pass,
             source_oracle_pass,
             source_artifact_pass,
@@ -356,6 +398,9 @@ def run(output_dir: Path) -> dict[str, object]:
     result = {
         "decision": decision,
         "objective_gate_pass": objective_pass,
+        "s0_baseline_reproduction_pass": baseline["pass"],
+        "s0_baseline_reproduction": baseline,
+        "s0_source_p2_over_p1_db": s0_source_ratios,
         "tract_oracle_pass": tract_oracle_pass,
         "tract_oracle_abs_errors_hz": tract_oracle_errors,
         "source_oracle_pass": source_oracle_pass,
