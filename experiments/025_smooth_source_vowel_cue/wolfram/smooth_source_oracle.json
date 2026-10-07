@@ -1,0 +1,24 @@
+{
+  "f0_hz": 100.0,
+  "harmonic_count": 40,
+  "source_model": "cosine harmonics with amplitude 1/n^2",
+  "s2_source_p2_over_p1_db": {
+    "a": -10.753812491703197,
+    "i": -35.38426325191722,
+    "u": -22.961250709108754
+  },
+  "s0_source_p2_over_p1_db": {
+    "a": -15.245441210647721,
+    "i": -49.214731739011405,
+    "u": -31.62084988287622
+  },
+  "predicted_delta_rendered_db": {
+    "a": 4.491628718944524,
+    "i": 13.830468487094187,
+    "u": 8.659599173767468
+  },
+  "raw_cycle_boundary_jump_per_rms": 0.004621874041442457,
+  "source_ratio_tolerance_db": 0.25,
+  "differential_tolerance_db": 0.5,
+  "minimum_i_improvement_db": 10.0
+}
