@@ -4,9 +4,11 @@ Issue: #55
 
 ## Current decision
 
-**SMOOTH_SOURCE_DIAGNOSTIC_READY_FOR_LISTENING**
+**CLOSED_SET_CUE_SUPPORTED; HUMAN_GATE_INCOMPLETE; VOICE_LIKENESS_FAILED_QUALITATIVELY**
 
-The preregistered objective Gate passed. No human decision is recorded yet.
+The preregistered objective Gate passed. The human session was deliberately stopped with one missing response after the listener reported that the stimuli remained buzzer-like and were not experienced as meaningful voice. Therefore the preregistered 30/30 human Gate is not declared PASS or FAIL.
+
+After the responses were frozen, the key was opened for descriptive analysis only. All 29 answered trials were correct.
 
 ## Provenance
 
@@ -94,14 +96,64 @@ Frozen Gate:
 
 Voice quality is evaluated separately from categorical identity.
 
-## Claim boundary
+## Human session result
 
-Objective success supports the narrow claim that a smoother source-spectrum intervention can preserve materially more /i/ high-F2 support while satisfying the existing source-artifact Gate.
+Frozen responses contained 29 categorical answers and one missing response (T12). The missing item was not silently converted to UNIDENTIFIABLE.
 
-It does **not** establish:
+After freezing and ending the session, the blind key was opened descriptively:
+
+- answered /a/: 10/10 correct;
+- answered /i/: 9/9 correct;
+- answered /u/: 10/10 correct;
+- answered total: **29/29 correct**;
+- T12 was true /i/ and remained **MISSING**.
+
+The preregistered 30-item Gate is therefore formally incomplete. Even so, the answered trials show essentially complete three-way closed-set separability.
+
+Independent Wolfram summaries for the 29 answered trials:
+- empirical information carried by the three-class responses: 1.5832 bits out of log2(3)=1.5850 bits;
+- 29/29 under an independent unbiased three-choice reference: ~1.46e-14.
+
+These are engineering descriptors, not population-level statistics.
+
+### Qualitative result
+
+The listener reported:
+
+- buzzer-like quality: u > i > a;
+- the stimuli were perceived more as tones/sounds than as voice;
+- /a/ was the only category that felt clearly speech-like without strong prompting;
+- /i/ versus /u/ could usually be selected once the candidate set was supplied, but without that prior set the signal carried little obvious phonetic or linguistic meaning.
+
+This dissociates **closed-set categorical discriminability** from **voice-likeness / open-set phonetic meaning**.
+
+## Research interpretation
+
+This dissociation is consistent with prior speech-perception results:
+
+- Remez et al. (1981) showed that highly artificial sine-wave replicas can preserve linguistic information despite obviously unnatural speech quality: https://pubmed.ncbi.nlm.nih.gov/7233191/
+- open-response synthetic-speech tests degrade much more than closed-response tests as intelligibility worsens, showing reliance on response-set constraints: https://pmc.ncbi.nlm.nih.gov/articles/PMC3512093/ and https://pmc.ncbi.nlm.nih.gov/articles/PMC3917555/
+- Bunton & Story (2010) found that time-varying area functions and natural durations improve synthetic-vowel identification over static area functions: https://pmc.ncbi.nlm.nih.gov/articles/PMC2855717/
+- Klatt & Klatt (1990) show that voice quality depends on source properties such as harmonic structure, aspiration, formant bandwidths, and source-related coupling effects, not formant placement alone: https://pubmed.ncbi.nlm.nih.gov/2137837/
+- Titze (2008) shows that the voice source and vocal tract are physically coupled and that the glottal source spectrum is affected by tract loading: https://pmc.ncbi.nlm.nih.gov/articles/PMC2811547/
+
+The Experiment-025 source was intentionally diagnostic:
+sum cos(2*pi*n*F0*t)/n^2.
+
+Wolfram gives the infinite-series limit on one period as a periodic quadratic function, not a physiological glottal flow pulse. Its harmonic amplitude envelope is -12.04 dB/octave before the downstream observer. Therefore success of this source should be interpreted as evidence about spectral cue availability, not as progress toward a natural voice source.
+
+## Claim boundary and next action
+
+Supported:
+
+> Increasing high-frequency excitation while preserving the artifact Gate can restore near-perfect closed-set /a i u/ discriminability in the current tract fixtures.
+
+Not supported:
+
 - biological vocal-fold realism;
-- human perceptual rescue;
-- general Japanese vowel synthesis;
-- readiness for #32.
+- open-set phonetic identity;
+- voice-likeness or naturalness;
+- arbitrary Japanese speech;
+- readiness to keep repeating the same forced-choice listening protocol.
 
-Human listening remains required before deciding #55.
+Next work should move to #37's already-defined evaluation design: free kana transcription first, constrained identification second, voice-likeness/artifact as a separate axis, using natural Japanese references. In parallel, source work should compare the current LF-family source against a physically interpretable aperiodicity/aspiration candidate (#30) and a reduced self-oscillating vocal-fold source rather than further tuning diagnostic harmonic series.
