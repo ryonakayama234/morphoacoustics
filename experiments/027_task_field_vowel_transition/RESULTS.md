@@ -18,15 +18,15 @@ It does not establish morphology transfer, arbitrary phonology, natural speech, 
 
 ## Canonical execution provenance
 
-The canonical audited run is the post-review frozen-plan fix:
+The canonical audited run is the final code-bearing audit head:
 
-- GitHub Actions scientific run: `37615642002`
-- tests run: `37615641957`
+- GitHub Actions scientific run: `37616956050`
+- tests run: `37616956067`
 - branch: `v3a-experiment-027-task-field`
-- source head commit: `40cd1a94a31bff09147c920b9eb4d7fd8a2be829`
-- full output artifact ID: `11479229693`
-- artifact SHA-256: `68b67904e4156d17059a4a0b7031179d0033c1fbe2493eea9f5e8e8bcc8f7d93`
-- artifact size: 611588 bytes
+- source head commit: `44323ea62473405b9c14057e563da06475649dcb`
+- full output artifact ID: `11480746602`
+- artifact SHA-256: `1983e89e16b1e8279e884f5acd3fee1e74f0e9fdea17d12e58fa49f03393f706`
+- artifact size: 611747 bytes
 - Python: 3.11.16
 - NumPy: 2.4.6
 
@@ -53,6 +53,14 @@ The canonical audited run above reports:
 - the independent task-local activation schedule check remains PASS.
 
 Thus the final Gate now verifies both **that timing drives realization** and **that the preregistered timing/candidate itself has not been refit**.
+
+Subsequent audit also tightened provenance without changing the candidate or scientific thresholds:
+
+- the Wolfram source itself now emits the complete frozen `task_plan`, including onset/offset, so the JSON identity Gate is reproducible from the claimed independent oracle source;
+- realizer provenance records the implemented task-local equation `log A(x,t) = log A0(x) + 2 Sum_i activation_i(t) delta_i(x)`, rather than the obsolete single-activation shorthand;
+- a clean-but-different frozen plan is classified as `IMPLEMENTATION_MISMATCH`; `REPRESENTATION_LEAK` is reserved for forbidden body/acoustic coordinates in the canonical task command.
+
+The final code-bearing run above passed after these audit corrections.
 
 ## Representation boundary
 
