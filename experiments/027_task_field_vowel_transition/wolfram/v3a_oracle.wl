@@ -25,6 +25,17 @@ constrictLocation = 0.7167402543883221;
 constrictDegree = 0.9235962908995712;
 lipLocation = 1.0;
 lipDegree = 0.04495226070116771;
+onset = 0.150;
+offset = 0.350;
+
+taskPlan = {
+  <|"task" -> "OPEN", "location" -> openLocation, "degree" -> openDegree,
+    "onset_s" -> onset, "offset_s" -> offset|>,
+  <|"task" -> "CONSTRICT", "location" -> constrictLocation,
+    "degree" -> constrictDegree, "onset_s" -> onset, "offset_s" -> offset|>,
+  <|"task" -> "CONSTRICT", "location" -> lipLocation, "degree" -> lipDegree,
+    "onset_s" -> onset, "offset_s" -> offset|>
+};
 
 kernel[xx_, loc_, sig_] := Exp[-(xx - loc)^2/(2 sig^2)];
 
@@ -68,6 +79,7 @@ taskToI = Norm[taskPeaks[[1 ;; 2]] - iPeaks[[1 ;; 2]]];
 taskToA = Norm[taskPeaks[[1 ;; 2]] - aPeaks[[1 ;; 2]]];
 
 <|
+  "task_plan" -> taskPlan,
   "task_endpoint_diameters_mm" -> N[taskDiam, 17],
   "task_endpoint_areas_m2" -> N[task, 17],
   "a_peaks_hz" -> aPeaks,
