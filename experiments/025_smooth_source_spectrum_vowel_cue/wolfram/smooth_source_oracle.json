@@ -1,0 +1,37 @@
+{
+  "model": {
+    "sample_rate_hz": 48000,
+    "f0_hz": 100,
+    "duration_s": 0.5,
+    "file_ramp_s": 0.01,
+    "harmonic_count": 40,
+    "amplitude_power": 2,
+    "phase_family": "cosine"
+  },
+  "source_p2_over_p1_db": {
+    "a": -10.753812491703197,
+    "i": -35.38426325191722,
+    "u": -22.961250709108754
+  },
+  "observer_delta_db": {
+    "a": 5.376906245851599,
+    "i": 17.69213162595861,
+    "u": 11.480625354554377
+  },
+  "tract_p2_over_p1_db": {
+    "a": 1.334,
+    "i": 3.8173,
+    "u": -3.2705
+  },
+  "predicted_listening_pressure_p2_over_p1_db": {
+    "a": -4.042906245851599,
+    "i": -13.87483162595861,
+    "u": -14.751125354554375
+  },
+  "predicted_cycle_boundary_jump_per_rms": 0.004701435695471476,
+  "predicted_i_improvement_vs_s0_db": 14.92406837404139,
+  "source_ratio_tolerance_db": 0.25,
+  "rendered_ratio_tolerance_db": 2.5,
+  "minimum_i_improvement_db": 10,
+  "cycle_boundary_jump_limit": 0.01
+}
