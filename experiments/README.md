@@ -38,3 +38,4 @@ Each experiment should state:
 An experiment that becomes a stable invariant should be promoted into `tests/scientific/`.
 
 24. `024_source_spectrum_vowel_cue` — source-only diagnostic follow-up to Experiment 023 for the /i/ identification failure.
+25. `025_smooth_source_spectrum_vowel_cue` — replace Experiment-024's artifact-heavy sin/n diagnostic with a preregistered cos/n² source that preserves high-F2 support while targeting the existing cycle-boundary artifact gate.
