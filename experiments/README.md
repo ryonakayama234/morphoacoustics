@@ -38,3 +38,5 @@ Each experiment should state:
 An experiment that becomes a stable invariant should be promoted into `tests/scientific/`.
 
 24. `024_source_spectrum_vowel_cue` — source-only diagnostic follow-up to Experiment 023 for the /i/ identification failure.
+
+25. `025_smooth_source_vowel_cue` — smoother source-only follow-up to Experiment 024; objective Gate passes and awaits blinded vowel identification.
