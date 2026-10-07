@@ -44,3 +44,4 @@ An experiment that becomes a stable invariant should be promoted into `tests/sci
 27. `027_task_field_vowel_transition` — replace the prescribed target area-vector motor path with a frozen three-task normalized field on the calibrated reference body, with an independent Wolfram endpoint oracle and no production-schema promotion.
 
 28. `028_task_field_morphology_transfer` — reuse the frozen Experiment-027 three-task plan and realizer unchanged on a 1.10x axial-length prepared morphology, with body-specific metric coordinates, independent Wolfram acoustics, and body-relative /i/-intent retention gates.
+29. `029_task_field_embodied_infeasibility` — keep the audited three-task phonetic plan fixed while an experiment-local PreparedMorphology reach boundary changes one body from FEASIBLE to explicit INFEASIBLE with no physical/acoustic fallback.
