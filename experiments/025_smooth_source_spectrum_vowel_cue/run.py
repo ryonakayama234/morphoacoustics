@@ -42,7 +42,7 @@ def load_module(name: str, path: Path) -> ModuleType:
 
 
 EXP23 = load_module(
-    "morpho_exp023_for_024",
+    "morpho_exp023_for_025",
     EXPERIMENTS / "023_static_vowel_calibration" / "run.py",
 )
 EXP13 = EXP23.EXP13
