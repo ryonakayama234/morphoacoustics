@@ -171,7 +171,7 @@ Human listening is exploratory and is not part of the primary Gate.
 
 ### 1. Representation boundary
 
-The serialized canonical task plan must contain only the allowed task fields above and none of the forbidden body/acoustic coordinates.
+The serialized canonical task plan must contain only the allowed task fields above and none of the forbidden body/acoustic coordinates. In addition, the complete serialized task plan (task kind, location, degree, onset, offset) must exactly match the checked-in frozen Wolfram oracle `task_plan`; changing the schedule or candidate values requires a new experiment revision rather than silently passing this Gate.
 
 Failure: `REPRESENTATION_LEAK`.
 
