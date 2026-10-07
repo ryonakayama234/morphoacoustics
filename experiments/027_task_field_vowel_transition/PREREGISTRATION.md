@@ -171,14 +171,17 @@ Human listening is exploratory and is not part of the primary Gate.
 
 ### 1. Representation boundary
 
-The serialized canonical task plan must contain only the allowed task fields above and none of the forbidden body/acoustic coordinates. In addition, the complete serialized task plan (task kind, location, degree, onset, offset) must exactly match the checked-in frozen Wolfram oracle `task_plan`; changing the schedule or candidate values requires a new experiment revision rather than silently passing this Gate.
+The serialized canonical task plan must contain only the allowed task fields above and none of the forbidden body/acoustic coordinates.
 
 Failure: `REPRESENTATION_LEAK`.
 
-### 2. Implementation / independent oracle
+### 2. Frozen-plan identity / implementation / independent oracle
+
+The complete serialized task plan (task kind, location, degree, onset, offset) must exactly match the checked-in frozen Wolfram oracle `task_plan`. A different but structurally clean plan is not a representation leak; it is a preregistered-candidate / implementation mismatch and requires a new experiment revision.
 
 Require all:
 
+- complete serialized task plan equals the frozen oracle `task_plan`;
 - `lambda=0` returns the calibrated `/a/` start object exactly;
 - generated endpoint areas reproduce the checked-in Wolfram endpoint-area oracle with `rtol=1e-12`, `atol=1e-15 m^2`;
 - `/a/`, `/i/`, and task endpoint first five response peaks reproduce the Wolfram oracle within `0.5 Hz`;
