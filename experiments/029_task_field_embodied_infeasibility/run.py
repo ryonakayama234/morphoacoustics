@@ -58,6 +58,12 @@ CONDITIONS = (
 SUPPORT_DECISION = "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
 
 
+def git_blob_sha1(path: Path) -> str:
+    data = path.read_bytes()
+    payload = f"blob {len(data)}\\0".encode("ascii") + data
+    return hashlib.sha1(payload).hexdigest()
+
+
 def load_experiment_module(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
@@ -68,9 +74,16 @@ def load_experiment_module(name: str, path: Path) -> ModuleType:
     return module
 
 
+EXP28_PATH = EXPERIMENTS / "028_task_field_morphology_transfer" / "run.py"
+if git_blob_sha1(EXP28_PATH) != EXP28_RUN_GIT_BLOB_SHA:
+    raise RuntimeError(
+        "Experiment 029 refuses to import Experiment 028 because its runner "
+        "does not match the audited frozen Git blob."
+    )
+
 EXP28 = load_experiment_module(
     "morpho_exp028_for_029",
-    EXPERIMENTS / "028_task_field_morphology_transfer" / "run.py",
+    EXP28_PATH,
 )
 EXP27 = EXP28.EXP27
 EXP26 = EXP28.EXP26
