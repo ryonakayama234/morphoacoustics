@@ -42,7 +42,7 @@ jobs:
       - name: Upload listening set
         uses: actions/upload-artifact@v4
         with:
-          name: experiment-025-s1-listening
+          name: experiment-025-s2-listening
           path: experiment-025-output/listening/s2_primary_blind/
       - name: Upload research outputs
         uses: actions/upload-artifact@v4
