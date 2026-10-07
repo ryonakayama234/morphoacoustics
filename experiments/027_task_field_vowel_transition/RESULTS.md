@@ -84,7 +84,7 @@ Start-state reproduction:
 
 Task endpoint area oracle:
 
-- maximum absolute area error: **6.505213034913027e-19 m²**
+- maximum absolute area error: **4.336808689942018e-19 m²**
 - frozen tolerance: `rtol=1e-12`, `atol=1e-15 m²`
 - result: PASS
 
