@@ -1,0 +1,298 @@
+{
+  "reference_commit": "990e602f260b84f7aa7279d332fba90f26feac7d",
+  "capture_policy": "Audited Experiment-027 implementation and M0 body; never recapture from live inputs to rescue an Experiment-028 result.",
+  "implementation": {
+    "files_sha256": {
+      "experiments/008_event_trajectory/run.py": "7cb6fd0d21a4f044c08ba0a4b7013455db7076913752e77b6f436c176aa7e0c5",
+      "experiments/009_fixed_tract_waveform/run.py": "0a0d35089c6fbc351e6448bd7529a074b404bb2c0d2859a4b1e9153890e9974f",
+      "experiments/011_gesture_coordination_overlap/run.py": "0ecc7494ebc730a82fa81ffcfd53835cfbcb0f4ac50df15ac5b8e4d503a12b2e",
+      "experiments/012_source_renderer_artifacts/run.py": "558c81c3a72f8fd85d1ff1d5afb8fada65abf71a901f2a5dd4b79fd84f950d03",
+      "experiments/013_parametric_source_prosody/run.py": "e7465f8f2147a9ced663e5cc8810517f94f35da166789652851a1bfcde736373",
+      "experiments/023_static_vowel_calibration/run.py": "f159c49bb5fce1ff124c5e2c064dd1b23c9ddc6182a0eb586cf220328488a320",
+      "experiments/026_moving_vowel_transition/run.py": "aa263f85366066019a5cd9deb90392349b9ab66f9ebf64deb7feea741e880c45",
+      "experiments/027_task_field_vowel_transition/run.py": "d93818574418022f109e022a29c6a6c2dbd859636c1d034eb34741164192cc22",
+      "src/morphoacoustics/acoustics/__init__.py": "8c31f5793daeba67067eff382a489b3ad851086fd2785cdd5cbdfc148b7322af",
+      "src/morphoacoustics/acoustics/backend.py": "a2c20c00ee0ff0ea7c7b2e63c29068fcf19503f578585990e2a01234396e016d",
+      "src/morphoacoustics/acoustics/protocol.py": "e8052e3d17cc5c93bfb0cbdf83e0b663006e55239e9623dfbad341973d9959c3",
+      "src/morphoacoustics/acoustics/segmented_tube.py": "fc05e8221b7b6dfb8b2c9120d405432bd841e916218c7e62779d99d8fa8d1c9b",
+      "src/morphoacoustics/acoustics/uniform_tube.py": "2f6107f7b0988a0d43a3bc4ab57aae8e56755ab245e82e925e70312b9ca5347a",
+      "src/morphoacoustics/physical/__init__.py": "d0902a7564b03644c77b1ff80c9e8c605ed910c820b5e8367e2fa9471b0c74c2",
+      "src/morphoacoustics/physical/tract1d.py": "89689d5980da47350974b2284c4518d5724503fbe141e36bcb0c33495f2873c0"
+    },
+    "executed_functions": {
+      "section_coordinates": {
+        "source_sha256": "9b585b5ea85758d74e156945af38f5f0f4c29de6e1d8153451ec8b7d84c88ae1",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 139,
+        "code_name": "section_coordinates"
+      },
+      "gaussian_kernel": {
+        "source_sha256": "b2495536d2e965a46d07636f97265b4f9683552a55993829b2a5c6db2e65b7f1",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 145,
+        "code_name": "gaussian_kernel"
+      },
+      "task_log_diameter_delta_for": {
+        "source_sha256": "faf85c9fdb864a9247a2ae8ca7dbba6bda1ada2a416021cb695791986a90ee16",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 155,
+        "code_name": "task_log_diameter_delta_for"
+      },
+      "analytic_task_activation_scalar": {
+        "source_sha256": "6836504b3a10eaa1b8f6e1abeadb9059b7711c6abb846109c529a1be813707ef",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 176,
+        "code_name": "analytic_task_activation_scalar"
+      },
+      "task_activation_at_time": {
+        "source_sha256": "f5fb01f4aeb2f7817e20d5e26aa7043c797cf856032ce2b29ddda4c425482e67",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 188,
+        "code_name": "task_activation_at_time"
+      },
+      "task_activations_at_time": {
+        "source_sha256": "feab243d9cf9f61c16b9502c772a508b3413c512c9ba5ba8e1ab3789c114c347",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 202,
+        "code_name": "task_activations_at_time"
+      },
+      "realize_task_geometry_from_activations": {
+        "source_sha256": "2cf0ad319a5f1f71a4d2b0f13c6f262704cbc7e3cc7743f101a56b030849e9e2",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 217,
+        "code_name": "realize_task_geometry_from_activations"
+      },
+      "realize_task_geometry": {
+        "source_sha256": "089862dafd930389261f598da8c0b4b48aaf93193f22961b26e3747dedf079dd",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 258,
+        "code_name": "realize_task_geometry"
+      },
+      "task_geometry_for_time": {
+        "source_sha256": "f04ccf72f27c74f147459d4e0f397a2ac5bdb0fca7881594e75f828ca0442667",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 276,
+        "code_name": "task_geometry_for_time"
+      },
+      "render_task_continuous": {
+        "source_sha256": "316cb23a62735ad221f16aed85256d5f3597573f4df5a0bf115c6152a82321af",
+        "code_path": "experiments/027_task_field_vowel_transition/run.py",
+        "code_first_line": 294,
+        "code_name": "render_task_continuous"
+      },
+      "source.build_sources": {
+        "source_sha256": "65c0afc4edef3f076593ca53e14850e61aca9ef99b9e13c187a882135ed90407",
+        "code_path": "experiments/013_parametric_source_prosody/run.py",
+        "code_first_line": 245,
+        "code_name": "build_sources"
+      }
+    },
+    "runtime_constants": {
+      "experiments/008_event_trajectory/run.py": {
+        "EVAL_END_S": 0.4,
+        "EVAL_START_S": 0.0,
+        "EVAL_STEP_S": 0.001,
+        "LOCATION": 0.55,
+        "OFFSET_S": 0.35,
+        "ONSET_S": 0.05,
+        "RAMP_S": 0.05,
+        "TARGET_AREA_M2": 5e-05
+      },
+      "experiments/009_fixed_tract_waveform/run.py": {
+        "AIR_DENSITY_KG_M3": 1.21,
+        "ATTENUATION_NP_M": 0.4,
+        "DURATION_S": 0.5,
+        "F0_HZ": 100.0,
+        "LOAD_FRACTION_OF_OUTLET_ZC": 0.05,
+        "OBSERVATION_DISTANCE_M": 0.2,
+        "PEAK_SCAN_END_HZ": 5000.0,
+        "PEAK_SCAN_START_HZ": 100.0,
+        "PEAK_SCAN_STEP_HZ": 0.25,
+        "SAMPLE_RATE_HZ": 48000,
+        "SOUND_SPEED_M_S": 343.0,
+        "SOURCE_HARMONICS": 40,
+        "SOURCE_PEAK_VOLUME_VELOCITY_M3_S": 1e-05,
+        "SOURCE_RAMP_S": 0.01,
+        "WOLFRAM_TOLERANCE_HZ": 0.5
+      },
+      "experiments/011_gesture_coordination_overlap/run.py": {
+        "A_OFF_S": 0.26,
+        "A_ON_S": 0.08,
+        "B_OVERLAP_OFF_S": 0.38,
+        "B_OVERLAP_ON_S": 0.2,
+        "B_SEQUENTIAL_OFF_S": 0.44,
+        "B_SEQUENTIAL_ON_S": 0.26,
+        "CONTROL_STEP_S": 0.005,
+        "DURATION_S": 0.5,
+        "FRAME_SIZE": 1024,
+        "HOP_SIZE": 256,
+        "LOCATION_A": 0.25,
+        "LOCATION_B": 0.75,
+        "RAMP_S": 0.03,
+        "REFERENCE_CONTROL_STEP_S": 0.0025,
+        "REFERENCE_HOP_SIZE": 128,
+        "SAMPLE_RATE_HZ": 48000,
+        "TARGET_AREA_M2": 5e-05
+      },
+      "experiments/012_source_renderer_artifacts/run.py": {
+        "CONTROL_STEP_S": 0.005,
+        "DEFAULT_HOP_SIZE": 256,
+        "DURATION_S": 0.5,
+        "F0_HZ": 100.0,
+        "FRAME_SIZE": 1024,
+        "HIGH_FREQUENCY_THRESHOLD_HZ": 2000.0,
+        "PITCH_PERIOD_SAMPLES": 480,
+        "REFERENCE_CONTROL_STEP_S": 0.0025,
+        "REFERENCE_HOP_SIZE": 128,
+        "SAMPLE_RATE_HZ": 48000,
+        "SOURCE_PEAK_VOLUME_VELOCITY_M3_S": 1e-05,
+        "SOURCE_RAMP_S": 0.01,
+        "STARTUP_END_S": 0.02,
+        "STARTUP_REFERENCE_END_S": 0.2,
+        "STARTUP_REFERENCE_START_S": 0.05,
+        "STEADY_END_S": 0.45,
+        "STEADY_START_S": 0.05
+      },
+      "experiments/013_parametric_source_prosody/run.py": {
+        "BASE_F0_HZ": 100.0,
+        "BLOCK_S": 0.02,
+        "BLOCK_STEP_S": 0.01,
+        "DURATION_S": 0.5,
+        "LF_GRID_SIZE": 8193,
+        "PITCH_PERIOD_SAMPLES": 480,
+        "RD": 1.0,
+        "RNG_SEED": 13013,
+        "SAMPLE_RATE_HZ": 48000,
+        "SOURCE_PEAK_M3_S": 1e-05,
+        "STEADY_END_S": 0.45,
+        "STEADY_START_S": 0.05
+      },
+      "experiments/023_static_vowel_calibration/run.py": {
+        "BASE_F0_HZ": 100.0,
+        "DISCRETIZATION_MARGIN": 5.0,
+        "DURATION_S": 0.5,
+        "PRIMARY_SECTION_COUNT": 16,
+        "PRIMARY_SECTION_LENGTH_M": 0.01,
+        "PRIMARY_TRIALS_PER_VOWEL": 10,
+        "RD": 1.0,
+        "REFINED_SECTION_COUNT": 32,
+        "REFINED_SECTION_LENGTH_M": 0.005,
+        "RNG_SEED": 15015,
+        "SAMPLE_RATE_HZ": 48000,
+        "SOURCE_CITATION": "T. Arai (2007), Education system in acoustics of speech production using physical models of the human vocal tract, Acoustical Science and Technology 28(3), 190-201.",
+        "SOURCE_CYCLE_JUMP_LIMIT": 0.01,
+        "SOURCE_URL": "https://splab.net/apd/ja/g210/",
+        "STARTUP_PEAK_LIMIT": 20.0,
+        "STEADY_END_S": 0.45,
+        "STEADY_START_S": 0.05
+      },
+      "experiments/026_moving_vowel_transition/run.py": {
+        "ARTIFACT_JUMP_RATIO_LIMIT": 3.0,
+        "BASE_F0_HZ": 100.0,
+        "DISCRIMINATION_MARGIN": 5.0,
+        "DURATION_S": 0.5,
+        "LISTENING_PEAK": 0.9,
+        "PRIMARY_CONTROL_STEP_S": 0.005,
+        "PRIMARY_HOP_SIZE": 256,
+        "REFERENCE_CONTROL_STEP_S": 0.0025,
+        "REFERENCE_HOP_SIZE": 128,
+        "RESONANCE_STEP_S": 0.01,
+        "RNG_SEED": 26026,
+        "SAMPLE_RATE_HZ": 48000,
+        "SOURCE_CYCLE_JUMP_LIMIT": 0.01,
+        "SPATIAL_PATH_RATIO_LIMIT": 0.2,
+        "TEMPORAL_STABILITY_LIMIT": 0.2,
+        "TRAJECTORY_STEP_RATIO_LIMIT": 0.2,
+        "TRANSITION_END_S": 0.35,
+        "TRANSITION_START_S": 0.15
+      },
+      "experiments/027_task_field_vowel_transition/run.py": {
+        "ARTIFACT_JUMP_RATIO_LIMIT": 3.0,
+        "DURATION_S": 0.5,
+        "ENDPOINT_ERROR_RATIO_LIMIT": 0.2,
+        "KAPPA": 1.5,
+        "LISTENING_PEAK": 0.9,
+        "PRIMARY_CONTROL_STEP_S": 0.005,
+        "PRIMARY_HOP_SIZE": 256,
+        "REFERENCE_CONTROL_STEP_S": 0.0025,
+        "REFERENCE_HOP_SIZE": 128,
+        "RESONANCE_STEP_S": 0.01,
+        "SAMPLE_RATE_HZ": 48000,
+        "SIGMA": 0.16,
+        "SIGMA_LIP": 0.1,
+        "TEMPORAL_STABILITY_LIMIT": 0.2,
+        "TRAJECTORY_STEP_RATIO_LIMIT": 0.2,
+        "TRANSITION_END_S": 0.35,
+        "TRANSITION_START_S": 0.15
+      }
+    }
+  },
+  "M0": {
+    "section_lengths_m": [
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01,
+      0.01
+    ],
+    "a_areas_m2": [
+      0.00011309733552923255,
+      0.00011309733552923255,
+      0.000530929158456675,
+      0.00020106192982974675,
+      0.00011309733552923255,
+      0.0001539380400258999,
+      0.0003141592653589793,
+      0.000530929158456675,
+      0.0007068583470577034,
+      0.0009079202768874504,
+      0.0011341149479459152,
+      0.0009079202768874504,
+      0.0009079202768874504,
+      0.0007068583470577034,
+      0.0006157521601035995,
+      0.000804247719318987
+    ],
+    "i_areas_m2": [
+      0.00011309733552923255,
+      0.00011309733552923255,
+      0.000804247719318987,
+      0.000804247719318987,
+      0.000804247719318987,
+      0.000804247719318987,
+      0.000804247719318987,
+      0.000804247719318987,
+      0.0004523893421169302,
+      0.00020106192982974675,
+      7.853981633974483e-05,
+      7.853981633974483e-05,
+      7.853981633974483e-05,
+      0.00011309733552923255,
+      0.0001539380400258999,
+      0.0004523893421169302
+    ]
+  },
+  "execution_schedule": {
+    "sample_rate_hz": 48000,
+    "duration_s": 0.5,
+    "primary_control_step_s": 0.005,
+    "reference_control_step_s": 0.0025,
+    "primary_hop_size": 256,
+    "reference_hop_size": 128,
+    "resonance_step_s": 0.01,
+    "listening_peak": 0.9
+  },
+  "source_sha256_float64": "724412c20feddd9e00112cc362bac56bd8aa428670c5dcb789461df858b512fc",
+  "oracle_sha256_canonical_json": "408c0bcbc60131bc1d0b1702347b9c5914212f5142f3c21e6eee8c9f65a4329d"
+}

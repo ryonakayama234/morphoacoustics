@@ -1,0 +1,85 @@
+name: experiment-028
+
+on:
+  push:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-028.yml"
+  pull_request:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-028.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Run Experiment 028
+        run: |
+          python experiments/028_task_field_morphology_transfer/run.py \
+            --output-dir experiment-028-output
+
+      - name: Show scientific summary
+        if: always()
+        run: |
+          if [ -f experiment-028-output/decision.json ]; then
+            cat experiment-028-output/decision.json
+          fi
+          if [ -f experiment-028-output/metric_task_coordinates.csv ]; then
+            cat experiment-028-output/metric_task_coordinates.csv
+          fi
+          if [ -f experiment-028-output/signal_metrics.csv ]; then
+            cat experiment-028-output/signal_metrics.csv
+          fi
+
+      - name: Enforce frozen V3b Gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          decision = json.loads(
+              Path("experiment-028-output/decision.json").read_text(encoding="utf-8")
+          )
+          observed = decision["decision"]
+          expected = "SUPPORT_TASK_TRANSFER"
+          print(f"Experiment 028 decision: {observed}")
+          if observed != expected:
+              raise SystemExit(
+                  f"frozen V3b Gate did not pass: expected {expected}, got {observed}"
+              )
+          PY
+
+      - name: Upload full research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-028-output
+          path: experiment-028-output/
+          if-no-files-found: warn
