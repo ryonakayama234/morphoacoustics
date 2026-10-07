@@ -448,6 +448,8 @@ def run(output_dir: Path) -> dict[str, object]:
     oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
 
     task_payload = task_plan_payload()
+    frozen_task_payload = oracle["task_plan"]
+    task_plan_oracle_match = task_payload == frozen_task_payload
     (output_dir / "task_plan.json").write_text(
         json.dumps(task_payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -714,6 +716,7 @@ def run(output_dir: Path) -> dict[str, object]:
         and peak_oracle_pass
         and source_regression["pass"]
         and task_schedule_pass
+        and task_plan_oracle_match
     )
     numerical_stability_pass = bool(
         geometry_valid
@@ -796,6 +799,11 @@ def run(output_dir: Path) -> dict[str, object]:
             "representation_sufficient": representation_sufficient,
         },
         "start_exact_reproduction": start_exact,
+        "frozen_task_plan_match": {
+            "pass": task_plan_oracle_match,
+            "observed": task_payload,
+            "expected": frozen_task_payload,
+        },
         "task_schedule_checks": {
             "pass": task_schedule_pass,
             "tasks": schedule_checks,
