@@ -152,18 +152,107 @@ def gaussian_kernel(
     return np.exp(-((values - location) ** 2) / (2.0 * sigma * sigma))
 
 
-def task_log_diameter_delta(section_count: int) -> np.ndarray:
+def task_log_diameter_delta_for(
+    task: CandidateTask,
+    section_count: int,
+) -> np.ndarray:
     x = section_coordinates(section_count)
-    total = np.zeros(section_count, dtype=np.float64)
-    for task in TASKS:
-        sigma = SIGMA_LIP if task.location == 1.0 else SIGMA
-        sign = 1.0 if task.task == "OPEN" else -1.0
-        total += sign * task.degree * gaussian_kernel(
-            x,
-            location=task.location,
-            sigma=sigma,
+    sigma = SIGMA_LIP if task.location == 1.0 else SIGMA
+    sign = 1.0 if task.task == "OPEN" else -1.0
+    return KAPPA * sign * task.degree * gaussian_kernel(
+        x,
+        location=task.location,
+        sigma=sigma,
+    )
+
+
+def task_log_diameter_delta(section_count: int) -> np.ndarray:
+    return np.sum(
+        [task_log_diameter_delta_for(task, section_count) for task in TASKS],
+        axis=0,
+    )
+
+
+def analytic_task_activation_scalar(
+    task: CandidateTask,
+    time_s: float,
+) -> float:
+    if time_s <= task.onset_s:
+        return 0.0
+    if time_s >= task.offset_s:
+        return 1.0
+    u = (time_s - task.onset_s) / (task.offset_s - task.onset_s)
+    return float(u * u * (3.0 - 2.0 * u))
+
+
+def task_activation_at_time(
+    task: CandidateTask,
+    time_s: float,
+    *,
+    control_step_s: float,
+) -> float:
+    sample_times = EXP26.progress_sampling_grid(control_step_s)
+    sample_values = np.asarray(
+        [analytic_task_activation_scalar(task, float(t)) for t in sample_times],
+        dtype=np.float64,
+    )
+    return float(np.interp(time_s, sample_times, sample_values))
+
+
+def task_activations_at_time(
+    time_s: float,
+    *,
+    control_step_s: float,
+) -> tuple[float, ...]:
+    return tuple(
+        task_activation_at_time(
+            task,
+            time_s,
+            control_step_s=control_step_s,
         )
-    return KAPPA * total
+        for task in TASKS
+    )
+
+
+def realize_task_geometry_from_activations(
+    start: Tract1DGeometry,
+    activations: tuple[float, ...],
+    *,
+    cavity_id: str,
+) -> Tract1DGeometry:
+    if len(activations) != len(TASKS):
+        raise ValueError("one activation is required for each canonical task")
+    if any(
+        not math.isfinite(value) or not 0.0 <= value <= 1.0
+        for value in activations
+    ):
+        raise ValueError("task activations must be finite and lie in [0, 1]")
+    if all(value == 0.0 for value in activations):
+        return start
+
+    base_areas = EXP26.geometry_areas(start)
+    lengths = EXP26.geometry_lengths(start)
+    delta_log_diameter = np.zeros(len(start.sections), dtype=np.float64)
+    for task, activation in zip(TASKS, activations, strict=True):
+        delta_log_diameter += activation * task_log_diameter_delta_for(
+            task,
+            len(start.sections),
+        )
+
+    # A is proportional to D^2, so each independently scheduled
+    # log-diameter task field maps to log-area with a factor of two.
+    # The section vector is a realized body state, never a canonical command.
+    areas = base_areas * np.exp(2.0 * delta_log_diameter)
+    if np.any(~np.isfinite(areas)) or np.any(areas <= 0.0):
+        raise RuntimeError("task-field realization produced invalid area")
+
+    return Tract1DGeometry(
+        cavity_id=cavity_id,
+        sections=tuple(
+            TubeSection(length_m=float(length), area_m2=float(area))
+            for length, area in zip(lengths, areas, strict=True)
+        ),
+    )
 
 
 def realize_task_geometry(
@@ -177,23 +266,10 @@ def realize_task_geometry(
     if progress == 0.0:
         return start
 
-    base_areas = EXP26.geometry_areas(start)
-    lengths = EXP26.geometry_lengths(start)
-    delta_log_diameter = task_log_diameter_delta(len(start.sections))
-
-    # A is proportional to D^2, so the frozen log-diameter task field maps
-    # to log-area with a factor of two. The vector is a realized body state,
-    # never part of the canonical task plan.
-    areas = base_areas * np.exp(2.0 * progress * delta_log_diameter)
-    if np.any(~np.isfinite(areas)) or np.any(areas <= 0.0):
-        raise RuntimeError("task-field realization produced invalid area")
-
-    return Tract1DGeometry(
+    return realize_task_geometry_from_activations(
+        start,
+        tuple(progress for _ in TASKS),
         cavity_id=cavity_id,
-        sections=tuple(
-            TubeSection(length_m=float(length), area_m2=float(area))
-            for length, area in zip(lengths, areas, strict=True)
-        ),
     )
 
 
@@ -204,8 +280,15 @@ def task_geometry_for_time(
     control_step_s: float,
     cavity_id: str,
 ) -> Tract1DGeometry:
-    progress = EXP26.progress_at_time(time_s, step_s=control_step_s)
-    return realize_task_geometry(start, progress, cavity_id=cavity_id)
+    activations = task_activations_at_time(
+        time_s,
+        control_step_s=control_step_s,
+    )
+    return realize_task_geometry_from_activations(
+        start,
+        activations,
+        cavity_id=cavity_id,
+    )
 
 
 def render_task_continuous(
@@ -279,6 +362,7 @@ def trajectory(
     for time_s in times:
         progress = EXP26.progress_at_time(float(time_s), step_s=control_step_s)
         if condition == "R0_v2_prescribed":
+            activations = tuple(progress for _ in TASKS)
             geometry = EXP26.interpolate_geometry(
                 start,
                 target_i,
@@ -287,9 +371,14 @@ def trajectory(
                 cavity_id="oral-v3a-r0",
             )
         elif condition == "R1_task_field":
-            geometry = realize_task_geometry(
+            activations = task_activations_at_time(
+                float(time_s),
+                control_step_s=control_step_s,
+            )
+            geometry = task_geometry_for_time(
                 start,
-                progress,
+                float(time_s),
+                control_step_s=control_step_s,
                 cavity_id="oral-v3a-r1",
             )
         else:
@@ -303,6 +392,9 @@ def trajectory(
                 "condition": condition,
                 "time_s": float(time_s),
                 "progress": progress,
+                "task0_activation": activations[0],
+                "task1_activation": activations[1],
+                "task2_activation": activations[2],
                 "p1_hz": float(p[0]),
                 "p2_hz": float(p[1]),
                 "p3_hz": float(p[2]),
@@ -324,9 +416,14 @@ def task_area_rows(start: Tract1DGeometry) -> list[dict[str, object]]:
         progress = EXP26.progress_at_time(
             float(time_s), step_s=PRIMARY_CONTROL_STEP_S
         )
-        geometry = realize_task_geometry(
+        activations = task_activations_at_time(
+            float(time_s),
+            control_step_s=PRIMARY_CONTROL_STEP_S,
+        )
+        geometry = task_geometry_for_time(
             start,
-            progress,
+            float(time_s),
+            control_step_s=PRIMARY_CONTROL_STEP_S,
             cavity_id="oral-v3a-task-area-trace",
         )
         for section_index, section in enumerate(geometry.sections):
@@ -334,6 +431,9 @@ def task_area_rows(start: Tract1DGeometry) -> list[dict[str, object]]:
                 {
                     "time_s": float(time_s),
                     "progress": progress,
+                    "task0_activation": activations[0],
+                    "task1_activation": activations[1],
+                    "task2_activation": activations[2],
                     "section_index": section_index,
                     "length_m": section.length_m,
                     "area_m2": section.area_m2,
@@ -367,6 +467,32 @@ def run(output_dir: Path) -> dict[str, object]:
     )
 
     representation_clean = representation_is_clean(task_payload)
+    schedule_checks = [
+        {
+            "onset_activation": task_activation_at_time(
+                task,
+                task.onset_s,
+                control_step_s=PRIMARY_CONTROL_STEP_S,
+            ),
+            "midpoint_activation": task_activation_at_time(
+                task,
+                0.5 * (task.onset_s + task.offset_s),
+                control_step_s=PRIMARY_CONTROL_STEP_S,
+            ),
+            "offset_activation": task_activation_at_time(
+                task,
+                task.offset_s,
+                control_step_s=PRIMARY_CONTROL_STEP_S,
+            ),
+        }
+        for task in TASKS
+    ]
+    task_schedule_pass = all(
+        math.isclose(check["onset_activation"], 0.0, rel_tol=0.0, abs_tol=1e-12)
+        and math.isclose(check["midpoint_activation"], 0.5, rel_tol=0.0, abs_tol=1e-12)
+        and math.isclose(check["offset_activation"], 1.0, rel_tol=0.0, abs_tol=1e-12)
+        for check in schedule_checks
+    )
 
     primary_a = EXP26.EXP23.primary_geometry("a")
     primary_i = EXP26.EXP23.primary_geometry("i")
@@ -587,6 +713,7 @@ def run(output_dir: Path) -> dict[str, object]:
         and area_oracle_pass
         and peak_oracle_pass
         and source_regression["pass"]
+        and task_schedule_pass
     )
     numerical_stability_pass = bool(
         geometry_valid
@@ -669,6 +796,10 @@ def run(output_dir: Path) -> dict[str, object]:
             "representation_sufficient": representation_sufficient,
         },
         "start_exact_reproduction": start_exact,
+        "task_schedule_checks": {
+            "pass": task_schedule_pass,
+            "tasks": schedule_checks,
+        },
         "endpoint_area_oracle": {
             "pass": area_oracle_pass,
             "max_abs_error_m2": area_max_error,
