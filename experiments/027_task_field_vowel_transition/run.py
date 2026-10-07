@@ -461,7 +461,14 @@ def run(output_dir: Path) -> dict[str, object]:
         "kappa": KAPPA,
         "sigma": SIGMA,
         "sigma_lip": SIGMA_LIP,
-        "area_relation": "log A = log A0 + 2 * activation * delta_log_diameter",
+        "activation_semantics": (
+            "each canonical task has its own sampled smoothstep activation "
+            "derived from onset_s/offset_s"
+        ),
+        "area_relation": (
+            "log A(x,t) = log A0(x) + 2 * Sum_i["
+            "activation_i(t) * delta_log_diameter_i(x)]"
+        ),
     }
     (output_dir / "realizer_parameters.json").write_text(
         json.dumps(realizer_payload, ensure_ascii=False, indent=2) + "\n",
