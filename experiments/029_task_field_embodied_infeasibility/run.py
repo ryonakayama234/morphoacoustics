@@ -38,6 +38,7 @@ HERE = Path(__file__).resolve().parent
 EXPERIMENTS = HERE.parent
 ORACLE_PATH = HERE / "wolfram" / "v3c_oracle.json"
 ORACLE_GIT_BLOB_SHA = "91e8041568bf61c8f828a32176b72f720e4bd646"
+EXP28_RUN_GIT_BLOB_SHA = "a5bb9a70a58f5ec0f61c3c5f4df1e4dd9bc3e686"
 
 OUTLET_LOCATION = 1.0
 ORAL_SHAPER_KIND = "oral-shaper"
@@ -60,7 +61,7 @@ SUPPORT_DECISION = "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
 
 def git_blob_sha1(path: Path) -> str:
     data = path.read_bytes()
-    payload = f"blob {len(data)}\\0".encode("ascii") + data
+    payload = f"blob {len(data)}\0".encode("ascii") + data
     return hashlib.sha1(payload).hexdigest()
 
 
