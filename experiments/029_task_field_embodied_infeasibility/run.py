@@ -510,7 +510,7 @@ def evaluate_condition(
     endpoint = EXP27.realize_task_geometry(
         morphology.rest_state,
         1.0,
-        cavity_id=f"{morphology.rest_state.cavity_id}-v3c-{label}-endpoint",
+        cavity_id=morphology.rest_state.cavity_id,
     )
     waveform, call_count = render_with_counter(
         source,
@@ -804,19 +804,20 @@ def run(output_dir: Path) -> dict[str, object]:
         endpoint_equal and waveform_equal and acoustic_calls_equal
     )
 
-    audited_reference_wave = EXP27.render_task_continuous(
-        source,
-        m0_a,
-        control_step_s=EXP27.PRIMARY_CONTROL_STEP_S,
-        hop_size=EXP27.PRIMARY_HOP_SIZE,
-        label="v3c-instrumentation-reference",
-    )
-    instrumentation_matches_audited_renderer = bool(
-        plus.waveform is not None
-        and boundary.waveform is not None
-        and np.array_equal(plus.waveform, audited_reference_wave)
-        and np.array_equal(boundary.waveform, audited_reference_wave)
-    )
+    if feasible_outputs_present:
+        audited_reference_wave = EXP27.render_task_continuous(
+            source,
+            m0_a,
+            control_step_s=EXP27.PRIMARY_CONTROL_STEP_S,
+            hop_size=EXP27.PRIMARY_HOP_SIZE,
+            label="v3c-instrumentation-reference",
+        )
+        instrumentation_matches_audited_renderer = bool(
+            np.array_equal(plus.waveform, audited_reference_wave)
+            and np.array_equal(boundary.waveform, audited_reference_wave)
+        )
+    else:
+        instrumentation_matches_audited_renderer = False
 
     representation_invariant = bool(
         task_payload == oracle["task_plan"]
