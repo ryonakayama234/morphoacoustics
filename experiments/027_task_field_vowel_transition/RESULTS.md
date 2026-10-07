@@ -18,16 +18,31 @@ It does not establish morphology transfer, arbitrary phonology, natural speech, 
 
 ## Canonical execution provenance
 
-- GitHub Actions scientific run: `37605693282`
-- tests run: `37605693296`
+The canonical audited run is the post-review timing fix:
+
+- GitHub Actions scientific run: `37614823741`
+- tests run: `37614823695`
 - branch: `v3a-experiment-027-task-field`
-- source head commit: `3a0f721e10db612e178ae7d5a9bdef42fe4b51cf`
-- full output artifact ID: `11474313715`
-- artifact SHA-256: `bbd517d65055fba7683d26b18ba8806de135bb11bdb04569abe040a25c82499c`
-- artifact size: 610507 bytes
-- Python: 3.11.16 in the canonical scientific run
+- source head commit: `b15a778409ccf221cc508e0527e74df65c74df7d`
+- full output artifact ID: `11478728169`
+- artifact SHA-256: `248f46849d10a74468dd84755ad0a387a9b932514834b879988725f02f28cb5a`
+- artifact size: 611433 bytes
+- Python: 3.11.16
+- NumPy: 2.4.6
 
 The repository test workflow and the Experiment-027 scientific workflow both passed.
+
+### Review correction before merge
+
+Codex review found that the first implementation serialized `CandidateTask.onset_s/offset_s` but drove all R1 fields from the inherited Experiment-026 global progress. That made canonical task timing dead metadata. Before merge, the realizer was corrected so each task computes its own sampled smoothstep activation from its own schedule, and the three independently activated fields are then combined.
+
+The audited run above verifies, for every frozen task:
+
+- onset activation = `0.0`;
+- midpoint activation = `0.5000000000000001` (floating representation of 0.5);
+- offset activation = `1.0`.
+
+The scientific decision remained **ADOPT_TASK_FIELD_CANDIDATE** with no task-value, realizer-constant, or threshold refit.
 
 ## Representation boundary
 
@@ -120,7 +135,7 @@ The inherited Experiment-013 source remained unchanged:
 - cycle-boundary jump / RMS: **4.406218549921945e-05**
 - inherited limit: **< 0.01**
 - result: PASS
-- source float64 SHA-256: `4d075fd89958ff481507661ea43e4602ed5fe72b0104bc897685b1f696abf529`
+- source float64 SHA-256: `724412c20feddd9e00112cc362bac56bd8aa428670c5dcb789461df858b512fc`
 
 ## Waveform / numerical stability
 
