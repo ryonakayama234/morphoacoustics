@@ -42,7 +42,7 @@ CONSTRICT  location=0.7167402543883221  degree=0.9235962908995712
 CONSTRICT  location=1.0                 degree=0.04495226070116771
 ```
 
-All three tasks have onset `0.150 s` and offset `0.350 s`.
+All three tasks have onset `0.150 s` and offset `0.350 s`. Each task's field activation is computed from that task's own `onset_s` / `offset_s`; the coincident values in this candidate are not allowed to degrade into one hidden global timing control.
 
 The task plan may contain only:
 
