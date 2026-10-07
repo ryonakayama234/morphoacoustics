@@ -39,3 +39,6 @@ An experiment that becomes a stable invariant should be promoted into `tests/sci
 
 24. `024_source_spectrum_vowel_cue` — source-only diagnostic follow-up to Experiment 023 for the /i/ identification failure.
 25. `025_smooth_source_spectrum_vowel_cue` — replace Experiment-024's artifact-heavy sin/n diagnostic with a preregistered cos/n² source that preserves high-F2 support while targeting the existing cycle-boundary artifact gate.
+
+26. `026_moving_vowel_transition` — validate one continuous prescribed calibrated /a/→/i/ tract trajectory above temporal/spatial numerical controls before introducing task-level realization.
+27. `027_task_field_vowel_transition` — replace the prescribed target area-vector motor path with a frozen three-task normalized field on the calibrated reference body, with an independent Wolfram endpoint oracle and no production-schema promotion.
