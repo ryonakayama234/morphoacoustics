@@ -37,7 +37,12 @@ def rejected(experiment, tmp_path, expected):
 
 def test_audited_baseline_still_passes(experiment, tmp_path):
     result = experiment.run(tmp_path)
-    assert result["decision"] == "SUPPORT_TASK_TRANSFER"
+    provenance = json.loads((tmp_path / "provenance.json").read_text())
+    assert result["decision"] == "SUPPORT_TASK_TRANSFER", json.dumps({
+        "preflight": result["preflight"]["checks"], "gates": result["gates"],
+        "source": provenance.get("source"),
+        "identity": result["preflight"]["implementation"],
+    })
     assert all(result["gates"].values())
     assert all(result["preflight"]["checks"].values())
     assert result["endpoint_metrics"]["M1"]["task_to_i_over_a_to_i"] == 0.1868627388125155
