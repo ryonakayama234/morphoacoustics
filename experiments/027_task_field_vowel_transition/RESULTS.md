@@ -18,15 +18,15 @@ It does not establish morphology transfer, arbitrary phonology, natural speech, 
 
 ## Canonical execution provenance
 
-The canonical audited run is the post-review timing fix:
+The canonical audited run is the post-review frozen-plan fix:
 
-- GitHub Actions scientific run: `37614823741`
-- tests run: `37614823695`
+- GitHub Actions scientific run: `37615642002`
+- tests run: `37615641957`
 - branch: `v3a-experiment-027-task-field`
-- source head commit: `b15a778409ccf221cc508e0527e74df65c74df7d`
-- full output artifact ID: `11478728169`
-- artifact SHA-256: `248f46849d10a74468dd84755ad0a387a9b932514834b879988725f02f28cb5a`
-- artifact size: 611433 bytes
+- source head commit: `40cd1a94a31bff09147c920b9eb4d7fd8a2be829`
+- full output artifact ID: `11479229693`
+- artifact SHA-256: `68b67904e4156d17059a4a0b7031179d0033c1fbe2493eea9f5e8e8bcc8f7d93`
+- artifact size: 611588 bytes
 - Python: 3.11.16
 - NumPy: 2.4.6
 
@@ -43,6 +43,16 @@ The audited run above verifies, for every frozen task:
 - offset activation = `1.0`.
 
 The scientific decision remained **ADOPT_TASK_FIELD_CANDIDATE** with no task-value, realizer-constant, or threshold refit.
+
+A second Codex review then found that the schedule-semantics check alone would still allow all tasks to be moved to a different grid-aligned schedule (for example 0.10–0.40 s) while passing. Before merge, the Gate was strengthened to compare the complete serialized canonical task plan directly against the checked-in frozen Wolfram oracle `task_plan`.
+
+The canonical audited run above reports:
+
+- `frozen_task_plan_match.pass = true`;
+- observed and expected task kind/location/degree/onset/offset are identical;
+- the independent task-local activation schedule check remains PASS.
+
+Thus the final Gate now verifies both **that timing drives realization** and **that the preregistered timing/candidate itself has not been refit**.
 
 ## Representation boundary
 
