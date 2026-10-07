@@ -1,0 +1,50 @@
+name: experiment-024
+
+on:
+  push:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/024_source_spectrum_vowel_cue/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-024.yml"
+  pull_request:
+    paths:
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/024_source_spectrum_vowel_cue/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-024.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Run Experiment 024
+        run: python experiments/024_source_spectrum_vowel_cue/run.py --output-dir experiment-024-output
+      - name: Show summary
+        run: cat experiment-024-output/decision.json
+      - name: Upload listening set
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-024-s1-listening
+          path: experiment-024-output/listening/s1_primary_blind/
+      - name: Upload research outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-024-output
+          path: experiment-024-output/

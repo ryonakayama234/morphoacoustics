@@ -1,0 +1,28 @@
+{
+  "f0_hz": 100.0,
+  "harmonic_count": 40,
+  "source_model": "A_n proportional to 1/n",
+  "source_p2_over_p1_db": {
+    "a": -5.376906245851599,
+    "i": -17.69213162595861,
+    "u": -11.480625354554377
+  },
+  "observer_scaling_p2_over_p1_db": {
+    "a": 5.376906245851599,
+    "i": 17.69213162595861,
+    "u": 11.480625354554377
+  },
+  "tract_p2_over_p1_db": {
+    "a": 1.334017403874666,
+    "i": 3.8172663320900897,
+    "u": -3.2704646675822913
+  },
+  "predicted_listening_pressure_p2_over_p1_db": {
+    "a": 1.334017403874666,
+    "i": 3.8172663320900897,
+    "u": -3.2704646675822913
+  },
+  "source_ratio_tolerance_db": 0.25,
+  "rendered_ratio_tolerance_db": 2.0,
+  "minimum_i_improvement_db": 10.0
+}

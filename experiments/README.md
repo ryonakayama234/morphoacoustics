@@ -36,3 +36,5 @@ Each experiment should state:
 - acceptance criterion.
 
 An experiment that becomes a stable invariant should be promoted into `tests/scientific/`.
+
+24. `024_source_spectrum_vowel_cue` — source-only diagnostic follow-up to Experiment 023 for the /i/ identification failure.
