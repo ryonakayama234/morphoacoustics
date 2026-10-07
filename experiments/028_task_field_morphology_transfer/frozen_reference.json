@@ -19,7 +19,7 @@
       "src/morphoacoustics/physical/__init__.py": "d0902a7564b03644c77b1ff80c9e8c605ed910c820b5e8367e2fa9471b0c74c2",
       "src/morphoacoustics/physical/tract1d.py": "89689d5980da47350974b2284c4518d5724503fbe141e36bcb0c33495f2873c0"
     },
-    "realizer_functions_sha256": {
+    "executed_functions": {
       "section_coordinates": {
         "source_sha256": "9b585b5ea85758d74e156945af38f5f0f4c29de6e1d8153451ec8b7d84c88ae1",
         "code_path": "experiments/027_task_field_vowel_transition/run.py",
@@ -79,6 +79,12 @@
         "code_path": "experiments/027_task_field_vowel_transition/run.py",
         "code_first_line": 294,
         "code_name": "render_task_continuous"
+      },
+      "source.build_sources": {
+        "source_sha256": "65c0afc4edef3f076593ca53e14850e61aca9ef99b9e13c187a882135ed90407",
+        "code_path": "experiments/013_parametric_source_prosody/run.py",
+        "code_first_line": 245,
+        "code_name": "build_sources"
       }
     },
     "runtime_constants": {

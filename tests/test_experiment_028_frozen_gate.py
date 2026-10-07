@@ -2,8 +2,10 @@
 import functools
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sys
+import subprocess
 
 import pytest
 
@@ -134,10 +136,22 @@ def test_source_identity_cannot_change_silently(experiment, monkeypatch, tmp_pat
         return sources, metadata
 
     monkeypatch.setattr(experiment.EXP26.EXP13, "build_sources", scaled_source)
-    result = experiment.run(tmp_path)
-    assert result["decision"] == "IMPLEMENTATION_MISMATCH"
+    rejected(experiment, tmp_path, "IMPLEMENTATION_MISMATCH")
+
+
+def test_cpu_simd_roundoff_does_not_change_frozen_source_identity(tmp_path):
+    # Portable code/parameter identity, not the last floating bit of exp/sin.
+    env = dict(os.environ)
+    env["NPY_DISABLE_CPU_FEATURES"] = "AVX512F,AVX512_SKX,AVX2,FMA3"
+    completed = subprocess.run(
+        [sys.executable, str(EXPERIMENT / "run.py"), "--output-dir", str(tmp_path)],
+        cwd=ROOT, env=env, capture_output=True, text=True, check=True,
+    )
+    result = json.loads(completed.stdout)
+    assert result["decision"] == "SUPPORT_TASK_TRANSFER", result["gates"]
     provenance = json.loads((tmp_path / "provenance.json").read_text())
-    assert not provenance["source"]["matches_frozen_source"]
+    assert provenance["source"]["generator_identity_matches"]
+    assert provenance["source"]["byte_digest_is_diagnostic_only"]
 
 
 def test_oracle_comparison_covers_entire_schema():

@@ -123,15 +123,16 @@ def implementation_identity() -> dict[str, object]:
                 hashlib.sha256(path.read_bytes()).hexdigest()
             )
 
-    functions = {}
-    for name in (
+    function_objects = {name: getattr(EXP27, name, None) for name in (
         "section_coordinates", "gaussian_kernel", "task_log_diameter_delta_for",
         "analytic_task_activation_scalar", "task_activation_at_time",
         "task_activations_at_time", "realize_task_geometry_from_activations",
         "realize_task_geometry", "task_geometry_for_time", "render_task_continuous",
-    ):
+    )}
+    function_objects["source.build_sources"] = EXP26.EXP13.build_sources
+    functions = {}
+    for name, function in function_objects.items():
         try:
-            function = getattr(EXP27, name)
             source = inspect.getsource(function)
             code = function.__code__
             functions[name] = {
@@ -152,7 +153,7 @@ def implementation_identity() -> dict[str, object]:
         }
         for relative, module in sorted(modules.items())
     }
-    return {"files_sha256": files, "realizer_functions_sha256": functions,
+    return {"files_sha256": files, "executed_functions": functions,
             "runtime_constants": constants}
 
 
@@ -757,7 +758,9 @@ def run(output_dir: Path) -> dict[str, object]:
     source = np.asarray(source_result.source, dtype=np.float64)
     source_regression = EXP26.source_regression(source_result)
     source_hash = EXP26.sha256_float64(source)
-    source_identity_pass = source_hash == frozen["source_sha256_float64"]
+    # CPU SIMD paths may differ in the last bit of exp/sin results. Freeze the
+    # source generator code/constants, not one hardware's floating byte stream.
+    source_bytes_match_capture = source_hash == frozen["source_sha256_float64"]
 
     t0 = EXP27.render_task_continuous(
         source,
@@ -862,7 +865,6 @@ def run(output_dir: Path) -> dict[str, object]:
         oracle_pass
         and m0_v3a_peak_match
         and source_regression["pass"]
-        and source_identity_pass
     )
     numerical_pass = bool(
         geometry_valid
@@ -918,7 +920,9 @@ def run(output_dir: Path) -> dict[str, object]:
             "f0_hz": EXP26.BASE_F0_HZ,
             "rd": EXP26.EXP13.RD,
             "sha256_float64": source_hash,
-            "matches_frozen_source": source_identity_pass,
+            "bytes_match_capture": source_bytes_match_capture,
+            "byte_digest_is_diagnostic_only": True,
+            "generator_identity_matches": preflight["checks"]["executed_implementation_matches"],
         },
         "renderer": {
             "transfer": "Experiment-009 far_field_pressure_transfer",

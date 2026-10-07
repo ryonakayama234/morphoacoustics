@@ -29,14 +29,15 @@ All four findings from the review of `990e602` are addressed:
   reproduced every field exactly after JSON parsing, including all six sets of
   five peaks, all metrics, model metadata, and thresholds.
 
-The strengthened baseline rerun remains **SUPPORT_TASK_TRANSFER**. All scientific
-metrics and raw waveforms match the original run. No task, geometry parameter,
+The strengthened baseline rerun remains **SUPPORT_TASK_TRANSFER**. In the same
+local environment, all scientific metrics and raw waveforms match the original
+run exactly. No task, geometry parameter,
 source, backend, oracle value, or scientific threshold was retuned.
 
 The executed implementation identity SHA-256 is now:
 
 ```text
-045b298d4feb6a559a65a643a79510b985ae5c2eb01baac85f588c23cc84f629
+8f7058ea583edd316a732d334042ba7f09058209369a5e9a63cf39ca69ec41cb
 ```
 
 The historical `bf666498...` hash recorded below identifies only the parameter
@@ -48,6 +49,13 @@ dependency-file changes, local and upstream relaxation of all three dynamic
 limits, oracle-limit edits, and source waveform drift. All such conditions are
 rejected; input-preflight violations produce no pressure waveforms. The narrow
 claim boundary remains unchanged.
+
+CI additionally exposed a portability issue in the newly added source-byte
+check: the same frozen generator yields digest `724412c2...` on one NumPy SIMD
+path and `4d075fd8...` on another. Disabling AVX512 reproduced the latter digest
+locally. The generator implementation/constants are therefore frozen and gated;
+raw source bytes remain a provenance diagnostic. No preregistered threshold was
+changed. A subprocess regression exercises the less vectorized CPU path.
 
 This supports the narrow claim:
 

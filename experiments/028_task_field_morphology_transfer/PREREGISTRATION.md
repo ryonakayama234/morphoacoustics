@@ -204,12 +204,13 @@ The original hypotheses, tasks, body parameters, oracle values, and thresholds
 above remain unchanged. `frozen_reference.json` pins the audited `990e602` input
 implementation, transitive experiment dependencies, acoustic/physical source
 files, live realizer function origins/source, runtime constants, calibrated M0
-area/length vectors, execution cadence, and source waveform digest.
+area/length vectors, execution cadence, and live source-generator identity.
 
 Before rendering, any M0 mismatch is `MORPHOLOGY_INTERVENTION_INVALID`; any
 implementation/oracle/threshold/cadence mismatch is `IMPLEMENTATION_MISMATCH`.
-No waveform is produced by a rejected preflight. Source waveform identity is
-also checked in the implementation Gate. Dynamic thresholds are local to 028
+No waveform is produced by a rejected preflight. Source-generator code and
+constants are pinned; the waveform digest is diagnostic because CPU SIMD paths
+can differ in the last floating bit without changing the generator. Dynamic thresholds are local to 028
 and must exactly match the frozen oracle. The oracle itself is checked against
 the frozen canonical JSON digest.
 
