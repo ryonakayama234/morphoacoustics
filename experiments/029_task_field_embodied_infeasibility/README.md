@@ -24,6 +24,20 @@ python experiments/029_task_field_embodied_infeasibility/run.py \
   --output-dir experiment-029-output
 ```
 
+Every run needs a **fresh, empty output directory**. Reusing an existing
+directory with files raises `FileExistsError` before any experiment output is
+written. This is intentional: a rejected run must never leave earlier
+successful WAV/trace artifacts in the same directory. For a second run use
+another path, such as `--output-dir experiment-029-output-2`. The runner never
+automatically deletes user files.
+
+The audited numerical stack is **NumPy 2.4.6**. The dedicated workflow installs
+that version. The runner also refuses a different NumPy version; feasible
+endpoint/waveform SHA-256 hashes are checked against the original audited
+Experiment-029 artifact, not just against the other condition from the same
+run. These additional audit checks do not change any frozen task, morphology,
+or scientific threshold.
+
 The dedicated CI workflow enforces:
 
 ```text
