@@ -1,0 +1,115 @@
+name: limited-live-physics
+
+on:
+  push:
+    paths:
+      - "src/morphoacoustics/integration/limited_live.py"
+      - "src/morphoacoustics/domain/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "src/morphoacoustics/preparation/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "tests/test_limited_live_policy.py"
+      - "checks/test_limited_live_smoke.py"
+      - "pyproject.toml"
+      - ".github/workflows/limited-live-physics.yml"
+  pull_request:
+    paths:
+      - "src/morphoacoustics/integration/limited_live.py"
+      - "src/morphoacoustics/domain/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/physical/**"
+      - "src/morphoacoustics/preparation/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "tests/test_limited_live_policy.py"
+      - "checks/test_limited_live_smoke.py"
+      - "pyproject.toml"
+      - ".github/workflows/limited-live-physics.yml"
+
+jobs:
+  physical-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install audited numerical stack
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e '.[dev]'
+          python -c "import numpy; assert numpy.__version__ == '2.4.6', numpy.__version__"
+      - name: Run real-physics and no-fallback tests
+        run: |
+          pytest -q checks/test_limited_live_smoke.py tests/test_limited_live_policy.py
+      - name: CLI fresh WAV/trace integration smoke
+        run: |
+          mkdir -p limited-live-artifacts
+          cat > limited-live-request.json <<'JSON'
+          {
+            "schema_version": "morpho-live/v1",
+            "pronunciation_id": "v3a-a-to-i-like/v1",
+            "body_id": "v3c-M_plus/v1",
+            "segment_id": "s1",
+            "text": "あい",
+            "seed": 0
+          }
+          JSON
+          python -m morphoacoustics.integration.limited_live \
+            --request limited-live-request.json \
+            --output-dir limited-live-artifacts/take-1 > limited-live-cli-response.json
+          python - <<'PY'
+          import hashlib, json, wave
+          from pathlib import Path
+          out = Path("limited-live-artifacts/take-1")
+          result = json.loads((out / "result.json").read_text())
+          assert result["job_status"] == "SUCCEEDED"
+          assert result["realization_outcome"] == "FEASIBLE"
+          assert result["execution"]["acoustic_transfer_calls"] == 102
+          assert result["provenance"]["quantized_raw_pressure_sha256"] == (
+              "dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e"
+          )
+          for artifact in result["artifacts"]:
+              path = out / artifact["path"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == artifact["sha256"]
+          with wave.open(str(out / "audio.wav"), "rb") as reader:
+              assert reader.getnframes() == 24000
+              assert reader.getframerate() == 48000
+          print("limited live: fresh WAV, raw pressure, trace and provenance verified")
+          PY
+      - name: Reject stale output replay
+        run: |
+          if python -m morphoacoustics.integration.limited_live \
+            --request limited-live-request.json \
+            --output-dir limited-live-artifacts/take-1 > limited-live-stale-response.json; then
+            echo "unexpected stale output reuse"
+            exit 1
+          fi
+          grep -q "requires a new output directory" limited-live-stale-response.json
+      - name: Upload fresh physics outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: limited-live-physics-output
+          path: |
+            limited-live-artifacts/
+            limited-live-cli-response.json
+          if-no-files-found: warn
