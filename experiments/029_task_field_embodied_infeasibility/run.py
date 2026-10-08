@@ -63,6 +63,13 @@ SUPPORT_DECISION = "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
 AUDITED_NUMPY_VERSION = "2.4.6"
 AUDITED_ENDPOINT_SHA256 = "645c236c3232ed668159f37b5f79d0e742bde2ecc89c59fb7b61d93acd78f7c6"
 AUDITED_WAVEFORM_SHA256 = "1b0ca7e7215af42428a1b11512e9a7547876c9f3b458c4d73c93a711800eb30e"
+# Finite-precision mathematical results can differ in their least significant
+# bits across GitHub runners, even with an identical NumPy wheel.
+# The canonical float64 hashes remain diagnostic; a quantized frozen signature
+# is the portable numerical baseline for this experiment.
+AUDITED_WAVEFORM_QUANTIZATION_PA = 1.0e-9
+AUDITED_WAVEFORM_SAMPLES = 24000
+AUDITED_QUANTIZED_WAVEFORM_SHA256 = "dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e"
 
 
 def git_blob_sha1(path: Path) -> str:
@@ -133,6 +140,17 @@ def canonical_json_bytes(value: object) -> bytes:
 
 def sha256_json(value: object) -> str:
     return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
+
+
+def quantized_waveform_sha256(waveform: np.ndarray) -> str:
+    """Content signature at a fixed 1e-9 Pa resolution, endian independent."""
+    data = np.asarray(waveform, dtype=np.float64)
+    if data.ndim != 1 or data.size != AUDITED_WAVEFORM_SAMPLES:
+        return "INVALID_SHAPE"
+    if not np.all(np.isfinite(data)):
+        return "NONFINITE"
+    integers = np.rint(data / AUDITED_WAVEFORM_QUANTIZATION_PA).astype("<i8")
+    return hashlib.sha256(integers.tobytes()).hexdigest()
 
 
 def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -859,7 +877,7 @@ def run(output_dir: Path) -> dict[str, object]:
     )
     # Equality between two outputs computed in one environment is not enough:
     # both may drift together after a change to NumPy or numerical behavior.
-    frozen_output_hashes_match = bool(
+    frozen_raw_output_hashes_match = bool(
         feasible_outputs_present
         and all(
             sha256_json(geometry_payload(results[name].endpoint))
@@ -869,12 +887,20 @@ def run(output_dir: Path) -> dict[str, object]:
             for name in ("M_plus", "M_boundary")
         )
     )
+    frozen_quantized_output_match = bool(
+        feasible_outputs_present
+        and all(
+            quantized_waveform_sha256(results[name].waveform)
+            == AUDITED_QUANTIZED_WAVEFORM_SHA256
+            for name in ("M_plus", "M_boundary")
+        )
+    )
     implementation_match = bool(
         upstream["pass"]
         and local["pass"]
         and oracle_pass
         and instrumentation_matches_audited_renderer
-        and frozen_output_hashes_match
+        and frozen_quantized_output_match
     )
 
     if not representation_invariant:
@@ -967,6 +993,9 @@ def run(output_dir: Path) -> dict[str, object]:
         "audited_feasible_output_hashes": {
             "physical_endpoint_sha256": AUDITED_ENDPOINT_SHA256,
             "raw_waveform_sha256_float64": AUDITED_WAVEFORM_SHA256,
+            "raw_hashes_are_bitwise_diagnostics_only": True,
+            "quantization_step_pa": AUDITED_WAVEFORM_QUANTIZATION_PA,
+            "quantized_waveform_sha256": AUDITED_QUANTIZED_WAVEFORM_SHA256,
         },
     }
     (output_dir / "provenance.json").write_text(
@@ -991,11 +1020,18 @@ def run(output_dir: Path) -> dict[str, object]:
             "instrumented_renderer_matches_audited_renderer": (
                 instrumentation_matches_audited_renderer
             ),
-            "frozen_feasible_output_hashes": frozen_output_hashes_match,
+            "frozen_feasible_quantized_output": frozen_quantized_output_match,
         },
         "task_plan_sha256": task_hash,
         "oracle_condition_checks": oracle_rows,
         "conditions": condition_summary,
+        "numerical_reproducibility": {
+            "audited_numpy_version": AUDITED_NUMPY_VERSION,
+            "quantization_step_pa": AUDITED_WAVEFORM_QUANTIZATION_PA,
+            "frozen_quantized_waveform_sha256": AUDITED_QUANTIZED_WAVEFORM_SHA256,
+            "quantized_output_matches_audited": frozen_quantized_output_match,
+            "raw_byte_hashes_match_audited": frozen_raw_output_hashes_match,
+        },
         "null_control": {
             "physical_endpoints_exactly_equal": endpoint_equal,
             "raw_waveforms_exactly_equal": waveform_equal,
