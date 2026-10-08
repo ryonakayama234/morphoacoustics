@@ -92,6 +92,73 @@ def test_existing_successful_take_cannot_be_reused_for_invalid_or_unsupported(tm
         assert audio.read_bytes() == b"prior-real-audio"
 
 
+
+
+def test_frozen_package_source_inventory_is_complete_and_matches_checkout():
+    from morphoacoustics.integration import limited_live as live
+
+    live._verify_frozen_sources_before_import()
+    expected = set(live.AUDITED_PACKAGE_GIT_BLOBS)
+    actual = {
+        path.relative_to(live.ROOT).as_posix()
+        for path in (live.ROOT / "src" / "morphoacoustics").rglob("*.py")
+        if path != live.ROOT / "src/morphoacoustics/integration/limited_live.py"
+    }
+    assert expected == actual
+    assert "src/morphoacoustics/domain/creature.py" in expected
+    assert "src/morphoacoustics/preparation/tract1d.py" in expected
+
+
+def test_preimport_rejects_changed_experiment_029_package_dependencies(monkeypatch):
+    import pytest
+    from pathlib import Path
+    from morphoacoustics.integration import limited_live as live
+
+    real_read = Path.read_bytes
+    paths = (
+        "src/morphoacoustics/domain/creature.py",
+        "src/morphoacoustics/domain/result.py",
+        "src/morphoacoustics/preparation/tract1d.py",
+    )
+
+    def import_must_not_run(*_args, **_kwargs):
+        raise AssertionError("executed experiment before auditing its package dependencies")
+
+    monkeypatch.setattr(live.importlib.util, "module_from_spec", import_must_not_run)
+    for relative in paths:
+        target = live.ROOT / relative
+
+        def tampered_read(self, *, _target=target):
+            data = real_read(self)
+            return data + b"\\n# tampered package dependency\\n" if self == _target else data
+
+        with monkeypatch.context() as patcher:
+            patcher.setattr(Path, "read_bytes", tampered_read)
+            with pytest.raises(RuntimeError, match="audited package Git blob changed before import"):
+                live._load_audited_experiment()
+
+
+def test_preimport_rejects_unregistered_package_module(monkeypatch):
+    import pytest
+    from pathlib import Path
+    from morphoacoustics.integration import limited_live as live
+
+    root = live.ROOT / "src" / "morphoacoustics"
+    original_rglob = Path.rglob
+
+    def with_added_file(self, pattern):
+        paths = list(original_rglob(self, pattern))
+        return paths + [root / "domain" / "unexpected_unreviewed.py"] if self == root else paths
+
+    def import_must_not_run(*_args, **_kwargs):
+        raise AssertionError("executed experiment before source inventory verification")
+
+    monkeypatch.setattr(Path, "rglob", with_added_file)
+    monkeypatch.setattr(live.importlib.util, "module_from_spec", import_must_not_run)
+    with pytest.raises(RuntimeError, match="audited package source inventory changed"):
+        live._load_audited_experiment()
+
+
 def test_preimport_frozen_manifest_rejects_changed_transitive_code(monkeypatch):
     import pytest
     from pathlib import Path
