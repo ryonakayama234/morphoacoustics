@@ -311,3 +311,57 @@ If the base V3 claim is now satisfied, close #33 with the explicit claim boundar
 3. Studio #10 live synthesis.
 
 PHONETIC_TRANSFER with body-specific task adaptation remains a later revision and must not be conflated with this unchanged-task TASK_TRANSFER result.
+
+## 2026-10-08 — post-review reproducibility hardening
+
+Additional Codex findings exposed reproducibility/integrity risks **without
+invalidating the reachability result**. These were fixed without changing
+the three task values, reach limits, oracle values, or scientific thresholds:
+
+1. **Audited numerical environment:** the Experiment-029 workflow pins
+   NumPy `2.4.6`; the runner refuses a different version. This pin is
+   experiment-local rather than a global dependency constraint.
+2. **Portable output identity:** literal raw float64 hashes are unsuitable
+   as a cross-runner pass criterion. Two workflows for the same source
+   commit and NumPy `2.4.6` (runs `37711653463` and `37711658356`)
+   yielded different exact endpoint and waveform hashes. Comparing
+   their retained 24,000-sample pressure arrays found a maximum
+   absolute difference of `1.917e-16 Pa` and relative RMS difference of
+   `8.671e-15`. This is a bitwise portability issue, **not** the body
+   reachability intervention.
+3. **Independent frozen numerical signature:** quantizing each full
+   waveform to `1e-9 Pa` resolution and hashing explicitly little-endian
+   signed `int64` samples yields the same audited digest on both
+   environments:
+
+   ```text
+   dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e
+   ```
+
+   That frozen quantized signature is now a required Gate for *both*
+   feasible conditions. The exact original raw endpoint/waveform hashes
+   remain **diagnostics** and are still recorded. Exact equality between
+   the two feasible conditions *within a single execution* remains
+   mandatory. This distinguishes portable numerical identity from
+   machine-dependent bitwise identity.
+4. **No stale artifact mixing:** the runner rejects any nonempty
+   `--output-dir` before writing a new result; CI exercises this
+   negative case. Every execution uses a fresh directory. The script
+   never recursively deletes unrelated user data.
+5. **Frozen trust anchors:** before calling Experiment 028's preflight,
+   Experiment 029 verifies the accepted Git blob SHA for:
+   - Experiment-028 runner `run.py`;
+   - Experiment-028 `frozen_reference.json`;
+   - Experiment-028 `wolfram/v3b_oracle.json`;
+   - Experiment-029 `wolfram/v3c_oracle.wl` source;
+   - Experiment-029 `wolfram/v3c_oracle.json` output.
+
+   This prevents a modified reference/oracle from silently
+   self-certifying the implementation. The stored Wolfram source and
+   its output are version-pinned; CI does not require a licensed
+   Wolfram kernel to regenerate the oracle.
+
+The scientific conclusion remains restricted to the documented
+experiment-local three-task fixture. These additional safeguards
+audit the **integrity of the evidence**, not the biological validity of
+the simplified reachability model.
