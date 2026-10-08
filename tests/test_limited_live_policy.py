@@ -68,3 +68,12 @@ def test_normalized_request_digest_is_independent_of_json_key_order():
     b = validate(dict(reversed(list({**request(), "text": "X"}.items()))))
     assert a is not None and b is not None
     assert a["provenance"]["request_sha256"] == b["provenance"]["request_sha256"]
+
+
+def test_nonfinite_and_non_json_extensions_are_invalid():
+    for bad in (float("nan"), float("inf")):
+        result = validate({**request(), "direction": {"energy": bad}})
+        assert result is not None
+        assert result["realization_outcome"] == "INVALID"
+        assert result["diagnostics"][0]["code"] == "REQUEST_ENCODING"
+        assert result["provenance"]["request_sha256"] is None
