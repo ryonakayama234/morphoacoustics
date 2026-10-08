@@ -8,12 +8,12 @@ not a web server.
 
 ## Supported input
 
-The API here is **integration-local** \`morpho-live/v1\`, **not** Performance
+The API here is **integration-local** `morpho-live/v1`, **not** Performance
 Contract v0. The future Studio service maps the creative
-\`PerformanceRequest\` into this validated pronunciation fixture; it must
-not pass arbitrary text or \`Direction\` through as physical commands.
+`PerformanceRequest` into this validated pronunciation fixture; it must
+not pass arbitrary text or `Direction` through as physical commands.
 
-\`\`\`json
+```json
 {
   "schema_version": "morpho-live/v1",
   "pronunciation_id": "v3a-a-to-i-like/v1",
@@ -22,15 +22,15 @@ not pass arbitrary text or \`Direction\` through as physical commands.
   "text": "あい",
   "seed": 0
 }
-\`\`\`
+```
 
-Exactly **one** segment is accepted; the single \`segment_id\` is an opaque
-nonempty identifier. The only exposed body is the V3c \`M_plus\` PreparedMorphology;
-the only source is \`lf_fixed\`; the only seed is \`0\`; the only supported
-creative \`direction\` is absent or an empty object. Unsupported combinations
-return \`SUCCEEDED + UNSUPPORTED\` with a diagnostic and **no audio**.
-Malformed requests return \`SUCCEEDED + INVALID\`. A runtime/preflight error
-is instead \`FAILED\`. Those distinctions must survive the Studio adapter.
+Exactly **one** segment is accepted; the single `segment_id` is an opaque
+nonempty identifier. The only exposed body is the V3c `M_plus` PreparedMorphology;
+the only source is `lf_fixed`; the only seed is `0`; the only supported
+creative `direction` is absent or an empty object. Unsupported combinations
+return `SUCCEEDED + UNSUPPORTED` with a diagnostic and **no audio**.
+Malformed requests return `SUCCEEDED + INVALID`. A runtime/preflight error
+is instead `FAILED`. Those distinctions must survive the Studio adapter.
 
 ## Reproduction on WSL2/Linux
 
@@ -41,7 +41,7 @@ upstream scientific preflight and Wolfram oracles; it refuses to run if those
 identity checks fail. It deliberately requires **NumPy 2.4.6**, matching the
 audited experiment, and does not read stored experiment WAVs.
 
-\`\`\`bash
+```bash
 python -m pip install 'numpy==2.4.6'
 python -m pip install -e '.[dev]'
 
@@ -61,13 +61,13 @@ python -m morphoacoustics.integration.limited_live \
 python -m morphoacoustics.integration.limited_live \
   --request limited-live-request.json --output-dir live-take-002
 pytest -q checks/test_limited_live_smoke.py tests/test_limited_live_policy.py
-\`\`\`
+```
 
 Always supply a **new, nonexistent output directory**: overwriting a Take is
 forbidden. A successful execution generates 3 new local files and a result
-manifest: \`audio.wav\` (48 kHz, 16-bit mono, 24,000 frames), \`raw_pressure_pa.npy\`
-(unmodified acoustic pressure in Pa), \`physical_trace.csv\` (selected
-10-ms-aligned task activations and physical areas), \`result.json\`.
+manifest: `audio.wav` (48 kHz, 16-bit mono, 24,000 frames), `raw_pressure_pa.npy`
+(unmodified acoustic pressure in Pa), `physical_trace.csv` (selected
+10-ms-aligned task activations and physical areas), `result.json`.
 The audio is playback-normalized to peak 0.90; never treat that WAV as a
 pressure measurement. The manifest records SHA-256 digests for each artifact,
 input/seed/fixture/compiler identities, the frozen task-plan SHA-256, NumPy
@@ -80,7 +80,7 @@ to the orchestration layer and is **not** the content digest. Float64
 least-significant bits may change between environments. Therefore the
 scientific gate compares the full 24,000-sample waveform quantized at
 1e-9 Pa against the adopted
-\`dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e\`
+`dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e`
 signature. The raw float64 hash is **diagnostic**, not a cross-platform
 identity guarantee. PCM16 file equality across environments is not
 automatically certified by that quantized scientific gate.
@@ -88,11 +88,11 @@ automatically certified by that quantized scientific gate.
 ## Failure and no-fallback semantics
 
 A PreparedMorphology reachability preflight happens before source/physical/
-acoustic synthesis. Experiment 029's \`M_minus\` test body is deliberately
+acoustic synthesis. Experiment 029's `M_minus` test body is deliberately
 **not exposed** as a creator-selectable body: attempting its body ID in the
-CLI is \`UNSUPPORTED\`. The dedicated scientific smoke exercises \`M_minus\`
+CLI is `UNSUPPORTED`. The dedicated scientific smoke exercises `M_minus`
 directly at the adopted capability layer, verifying
-\`INFEASIBLE\`, \`LOCATION_UNREACHABLE\` on task 1, no physical endpoint,
+`INFEASIBLE`, `LOCATION_UNREACHABLE` on task 1, no physical endpoint,
 no acoustic waveform, and **zero acoustic transfer calls**.
 A limit violation is not fixed by clipping or fallback synthesis.
 
