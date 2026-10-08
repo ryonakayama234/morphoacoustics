@@ -32,12 +32,16 @@ BODY_ID = "v3c-M_plus/v1"
 SOURCE_ID = "lf_fixed"
 BACKEND_VERSION = "x2a-experimental-1"
 AUDITED_EXP29_GIT_BLOB = "8d911d6a9d7f2dce556b1fd57439e74b3ff07269"
+AUDITED_EXP28_GIT_BLOB = "a5bb9a70a58f5ec0f61c3c5f4df1e4dd9bc3e686"
+AUDITED_EXP28_REFERENCE_GIT_BLOB = "7810dfbb72cb6c41af007db6e9d51c58cad9a522"
 SAMPLE_RATE_HZ = 48000
 DURATION_S = 0.5
 SAMPLES = 24000
 LISTENING_PEAK = 0.90
 ROOT = Path(__file__).resolve().parents[3]
 EXP29_PATH = ROOT / "experiments" / "029_task_field_embodied_infeasibility" / "run.py"
+EXP28_PATH = ROOT / "experiments" / "028_task_field_morphology_transfer" / "run.py"
+EXP28_REFERENCE_PATH = ROOT / "experiments" / "028_task_field_morphology_transfer" / "frozen_reference.json"
 REQUIRED_KEYS = frozenset({
     "schema_version", "pronunciation_id", "body_id",
     "segment_id", "text", "seed",
@@ -110,14 +114,41 @@ def validate(request: object) -> dict[str, Any] | None:
     return None
 
 
+def _git_blob_sha(path: Path) -> str:
+    raw = path.read_bytes()
+    return hashlib.sha1(f"blob {len(raw)}\0".encode("ascii") + raw).hexdigest()
+
+
+def _verify_frozen_sources_before_import() -> None:
+    """Verify trusted Experiment 028 manifest and every recorded executed file.
+
+    Do this *before* exec_module: Experiment 028 imports Experiment 027 before
+    checking the scientific frozen preflight. Never execute modified experiment
+    code just to discover that it is modified.
+    """
+    for path, expected in (
+        (EXP29_PATH, AUDITED_EXP29_GIT_BLOB),
+        (EXP28_PATH, AUDITED_EXP28_GIT_BLOB),
+        (EXP28_REFERENCE_PATH, AUDITED_EXP28_REFERENCE_GIT_BLOB),
+    ):
+        if _git_blob_sha(path) != expected:
+            raise RuntimeError(f"audited frozen Git blob changed before import: {path}")
+    frozen = json.loads(EXP28_REFERENCE_PATH.read_text(encoding="utf-8"))
+    manifest = frozen["implementation"]["files_sha256"]
+    if not isinstance(manifest, dict) or not manifest:
+        raise RuntimeError("audited source manifest invalid")
+    for relative, expected_sha256 in manifest.items():
+        if not isinstance(relative, str) or not isinstance(expected_sha256, str):
+            raise RuntimeError("audited source manifest has invalid item")
+        source_path = ROOT / relative
+        # Relative paths come from a pinned trust root, not the user request.
+        if hashlib.sha256(source_path.read_bytes()).hexdigest() != expected_sha256:
+            raise RuntimeError(f"transitive audited source changed before import: {relative}")
+
+
 def _load_audited_experiment() -> ModuleType:
-    """Fail closed on edits to the adopted scientific path, including transitive files."""
-    if not EXP29_PATH.is_file():
-        raise RuntimeError("audited Experiment 029 not installed; run from repository checkout")
-    raw = EXP29_PATH.read_bytes()
-    git_blob = hashlib.sha1(f"blob {len(raw)}\0".encode("ascii") + raw).hexdigest()
-    if git_blob != AUDITED_EXP29_GIT_BLOB:
-        raise RuntimeError("audited Experiment 029 runner Git blob changed")
+    """Refuse modified experiment sources *before* any experiment import."""
+    _verify_frozen_sources_before_import()
     spec = importlib.util.spec_from_file_location("morpho_live_exp029", EXP29_PATH)
     if spec is None or spec.loader is None:
         raise RuntimeError("cannot import audited Experiment 029")
@@ -200,13 +231,14 @@ def _wav_bytes(pressure: np.ndarray) -> bytes:
 
 def perform(request: object, output_dir: Path) -> dict[str, Any]:
     """Every FEASIBLE call re-executes physical/acoustic synthesis; never cache audio."""
+    # Directory freshness applies even to INVALID/UNSUPPORTED results: an
+    # existing directory may contain an earlier successful WAV or manifest.
+    if output_dir.exists():
+        raise FileExistsError(f"requires a new output directory: {output_dir}")
     rejected = validate(request)
     if rejected is not None:
         return rejected
     assert isinstance(request, dict)
-    # Never reuse earlier Take bytes or delete the caller's data.
-    if output_dir.exists():
-        raise FileExistsError(f"requires a new output directory: {output_dir}")
     if not output_dir.parent.is_dir():
         raise FileNotFoundError(f"output parent does not exist: {output_dir.parent}")
     exp = _load_audited_experiment()
@@ -321,8 +353,15 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     try:
-        request = json.loads(args.request.read_text(encoding="utf-8"))
-        result = perform(request, args.output_dir)
+        if args.output_dir.exists():
+            raise FileExistsError(f"requires a new output directory: {args.output_dir}")
+        try:
+            request = json.loads(args.request.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            result = _response(None, "INVALID", "REQUEST_JSON", f"invalid JSON/UTF-8: {exc}")
+            result["provenance"]["request_sha256"] = None
+        else:
+            result = perform(request, args.output_dir)
     except Exception as exc:
         result = {
             "schema_version": SCHEMA_VERSION,
