@@ -1,0 +1,108 @@
+name: experiment-029
+
+on:
+  push:
+    paths:
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/domain/**"
+      - "src/morphoacoustics/physical/**"
+      - "src/morphoacoustics/preparation/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-029.yml"
+  pull_request:
+    paths:
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "src/morphoacoustics/acoustics/**"
+      - "src/morphoacoustics/domain/**"
+      - "src/morphoacoustics/physical/**"
+      - "src/morphoacoustics/preparation/**"
+      - "pyproject.toml"
+      - ".github/workflows/experiment-029.yml"
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install audited numerical stack
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e .
+          python -c "import numpy; assert numpy.__version__ == '2.4.6', numpy.__version__"
+
+      - name: Run Experiment 029
+        run: |
+          python experiments/029_task_field_embodied_infeasibility/run.py \
+            --output-dir experiment-029-output
+
+      - name: Confirm stale-output replay is refused
+        run: |
+          if python experiments/029_task_field_embodied_infeasibility/run.py \
+            --output-dir experiment-029-output > experiment-029-replay.log 2>&1; then
+            echo "Unexpected successful reuse of experiment output directory"
+            exit 1
+          fi
+          cat experiment-029-replay.log
+          grep -q "requires a fresh empty output directory" experiment-029-replay.log
+
+      - name: Show scientific summary
+        if: always()
+        run: |
+          if [ -f experiment-029-output/decision.json ]; then
+            cat experiment-029-output/decision.json
+          fi
+          if [ -f experiment-029-output/oracle_condition_checks.csv ]; then
+            cat experiment-029-output/oracle_condition_checks.csv
+          fi
+          if [ -f experiment-029-output/task_reach_trace.csv ]; then
+            cat experiment-029-output/task_reach_trace.csv
+          fi
+
+      - name: Enforce frozen V3c Gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          decision = json.loads(
+              Path("experiment-029-output/decision.json").read_text(encoding="utf-8")
+          )
+          observed = decision["decision"]
+          expected = "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
+          print(f"Experiment 029 decision: {observed}")
+          if observed != expected:
+              raise SystemExit(
+                  f"frozen V3c Gate did not pass: expected {expected}, got {observed}"
+              )
+          PY
+
+      - name: Upload full research outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-029-output
+          path: experiment-029-output/
+          if-no-files-found: warn
