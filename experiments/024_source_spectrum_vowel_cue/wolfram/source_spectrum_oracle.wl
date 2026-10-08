@@ -39,10 +39,15 @@ Module[
 
   sourceRatioDb[v_] := Module[{n1, n2},
     {n1, n2} = harmonics[v];
-    20 Log10[n1/n2]
+    N[20 Log10[n1/n2]]
   ];
 
-  observerRatioDb[v_] := Module[{n1, n2},\n    {n1, n2} = harmonics[v];\n    20 Log10[n2/n1]\n  ];\n\n  tractRatioDb[v_] := Module[{n1, n2, h1, h2},
+  observerRatioDb[v_] := Module[{n1, n2},
+    {n1, n2} = harmonics[v];
+    N[20 Log10[n2/n1]]
+  ];
+
+  tractRatioDb[v_] := Module[{n1, n2, h1, h2},
     {n1, n2} = harmonics[v];
     h1 = transferMagnitude[fixtures[v], n1 f0];
     h2 = transferMagnitude[fixtures[v], n2 f0];
@@ -58,8 +63,12 @@ Module[
       "harmonic_count" -> 40,
       "source_model" -> "A_n proportional to 1/n",
       "source_p2_over_p1_db" -> AssociationMap[sourceRatioDb, Keys[fixtures]],
-      "observer_scaling_p2_over_p1_db" -> AssociationMap[observerRatioDb, Keys[fixtures]],\n      "tract_p2_over_p1_db" -> AssociationMap[tractRatioDb, Keys[fixtures]],
-      "predicted_rendered_p2_over_p1_db" -> AssociationMap[predictedDb, Keys[fixtures]]
+      "observer_scaling_p2_over_p1_db" -> AssociationMap[observerRatioDb, Keys[fixtures]],
+      "tract_p2_over_p1_db" -> AssociationMap[tractRatioDb, Keys[fixtures]],
+      "predicted_listening_pressure_p2_over_p1_db" -> AssociationMap[predictedDb, Keys[fixtures]],
+      "source_ratio_tolerance_db" -> 0.25,
+      "rendered_ratio_tolerance_db" -> 2.0,
+      "minimum_i_improvement_db" -> 10.0
     |>,
     "RawJSON"
   ]
