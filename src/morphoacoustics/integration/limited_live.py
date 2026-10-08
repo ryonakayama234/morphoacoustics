@@ -274,11 +274,49 @@ def _wav_bytes(pressure: np.ndarray) -> bytes:
     return buffer.getvalue()
 
 
+def _publish_new_take(
+    output_dir: Path,
+    payloads: tuple[tuple[str, str, str, bytes], ...],
+    answer: dict[str, Any],
+) -> None:
+    """Publish a Take without ever replacing an existing filesystem entry.
+
+    Stage bytes on the same filesystem, atomically reserve the final directory
+    with mkdir (which refuses even a dangling symlink or racing empty dir),
+    then install the result manifest last as the completion marker. A crash
+    before that marker can leave an incomplete reserved directory; it must
+    never be interpreted as a successful Take or silently reused.
+    """
+    staging = Path(tempfile.mkdtemp(prefix=".morpho-live-", dir=output_dir.parent))
+    try:
+        for _, filename, _, contents in payloads:
+            (staging / filename).write_bytes(contents)
+        (staging / "result.json").write_bytes(canonical_bytes(answer) + b"\n")
+        try:
+            output_dir.mkdir()
+        except FileExistsError as exc:
+            raise FileExistsError(
+                f"requires a new output directory: {output_dir}"
+            ) from exc
+        try:
+            for _, filename, _, _ in payloads:
+                os.replace(staging / filename, output_dir / filename)
+            # Manifest is the completion marker, never a promise of pending bytes.
+            os.replace(staging / "result.json", output_dir / "result.json")
+        except BaseException:
+            # Only clean up our exclusively created, not-yet-committed directory.
+            shutil.rmtree(output_dir)
+            raise
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
 def perform(request: object, output_dir: Path) -> dict[str, Any]:
     """Every FEASIBLE call re-executes physical/acoustic synthesis; never cache audio."""
     # Directory freshness applies even to INVALID/UNSUPPORTED results: an
     # existing directory may contain an earlier successful WAV or manifest.
-    if output_dir.exists():
+    if os.path.lexists(output_dir):
         raise FileExistsError(f"requires a new output directory: {output_dir}")
     rejected = validate(request)
     if rejected is not None:
@@ -377,18 +415,8 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
             "claim_limit": "one experimental /a/ to /i/-like utterance; no human phonetic gate",
         },
     }
-    # Materialize only after all scientific gates have passed. No stale Take reuse.
-    staging = Path(tempfile.mkdtemp(prefix=".morpho-live-", dir=output_dir.parent))
-    try:
-        for _, filename, _, contents in payloads:
-            (staging / filename).write_bytes(contents)
-        (staging / "result.json").write_bytes(canonical_bytes(answer) + b"\n")
-        if output_dir.exists():
-            raise FileExistsError(f"output appeared during generation: {output_dir}")
-        os.rename(staging, output_dir)
-    finally:
-        if staging.exists():
-            shutil.rmtree(staging)
+    # Publish only after all scientific gates pass, using exclusive reservation.
+    _publish_new_take(output_dir, payloads, answer)
     return answer
 
 
@@ -398,7 +426,7 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     try:
-        if args.output_dir.exists():
+        if os.path.lexists(args.output_dir):
             raise FileExistsError(f"requires a new output directory: {args.output_dir}")
         try:
             request = json.loads(args.request.read_text(encoding="utf-8"))
