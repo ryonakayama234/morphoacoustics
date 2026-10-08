@@ -199,3 +199,123 @@ def test_illformed_json_file_is_invalid_not_execution_failed(tmp_path):
         assert response["diagnostics"][0]["code"] == "REQUEST_JSON"
         assert response["provenance"]["request_sha256"] is None
         assert not out.exists()
+
+
+def test_dangling_symlink_destination_is_never_reused(tmp_path):
+    import pytest
+    from morphoacoustics.integration import limited_live as live
+
+    destination = tmp_path / "take"
+    destination.symlink_to(tmp_path / "missing-directory", target_is_directory=True)
+    assert destination.is_symlink()
+    assert not destination.exists()
+    for req in (request(), {**request(), "text": "unsupported"}):
+        with pytest.raises(FileExistsError, match="requires a new output directory"):
+            live.perform(req, destination)
+        assert destination.is_symlink()
+    assert not (tmp_path / "missing-directory").exists()
+
+
+def test_cli_rejects_existing_dangling_symlink_even_for_invalid_json(tmp_path):
+    import json
+    import subprocess
+    import sys
+
+    from morphoacoustics.integration import limited_live as live
+
+    destination = tmp_path / "take"
+    destination.symlink_to(tmp_path / "missing", target_is_directory=True)
+    request_path = tmp_path / "invalid.json"
+    request_path.write_text("{invalid", encoding="utf-8")
+    completed = subprocess.run(
+        [sys.executable, "-m", "morphoacoustics.integration.limited_live",
+         "--request", str(request_path), "--output-dir", str(destination)],
+        capture_output=True, text=True,
+    )
+    assert completed.returncode == 1
+    response = json.loads(completed.stdout)
+    assert response["job_status"] == "FAILED"
+    assert response["artifacts"] == []
+    assert destination.is_symlink()
+    assert not (tmp_path / "missing").exists()
+
+
+def test_publish_cannot_replace_racing_empty_directory(tmp_path, monkeypatch):
+    import pytest
+    from pathlib import Path
+    from morphoacoustics.integration import limited_live as live
+
+    output = tmp_path / "raced-take"
+    real_mkdir = Path.mkdir
+
+    def race_mkdir(self, *args, **kwargs):
+        if self == output:
+            real_mkdir(self, *args, **kwargs)
+            (self / "another-producer.txt").write_text("owner", encoding="utf-8")
+        return real_mkdir(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", race_mkdir)
+    with pytest.raises(FileExistsError, match="requires a new output directory"):
+        live._publish_new_take(
+            output, (("audio", "audio.wav", "audio/wav", b"new"),),
+            {"job_status": "SUCCEEDED"},
+        )
+    assert (output / "another-producer.txt").read_text(encoding="utf-8") == "owner"
+    assert not (output / "audio.wav").exists()
+    assert not list(tmp_path.glob(".morpho-live-*"))
+
+
+def test_publish_writes_manifest_last_as_completion_marker(tmp_path, monkeypatch):
+    import json
+    import os
+    from morphoacoustics.integration import limited_live as live
+
+    output = tmp_path / "new-take"
+    real_replace = os.replace
+    order = []
+
+    def observe_replace(source, target):
+        if target == output / "result.json":
+            assert (output / "audio.wav").read_bytes() == b"wav"
+            assert (output / "physical_trace.csv").read_bytes() == b"trace"
+            assert not (output / "result.json").exists()
+        order.append(target.name)
+        return real_replace(source, target)
+
+    monkeypatch.setattr(live.os, "replace", observe_replace)
+    live._publish_new_take(
+        output,
+        (("audio", "audio.wav", "audio/wav", b"wav"),
+         ("physical_trace", "physical_trace.csv", "text/csv", b"trace")),
+        {"job_status": "SUCCEEDED", "realization_outcome": "FEASIBLE"},
+    )
+    assert order == ["audio.wav", "physical_trace.csv", "result.json"]
+    assert json.loads((output / "result.json").read_text(encoding="utf-8")) == {
+        "job_status": "SUCCEEDED", "realization_outcome": "FEASIBLE",
+    }
+    assert not list(tmp_path.glob(".morpho-live-*"))
+
+
+def test_failed_publish_removes_partial_uncommitted_output(tmp_path, monkeypatch):
+    import os
+    import pytest
+    from morphoacoustics.integration import limited_live as live
+
+    output = tmp_path / "partial-take"
+    real_replace = os.replace
+
+    def fail_second_file(source, target):
+        if target == output / "raw_pressure_pa.npy":
+            raise OSError("simulated interrupted publish")
+        return real_replace(source, target)
+
+    monkeypatch.setattr(live.os, "replace", fail_second_file)
+    with pytest.raises(OSError, match="simulated interrupted publish"):
+        live._publish_new_take(
+            output,
+            (("audio", "audio.wav", "audio/wav", b"wav"),
+             ("raw_pressure", "raw_pressure_pa.npy", "application/x-npy", b"raw")),
+            {"job_status": "SUCCEEDED"},
+        )
+    assert not os.path.lexists(output)
+    assert not list(tmp_path.glob(".morpho-live-*"))
