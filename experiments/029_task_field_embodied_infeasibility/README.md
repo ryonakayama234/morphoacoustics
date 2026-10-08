@@ -32,11 +32,16 @@ another path, such as `--output-dir experiment-029-output-2`. The runner never
 automatically deletes user files.
 
 The audited numerical stack is **NumPy 2.4.6**. The dedicated workflow installs
-that version. The runner also refuses a different NumPy version; feasible
-endpoint/waveform SHA-256 hashes are checked against the original audited
-Experiment-029 artifact, not just against the other condition from the same
-run. These additional audit checks do not change any frozen task, morphology,
-or scientific threshold.
+that version, and the runner refuses another version. Exact raw float64
+waveform and endpoint hashes are recorded as **bitwise diagnostics only**:
+GitHub runners can produce different low-order bits even with NumPy 2.4.6.
+Instead the scientific gate checks a frozen content signature of the entire
+24,000-sample waveform after quantization to a fixed **1e-9 Pa** grid,
+with explicit little-endian int64 encoding. Both feasible conditions must
+match the original audited output's quantized signature. Exact bitwise
+equality between M_plus and M_boundary is still required *within each run*.
+This portability hardening does not change the frozen task, morphology,
+reachability rule, or original scientific thresholds.
 
 The dedicated CI workflow enforces:
 
