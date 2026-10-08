@@ -58,6 +58,12 @@ CONDITIONS = (
 
 SUPPORT_DECISION = "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
 
+# Audited scientific numerical environment and outputs (Experiment 029).
+# These pins are reproducibility guards, not tunable scientific thresholds.
+AUDITED_NUMPY_VERSION = "2.4.6"
+AUDITED_ENDPOINT_SHA256 = "645c236c3232ed668159f37b5f79d0e742bde2ecc89c59fb7b61d93acd78f7c6"
+AUDITED_WAVEFORM_SHA256 = "1b0ca7e7215af42428a1b11512e9a7547876c9f3b458c4d73c93a711800eb30e"
+
 
 def git_blob_sha1(path: Path) -> str:
     data = path.read_bytes()
@@ -114,12 +120,6 @@ class CountingTransfer:
             geometry,
             frequencies_hz,
         )
-
-
-def git_blob_sha1(path: Path) -> str:
-    data = path.read_bytes()
-    payload = f"blob {len(data)}\0".encode("ascii") + data
-    return hashlib.sha1(payload).hexdigest()
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -640,9 +640,28 @@ def reject_preflight(
     return decision
 
 
+def require_fresh_output_directory(output_dir: Path) -> None:
+    """Refuse stale or unrelated artifacts; never recursively delete user data."""
+    if output_dir.exists():
+        if not output_dir.is_dir() or any(output_dir.iterdir()):
+            raise FileExistsError(
+                f"Experiment 029 requires a fresh empty output directory: {output_dir}. "
+                "Use a new --output-dir for every run; no existing files are removed."
+            )
+    else:
+        output_dir.mkdir(parents=True, exist_ok=False)
+
+
 def run(output_dir: Path) -> dict[str, object]:
     started = time.perf_counter()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Fail before loading any fixture or writing output; no old successful
+    # artifacts may survive a later rejected run in the same directory.
+    require_fresh_output_directory(output_dir)
+    if np.__version__ != AUDITED_NUMPY_VERSION:
+        raise RuntimeError(
+            f"Experiment 029 requires NumPy {AUDITED_NUMPY_VERSION} for its frozen "
+            f"numerical gate; found {np.__version__}. Use the pinned scientific workflow."
+        )
 
     oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
     exp28_oracle = json.loads(EXP28.ORACLE_PATH.read_text(encoding="utf-8"))
@@ -838,11 +857,24 @@ def run(output_dir: Path) -> dict[str, object]:
         and task_payload == exp28_oracle["task_plan"]
         and EXP27.representation_is_clean(task_payload)
     )
+    # Equality between two outputs computed in one environment is not enough:
+    # both may drift together after a change to NumPy or numerical behavior.
+    frozen_output_hashes_match = bool(
+        feasible_outputs_present
+        and all(
+            sha256_json(geometry_payload(results[name].endpoint))
+            == AUDITED_ENDPOINT_SHA256
+            and EXP26.sha256_float64(results[name].waveform)
+            == AUDITED_WAVEFORM_SHA256
+            for name in ("M_plus", "M_boundary")
+        )
+    )
     implementation_match = bool(
         upstream["pass"]
         and local["pass"]
         and oracle_pass
         and instrumentation_matches_audited_renderer
+        and frozen_output_hashes_match
     )
 
     if not representation_invariant:
@@ -930,6 +962,11 @@ def run(output_dir: Path) -> dict[str, object]:
             "python": platform.python_version(),
             "platform": platform.platform(),
             "numpy": np.__version__,
+            "audited_numpy_version": AUDITED_NUMPY_VERSION,
+        },
+        "audited_feasible_output_hashes": {
+            "physical_endpoint_sha256": AUDITED_ENDPOINT_SHA256,
+            "raw_waveform_sha256_float64": AUDITED_WAVEFORM_SHA256,
         },
     }
     (output_dir / "provenance.json").write_text(
@@ -954,6 +991,7 @@ def run(output_dir: Path) -> dict[str, object]:
             "instrumented_renderer_matches_audited_renderer": (
                 instrumentation_matches_audited_renderer
             ),
+            "frozen_feasible_output_hashes": frozen_output_hashes_match,
         },
         "task_plan_sha256": task_hash,
         "oracle_condition_checks": oracle_rows,
