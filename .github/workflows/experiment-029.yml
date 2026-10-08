@@ -47,13 +47,26 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install
-        run: python -m pip install -e .
+      - name: Install audited numerical stack
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e .
+          python -c "import numpy; assert numpy.__version__ == '2.4.6', numpy.__version__"
 
       - name: Run Experiment 029
         run: |
           python experiments/029_task_field_embodied_infeasibility/run.py \
             --output-dir experiment-029-output
+
+      - name: Confirm stale-output replay is refused
+        run: |
+          if python experiments/029_task_field_embodied_infeasibility/run.py \
+            --output-dir experiment-029-output > experiment-029-replay.log 2>&1; then
+            echo "Unexpected successful reuse of experiment output directory"
+            exit 1
+          fi
+          cat experiment-029-replay.log
+          grep -q "requires a fresh empty output directory" experiment-029-replay.log
 
       - name: Show scientific summary
         if: always()
