@@ -23,8 +23,6 @@ import wave
 
 import numpy as np
 
-from morphoacoustics.domain.result import FeasibilityStatus
-
 SCHEMA_VERSION = "morpho-live/v1"
 COMPILER_VERSION = "frozen-v3a-task-3/v1"
 PRONUNCIATION_ID = "v3a-a-to-i-like/v1"
@@ -39,6 +37,37 @@ DURATION_S = 0.5
 SAMPLES = 24000
 LISTENING_PEAK = 0.90
 ROOT = Path(__file__).resolve().parents[3]
+# Frozen package sources used to prepare the Experiment 029 runtime.
+# Pinning the entire Python package is deliberately conservative: the eager
+# package initializers import domain, preparation, simulation, and related
+# modules. Any addition/removal/change invalidates this adopted research
+# environment until separately audited; limited_live.py is the reviewed
+# integration adapter itself, and is intentionally not self-hashed.
+AUDITED_PACKAGE_GIT_BLOBS: dict[str, str] = {
+    "src/morphoacoustics/__init__.py": "be995aa23576776986a42aafc8dafeb1eac195a1",
+    "src/morphoacoustics/acoustics/__init__.py": "8a4f37d163767f40bedbcbb52310775c6c1d3467",
+    "src/morphoacoustics/acoustics/backend.py": "92768d16c9f13274f2fdf37eeb0884d35882adaa",
+    "src/morphoacoustics/acoustics/protocol.py": "9812980b517ae4398dda15bfda179fd89a620182",
+    "src/morphoacoustics/acoustics/segmented_tube.py": "e51957e292b7f46a7ecb29b500ae054fbae7c1ed",
+    "src/morphoacoustics/acoustics/uniform_tube.py": "8bceaf1426c2aec56eea91e2148cd402998516f2",
+    "src/morphoacoustics/domain/__init__.py": "0d8803276fdf28c08db84f03c376d497f9f8fa49",
+    "src/morphoacoustics/domain/creature.py": "94afb311ef59d04369f43b4b45c184770ca0ddf6",
+    "src/morphoacoustics/domain/gesture.py": "782d3bdde829d0a3506beed490a78cc82dc13d0d",
+    "src/morphoacoustics/domain/result.py": "3408f6f0ff2a745511e8705360e28204fc6e5ba1",
+    "src/morphoacoustics/integration/__init__.py": "2de45bcad613f6c643906d7b8336863fd8e37b4e",
+    "src/morphoacoustics/integration/body_presets.py": "1402393208fa4b1b154d6b18a20f9ca8dbddc1cd",
+    "src/morphoacoustics/integration/shared_timeline.py": "a1ed908352fd7f9ed8f67bb251399b73f955a2f7",
+    "src/morphoacoustics/physical/__init__.py": "7eb2eb01dab33256dd6b289c42a4545f6ba4a496",
+    "src/morphoacoustics/physical/tract1d.py": "62f3ddf6d3cbf2e43072f9d8b2be6ee84f4c3ca7",
+    "src/morphoacoustics/preparation/__init__.py": "26e992bba685d989861361120be6f64d38accb3e",
+    "src/morphoacoustics/preparation/protocol.py": "72a6a536e5dd1800aac1328c3b84026bacad896e",
+    "src/morphoacoustics/preparation/tract1d.py": "90860b19a6b181ba88ff3d4a01379c10ab23e226",
+    "src/morphoacoustics/realization/__init__.py": "469760748767b788f051a50dc152d513cb704c58",
+    "src/morphoacoustics/realization/protocol.py": "63f999fbda3ba0197ee585897e2253007731665a",
+    "src/morphoacoustics/realization/tract1d.py": "87adb91ebe3ca2a3e2b36931f9d12d94c2ee7e0b",
+    "src/morphoacoustics/simulation/__init__.py": "6d65e6e2eb2d4a02275073a607608c0736b77b92",
+    "src/morphoacoustics/simulation/snapshot.py": "8c3da24a1fd40a82c95bbd2b38d9e3aa6a65f2a9",
+}
 EXP29_PATH = ROOT / "experiments" / "029_task_field_embodied_infeasibility" / "run.py"
 EXP28_PATH = ROOT / "experiments" / "028_task_field_morphology_transfer" / "run.py"
 EXP28_REFERENCE_PATH = ROOT / "experiments" / "028_task_field_morphology_transfer" / "frozen_reference.json"
@@ -120,12 +149,28 @@ def _git_blob_sha(path: Path) -> str:
 
 
 def _verify_frozen_sources_before_import() -> None:
-    """Verify trusted Experiment 028 manifest and every recorded executed file.
+    """Check the frozen runtime source identity before dynamic experiment import.
 
-    Do this *before* exec_module: Experiment 028 imports Experiment 027 before
-    checking the scientific frozen preflight. Never execute modified experiment
-    code just to discover that it is modified.
+    The Experiment 028 transitive manifest alone omits Experiment 029 imports
+    from the domain and preparation packages. Verify the complete frozen
+    morphoacoustics package inventory and each Git blob as an additional gate.
+    This is a trusted-checkout consistency check, not a malicious-code sandbox.
     """
+    package_root = ROOT / "src" / "morphoacoustics"
+    actual_paths = {
+        path.relative_to(ROOT).as_posix()
+        for path in package_root.rglob("*.py")
+        if path != package_root / "integration" / "limited_live.py"
+    }
+    if actual_paths != AUDITED_PACKAGE_GIT_BLOBS.keys():
+        added = sorted(actual_paths - AUDITED_PACKAGE_GIT_BLOBS.keys())
+        removed = sorted(AUDITED_PACKAGE_GIT_BLOBS.keys() - actual_paths)
+        raise RuntimeError(
+            f"audited package source inventory changed: added={added}, removed={removed}"
+        )
+    for relative, expected_blob in AUDITED_PACKAGE_GIT_BLOBS.items():
+        if _git_blob_sha(ROOT / relative) != expected_blob:
+            raise RuntimeError(f"audited package Git blob changed before import: {relative}")
     for path, expected in (
         (EXP29_PATH, AUDITED_EXP29_GIT_BLOB),
         (EXP28_PATH, AUDITED_EXP28_GIT_BLOB),
@@ -258,7 +303,7 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
     )
     # Feasibility MUST be established before even generating the source.
     feasibility = exp.capability_report(body)
-    if feasibility.status is not FeasibilityStatus.FEASIBLE:
+    if feasibility.status is not exp.FeasibilityStatus.FEASIBLE:
         return _response(
             request, feasibility.status.value,
             feasibility.issues[0].code if feasibility.issues else "FEASIBILITY",
@@ -268,7 +313,7 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
     pressure_source = np.asarray(sources[SOURCE_ID].source, dtype=np.float64)
     result = exp.evaluate_condition(body, pressure_source, label="m_plus")
     if (
-        result.feasibility.status is not FeasibilityStatus.FEASIBLE
+        result.feasibility.status is not exp.FeasibilityStatus.FEASIBLE
         or result.waveform is None or result.endpoint is None
         or result.acoustic_call_count != 102
     ):
