@@ -44,8 +44,22 @@ Git blobs, the pinned Experiment 028 frozen manifest and **all recorded
 transitive experiment/acoustic source-file SHA-256 digests before dynamically
 importing an experiment module**; it then runs the upstream scientific
 preflight and Wolfram-oracle checks. It refuses to run if any adopted source
-or gate differs. This is a scientific reproducibility boundary for a trusted
-checkout, not a sandbox for arbitrary malicious Python dependencies. It deliberately requires **NumPy 2.4.6**, matching the
+or gate differs. The frozen source preflight now pins the Git-blob identity of
+**all 23 other Python files in `src/morphoacoustics/`** (including domain,
+preparation, physical, simulation, and eagerly imported package initializers)
+and rejects newly added or removed Python package files. This complements
+Experiment 028's transitive experiment manifest and Experiment 029's frozen
+oracles. The integration adapter `limited_live.py` is reviewed through the
+PR/CI revision rather than recursively self-hashed. Any intentional package
+refactor must re-audit this frozen research execution boundary before changing
+pins; do not silently recapture an oracle from modified code.
+
+This is a scientific reproducibility boundary for a trusted
+checkout, not a sandbox for arbitrary malicious Python dependencies. Python
+initializes package modules before running a `python -m` entry point; thus this
+guard executes **before dynamic experiment loading** but does not promise to
+prevent every Python import of untrusted checkout files. External dependencies
+and their installation integrity are outside the source manifest. It deliberately requires **NumPy 2.4.6**, matching the
 audited experiment, and does not read stored experiment WAVs.
 
 ```bash
