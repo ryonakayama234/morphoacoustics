@@ -29,16 +29,23 @@ nonempty identifier. The only exposed body is the V3c `M_plus` PreparedMorpholog
 the only source is `lf_fixed`; the only seed is `0`; the only supported
 creative `direction` is absent or an empty object. Unsupported combinations
 return `SUCCEEDED + UNSUPPORTED` with a diagnostic and **no audio**.
-Malformed requests return `SUCCEEDED + INVALID`. A runtime/preflight error
-is instead `FAILED`. Those distinctions must survive the Studio adapter.
+Malformed requests **including invalid JSON or UTF-8 request files**
+return `SUCCEEDED + INVALID`. A runtime/preflight error is instead `FAILED`.
+An **already-existing output directory is always an execution error**, even
+when the request is unsupported or invalid: no previous Take bytes can be
+mistaken for the current result. Those distinctions must survive the Studio adapter.
 
 ## Reproduction on WSL2/Linux
 
 Run from a **full source checkout** of
 [morphoacoustics](https://github.com/ryonakayama234/morphoacoustics).
-The adapter verifies the adopted Experiment 029 runner's frozen Git blob, its
-upstream scientific preflight and Wolfram oracles; it refuses to run if those
-identity checks fail. It deliberately requires **NumPy 2.4.6**, matching the
+The adapter verifies the adopted Experiment 029 and Experiment 028 runners'
+Git blobs, the pinned Experiment 028 frozen manifest and **all recorded
+transitive experiment/acoustic source-file SHA-256 digests before dynamically
+importing an experiment module**; it then runs the upstream scientific
+preflight and Wolfram-oracle checks. It refuses to run if any adopted source
+or gate differs. This is a scientific reproducibility boundary for a trusted
+checkout, not a sandbox for arbitrary malicious Python dependencies. It deliberately requires **NumPy 2.4.6**, matching the
 audited experiment, and does not read stored experiment WAVs.
 
 ```bash
