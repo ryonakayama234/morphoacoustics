@@ -31,9 +31,16 @@ creative `direction` is absent or an empty object. Unsupported combinations
 return `SUCCEEDED + UNSUPPORTED` with a diagnostic and **no audio**.
 Malformed requests **including invalid JSON or UTF-8 request files**
 return `SUCCEEDED + INVALID`. A runtime/preflight error is instead `FAILED`.
-An **already-existing output directory is always an execution error**, even
-when the request is unsupported or invalid: no previous Take bytes can be
-mistaken for the current result. Those distinctions must survive the Studio adapter.
+An **already-existing output filesystem entry is always an execution error**,
+including a dangling symbolic link, even for unsupported or invalid requests:
+no previous Take bytes can be mistaken for the current result. For a valid
+request, publication uses an **exclusive directory creation** (rejecting any
+racing creator) instead of rename-over-existing; all artifacts are placed in
+that reserved directory, with `result.json` committed **last** as the
+completion marker. After a process crash, an incomplete directory without
+`result.json` may remain and must be treated as failed/incomplete, never
+accepted as a Take or reused. No claims of full filesystem-transaction
+atomicity are made. These distinctions must survive the Studio adapter.
 
 ## Reproduction on WSL2/Linux
 
