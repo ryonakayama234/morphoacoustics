@@ -39,6 +39,9 @@ EXPERIMENTS = HERE.parent
 ORACLE_PATH = HERE / "wolfram" / "v3c_oracle.json"
 ORACLE_GIT_BLOB_SHA = "91e8041568bf61c8f828a32176b72f720e4bd646"
 EXP28_RUN_GIT_BLOB_SHA = "a5bb9a70a58f5ec0f61c3c5f4df1e4dd9bc3e686"
+EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA = "7810dfbb72cb6c41af007db6e9d51c58cad9a522"
+EXP28_ORACLE_GIT_BLOB_SHA = "0b6bb759cc634d6853963c39ad437b28ad451624"
+V3C_ORACLE_WOLFRAM_SOURCE_GIT_BLOB_SHA = "eaa6ab82805db55a84a6141fd3b39f5539cbc4b1"
 
 OUTLET_LOCATION = 1.0
 ORAL_SHAPER_KIND = "oral-shaper"
@@ -681,6 +684,21 @@ def run(output_dir: Path) -> dict[str, object]:
             f"numerical gate; found {np.__version__}. Use the pinned scientific workflow."
         )
 
+    # Verify upstream trust records and the independent Wolfram generator
+    # *before* reading them or invoking the upstream frozen preflight.
+    frozen_trust_records = {
+        EXP28.FROZEN_REFERENCE_PATH: EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA,
+        EXP28.ORACLE_PATH: EXP28_ORACLE_GIT_BLOB_SHA,
+        HERE / "wolfram" / "v3c_oracle.wl": V3C_ORACLE_WOLFRAM_SOURCE_GIT_BLOB_SHA,
+        ORACLE_PATH: ORACLE_GIT_BLOB_SHA,
+    }
+    for source_path, accepted_blob_sha in frozen_trust_records.items():
+        if git_blob_sha1(source_path) != accepted_blob_sha:
+            raise RuntimeError(
+                f"Experiment 029 refuses modified frozen reference/source: "
+                f"{source_path}"
+            )
+
     oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
     exp28_oracle = json.loads(EXP28.ORACLE_PATH.read_text(encoding="utf-8"))
     exp28_frozen = json.loads(
@@ -974,6 +992,9 @@ def run(output_dir: Path) -> dict[str, object]:
         "oracle": {
             "path": "wolfram/v3c_oracle.json",
             "git_blob_sha": ORACLE_GIT_BLOB_SHA,
+            "wolfram_source_git_blob_sha": V3C_ORACLE_WOLFRAM_SOURCE_GIT_BLOB_SHA,
+            "upstream_exp028_oracle_git_blob_sha": EXP28_ORACLE_GIT_BLOB_SHA,
+            "upstream_exp028_frozen_reference_git_blob_sha": EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA,
             "evaluated_before_python_experiment": True,
         },
         "source": {
