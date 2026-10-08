@@ -59,6 +59,10 @@ def digest(data: bytes) -> str:
 def _response(
     request: object, outcome: str, code: str, message: str,
 ) -> dict[str, Any]:
+    try:
+        request_sha256: str | None = digest(canonical_bytes(request))
+    except (ValueError, TypeError):
+        request_sha256 = None
     return {
         "schema_version": SCHEMA_VERSION,
         "job_status": "SUCCEEDED",
@@ -70,7 +74,7 @@ def _response(
             "backend_version": BACKEND_VERSION,
             "compiler_version": COMPILER_VERSION,
             "request_digest_algorithm": "sha256/json-utf8-sort-keys-v1",
-            "request_sha256": digest(canonical_bytes(request)),
+            "request_sha256": request_sha256,
         },
     }
 
@@ -79,6 +83,10 @@ def validate(request: object) -> dict[str, Any] | None:
     """Separate structurally INVALID requests from known-but-UNSUPPORTED input."""
     if not isinstance(request, dict):
         return _response(request, "INVALID", "REQUEST_SHAPE", "expected an object")
+    try:
+        canonical_bytes(request)
+    except (ValueError, TypeError):
+        return _response(request, "INVALID", "REQUEST_ENCODING", "nonfinite or non-JSON value")
     keys = set(request)
     if keys - (REQUIRED_KEYS | OPTIONAL_KEYS) or REQUIRED_KEYS - keys:
         return _response(request, "INVALID", "REQUEST_KEYS", "missing or unknown fields")
@@ -157,7 +165,8 @@ def _physical_trace(experiment: ModuleType, start: Any) -> bytes:
         areas = [section.area_m2 for section in geometry.sections]
         rows.append({
             "time_s": f"{t:.2f}",
-            "sample_index": min(round(t * SAMPLE_RATE_HZ), SAMPLES - 1),
+            # The final t=0.50 is an endpoint-exclusive frame boundary.
+            "sample_index": round(t * SAMPLE_RATE_HZ),
             "task0_activation": f"{activations[0]:.17g}",
             "task1_activation": f"{activations[1]:.17g}",
             "task2_activation": f"{activations[2]:.17g}",
@@ -276,6 +285,10 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
             "request_digest_algorithm": "sha256/json-utf8-sort-keys-v1",
             "request_sha256": digest(canonical_bytes(request)),
             "task_plan_sha256": exp.sha256_json(exp.task_plan_payload()),
+            "body_rest_geometry_sha256": exp.sha256_json(exp.geometry_payload(body.rest_state)),
+            "body_oral_shaper_reachable_end": 0.75,
+            "source_sha256_float64_diagnostic_only": exp.EXP26.sha256_float64(pressure_source),
+            "upstream_exp28_frozen_reference_git_blob": exp.EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA,
             "experiment_029_git_blob": AUDITED_EXP29_GIT_BLOB,
             "adopted_evidence": ["Experiment 027 / PR #63", "Experiment 028 / PR #65",
                                  "Experiment 029 / PR #68"],
