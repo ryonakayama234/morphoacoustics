@@ -27,6 +27,9 @@ jobs:
           python -m pip install 'numpy==2.4.6'
           python -m pip install -e '.[dev]'
           python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Test blind packet builder without changing physics
+        run: |
+          python -m unittest discover -s experiments/030_lf_rd_timbre_pilot -p 'test_*.py' -v
       - name: Execute two actual source/tract acoustic syntheses
         run: |
           python experiments/030_lf_rd_timbre_pilot/run.py --output-dir rd030-evidence
@@ -66,10 +69,59 @@ jobs:
           assert d < 0.005
           print('PASS: independent physical runs, frozen S0, source change, matched playback RMS, artifacts; perceptual gate remains pending')
           PY
-      - name: Publish physical audio evidence and spectra
+      - name: Create condition-masked A/B packet and separate answer key
+        run: |
+          python experiments/030_lf_rd_timbre_pilot/blind_listening.py \
+            --evidence-dir rd030-evidence \
+            --packet-dir rd030-blind-packet \
+            --answer-key-dir rd030-answer-key
+      - name: Independently validate blind artifacts without printing answer key
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          src = Path('rd030-evidence')
+          public_dir = Path('rd030-blind-packet')
+          key_dir = Path('rd030-answer-key')
+          source = json.loads((src/'metrics.json').read_text())
+          public = json.loads((public_dir/'trial.json').read_text())
+          private = json.loads((key_dir/'answer_key.json').read_text())
+          assert public['trial_id'] == private['trial_id']
+          assert public['status'] == 'listener-ratings-pending'
+          assert [s['slot'] for s in public['stimuli']] == ['A','B']
+          assert set(private['mapping'].values()) == {'s0','p1'}
+          assert not (public_dir/'answer_key.json').exists()
+          assert not any(p.suffix == '.npy' for p in public_dir.iterdir())
+          assert 'rd1p' not in (public_dir/'trial.json').read_text()
+          for stimulus in public['stimuli']:
+              slot = stimulus['slot']
+              condition = private['mapping'][slot]
+              source_name = {'s0':'s0_rd1p0.wav','p1':'p1_rd1p4.wav'}[condition]
+              orig = (src/source_name).read_bytes()
+              blind = (public_dir/(slot+'.wav')).read_bytes()
+              digest = hashlib.sha256(orig).hexdigest()
+              assert blind == orig
+              assert stimulus['sha256'] == digest
+              assert source['artifacts_sha256'][source_name] == digest
+          assert public['rms_difference_db'] < 0.005
+          print('PASS: masked A/B, untouched PCM, separate answer key, matching source evidence')
+          PY
+      - name: Publish original physical evidence and spectra
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: experiment-030-physical-rd-comparison
           path: rd030-evidence/
           if-no-files-found: warn
+      - name: Publish A/B listening packet without condition labels
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-030-blind-listening-A-B
+          path: rd030-blind-packet/
+          if-no-files-found: error
+      - name: Publish separate reveal key (do not download until ratings are locked)
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-030-ANSWER-KEY-DO-NOT-OPEN-FIRST
+          path: rd030-answer-key/
+          if-no-files-found: error
