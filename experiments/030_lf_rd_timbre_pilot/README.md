@@ -31,6 +31,29 @@ python experiments/030_lf_rd_timbre_pilot/run.py --output-dir rd030-output
 
 Expected deliverables in a **new**, nonexistent output directory: `s0_rd1p0.wav`, `p1_rd1p4.wav`, raw pressure `.npy`, source `.npy`, and `metrics.json`. Workflow `experiment-030.yml` executes actual solver physics in Ubuntu GitHub Actions, verifies outputs, then uploads them for listening. Never interpret a processed playback-only diagnostic EQ as a physical P1.
 
+## Condition-masked pilot listening packet (added after physics generation)
+
+**Read the A/B files *without* consulting the original condition-named WAVs or answer-key ZIP.** Experiment 030 itself remains exploratory; creating a packet does not approve either physical source for production. The builder **copies the existing PCM WAV bytes exactly**, without EQ, resampling, normalization, pitch-shifting, or another physics execution. It fails closed if SHA-256, mono 48 kHz/24,000-sample PCM16 format, physical-experiment status, or <=0.005 dB PCM RMS matching is violated. RMS matching does not imply equal perceived loudness.
+
+On WSL2/Linux, after generating `rd030-output` with the command above:
+
+```bash
+python experiments/030_lf_rd_timbre_pilot/blind_listening.py \\
+  --evidence-dir rd030-output \\
+  --packet-dir rd030-blind-packet \\
+  --answer-key-dir rd030-answer-key
+```
+
+The output paths must be new, non-overlapping directories. For a deterministic developer unit test only, specify `--seed 0` or `--seed 1`; for real listening omit the seed (OS-backed random seed is retained **only** with the key). `rd030-blind-packet` contains `A.wav`, `B.wav`, `trial.json`, `LISTEN_FIRST.txt`. `rd030-answer-key` contains `answer_key.json` with the condition assignment, original evidence digest, and seed. **Do not send/show the answer key to the listener until their responses are written down and locked.** The blind trial has exactly two stimuli and is not two independent subjects or repeated biological measurements.
+
+The CI pipeline independently checks the masked WAVs are byte-identical to the source WAVs, checks both order assignments using unit tests, and uploads three clearly distinct artifacts:
+
+1. `experiment-030-physical-rd-comparison`: original condition-labeled physical/scientific evidence — **not for first listening**.
+2. `experiment-030-blind-listening-A-B`: only A/B PCM, public SHA manifest, listening questions — **download this first**.
+3. `experiment-030-ANSWER-KEY-DO-NOT-OPEN-FIRST`: separate condition reveal — **download only after the response is locked**.
+
+For every blind trial, separately record (i) unprompted free phonetic transcription for A/B, (ii) 1–5 transition continuity, (iii) 1–5 harshness/buzziness, (iv) perceived A/B loudness, and (v) preference/enjoyment and short explanation. Use identical headphones/player/system volume. Record `trial_id` and chosen A/B **before** reveal; preserve negative results. The key artifact is accessible through the same CI permissions, so this is **condition-masked single-listener pilot work**, not a secure double-blind clinical experiment or a population-level inference. Public SHA hashes could also be compared against the original evidence by a determined listener. The scientific eligibility of the alternate source remains subject to an independent code/science review and user hearing.
+
 ## References and limitations
 
 - Fant et al. (1994), [Voice source parameters in continuous speech](https://www.isca-archive.org/icslp_1994/fant94_icslp.html), DOI 10.21437/ICSLP.1994-377 (source-shape reduction).
