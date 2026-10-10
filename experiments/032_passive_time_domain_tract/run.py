@@ -109,6 +109,15 @@ def run(out: Path) -> dict[str, object]:
     observed_roundtrip = float(times[i] - PULSE_CENTER_S)
     exact_roundtrip = 2 * uniform.total_length_m / uniform.sound_speed_m_s
     zc = uniform.characteristic_outlet_impedance
+    oracle = json.loads(
+        (Path(__file__).resolve().parent / 'wolfram' / 'oracle.json').read_text(
+            encoding='utf-8'
+        )
+    )
+    oracle_pass = (
+        math.isclose(zc, oracle['characteristic_impedance_pa_s_m3'], rel_tol=1e-12)
+        and math.isclose(exact_roundtrip, oracle['roundtrip_s'], rel_tol=1e-12)
+    )
     impedance = {}
     for frequency in (250.0, 500.0, 1000.0):
         z = matched_impedance(frequency, uniform)
@@ -118,6 +127,10 @@ def run(out: Path) -> dict[str, object]:
             'relative_complex_error': abs(z - zc) / zc,
         }
     ideal_modes = np.asarray([1, 3, 5]) * uniform.sound_speed_m_s / (4 * uniform.total_length_m)
+    oracle_pass = oracle_pass and bool(np.allclose(
+        ideal_modes, np.asarray(oracle['quarter_wave_frequencies_hz']),
+        rtol=1e-12, atol=1e-12,
+    )) and oracle['two_cell_midpoint_energy_symbolic_residual'] == 0
     eigen = {
         str(n): pressure_release_eigenfrequencies(uniform, n, 3).tolist()
         for n in (2, 4, 8)
@@ -145,7 +158,7 @@ def run(out: Path) -> dict[str, object]:
         matched - np.asarray([r['inlet_pressure_pa'] for r in all_rows['constricted_matched']])
     )))
     gates = {
-        'G0_Wolfram_uniform_refs': True,
+        'G0_Wolfram_uniform_refs': bool(oracle_pass),
         'G1_matched_impedance_at_three_frequencies': impedance_pass,
         'G1_reflected_pulse_timing_and_sign': propagation_pass,
         'G1_no_premature_reflection': early_delta < 0.01,
