@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-10",
+  "source": "independent WolframLanguageEvaluator exact rational symbolic evaluation; regenerate via wolfram/independent_oracle.wl",
+  "scope": "rigid, lossless uniform stationary tube only, ideal pressure release or resistive matched termination",
+  "uniform_length_m": 0.17,
+  "uniform_area_m2": 0.0003,
+  "sound_speed_m_s": 343.0,
+  "air_density_kg_m3": 1.21,
+  "characteristic_impedance_pa_s_m3": 1383433.3333333333,
+  "roundtrip_s": 0.0009912536443148688,
+  "quarter_wave_frequencies_hz": [504.41176470588235, 1513.235294117647, 2522.0588235294117],
+  "half_area_pressure_reflection": 0.3333333333333333,
+  "junction_power_sum": 1,
+  "equal_area_reflection": 0,
+  "matched_input_impedance_equals_zc": true,
+  "two_cell_midpoint_energy_symbolic_residual": 0
+}
