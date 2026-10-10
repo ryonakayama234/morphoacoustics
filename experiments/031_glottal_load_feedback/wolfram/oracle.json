@@ -1,0 +1,30 @@
+{
+  "source": "WolframLanguageEvaluator on 2026-10-10; independent rational-parameter model; see independent_oracle.wl",
+  "status": "independent toy-physics numeric and symbolic oracle, NOT biological validation",
+  "fixture": {
+    "old_flow_m3_s": 0.00005,
+    "old_chamber_pressure_pa": 200.0,
+    "area_m2": 0.00003,
+    "subglottal_pressure_pa": 800.0,
+    "dt_s": 0.000020833333333333333,
+    "outlet_low_pa_s_m3": 2000000.0,
+    "outlet_high_pa_s_m3": 8000000.0
+  },
+  "quadratic_loss_coefficient": 1371882086.1678005,
+  "steady_coupled": {
+    "low": [0.00021110356208343927, 422.20712416687855],
+    "high": [0.00008321063937098939, 665.6851149679151]
+  },
+  "backward_euler_one_step": {
+    "C0_open_loop_low": [0.0000621776011785462, 197.8137341721703],
+    "C0_open_loop_high": [0.0000621776011785462, 202.19660863684172],
+    "C1_coupled_low": [0.00005884312774049678, 197.62099004280328],
+    "C1_coupled_high": [0.000058769314998818, 201.99523279165837]
+  },
+  "linear_inertive_ratios": {
+    "q_1": [0.7071067811865476, -45.0],
+    "q_2": [0.4472135954999579, -63.43494882292201]
+  },
+  "energy_residual_symbolic": 0,
+  "closure_projection_energy_residual_symbolic": 0
+}
