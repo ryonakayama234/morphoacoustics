@@ -100,6 +100,22 @@ class AcousticExperiment(unittest.TestCase):
         with self.assertRaises(ValueError):PassiveTract(geometry=Geometry(),subdivisions=0)
         with self.assertRaises(ValueError):PassiveTract(geometry=Geometry()).step(float('nan'))
 
+    def test_existing_core_tract_geometry_adapter(self):
+        try:
+            from morphoacoustics.physical import Tract1DGeometry, TubeSection
+            from morphoacoustics.acoustics import SegmentedTube
+        except ImportError:
+            self.skipTest('installed Core package required for the integration adapter test')
+        tract=Tract1DGeometry(cavity_id='oral', sections=tuple(
+            TubeSection(length_m=.017, area_m2=3e-4) for _ in range(10)))
+        geometry=Geometry.from_tract1d(tract)
+        self.assertEqual(geometry.lengths_m, (.017,)*10)
+        self.assertEqual(geometry.areas_m2, (3e-4,)*10)
+        zc=geometry.characteristic_outlet_impedance
+        z_from_core=SegmentedTube.from_geometry(tract).input_impedance(
+            np.array([250.,500.,1000.]),load_impedance_pa_s_m3=zc)
+        self.assertTrue(np.allclose(z_from_core, zc, rtol=1e-10, atol=1e-8))
+
     def test_perturbation_inlet_vs_structure(self):
         g=Geometry();h=Geometry.middle_constriction();t=1/48000
         a=PassiveTract(geometry=g,subdivisions=4,dt_s=t)
