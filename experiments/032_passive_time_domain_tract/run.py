@@ -9,6 +9,8 @@ from pathlib import Path
 import numpy as np
 
 from waveguide import Geometry, PassiveTract, pressure_release_eigenfrequencies
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.acoustics import SegmentedTube
 
 SAMPLE_RATE = 48_000
 SUBDIVISIONS = 4
@@ -83,8 +85,19 @@ def run(out: Path) -> dict[str, object]:
     if out.exists() and any(out.iterdir()):
         raise ValueError('requires a fresh empty output directory')
     out.mkdir(parents=True, exist_ok=True)
-    uniform = Geometry()
-    constricted = Geometry.middle_constriction()
+    reference = Tract1DGeometry(
+        cavity_id='oral',
+        sections=tuple(TubeSection(length_m=0.017, area_m2=3e-4) for _ in range(10)),
+    )
+    constricted_sections = [
+        TubeSection(length_m=0.017, area_m2=1.5e-4 if i == 5 else 3e-4)
+        for i in range(10)
+    ]
+    constricted_reference = Tract1DGeometry(
+        cavity_id='oral', sections=tuple(constricted_sections),
+    )
+    uniform = Geometry.from_tract1d(reference)
+    constricted = Geometry.from_tract1d(constricted_reference)
     cases = {
         'uniform_matched': (uniform, uniform.characteristic_outlet_impedance),
         'uniform_pressure_release': (uniform, 0.0),
@@ -118,6 +131,13 @@ def run(out: Path) -> dict[str, object]:
         math.isclose(zc, oracle['characteristic_impedance_pa_s_m3'], rel_tol=1e-12)
         and math.isclose(exact_roundtrip, oracle['roundtrip_s'], rel_tol=1e-12)
     )
+    frequencies = np.asarray([250.0, 500.0, 1000.0])
+    core_oracle = SegmentedTube.from_geometry(reference).input_impedance(
+        frequencies, load_impedance_pa_s_m3=zc,
+    )
+    core_oracle_pass = bool(np.allclose(
+        core_oracle, zc, rtol=1e-10, atol=1e-8,
+    ))
     impedance = {}
     for frequency in (250.0, 500.0, 1000.0):
         z = matched_impedance(frequency, uniform)
@@ -159,6 +179,7 @@ def run(out: Path) -> dict[str, object]:
     )))
     gates = {
         'G0_Wolfram_uniform_refs': bool(oracle_pass),
+        'G0_existing_Core_frequency_domain_tract': core_oracle_pass,
         'G1_matched_impedance_at_three_frequencies': impedance_pass,
         'G1_reflected_pulse_timing_and_sign': propagation_pass,
         'G1_no_premature_reflection': early_delta < 0.01,
@@ -187,6 +208,10 @@ def run(out: Path) -> dict[str, object]:
         'reflection_pressure_min_pa': float(delta[i]),
         'early_reflection_peak_abs_pa': early_delta,
         'matched_impedance': impedance,
+        'core_uniform_matched_impedance': [
+            {'re_pa_s_m3': float(z.real), 'im_pa_s_m3': float(z.imag)}
+            for z in core_oracle
+        ],
         'numerical_modes_hz': eigen,
         'mode_relative_errors': eigen_error,
         'geometry_effect_max_pa': geometry_effect,
