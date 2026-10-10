@@ -6,7 +6,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import TYPE_CHECKING
 import numpy as np
+
+if TYPE_CHECKING:
+    from morphoacoustics.physical import Tract1DGeometry
 
 
 @dataclass(frozen=True)
@@ -37,6 +41,15 @@ class Geometry:
         lengths = np.repeat(np.array(self.lengths_m) / subdivisions, subdivisions)
         areas = np.repeat(np.array(self.areas_m2), subdivisions)
         return lengths, areas
+
+    @classmethod
+    def from_tract1d(cls, tract: 'Tract1DGeometry', *, sound_speed_m_s: float = 343.0,
+                     air_density_kg_m3: float = 1.21) -> 'Geometry':
+        """Read existing physical tract lengths/areas; no schema modification."""
+        return cls(lengths_m=tuple(section.length_m for section in tract.sections),
+                   areas_m2=tuple(section.area_m2 for section in tract.sections),
+                   sound_speed_m_s=sound_speed_m_s,
+                   air_density_kg_m3=air_density_kg_m3)
 
     @staticmethod
     def middle_constriction() -> 'Geometry':
