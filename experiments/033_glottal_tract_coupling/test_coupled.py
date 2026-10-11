@@ -120,7 +120,7 @@ class TestStrongCoupling(unittest.TestCase):
         )
         geometry = Geometry.from_tract1d(physical)
         self.assertEqual(geometry, Geometry.middle_constriction())
-        self.assertEqual(geometry.total_length_m, .17)
+        self.assertAlmostEqual(geometry.total_length_m, .17, places=12)
 
     def test_trace_artifacts_and_replay_prevention(self) -> None:
         path = Path(self.temp.name) / "result"
