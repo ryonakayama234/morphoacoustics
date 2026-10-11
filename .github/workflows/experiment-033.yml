@@ -1,0 +1,60 @@
+name: experiment-033-sfi3
+
+on:
+  push:
+    paths:
+      - "experiments/033_glottal_tract_coupling/**"
+      - ".github/workflows/experiment-033.yml"
+  pull_request:
+    paths:
+      - "experiments/033_glottal_tract_coupling/**"
+      - ".github/workflows/experiment-033.yml"
+
+jobs:
+  strong-coupling:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install stable experimental numeric dependency
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e .
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Run the explicitly preregistered Experiment 033 tests
+        run: |
+          python -m unittest discover -s experiments/033_glottal_tract_coupling -p 'test_*.py' -v
+      - name: Produce complete independent C0 C1 waveguide traces
+        run: |
+          python experiments/033_glottal_tract_coupling/run.py --output-dir experiment-033-output
+      - name: Assert the physical and causal adoption gates, not just generic CI
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          directory = Path("experiment-033-output")
+          s = json.loads((directory / "summary.json").read_text())
+          assert s["all_eligible_gates_pass"] is True, s["gates"]
+          assert s["gates"]["G4_exact_closure"] == "UNSUPPORTED"
+          assert s["gates"]["G4_listening_and_naturalness"] == "NOT_TESTED"
+          assert len(list(directory.glob("*.csv"))) == 4
+          print("Experiment 033: all eligible frozen scientific gates PASS")
+          PY
+      - name: Refuse stale-output replay
+        run: |
+          if python experiments/033_glottal_tract_coupling/run.py --output-dir experiment-033-output > replay.log 2>&1; then
+            echo "FAIL: prior experimental directory reused"; exit 1
+          fi
+          grep -q "requires a fresh empty output directory" replay.log
+      - name: Upload full pressure-flow and energy traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-033-python-${{ matrix.python-version }}
+          path: experiment-033-output/
+          if-no-files-found: warn
