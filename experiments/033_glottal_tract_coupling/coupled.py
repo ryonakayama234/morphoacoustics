@@ -190,7 +190,21 @@ def make_model(*, constricted: bool = False, feedback: bool = True,
                sample_rate_hz: int = 48000, subdivisions: int = 4) -> StrongCoupling:
     if type(sample_rate_hz) is not int or sample_rate_hz <= 0:
         raise ValueError("positive integer sample rate required")
-    geom = Geometry.middle_constriction() if constricted else Geometry()
+    # Take both fixture geometries through the real Core physical representation,
+    # exactly as the Exp032 adapter contract specifies.
+    from morphoacoustics.physical import Tract1DGeometry, TubeSection
+
+    physical = Tract1DGeometry(
+        cavity_id="oral",
+        sections=tuple(
+            TubeSection(
+                length_m=.017,
+                area_m2=.00015 if constricted and i == 5 else .0003,
+            )
+            for i in range(10)
+        ),
+    )
+    geom = Geometry.from_tract1d(physical)
     tract = PassiveTract(
         geometry=geom,
         subdivisions=subdivisions,
