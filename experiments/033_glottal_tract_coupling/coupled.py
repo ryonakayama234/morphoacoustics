@@ -15,7 +15,7 @@ import sys
 
 WAVEGUIDE_DIR = Path(__file__).resolve().parents[1] / "032_passive_time_domain_tract"
 if str(WAVEGUIDE_DIR) not in sys.path:
-    sys.path.insert(0, str(WAVEGUIDE_DIR))
+    sys.path.append(str(WAVEGUIDE_DIR))
 from waveguide import Geometry, PassiveTract  # noqa: E402
 
 
