@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-11",
+  "source": "Wolfram Language exact rational one-cell analysis and symbolic midpoint energy balance; wolfram/independent_oracle.wl",
+  "interpretation": "fixture for strictly positive aperture and one acoustic cell; not human measured voice",
+  "one_cell_fixture": {
+    "tract_length_m": 0.017,
+    "tract_area_m2": 0.0003,
+    "sound_speed_m_s": 343.0,
+    "density_kg_m3": 1.21,
+    "sample_rate_hz": 48000,
+    "glottal_area_m2": 0.00003,
+    "glottal_inertance_pa_s2_m3": 1200.0,
+    "glottal_resistance_pa_s_m3": 1500000.0,
+    "discharge_coefficient": 0.7,
+    "subglottal_pressure_pa": 800.0
+  },
+  "one_cell_port_slope_pa_s_m3": 1782466.210973501,
+  "one_cell_first_flow_new_m3_s": 0.000013302951889662222,
+  "one_cell_first_flow_mid_m3_s": 0.000006651475944831111,
+  "one_cell_first_port_pressure_mid_pa": 23.712062249528995,
+  "coupled_midpoint_energy_symbolic_residual": 0,
+  "port_slope_strictly_positive": true
+}
