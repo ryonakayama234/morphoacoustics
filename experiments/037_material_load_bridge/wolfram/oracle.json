@@ -1,0 +1,6 @@
+{
+  "note": "Exact symbolic Wolfram static-tube and port conservation, not this experiment's measured pressure",
+  "ideal_uniform_quarter_wave_hz": 504.4117647058824,
+  "lossless_port_energy_cancellation": 0,
+  "split_node_flow_conservation": 0
+}

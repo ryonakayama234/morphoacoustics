@@ -1,0 +1,46 @@
+name: EM-1 material geometry to feedback bridge (research only)
+on:
+  pull_request:
+    paths:
+      - 'experiments/037_material_load_bridge/**'
+      - '.github/workflows/experiment-037-em1.yml'
+  workflow_dispatch:
+jobs:
+  material:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned numerical environment
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e .
+      - name: Independent frozen material/oracle and null tests
+        run: python -m unittest discover -s experiments/037_material_load_bridge -p 'test_*.py' -v
+      - name: Run real physical material-to-feedback bridge
+        run: python experiments/037_material_load_bridge/run.py --output-dir /tmp/em1-run1
+      - name: Repeat and assert all physical traces are reproducible
+        run: |
+          python experiments/037_material_load_bridge/run.py --output-dir /tmp/em1-run2
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/em1-run1/summary.json').read_text())
+          y=json.loads(Path('/tmp/em1-run2/summary.json').read_text())
+          assert x==y, 'same scientific fixture produced different output'
+          assert x['decision']=='SUPPORT_REDUCED_MATERIAL_TO_LOAD_FEEDBACK'
+          assert all(x['checks'].values()), x['checks']
+          print('PASS: real EM-1 strong-coupled simulations reproduced and all preregistered gates passed')
+          PY
+      - name: Upload research-only raw physical traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: em1-037-raw-research-evidence
+          path: |
+            /tmp/em1-run1/
+            /tmp/em1-run2/
+          retention-days: 14
