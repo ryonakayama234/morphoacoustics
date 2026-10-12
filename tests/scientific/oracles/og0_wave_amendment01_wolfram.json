@@ -30,7 +30,7 @@
   ],
   "max_normalized_independent_wave_difference_wolfram_high_precision": 0,
   "wrong_junction": "J=diag(1,SA/SB) erroneous particle-flow continuity instead of volume flow",
-  "wrong_junction_733_max_normalized_incident_wave_state_error_wolfram": 0.6312869839183927,
+  "wrong_junction_733_max_normalized_incident_wave_state_error_wolfram": 0.5861352498274852,
   "mutation_min_normalized_residual": 0.1,
   "note": "Wave oracle is independent of experimental transfer-matrix graph code. This is an amended regression test, not an unobserved prospective scientific confirmation."
 }
