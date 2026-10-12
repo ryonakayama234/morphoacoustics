@@ -177,3 +177,94 @@ def test_runner_executes_and_emits_provisional_result_json():
     assert payload["adoption_status"] == "NOT_ADOPTED"
     assert len(payload["run_identity_sha256"]) == 64
     assert all(payload["checks"].values())
+
+
+# Amendment 01: new, separately derived traveling-wave scattering oracle.
+# These tests are POST-exploratory regression checks, not preregistered evidence.
+WAVE_ORACLE_FILE = HERE / "tests/scientific/oracles/og0_wave_amendment01_wolfram.json"
+wave_oracle = json.loads(WAVE_ORACLE_FILE.read_text(encoding="utf-8"))
+
+
+def incident_wave_states(graph, grid, incident_pressure):
+    """Wave-basis oracle: never compose, invert or recurse tube matrices.
+
+    Unit incident traveling pressure at the physical A.out junction;
+    phase shifts to A.in and B.out are analytical exp(±i*k*L).
+    """
+    za = graph.air_density_kg_m3 * graph.sound_speed_m_s / graph.upstream.area_m2
+    zb = graph.air_density_kg_m3 * graph.sound_speed_m_s / graph.downstream.area_m2
+    reflection = (zb - za) / (za + zb)
+    transmission = 2 * zb / (za + zb)
+    phase_a = 2 * np.pi * grid * graph.upstream.length_m / graph.sound_speed_m_s
+    phase_b = 2 * np.pi * grid * graph.downstream.length_m / graph.sound_speed_m_s
+    incident = complex(incident_pressure)
+    downstream_wave = transmission * incident * np.exp(-1j * phase_b)
+    expected_inlet = np.stack((
+        incident * (np.exp(1j * phase_a) + reflection * np.exp(-1j * phase_a)),
+        incident * (np.exp(1j * phase_a) - reflection * np.exp(-1j * phase_a)) / za,
+    ), axis=-1)
+    imposed_outlet = np.stack((downstream_wave, downstream_wave / zb), axis=-1)
+    return imposed_outlet, expected_inlet, za, reflection, transmission
+
+
+def max_wave_residual(graph, matrices, grid, incident_pressure):
+    state_out, independent_state_in, za, _, _ = incident_wave_states(
+        graph, grid, incident_pressure)
+    measured = np.einsum("nij,nj->ni", matrices, state_out)
+    scales = np.asarray([abs(incident_pressure), abs(incident_pressure) / za])
+    return float(np.max(np.abs((measured - independent_state_in) / scales)))
+
+
+@pytest.mark.parametrize("area_b", [3e-4, 6e-4, 1.5e-4])
+def test_independent_traveling_wave_scattering_across_frequency_grid(area_b):
+    graph = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=area_b))
+    incident = complex(*wave_oracle["incident_pressure_pa_re_im"])
+    state_out, expected_inlet, za, reflection, transmission = incident_wave_states(
+        graph, frequencies, incident)
+    measured = np.einsum("nij,nj->ni", graph.transfer_matrix(frequencies), state_out)
+    scales = [abs(incident), abs(incident) / za]
+    assert np.max(np.abs((measured - expected_inlet) / scales)) < 1e-11
+    # Independent scattering identity, based on p/U port wave boundary equations.
+    assert abs(reflection)**2 + za * abs(transmission)**2 / (
+        graph.air_density_kg_m3 * graph.sound_speed_m_s / area_b
+    ) == pytest.approx(1.0, abs=1e-12)
+    if area_b == 6e-4:
+        assert reflection == pytest.approx(wave_oracle["reflection_pressure"], abs=1e-12)
+        assert transmission == pytest.approx(wave_oracle["transmission_pressure"], abs=1e-12)
+        a_at_733 = measured[list(frequencies).index(733)]
+        expected_four = wave_oracle["a_in_733_re_im_pa_and_m3_s"]
+        np.testing.assert_allclose(
+            [a_at_733[0].real, a_at_733[0].imag,
+             a_at_733[1].real, a_at_733[1].imag],
+            expected_four, atol=1e-11, rtol=1e-11)
+
+
+def test_area_scaled_wrong_junction_is_killed_by_independent_wave_oracle():
+    graph = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=6e-4))
+    incident = complex(*wave_oracle["incident_pressure_pa_re_im"])
+    good_error = max_wave_residual(graph, graph.transfer_matrix(frequencies),
+                                   frequencies, incident)
+    assert good_error < 1e-11
+    # Deliberately INVALID physical coupling: conserve particle speed instead
+    # of volume velocity, via the spurious junction step J!=Identity.
+    wrong_junction = np.diag([
+        1.0, graph.upstream.area_m2 / graph.downstream.area_m2,
+    ]).astype(np.complex128)
+    ta = graph._tube(graph.upstream).transfer_matrix(frequencies)
+    tb = graph._tube(graph.downstream).transfer_matrix(frequencies)
+    invalid_model_matrices = np.matmul(np.matmul(ta, wrong_junction), tb)
+    wrong_error = max_wave_residual(
+        graph, invalid_model_matrices, frequencies, incident)
+    assert wrong_error > wave_oracle["mutation_min_normalized_residual"]
+    assert wrong_error > 1e8 * max(good_error, 1e-16)
+
+
+def test_pressure_release_is_zero_power_at_terminal_not_matched_load():
+    graph = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=6e-4))
+    release = graph.junction_audit(
+        733., outlet_flow_m3_s=1e-6, outlet_load="pressure_release")
+    matched = graph.junction_audit(
+        733., outlet_flow_m3_s=1e-6, outlet_load="matched")
+    # A pressure-release terminal has p=0 hence Pavg(out)=0.
+    assert release["mean_power_w"] == pytest.approx(0., abs=1e-13)
+    assert matched["mean_power_w"] == pytest.approx(3.43e-7, rel=1e-10)
