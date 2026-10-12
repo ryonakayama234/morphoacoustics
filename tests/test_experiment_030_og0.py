@@ -1,0 +1,144 @@
+"""Research-only automated checks for OG-0 (#90). NOT independently adopted."""
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+import numpy as np
+import pytest
+from morphoacoustics.acoustics import UniformTube, SegmentedTube
+
+HERE = Path(__file__).resolve().parents[1]
+MODEL_FILE = HERE / "experiments/030_og0_passive_port_connection/port_network.py"
+ORACLE_FILE = HERE / "tests/scientific/oracles/og0_wolfram.json"
+m_spec = importlib.util.spec_from_file_location("og0_port_network_under_test", MODEL_FILE)
+assert m_spec is not None and m_spec.loader is not None
+og = importlib.util.module_from_spec(m_spec)
+sys.modules[m_spec.name] = og
+m_spec.loader.exec_module(og)
+oracle = json.loads(ORACLE_FILE.read_text(encoding="utf-8"))
+frequencies = np.asarray(oracle["frequency_grid_hz"], dtype=float)
+
+
+def normalized(matrix, impedance):
+    result = matrix.copy()
+    result[..., 0, 1] /= impedance
+    result[..., 1, 0] *= impedance
+    return result
+
+
+def test_equal_area_actual_port_graph_matches_existing_solvers():
+    graph = og.prepare_serial_graph(og.reference_spec())
+    measured = graph.transfer_matrix(frequencies)
+    sections = (graph._tube(graph.upstream), graph._tube(graph.downstream))
+    direct = UniformTube(length_m=0.17, area_m2=3e-4,
+                         sound_speed_m_s=343., air_density_kg_m3=1.2)
+    zref = 1.2*343/3e-4
+    np.testing.assert_allclose(
+        normalized(measured, zref), normalized(direct.transfer_matrix(frequencies), zref),
+        rtol=1e-11, atol=1e-11,
+    )
+    np.testing.assert_allclose(
+        normalized(measured, zref),
+        normalized(SegmentedTube(sections).transfer_matrix(frequencies), zref),
+        rtol=1e-11, atol=1e-11,
+    )
+    np.testing.assert_allclose(np.linalg.det(normalized(measured, zref)), 1.,
+                               rtol=1e-11, atol=1e-11)
+    assert direct.quarter_wave_resonances_hz(1)[0] == pytest.approx(
+        oracle["equal_area"]["first_quarter_wave_hz"], abs=1e-10)
+
+
+def test_unequal_area_matches_wolfram_impedance_and_independent_recursion():
+    graph = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=6e-4))
+    actual = graph.input_impedance(np.asarray([733.0]))[0]
+    expected = oracle["area_mismatch"]
+    assert actual.real == pytest.approx(expected["pressure_release_733hz_input_impedance_real"], abs=1e-8)
+    assert actual.imag == pytest.approx(expected["pressure_release_733hz_input_impedance_imag"], rel=1e-10, abs=1e-4)
+    # Independently unwind load impedance downstream -> upstream.
+    zin = 0j
+    for organ in (graph.downstream, graph.upstream):
+        zc = graph.air_density_kg_m3 * graph.sound_speed_m_s / organ.area_m2
+        tangent = np.tan(2*np.pi*733.0*organ.length_m/graph.sound_speed_m_s)
+        zin = zc * (zin + 1j*zc*tangent) / (zc + 1j*zin*tangent)
+    assert actual == pytest.approx(zin, rel=1e-10, abs=1e-4)
+
+
+def test_matched_junction_port_conservation_and_scattering():
+    graph = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=6e-4))
+    expected = oracle["area_mismatch"]["matched_outlet_733hz"]
+    result = graph.junction_audit(733., outlet_flow_m3_s=1e-6, outlet_load="matched")
+    for k in ("pressure_residual_rel", "flow_residual_rel", "power_residual_rel"):
+        assert result[k] < 1e-11
+    assert result["mean_power_w"] == pytest.approx(expected["mean_power_w"], rel=1e-12, abs=1e-15)
+    for k in ("junction_pressure_real_pa", "junction_pressure_imag_pa",
+              "junction_flow_real_m3_s", "junction_flow_imag_m3_s"):
+        assert result[k] == pytest.approx(expected[k], rel=1e-11, abs=1e-12)
+    reflection = complex(result["reflection_pressure_real"], result["reflection_pressure_imag"])
+    assert reflection == pytest.approx(complex(oracle["area_mismatch"]["reflection_pressure_real"]), abs=1e-12)
+    za, zb = 1.2*343/3e-4, 1.2*343/6e-4
+    transmission_power = 4*za*zb/(za+zb)**2
+    assert abs(reflection)**2 == pytest.approx(oracle["area_mismatch"]["reflected_power_fraction"], abs=1e-12)
+    assert transmission_power == pytest.approx(oracle["area_mismatch"]["transmitted_power_fraction"], abs=1e-12)
+    assert abs(reflection)**2 + transmission_power == pytest.approx(1., abs=1e-12)
+
+
+def test_graph_provenance_identity_and_causal_intervention():
+    g1 = og.prepare_serial_graph(og.reference_spec(organ_order=("A", "B")))
+    g2 = og.prepare_serial_graph(og.reference_spec(organ_order=("B", "A")))
+    assert g1.graph_sha256 == g2.graph_sha256
+    np.testing.assert_array_equal(g1.transfer_matrix(frequencies), g2.transfer_matrix(frequencies))
+    changed = og.prepare_serial_graph(og.reference_spec(downstream_area_m2=6e-4))
+    assert changed.graph_sha256 != g1.graph_sha256
+    assert changed.upstream == g1.upstream
+    assert not np.allclose(
+        normalized(changed.transfer_matrix(frequencies), 1.372e6),
+        normalized(g1.transfer_matrix(frequencies), 1.372e6),
+        rtol=1e-6, atol=1e-6)
+
+
+def test_bad_port_role_kind_identity_connection_and_boundary_are_invalid():
+    spec = og.reference_spec()
+    to = spec.connections[0].target
+    from_port = spec.connections[0].source
+    bad_edges = (
+        og.AcousticConnection(og.AcousticPort("A", "inlet", "inlet"), to),
+        og.AcousticConnection(og.AcousticPort("A", "outlet", "outlet", kind="mechanical"), to),
+        og.AcousticConnection(og.AcousticPort("X", "outlet", "outlet"), to),
+        og.AcousticConnection(from_port, from_port),
+        og.AcousticConnection(from_port, to, law="nonphysical"),
+    )
+    for edge in bad_edges:
+        with pytest.raises(og.InvalidGraph):
+            og.prepare_serial_graph(og.PortNetworkSpec(
+                spec.organs, (edge,), spec.observation_inlet, spec.pressure_release_outlet))
+    with pytest.raises(og.InvalidGraph):
+        og.prepare_serial_graph(og.PortNetworkSpec(
+            spec.organs, (), spec.observation_inlet, spec.pressure_release_outlet))
+    with pytest.raises(og.InvalidGraph):
+        og.prepare_serial_graph(og.PortNetworkSpec(
+            spec.organs, spec.connections*2, spec.observation_inlet, spec.pressure_release_outlet))
+    with pytest.raises(og.InvalidGraph):
+        og.prepare_serial_graph(og.PortNetworkSpec(
+            spec.organs, spec.connections, to, spec.pressure_release_outlet))
+
+
+def test_geometry_and_frequency_invalid_multi_organ_unsupported():
+    for value in (0., -1., np.nan, np.inf):
+        with pytest.raises(og.InvalidGraph):
+            og.RigidTubeOrgan("X", 0.1, value)
+    spec = og.reference_spec()
+    with pytest.raises(og.InvalidGraph):
+        og.prepare_serial_graph(og.PortNetworkSpec(
+            (spec.organs[0], spec.organs[0]), spec.connections,
+            spec.observation_inlet, spec.pressure_release_outlet))
+    with pytest.raises(og.UnsupportedGraph):
+        og.prepare_serial_graph(og.PortNetworkSpec(
+            spec.organs + (og.RigidTubeOrgan("C", 0.1, 1e-4),), spec.connections,
+            spec.observation_inlet, spec.pressure_release_outlet))
+    graph = og.prepare_serial_graph(spec)
+    for grid in ([], [-1.], [np.nan], [np.inf], [[100., 200.]]):
+        with pytest.raises(og.InvalidGraph):
+            graph.transfer_matrix(grid)
+    with pytest.raises(og.InvalidGraph):
+        graph.junction_audit(733., outlet_flow_m3_s=0j)
