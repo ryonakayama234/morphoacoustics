@@ -142,3 +142,38 @@ def test_geometry_and_frequency_invalid_multi_organ_unsupported():
             graph.transfer_matrix(grid)
     with pytest.raises(og.InvalidGraph):
         graph.junction_audit(733., outlet_flow_m3_s=0j)
+
+
+def test_rewiring_port_edge_changes_asymmetric_network_response():
+    original = og.reference_spec(downstream_area_m2=6e-4)
+    forward = og.prepare_serial_graph(original)
+    reverse_edge = og.AcousticConnection(
+        og.AcousticPort("B", "outlet", "outlet"),
+        og.AcousticPort("A", "inlet", "inlet"),
+    )
+    reversed_network = og.prepare_serial_graph(og.PortNetworkSpec(
+        original.organs,
+        (reverse_edge,),
+        og.AcousticPort("B", "inlet", "inlet"),
+        og.AcousticPort("A", "outlet", "outlet"),
+    ))
+    assert forward.graph_sha256 != reversed_network.graph_sha256
+    assert reversed_network.upstream.organ_id == "B"
+    assert not np.allclose(
+        normalized(forward.transfer_matrix(frequencies), 1.372e6),
+        normalized(reversed_network.transfer_matrix(frequencies), 1.372e6),
+        rtol=1e-6, atol=1e-6,
+    )
+
+
+def test_runner_executes_and_emits_provisional_result_json():
+    import subprocess
+    runner = HERE / "experiments/030_og0_passive_port_connection/run.py"
+    result = subprocess.run([sys.executable, str(runner)], capture_output=True,
+                            text=True, check=True, timeout=30)
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "PROVISIONAL_NUMERICAL_PASS"
+    assert payload["review_status"] == "NOT_INDEPENDENTLY_REVIEWED"
+    assert payload["adoption_status"] == "NOT_ADOPTED"
+    assert len(payload["run_identity_sha256"]) == 64
+    assert all(payload["checks"].values())
