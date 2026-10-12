@@ -60,3 +60,58 @@ out = <|
   "matched_733hz_average_power_w" -> N[junctionPower, 16]
 |>;
 Print[out];
+
+
+(* Amendment 01 — POST exploratory analysis. Independent traveling-wave oracle.
+   Original pre-implementation oracle computations above are unchanged.
+   This code evaluates the wave basis and checks detection of an intentionally
+   WRONG area-dependent junction matrix. The source of expected states is
+   separate from the Python experimental graph and the inverse-T roundtrip. *)
+ClearAll[incident, reflectionWave, transmissionWave, waveOutState,
+  waveExpectedAtA, waveScale, waveResidual, wrongJ, wrongResidual,
+  powerIncident, powerReflected, powerTransmitted];
+
+incident = 1 + (2/5) I;
+reflectionWave = (zb - za)/(za + zb);
+transmissionWave = 2 zb/(za + zb);
+waveOutState[f_] := Module[{qb = N[2 Pi f lenB/c, 30], wave},
+  wave = transmissionWave incident Exp[-I qb];
+  {wave, wave/zb}
+];
+waveExpectedAtA[f_] := Module[{qa = N[2 Pi f lenA/c, 30]},
+  {
+    incident (Exp[I qa] + reflectionWave Exp[-I qa]),
+    incident (Exp[I qa] - reflectionWave Exp[-I qa])/za
+  }
+];
+waveScale = {Abs[incident], Abs[incident]/za};
+waveResidual[f_] := Max[Abs[
+  (tm[lenA, areaA, f].tm[lenB, areaBMismatch, f].waveOutState[f] -
+   waveExpectedAtA[f])/waveScale
+]];
+wrongJ = DiagonalMatrix[{1, areaA/areaBMismatch}];
+wrongResidual[f_] := Max[Abs[
+  (tm[lenA, areaA, f].wrongJ.tm[lenB, areaBMismatch, f].waveOutState[f] -
+   waveExpectedAtA[f])/waveScale
+]];
+powerIncident = 1/(2 za);
+powerReflected = reflectionWave^2/(2 za);
+powerTransmitted = transmissionWave^2/(2 zb);
+Print[<|
+  "amendment" -> "01-post-exploratory-not-preregistered",
+  "incident_pressure_re_im_pa" -> {1., 0.4},
+  "reflection_pressure" -> N[reflectionWave, 16],
+  "transmission_pressure" -> N[transmissionWave, 16],
+  "power_incident_unit_amplitude_w" -> N[powerIncident, 16],
+  "power_reflected_unit_amplitude_w" -> N[powerReflected, 16],
+  "power_transmitted_unit_amplitude_w" -> N[powerTransmitted, 16],
+  "energy_difference_w" -> N[powerIncident-powerReflected-powerTransmitted,16],
+  "a_in_733_re_im_p_U" -> N[{
+    Re[waveExpectedAtA[733][[1]]], Im[waveExpectedAtA[733][[1]]],
+    Re[waveExpectedAtA[733][[2]]], Im[waveExpectedAtA[733][[2]]]
+  }, 16],
+  "wave_max_normalized_deviation_grid" ->
+    N[Max[Table[waveResidual[f], {f, freqs}]], 16],
+  "wrong_area_junction_733_normalized_deviation" -> N[wrongResidual[733], 16],
+  "pressure_release_terminal_real_power_w" -> 0
+|>];
