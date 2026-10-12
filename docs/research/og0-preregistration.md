@@ -1,6 +1,8 @@
-# OG-0 — frozen candidate protocol, review before adoption
+# OG-0 — experimental protocol proposal (NOT preregistered)
 
-Status: **DRAFT PR / CANDIDATE PREREGISTRATION**. This document is proposed *before* the implementation experiment. Numerical research is not approved or preregistered until independent physical and code review; this PR does **not** license changing criteria after observing implementation outcomes.
+**Status: draft / review pending / not preregistered.** The first version of this proposal was written before implementation, but was **not independently approved/frozen** when the initial OG-0 implementation and CI results were observed. Those results are **exploratory**; do not call them a prospectively confirmed or preregistered finding.
+
+**Transparent amendment 01 (2026-10-12):** [og0-amendment-01.md](./og0-amendment-01.md) records a discovered outlet-power contradiction, its corrected matched-versus-pressure-release boundary cases, an independently derived wave oracle, incorrect-junction mutation negative control, and the consequence that a later CI rerun is a regression check, not a new scientific preregistration. The original error is preserved explicitly in the history and identified below.
 
 Parent issue: [#90](https://github.com/ryonakayama234/morphoacoustics/issues/90). Baseline main commit: `8868df1188443fc4523533c6cb0bb9cd72995c32`. Existing specification: [docs/fidelity-0.md](../fidelity-0.md). Existing equal-segment regression: `tests/test_acoustics_segmented_tube.py`.
 
@@ -26,16 +28,16 @@ Wolfram Language arithmetic computed **before** implementing experimental connec
 1. Equal-area `T_A T_B ≈ T_uniform(0.17m)`, max normalized-matrix absolute discrepancy `4.440892098500626e-16` over grid; `max |det(T_A T_B)-1|=3.3306690738754696e-16`. `f1=c/(4*.17)=504.4117647058824 Hz`.
 2. Area step local progressive incidence, **matched/semi-infinite downstream**, `r=(Z_B-Z_A)/(Z_A+Z_B)=-1/3`, power `R=|r|²=1/9`, `T=4*ZA*ZB/(ZA+ZB)^2=8/9`. `R+T=1`. These fractions do **not** describe finite pressure-release termination with multiple reflections.
 3. Mismatched tube A+B at `f=733Hz` and `Zout=0`: `Zin ≈ -3.0275149008453414e6 j Pa·s/m³`, independently obtained by transfer matrix and outlet→inlet load recursion. No use of the experimental graph solver to generate oracle data.
-4. Port continuity/conservation: at junction `pAout-pBin=0`, `UAout-UBin=0`, `0.5 Re[pAout Conjugate[UAout]-pBin Conjugate[UBin]]=0` in global coordinate. For power audit with nonzero signal use e.g. B.out flow `1e-6m³/s`, pBout=0 and frequency 733 Hz. Normalize pressure residual by `max(1 Pa,|pAout|,|pBin|)`, flow by `max(1e-12m³/s,|UAout|,|UBin|)` and power by `max(1e-12W,|P_A|,|P_B|)`.
+4. Port continuity/conservation: at junction `pAout-pBin=0`, `UAout-UBin=0`, `0.5 Re[pAout Conjugate[UAout]-pBin Conjugate[UBin]]=0` in global coordinate. **Historical correction (amendment 01):** the initial version incorrectly paired outlet `pBout=0` (pressure-release) with a *nonzero-power* audit. This is physically impossible at that outlet: `0.5 Re(pBout Conjugate(UBout))=0`. **Corrected scope:** use `Zout=0` / `pBout=0` ONLY for finite-tube impedance; use a separate **matched outlet** `pBout=Zc,B UBout` with `UBout=1e-6m³/s` and 733 Hz for *nonzero mean-power* interface auditing. Normalize junction pressure residual by `max(1 Pa,|pAout|,|pBin|)`, flow by `max(1e-12m³/s,|UAout|,|UBin|)` and power by `max(1e-12W,|P_A|,|P_B|)`. A separate incident/reflected wave decomposition must independently test the physical connection; inverse-matrix roundtrip residuals are not independent physical evidence.
 5. Structural negative controls: missing organ, wrong/unknown port, invalid role/orientation, duplicate edge, unconnected required junction, duplicate identifiers, zero/negative/nonfinite dimensions, cycles/branches, changed medium parameters. `INVALID` for structurally incorrect requests, `UNSUPPORTED` for well-formed but unimplemented topologies; **no `INFEASIBLE` without a physical gesture/realizer**.
 6. Trace/digest: input graph independent of module ordering in provided collection, but not of physical A→B edge. Include explicit IDs, physical values, `rho,c`, inlet/outlet boundaries, frequency grid, algorithm version, backend version/pins, canonical numerical identity for reproducibility. On change of `SB`, `SA` stays fixed; trace changes.
 
-## Acceptance candidate (to freeze after independent review, before running experiment)
+## Acceptance candidate (post-exploratory proposal; requires amendment and independent review)
 
 - Existing baseline tests unchanged and passing. Experimental test exercises the actual port/graph validation path rather than just manually passing sections into `SegmentedTube`.
 - Normalized transfer matrix relative+absolute tolerance `1e-11` (candidate); determinant max `1e-11`; scattering reflection/power `1e-12` relative/absolute; independent `Zin` relative tolerance `1e-10` and absolute `1e-4 Pa·s/m³`. Residual normalized tolerances `1e-11` for pressure/flow/power. Thresholds are deliberately *candidates*, require floor audit and reviewer signoff before treating gate as frozen.
 - Compare complex `Zin` at 733 Hz away from poles. Do not evaluate unbounded impedance near ideal quarter-wave poles as a pass/fail metric.
-- A failed test must not cause retroactive tuning of fixture or gate to manufacture a PASS. If discovered flaw, explicitly version a new protocol and mark original `NUMERICALLY_UNRESOLVED` or `FAILED`.
+- A failed test must not cause retroactive tuning of fixture or gate to manufacture a PASS. If discovered flaw, explicitly version a new protocol and mark original `NUMERICALLY_UNRESOLVED` or `FAILED`. This amended version was proposed **after exploratory outcomes**; any subsequent run on already observed fixtures is a regression / audit run, not independent prospective scientific confirmation.
 - Evidence artifact: machine-readable oracle with exact provenance; experiment `README.md`, `RESULTS.md` documenting command/platform/result; independent code and physics audit, both pending until independently conducted.
 
 ## Scope and decision
