@@ -2,7 +2,7 @@
 
 Status: **DRAFT PR / CANDIDATE PREREGISTRATION**. This document is proposed *before* the implementation experiment. Numerical research is not approved or preregistered until independent physical and code review; this PR does **not** license changing criteria after observing implementation outcomes.
 
-Parent issue: [#90](https://github.com/ryonakayama234/morphoacoustics/issues/90). Baseline main commit: `8868df1188443fc4523533c6cb0bb9cd72995c32`. Existing specification: [docs/fidelity-0.md](../../fidelity-0.md). Existing equal-segment regression: `tests/test_acoustics_segmented_tube.py`.
+Parent issue: [#90](https://github.com/ryonakayama234/morphoacoustics/issues/90). Baseline main commit: `8868df1188443fc4523533c6cb0bb9cd72995c32`. Existing specification: [docs/fidelity-0.md](../fidelity-0.md). Existing equal-segment regression: `tests/test_acoustics_segmented_tube.py`.
 
 ## Hypothesis
 
