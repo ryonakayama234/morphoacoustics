@@ -19,7 +19,7 @@ pytest -q tests/test_experiment_030_og0.py
 
 The runner emits JSON to stdout, including reproducible graph and run identities, numerical errors, explicit acceptance-candidate checks and environment. It never writes output files or changes main.
 
-## Frozen reference conditions
+## Reference conditions (exploratory baseline and post-exploratory amendment)
 
 Independent [Wolfram oracle](../../tests/scientific/oracles/og0_wolfram.json) was computed before experiment implementation; physical/scientific review still pending. A is L=0.08m, S=3e-4m²; B is L=0.09m, S=3e-4m² (identity) or 6e-4m² (mismatch). Air rho=1.2kg/m³, c=343m/s; frequency grid 80/250/400/733/1200/2000/4000Hz; Fourier exp(+j omega t). 
 
@@ -30,5 +30,13 @@ For transfer comparisons, non-dimensionalize T by reference impedance; near idea
 ## Failure semantics and evidence
 
 Incorrect port role/type, missing/duplicated connection, unknown ID, nonpositive dimensional parameter or wrong exterior boundary -> `INVALID`; well-formed additional organ / multi-edge topology -> `UNSUPPORTED`. There is no `INFEASIBLE` physical motor task in this experiment.
+
+### Amendment 01: independent wave oracle (post-exploratory)
+
+The original [Wolfram oracle](../../tests/scientific/oracles/og0_wolfram.json) is preserved unchanged. After the first exploratory CI pass, a physically mistaken protocol description was identified: the pressure-release terminal `p_out=0` has **zero** outgoing mean power and cannot serve as a nonzero-power load fixture. [Draft PR #91 amendment 01](https://github.com/ryonakayama234/morphoacoustics/blob/research/og0-prereg/docs/research/og0-amendment-01.md) explicitly corrects this.
+
+The separately versioned [post-exploratory Wolfram wave oracle](../../tests/scientific/oracles/og0_wave_amendment01_wolfram.json) now tests incident/reflected/transmitted pressure wave states across all seven fixed frequencies and both area-matched/area-mismatched cases, plus an incorrect particle-velocity continuity junction mutation that **must fail**. Independent Wolfram source: [wolfram/og0_oracle.wl](./wolfram/og0_oracle.wl). The runner emits numeric error, deliberate mutation error, and SHA-256 signatures of code and both oracle files.
+
+The added results are **controlled regression evidence on previously observed fixtures, not an independently preregistered confirmatory experiment**. A future unseen fixture plus independently approved protocol would be required for that stronger scientific status.
 
 Scientific adoption status remains **NOT ADOPTED** even when provisional automated checks pass. Independent code and physics review and a recorded frozen-gate judgment are still necessary.
