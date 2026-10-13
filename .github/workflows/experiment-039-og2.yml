@@ -1,0 +1,67 @@
+name: experiment-039-og2
+
+on:
+  push:
+    paths:
+      - "experiments/039_og2_prepared_graph/**"
+      - "tests/test_experiment_039_og2.py"
+      - "src/morphoacoustics/acoustics/**"
+      - ".github/workflows/experiment-039-og2.yml"
+  pull_request:
+    paths:
+      - "experiments/039_og2_prepared_graph/**"
+      - "tests/test_experiment_039_og2.py"
+      - "src/morphoacoustics/acoustics/**"
+      - ".github/workflows/experiment-039-og2.yml"
+
+jobs:
+  og2-science:
+    name: "OG2 / Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install declared dev dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Verify all OG-2 frozen scientific controls
+        run: python -m pytest tests/test_experiment_039_og2.py -q
+      - name: Run full regression suite
+        run: python -m pytest -q
+      - name: Type check production code remains unchanged
+        run: python -m mypy
+      - name: Produce fresh OG-2 evidence
+        run: python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output
+      - name: Verify stale evidence is refused
+        shell: bash
+        run: |
+          if python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output > replay.log 2>&1; then
+            echo "An existing evidence folder was incorrectly accepted"
+            exit 1
+          fi
+          grep -q "FileExistsError" replay.log
+      - name: Assert machine gate is provisional only
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("experiment-039-output/decision.json").read_text(encoding="utf-8"))
+          assert d["decision"] == "PROVISIONAL_NUMERICAL_PASS_REVIEW_PENDING_NOT_ADOPTED"
+          assert all(d["tests"].values())
+          assert len(d["observations"]) == 7
+          print(d["decision"])
+          PY
+      - name: Upload scientific evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "og2-evidence-py${{ matrix.python-version }}"
+          path: |
+            experiment-039-output/
+            replay.log
+          if-no-files-found: warn
