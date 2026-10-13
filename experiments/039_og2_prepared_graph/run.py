@@ -71,11 +71,11 @@ def run(output_dir: Path) -> dict[str, object]:
         a.transfer_matrix(frequency)
         @ wrong_coupling
         @ b.transfer_matrix(frequency)
-    ) @ d
+    ) @ di
     wrong_error = float(np.max(np.abs(wrong - expected)))
     swapped = d @ (
         b.transfer_matrix(frequency) @ a.transfer_matrix(frequency)
-    ) @ d
+    ) @ di
     swapped_error = float(np.max(np.abs(swapped - expected)))
 
     reflected, transmitted, reflected_power, transmitted_power = prepared.interface_scattering()
@@ -107,8 +107,8 @@ def run(output_dir: Path) -> dict[str, object]:
         "equal_area_full_complex_matrix": worst_equal <= 1e-10,
         "mismatch_full_complex_wolfram_oracle": worst_mismatch <= 1e-10,
         "matched_interface_power": power_error <= 1e-12,
-        "wrong_velocity_continuity_killed": wrong_error > 1e-3,
-        "wrong_reverse_order_killed": swapped_error > 1e-3,
+        "wrong_velocity_continuity_killed": 1e-3 < wrong_error < 10.0,
+        "wrong_reverse_order_killed": 1e-3 < swapped_error < 10.0,
         "valid_branch_is_unsupported": branch_status == "UNSUPPORTED",
         "invalid_geometry_is_invalid": invalid_status == "INVALID",
         "identical_blueprint_digest": prepared.preparation_digest == replay.preparation_digest,
