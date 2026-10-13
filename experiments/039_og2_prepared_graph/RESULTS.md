@@ -16,3 +16,8 @@
 3. False particle-velocity and reversed-order mutations die for physically meaningful reasons.
 4. Graph topology validation and INVALID/UNSUPPORTED taxonomy, unchanged original modules, stable backend preparation digest and unchanged `src/`.
 5. Exact CI SHA, source/evidence artifact checksums, test/mypy execution across Python versions, plus reproducibility.
+
+
+## Self-audit and correction record
+
+The first green head `2ff80c25` passed the expected full test/CI outcomes, but its research **runner's negative-control error magnitudes were invalid** due to a second uncorrected scaling operation in the two intentionally false matrices. The standalone pytest negative-control matrices were already normalized correctly. Runner correction is commit `b2732946`; final numerical evidence must be taken only from a later commit containing this correction. Full details in `AMENDMENT_001.md`. This transparent repair does not count as blind prospective replication.
