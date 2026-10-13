@@ -59,7 +59,7 @@ def run(output_dir: Path) -> dict[str, object]:
     d = np.diag([1.0, z])
     di = np.diag([1.0, 1.0 / z])
     equivalent_single = UniformTube(length_m=0.17, area_m2=0.0003)
-    control = di @ equivalent_single.transfer_matrix(frequency) @ d
+    control = d @ equivalent_single.transfer_matrix(frequency) @ di
     worst_equal = float(np.max(np.abs(equal.scaled_transfer_matrix(frequency) - control)))
 
     a, b = prepared.tubes_in_path_order
@@ -67,13 +67,13 @@ def run(output_dir: Path) -> dict[str, object]:
     z = prepared.reference_impedance
     d = np.diag([1.0, z])
     di = np.diag([1.0, 1.0 / z])
-    wrong = di @ (
+    wrong = d @ (
         a.transfer_matrix(frequency)
         @ wrong_coupling
         @ b.transfer_matrix(frequency)
     ) @ d
     wrong_error = float(np.max(np.abs(wrong - expected)))
-    swapped = di @ (
+    swapped = d @ (
         b.transfer_matrix(frequency) @ a.transfer_matrix(frequency)
     ) @ d
     swapped_error = float(np.max(np.abs(swapped - expected)))
