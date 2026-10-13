@@ -2,7 +2,7 @@
    Baseline: main@8868df1188443fc4523533c6cb0bb9cd72995c32
    This is not the Python algorithm; exact-rational medium and geometry,
    arbitrary-precision trigonometric evaluation, and dimensionless
-   independent 2-port reference. exp(+i omega t), [p_in,U_in]=T[p_out,U_out].
+   independent 2-port reference, scaled as S T S^-1 with\n   S=diag(1,rho*c/S_A). exp(+i omega t), [p_in,U_in]=T[p_out,U_out].
    The result is ExportString[..., "RawJSON"] and then converted to plain
    JSON finite decimals for the checked-in oracle table. *)
 Module[{rho=121/100,c=343,sa=3/10000,sb=6/10000,
