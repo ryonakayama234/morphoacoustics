@@ -104,7 +104,7 @@ def test_reversing_mismatch_tube_order_is_killed() -> None:
         (lambda p: replace(p, organs=(replace(p.organs[1], inlet=replace(p.organs[1].inlet, direction="outlet")),p.organs[0])), "WRONG_PORT_DIRECTION"),
         (lambda p: replace(p, source_port="unknown.in"), "UNKNOWN_SOURCE_PORT"),
         (lambda p: replace(p, load_ports=()), "MISSING_LOAD"),
-        (lambda p: replace(p, load_ports=("organ-A.out",)), "WRONG_LOAD_DIRECTION"),
+        (lambda p: replace(p, load_ports=("organ-B.in",)), "WRONG_LOAD_DIRECTION"),
         (lambda p: replace(p, junctions=(replace(p.junctions[0], ports=("organ-B.in", "organ-A.out")),)), "WRONG_EDGE_DIRECTION"),
         (lambda p: replace(p, junctions=(replace(p.junctions[0], ports=("organ-A.out", "ghost.in")),)), "UNKNOWN_EDGE_PORT"),
         (lambda p: replace(p, junctions=(replace(p.junctions[0], law="unknown"),)), "UNKNOWN_JUNCTION_LAW"),
