@@ -2,7 +2,7 @@
   "schema": "og2.wolfram.oracle.v1",
   "baseline_main_sha": "8868df1188443fc4523533c6cb0bb9cd72995c32",
   "generator": "og2_oracle.wl",
-  "physics": "exp(+iwt), p/U inlet-to-outlet, D=diag(1,rho*c/S_A), N=D^-1 T_A T_B D",
+  "physics": "exp(+iwt), p/U inlet-to-outlet, S=diag(1,rho*c/S_A), N=S T_A T_B S^-1",
   "medium": {
     "rho_kg_m3": 1.21,
     "c_m_s": 343
