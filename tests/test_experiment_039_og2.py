@@ -175,3 +175,38 @@ def test_outlet_boundary_is_explicit_not_confused_with_matched_power() -> None:
     assert matched.preparation_digest != release.preparation_digest
     assert np.array_equal(matched.transfer_matrix(GRID), release.transfer_matrix(GRID))
     assert abs(matched.interface_scattering()[2] + matched.interface_scattering()[3] - 1.0) < POWER_TOL
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("area_m2", 1e-320),  # finite, positive; rho*c/area overflows
+        ("air_density_kg_m3", 5e-324),  # finite, positive; reciprocal overflows
+        ("sound_speed_m_s", 5e-324),  # finite, positive; reciprocal overflows
+    ],
+)
+def test_finite_primitive_inputs_with_nonfinite_derived_impedance_are_invalid(
+    field: str, value: float,
+) -> None:
+    original = og2.fixture()
+    bad_b = replace(original.organs[1], **{field: value})
+    candidate = replace(original, organs=(original.organs[0], bad_b))
+    with pytest.raises(og2.GraphError) as caught:
+        og2.prepare(candidate)
+    assert caught.value.status == "INVALID"
+    assert caught.value.code == "NONFINITE_DERIVED_IMPEDANCE"
+    assert caught.value.path == "organ.organ-B.impedance"
+
+
+def test_research_runner_checkout_attestation_rejects_spoofed_sha() -> None:
+    import importlib.util
+    runner_spec = importlib.util.spec_from_file_location("experiment_039_run", EXP / "run.py")
+    assert runner_spec is not None and runner_spec.loader is not None
+    runner = importlib.util.module_from_spec(runner_spec)
+    sys.modules[runner_spec.name] = runner
+    runner_spec.loader.exec_module(runner)
+    attestation = runner.checkout_attestation()
+    assert len(attestation["head_sha"]) == 40
+    assert attestation["tracked_checkout_clean"] is True
+    with pytest.raises(RuntimeError, match="HEAD_SHA_MISMATCH"):
+        runner.checkout_attestation("0" * 40)

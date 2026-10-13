@@ -189,6 +189,18 @@ def validate(blueprint: Blueprint) -> None:
         nodes.add(organ.id)
         for field in ("length_m", "area_m2", "sound_speed_m_s", "air_density_kg_m3"):
             _positive_finite(getattr(organ, field), f"organ.{organ.id}.{field}")
+        # Numeric validity extends to the *derived* p/U state, not just SI inputs.
+        # Valid positive subnormal areas can make rho*c/A infinite in float64;
+        # a positive but subnormal impedance can make S^-1 nonfinite instead.
+        impedance = (
+            organ.air_density_kg_m3 * organ.sound_speed_m_s / organ.area_m2
+        )
+        if (
+            not math.isfinite(impedance)
+            or impedance <= 0.0
+            or not math.isfinite(1.0 / impedance)
+        ):
+            invalid("NONFINITE_DERIVED_IMPEDANCE", f"organ.{organ.id}.impedance")
         for role, port in (("inlet", organ.inlet), ("outlet", organ.outlet)):
             _text(port.id, f"organ.{organ.id}.{role}.id")
             if port.kind != PORT_KIND:

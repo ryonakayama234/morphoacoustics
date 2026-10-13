@@ -2,14 +2,14 @@
 
 ## Current status (2026-10-13)
 
-- **Research implementation** under isolated branch; independent solver, numerical-acoustics and code/API human review **PENDING**.
+- **Research implementation** under isolated branch; evidence-first AI + Wolfram + machine scientific/code audit and SHA-scoped disposition are governed by #98 (policy revised 2026-10-14). This document's 2026-10-13 observations remain historical, not current green evidence.
 - Independent Wolfram table frozen before OG-2 Python code; 7 full complex frequency-domain 2-port reference matrices plus exact ideal discontinuity power fractions.
 - Local algebra exploratory check supported expected mismatch `r=-1/3`, `t=2/3`, `R=1/9`, `T=8/9`; this is **not** evidence of a validated Python implementation.
 - `AMENDMENT_001.md` openly discloses dimensional normalization correction after first implementation. Existing values/limits not fit to data.
 - Numerical gate and Python 3.11/3.12/3.13 remote CI have **not yet been verified in this document**. Inspect attached fresh run outputs/PR checks for results; do not infer passing from intended tests.
 - **GO/NO-GO for adoption: PENDING**. Even if all CI passes, production API and Studio changes are out of scope.
 
-## Independent reviewers must verify
+## Critical AI reviews and independent machine evidence must verify
 
 1. Sign of p/U wave convention, true volume-flow continuity, the `S T S^-1` scaling, and isolated matched-junction versus pressure-release interpretation.
 2. Oracle file provenance relative to Python and the disclosed amendment.
@@ -41,4 +41,15 @@ Wolfram Language **independently** recomputed the mutation discrepancies as `0.9
 
 **Automated verdict: PROVISIONAL_NUMERICAL_PASS / REVIEW_PENDING / NOT_ADOPTED.**
 
-Further documentation-only commits after `b2732946` require their **own current head CI checks** before interpreting this as verification for the new PR head. Independent physics and code/API reviewers remain pending. Experimental adoption and production promotion remain blocked as documented in #93/#94/#96.
+Further documentation-only commits after `b2732946` require their **own current head CI checks** before interpreting this as verification for the new PR head. AI critical reviews and independent machine evidence must be assessed against the new HEAD. Experimental adoption and production promotion remain blocked as documented in #93/#94/#96, independently of this experiment's numeric success.
+
+
+## AI-Machine v1 remediation plan (2026-10-14)
+
+- M-01: reject positive primitive SI data if `rho*c/area` or its reciprocal is nonfinite/zero; the status is `INVALID:NONFINITE_DERIVED_IMPEDANCE`. Explicit negative controls use subnormal area and medium parameters; no change to adopted `UniformTube` or accepted fixtures.
+- M-02: runner detects clean actual Git checkout HEAD and independently compares optional expected SHA; Actions checks out the PR HEAD, verifies event HEAD equals recorded SHA, GitHub run identity, artifact SHA-256, and rejects a fake expected SHA.
+- L-03: `wolfram/verify_og2_oracle.wl` deterministically recomputes the independent Wolfram source and compares each frozen numerical entry and rational power coefficient (no rewrites to frozen reference or thresholds). Requires a Wolfram Engine; not part of stock Ubuntu GitHub CI.
+- L-04: the dedicated Actions job now explicitly typechecks both Experiment 039 modules rather than treating production-only `mypy` as sufficient.
+- Prospective status: existing `AMENDMENT_001.md` is **post-hoc controlled regression**. No independent blind preregistration is claimed; acceptance may apply only to the fixed idealized two-node p/U algebra, not broader scientific generalization.
+
+**Until new-head CI jobs and the independent oracle verifier are examined, these are implemented corrective changes, NOT a completed scientific approval.** #93/#94 remain separate upstream merge/adoption blockers.

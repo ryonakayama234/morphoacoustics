@@ -5,7 +5,10 @@ import argparse
 from hashlib import sha256
 import importlib.util
 import json
+import os
 import platform
+import re
+import subprocess
 from pathlib import Path
 import sys
 
@@ -19,6 +22,8 @@ ORACLE_PATH = HERE / "wolfram" / "og2_oracle.json"
 WL_PATH = HERE / "wolfram" / "og2_oracle.wl"
 PROTOCOL_PATH = HERE / "PREREGISTRATION.md"
 SOURCE_PATH = HERE / "og2.py"
+REPO_ROOT = HERE.parents[1]
+EVIDENCE_SCHEMA = "og2.evidence.v2"
 
 spec = importlib.util.spec_from_file_location("og2_exp039_runner", SOURCE_PATH)
 if spec is None or spec.loader is None:
@@ -41,7 +46,34 @@ def complex_pairs(matrix: np.ndarray) -> list[object]:
     return np.stack((matrix.real, matrix.imag), axis=-1).tolist()
 
 
-def run(output_dir: Path) -> dict[str, object]:
+def checkout_attestation(expected_head_sha: str | None = None) -> dict[str, object]:
+    """Never accept a caller-supplied SHA as proof of the checked-out source."""
+    def git(*args: str) -> str:
+        result = subprocess.run(
+            ["git", *args], cwd=REPO_ROOT, capture_output=True,
+            text=True, check=True,
+        )
+        return result.stdout.strip()
+
+    head_sha = git("rev-parse", "HEAD")
+    if re.fullmatch(r"[0-9a-f]{40}", head_sha) is None:
+        raise RuntimeError("INVALID_GIT_HEAD_SHA")
+    if git("status", "--porcelain", "--untracked-files=no"):
+        raise RuntimeError("DIRTY_TRACKED_CHECKOUT")
+    if expected_head_sha is not None and expected_head_sha != head_sha:
+        raise RuntimeError(f"HEAD_SHA_MISMATCH expected={expected_head_sha} actual={head_sha}")
+    return {
+        "head_sha": head_sha,
+        "tracked_checkout_clean": True,
+        "github_run_id": os.getenv("GITHUB_RUN_ID"),
+        "github_run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
+        "github_job": os.getenv("GITHUB_JOB"),
+        "github_event_name": os.getenv("GITHUB_EVENT_NAME"),
+    }
+
+
+def run(output_dir: Path, *, expected_head_sha: str | None = None) -> dict[str, object]:
+    attestation = checkout_attestation(expected_head_sha)
     # Stale evidence must never look like a fresh scientific rerun.
     output_dir.mkdir(parents=True, exist_ok=False)
 
@@ -124,6 +156,8 @@ def run(output_dir: Path) -> dict[str, object]:
         else "GATE_FAILED_NOT_ADOPTED"
     )
     records = {
+        "evidence_schema": EVIDENCE_SCHEMA,
+        "checkout_attestation": attestation,
         "decision": decision,
         "claim_scope": "two fixed rigid lossless passive serial 1D organs only",
         "parent_issue": "https://github.com/ryonakayama234/morphoacoustics/issues/96",
@@ -184,8 +218,9 @@ def run(output_dir: Path) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--expected-head-sha", default=os.getenv("OG2_EXPECTED_HEAD_SHA"))
     args = parser.parse_args()
-    record = run(args.output_dir)
+    record = run(args.output_dir, expected_head_sha=args.expected_head_sha)
     print(json.dumps({"decision": record["decision"], "metrics": record["metrics"],
                       "tests": record["tests"]}, indent=2))
     if record["decision"] != "PROVISIONAL_NUMERICAL_PASS_REVIEW_PENDING_NOT_ADOPTED":

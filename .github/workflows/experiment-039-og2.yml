@@ -24,6 +24,9 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Checkout the PR HEAD itself, never the synthetic PR merge commit.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -35,8 +38,19 @@ jobs:
         run: python -m pytest -q
       - name: Type check production code remains unchanged
         run: python -m mypy
+      - name: Type check experiment-specific modules
+        run: python -m mypy --follow-imports=skip experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
       - name: Produce fresh OG-2 evidence
-        run: python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output
+        run: python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Negative control: reject wrong expected HEAD SHA before output
+        shell: bash
+        run: |
+          if python experiments/039_og2_prepared_graph/run.py --output-dir bogus-head-output --expected-head-sha 0000000000000000000000000000000000000000 > mismatch.log 2>&1; then
+            echo "Mismatched HEAD was incorrectly accepted"
+            exit 1
+          fi
+          test ! -e bogus-head-output
+          grep -q "HEAD_SHA_MISMATCH" mismatch.log
       - name: Verify stale evidence is refused
         shell: bash
         run: |
@@ -46,11 +60,22 @@ jobs:
           fi
           grep -q "FileExistsError" replay.log
       - name: Assert machine gate is provisional only
+        env:
+          OG2_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           python - <<'PY'
-          import json
+          import json, os, hashlib, subprocess
           from pathlib import Path
-          d=json.loads(Path("experiment-039-output/decision.json").read_text(encoding="utf-8"))
+          p = Path("experiment-039-output/decision.json")
+          raw = p.read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == Path("experiment-039-output/evidence_sha256.txt").read_text().strip()
+          d=json.loads(raw)
+          actual_head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert d["evidence_schema"] == "og2.evidence.v2"
+          assert d["checkout_attestation"]["head_sha"] == actual_head
+          assert d["checkout_attestation"]["head_sha"] == os.environ["OG2_EXPECTED_HEAD_SHA"]
+          assert d["checkout_attestation"]["tracked_checkout_clean"] is True
+          assert d["checkout_attestation"]["github_run_id"] == os.environ["GITHUB_RUN_ID"]
           assert d["decision"] == "PROVISIONAL_NUMERICAL_PASS_REVIEW_PENDING_NOT_ADOPTED"
           assert all(d["tests"].values())
           assert len(d["observations"]) == 7
