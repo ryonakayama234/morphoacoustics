@@ -98,11 +98,11 @@ class PreparedPhysicalGraph:
         )
 
     def scaled_transfer_matrix(self, frequencies_hz: npt.ArrayLike) -> np.ndarray:
-        """Dimensionless D^-1 T D, D=diag(1,Z_ref)."""
+        """Dimensionless S T S^-1, S=diag(1,Z_ref)."""
         z = self.reference_impedance
         d = np.diag([1.0, z]).astype(np.complex128)
         dinv = np.diag([1.0, 1.0 / z]).astype(np.complex128)
-        return dinv @ self.transfer_matrix(frequencies_hz) @ d
+        return d @ self.transfer_matrix(frequencies_hz) @ dinv
 
     def outlet_load_impedance(self) -> float:
         if self.blueprint.termination == "pressure_release":
