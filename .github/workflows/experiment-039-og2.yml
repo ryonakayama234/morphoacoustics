@@ -42,7 +42,7 @@ jobs:
         run: python -m mypy --follow-imports=skip experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
       - name: Produce fresh OG-2 evidence
         run: python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}"
-      - name: Negative control: reject wrong expected HEAD SHA before output
+      - name: "Negative control: reject wrong expected HEAD SHA before output"
         shell: bash
         run: |
           if python experiments/039_og2_prepared_graph/run.py --output-dir bogus-head-output --expected-head-sha 0000000000000000000000000000000000000000 > mismatch.log 2>&1; then
