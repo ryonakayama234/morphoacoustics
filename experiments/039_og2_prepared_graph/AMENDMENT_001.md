@@ -20,3 +20,10 @@ This formula already underlay the original independently evaluated Wolfram matri
 - Each failing gate must still fail; the dimensional normalization must be reviewed independently.
 - Do not upgrade the evidence claim from `PROVISIONAL_NUMERICAL_PASS / REVIEW_PENDING / NOT_ADOPTED` on account of this repair.
 - If an independent reviewer requires a prospectively untouched protocol, rerun a new separately preregistered replication; this amendment alone does not count as that replication.
+
+
+## Addendum 001b — mutation diagnostics in the runner
+
+After the first green CI run at commit `2ff80c25d251841395993fe1c318133bf8bbe15d`, a code-level numerical audit found the runner's deliberately wrong-junction and reversed-order **diagnostics** accidentally evaluated `S @ T_wrong @ S` rather than the already-fixed `S @ T_wrong @ S^-1`. Their reported errors were artificially inflated (order `10^12`) even though the independently normalized dedicated pytest negative-control test was correct and the positive Wolfram comparisons were green.
+
+Corrected the runner in `b27329464ee46d3e2c8803790ee09894f2d2af80` and added a **diagnostic magnitude sanity bound `<10`** while retaining the prospectively fixed mutation-kill requirement `>1e-3`. This is a **post-hoc strengthened regression check**, not a newly preregistered numerical gate. Earlier CI success is not presented as valid negative-control *metric evidence*; rely on CI and artifacts for the corrected head only. Record numerical errors in `RESULTS.md` after new CI completes.
