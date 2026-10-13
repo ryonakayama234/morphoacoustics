@@ -46,7 +46,7 @@ def test_equal_area_complex_transfer_and_preserved_identities() -> None:
     z = prepared.reference_impedance
     d = np.diag([1.0, z])
     di = np.diag([1.0, 1.0 / z])
-    expected = di @ single.transfer_matrix(GRID) @ d
+    expected = d @ single.transfer_matrix(GRID) @ di
     measured = prepared.scaled_transfer_matrix(GRID)
     assert measured.shape == (7, 2, 2)
     assert np.max(np.abs(measured - expected)) <= DIMENSIONLESS_TOL
@@ -75,7 +75,7 @@ def test_wrong_particle_velocity_coupling_is_killed_by_wolfram_oracle() -> None:
     d = np.diag([1.0, z])
     di = np.diag([1.0, 1.0 / z])
     wrong_junction = np.diag([1.0, a.area_m2 / b.area_m2])
-    wrong = di @ (a.transfer_matrix(GRID) @ wrong_junction @ b.transfer_matrix(GRID)) @ d
+    wrong = d @ (a.transfer_matrix(GRID) @ wrong_junction @ b.transfer_matrix(GRID)) @ di
     assert np.max(np.abs(wrong - expected_wolfram_matrices())) > 1e-3
     # An incorrect particle-velocity junction predicts r=0, not -1/3.
     assert abs(0.0 - prepared.interface_scattering()[0]) > 1e-3
@@ -87,7 +87,7 @@ def test_reversing_mismatch_tube_order_is_killed() -> None:
     z = prepared.reference_impedance
     d = np.diag([1.0, z])
     di = np.diag([1.0, 1.0 / z])
-    wrong = di @ (b.transfer_matrix(GRID) @ a.transfer_matrix(GRID)) @ d
+    wrong = d @ (b.transfer_matrix(GRID) @ a.transfer_matrix(GRID)) @ di
     assert np.max(np.abs(wrong - expected_wolfram_matrices())) > 1e-3
 
 
