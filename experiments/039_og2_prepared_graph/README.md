@@ -14,7 +14,7 @@ python -m pytest tests/test_experiment_039_og2.py -q
 python experiments/039_og2_prepared_graph/run.py --output-dir /tmp/og2-fresh-evidence
 python -m pytest -q
 python -m mypy
-python -m mypy --follow-imports=skip experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
+MYPYPATH=src python -m mypy experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
 # With a Wolfram Engine / wolframscript installed:
 wolframscript -file experiments/039_og2_prepared_graph/wolfram/verify_og2_oracle.wl
 ```

@@ -39,7 +39,7 @@ jobs:
       - name: Type check production code remains unchanged
         run: python -m mypy
       - name: Type check experiment-specific modules
-        run: python -m mypy --follow-imports=skip experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
+        run: MYPYPATH=src python -m mypy experiments/039_og2_prepared_graph/og2.py experiments/039_og2_prepared_graph/run.py
       - name: Produce fresh OG-2 evidence
         run: python experiments/039_og2_prepared_graph/run.py --output-dir experiment-039-output --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}"
       - name: "Negative control: reject wrong expected HEAD SHA before output"

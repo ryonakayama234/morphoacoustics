@@ -92,7 +92,7 @@ class PreparedPhysicalGraph:
     def transfer_matrix(self, frequencies_hz: npt.ArrayLike) -> np.ndarray:
         """[p_A.in,U_A.in] = (T_A @ I_junction @ T_B)[p_B.out,U_B.out]."""
         a, b = self.tubes_in_path_order
-        junction_p_u = np.eye(2, dtype=np.complex128)
+        junction_p_u: npt.NDArray[np.complex128] = np.eye(2, dtype=np.complex128)
         return a.transfer_matrix(frequencies_hz) @ junction_p_u @ b.transfer_matrix(
             frequencies_hz
         )
@@ -100,8 +100,8 @@ class PreparedPhysicalGraph:
     def scaled_transfer_matrix(self, frequencies_hz: npt.ArrayLike) -> np.ndarray:
         """Dimensionless S T S^-1, S=diag(1,Z_ref)."""
         z = self.reference_impedance
-        d = np.diag([1.0, z]).astype(np.complex128)
-        dinv = np.diag([1.0, 1.0 / z]).astype(np.complex128)
+        d: npt.NDArray[np.complex128] = np.diag([1.0, z]).astype(np.complex128)
+        dinv: npt.NDArray[np.complex128] = np.diag([1.0, 1.0 / z]).astype(np.complex128)
         return d @ self.transfer_matrix(frequencies_hz) @ dinv
 
     def outlet_load_impedance(self) -> float:
@@ -257,11 +257,11 @@ def validate(blueprint: Blueprint) -> None:
 
     # Serial two-node and three-port branch fixtures are acyclic by design;
     # these checks reject accidentally disconnected or cyclic general fixtures.
-    adjacency = {organ.id: set() for organ in blueprint.organs}
+    adjacency: dict[str, set[str]] = {organ.id: set() for organ in blueprint.organs}
     for edge in blueprint.junctions:
         upstream = ports[edge.ports[0]][0]
-        for port in edge.ports[1:]:
-            adjacency[upstream].add(ports[port][0])
+        for port_id in edge.ports[1:]:
+            adjacency[upstream].add(ports[port_id][0])
     visited: set[str] = set()
     active: set[str] = set()
 

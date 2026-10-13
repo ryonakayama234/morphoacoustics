@@ -42,7 +42,7 @@ def as_complex_matrix(oracle: dict[str, object]) -> np.ndarray:
     return (pairs[..., 0] + 1j * pairs[..., 1]).reshape(-1, 2, 2)
 
 
-def complex_pairs(matrix: np.ndarray) -> list[object]:
+def complex_pairs(matrix: np.ndarray) -> list[list[list[float]]]:
     return np.stack((matrix.real, matrix.imag), axis=-1).tolist()
 
 
