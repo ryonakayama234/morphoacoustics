@@ -116,8 +116,9 @@ def validate(graph: Graph) -> None:
         _positive(tube.area_m2, "area")
         # Strictly validate the derived p/U impedance before accepting a
         # nominally positive finite but numerically pathological geometry.
-        z = graph.rho * graph.speed / tube.area_m2
-        if not isfinite(z) or z <= 0 or not isfinite(1.0 / z):
+        characteristic_z = graph.rho * graph.speed / tube.area_m2
+        if (not isfinite(characteristic_z) or characteristic_z <= 0
+                or not isfinite(1.0 / characteristic_z)):
             raise InvalidGraph(f"nonfinite derived impedance for {tube.id}")
         ports.update((Port(tube.id, "in"), Port(tube.id, "out")))
     for junction in graph.junctions:
@@ -344,8 +345,12 @@ def solve(body: PreparedBranch, frequency_hz: float, *, _mutation: str | None = 
     pa, ua = ports[f"{a.id}.out"]
     pb, ub = ports[f"{b.id}.in"]
     pc, uc = ports[f"{c.id}.in"]
-    powers = tuple(float(.5 * np.real(p * np.conjugate(u)))
-                   for p, u in (ports[f"{a.id}.in"], ports[f"{b.id}.out"], ports[f"{c.id}.out"]))
+    def mean_power(state: tuple[complex, complex]) -> float:
+        p, u = state
+        return float(.5 * np.real(p * np.conjugate(u)))
+    powers = (mean_power(ports[f"{a.id}.in"]),
+              mean_power(ports[f"{b.id}.out"]),
+              mean_power(ports[f"{c.id}.out"]))
     scale = abs(body.source.value / (U_REF * (1 + .4j)))
     power_ref = .5 * p_ref * U_REF * (scale**2 if scale else 1.0)
     return Response(float(frequency_hz), ports, condition, residual,
