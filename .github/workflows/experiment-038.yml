@@ -1,0 +1,83 @@
+name: experiment-038-og1
+on:
+  push:
+    paths:
+      - 'experiments/038_og1_passive_branch/**'
+      - 'tests/test_experiment_038_og1.py'
+      - 'src/morphoacoustics/acoustics/**'
+      - '.github/workflows/experiment-038.yml'
+  pull_request:
+    paths:
+      - 'experiments/038_og1_passive_branch/**'
+      - 'tests/test_experiment_038_og1.py'
+      - 'src/morphoacoustics/acoustics/**'
+      - '.github/workflows/experiment-038.yml'
+jobs:
+  scientific:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install 'numpy==2.3.5' 'matplotlib==3.10.7'
+      - run: python -m pip install -e '.[dev]'
+      - name: Frozen scientific tests
+        run: python -m pytest tests/test_experiment_038_og1.py
+      - name: Full regression suite
+        run: python -m pytest -q
+      - name: Production mypy
+        run: python -m mypy
+      - name: Experiment-specific mypy
+        run: MYPYPATH=src python -m mypy experiments/038_og1_passive_branch/network.py experiments/038_og1_passive_branch/reference.py experiments/038_og1_passive_branch/run.py
+      - name: Two fresh physical executions
+        run: |
+          python experiments/038_og1_passive_branch/run.py --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}" --output-dir "$RUNNER_TEMP/og1-first"
+          python experiments/038_og1_passive_branch/run.py --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}" --output-dir "$RUNNER_TEMP/og1-second"
+          diff -r "$RUNNER_TEMP/og1-first" "$RUNNER_TEMP/og1-second"
+          python experiments/038_og1_passive_branch/plot_results.py --output-dir "$RUNNER_TEMP/og1-first"
+      - name: "Negative controls: fake commit and stale outputs"
+        shell: bash
+        run: |
+          if python experiments/038_og1_passive_branch/run.py --expected-head-sha 0000000000000000000000000000000000000000 --output-dir "$RUNNER_TEMP/og1-wrong" > "$RUNNER_TEMP/og1-wrong.log" 2>&1; then
+            echo "Fake source SHA accepted"; exit 1
+          fi
+          test ! -e "$RUNNER_TEMP/og1-wrong"
+          grep -q "HEAD_SHA_MISMATCH" "$RUNNER_TEMP/og1-wrong.log"
+          if python experiments/038_og1_passive_branch/run.py --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}" --output-dir "$RUNNER_TEMP/og1-first" > "$RUNNER_TEMP/og1-stale.log" 2>&1; then
+            echo "Stale output accepted"; exit 1
+          fi
+          grep -q FileExistsError "$RUNNER_TEMP/og1-stale.log"
+      - name: Verify full scientific evidence and source identity
+        env:
+          OG1_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          d=Path(os.environ["RUNNER_TEMP"]) / "og1-first"
+          raw=(d/"summary.json").read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==(d/"summary_sha256.txt").read_text().strip()
+          x=json.loads(raw)
+          a=x["checkout_attestation"]
+          assert x["evidence_schema"]=="og1.evidence.v2"
+          assert a["head_sha"]==os.environ["OG1_EXPECTED_SHA"]
+          assert a["head_sha"]==subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+          assert a["tracked_checkout_clean"] is True
+          assert a["github_run_id"]==os.environ["GITHUB_RUN_ID"]
+          assert x["numeric_status"]=="PROVISIONAL_NUMERICAL_PASS"
+          assert x["nominal_runs"]==288 and x["wolfram_records"]==24
+          assert all(x["checks"].values())
+          for name, h in x["evidence_sha256"].items():
+            assert hashlib.sha256((d/name).read_bytes()).hexdigest()==h
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: og1-scientific-${{ matrix.python-version }}
+          path: ${{ runner.temp }}/og1-first/
+          if-no-files-found: warn
