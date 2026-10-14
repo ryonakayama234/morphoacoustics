@@ -172,13 +172,11 @@ def prepare_serial_graph(spec: PortNetworkSpec) -> PreparedSerialGraph:
     """Validate exactly one typed A.out -> B.in edge and preserve both identities."""
     if not spec.organs:
         raise InvalidGraph("no organs")
+    if any(not isinstance(organ, RigidTubeOrgan) for organ in spec.organs):
+        raise InvalidGraph("organs must be RigidTubeOrgan")
     ids = [organ.organ_id for organ in spec.organs]
     if len(ids) != len(set(ids)):
         raise InvalidGraph("duplicate organ IDs")
-    if len(spec.organs) > 2:
-        raise UnsupportedGraph("only exactly two serial organs are supported")
-    if len(spec.organs) != 2:
-        raise InvalidGraph("exactly two organs required")
     for name in ("sound_speed_m_s", "air_density_kg_m3"):
         value = getattr(spec, name)
         if (isinstance(value, bool) or not isinstance(value, (int, float))
@@ -186,9 +184,31 @@ def prepare_serial_graph(spec: PortNetworkSpec) -> PreparedSerialGraph:
             raise InvalidGraph(f"{name} must be finite and > 0")
     if not spec.connections:
         raise InvalidGraph("missing required A.out -> B.in connection")
+    if any(not isinstance(edge, AcousticConnection) for edge in spec.connections):
+        raise InvalidGraph("every edge must be AcousticConnection")
+    if len(set(spec.connections)) != len(spec.connections):
+        raise InvalidGraph("duplicate connections")
+    by_id = {organ.organ_id: organ for organ in spec.organs}
+    for check_edge in spec.connections:
+        if check_edge.law != "ideal_series_junction":
+            raise InvalidGraph("unsupported junction law")
+        for port in (check_edge.source, check_edge.target):
+            if not isinstance(port, AcousticPort):
+                raise InvalidGraph("edge ports must be AcousticPort")
+            if port.organ_id not in by_id:
+                raise InvalidGraph(f"unknown organ in port: {port.organ_id!r}")
+            if (port.kind != "acoustic" or port.role not in ("inlet", "outlet")
+                    or port.port_id != port.role):
+                raise InvalidGraph("unrecognized port type/role/id")
+        if (check_edge.source.role != "outlet" or
+                check_edge.target.role != "inlet" or
+                check_edge.source.organ_id == check_edge.target.organ_id):
+            raise InvalidGraph("bad edge direction or self-connection")
+    if len(spec.organs) > 2:
+        raise UnsupportedGraph("only exactly two serial organs are supported")
+    if len(spec.organs) != 2:
+        raise InvalidGraph("exactly two organs required")
     if len(spec.connections) != 1:
-        if len(set(spec.connections)) != len(spec.connections):
-            raise InvalidGraph("duplicate connections")
         raise UnsupportedGraph("multiple connections / cycles / branches unsupported")
     edge = spec.connections[0]
     by_id = {organ.organ_id: organ for organ in spec.organs}
@@ -212,6 +232,12 @@ def prepare_serial_graph(spec: PortNetworkSpec) -> PreparedSerialGraph:
     expected_out = _port(edge.target.organ_id, "outlet")
     if spec.observation_inlet != expected_in or spec.pressure_release_outlet != expected_out:
         raise InvalidGraph("exposed inlet and pressure-release outlet do not match graph")
+    # Primitive positive finite values do not guarantee the derived p/U
+    # impedance rho*c/area is finite and numerically invertible.
+    for organ in (by_id[edge.source.organ_id], by_id[edge.target.organ_id]):
+        z = spec.air_density_kg_m3 * spec.sound_speed_m_s / organ.area_m2
+        if not isfinite(z) or z <= 0 or not isfinite(1.0/z):
+            raise InvalidGraph(f"nonfinite derived impedance: {organ.organ_id}")
     payload = {
         "model_version": MODEL_VERSION,
         "upstream": vars_organ(by_id[edge.source.organ_id]),

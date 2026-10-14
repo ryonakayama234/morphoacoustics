@@ -268,3 +268,38 @@ def test_pressure_release_is_zero_power_at_terminal_not_matched_load():
     # A pressure-release terminal has p=0 hence Pavg(out)=0.
     assert release["mean_power_w"] == pytest.approx(0., abs=1e-13)
     assert matched["mean_power_w"] == pytest.approx(3.43e-7, rel=1e-10)
+
+
+@pytest.mark.parametrize(("area_b", "density", "speed"), [
+    (1e-320, 1.2, 343.0),
+    (6e-4, 5e-324, 343.0),
+    (6e-4, 1.2, 5e-324),
+])
+def test_derived_acoustic_impedance_nonfinite_is_invalid(area_b, density, speed):
+    from dataclasses import replace
+    original = og.reference_spec(downstream_area_m2=area_b)
+    broken = replace(original, air_density_kg_m3=density, sound_speed_m_s=speed)
+    with pytest.raises(og.InvalidGraph, match="derived impedance"):
+        og.prepare_serial_graph(broken)
+
+
+def test_malformed_three_organ_is_invalid_before_backend_unsupported():
+    spec = og.reference_spec()
+    extra = og.RigidTubeOrgan("C", 0.1, 1e-4)
+    third = og.PortNetworkSpec(
+        spec.organs + (extra,), spec.connections,
+        spec.observation_inlet, spec.pressure_release_outlet,
+    )
+    with pytest.raises(og.UnsupportedGraph):
+        og.prepare_serial_graph(third)
+    from dataclasses import replace
+    with pytest.raises(og.InvalidGraph, match="sound_speed"):
+        og.prepare_serial_graph(replace(third, sound_speed_m_s=float("nan")))
+    wrong = og.AcousticConnection(
+        og.AcousticPort("A", "outlet", "outlet", kind="mechanical"),
+        spec.connections[0].target,
+    )
+    with pytest.raises(og.InvalidGraph, match="port type"):
+        og.prepare_serial_graph(replace(third, connections=(wrong,)))
+    with pytest.raises(og.InvalidGraph, match="duplicate connections"):
+        og.prepare_serial_graph(replace(third, connections=spec.connections * 2))
