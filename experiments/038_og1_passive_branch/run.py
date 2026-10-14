@@ -12,6 +12,7 @@ import re
 import platform
 import subprocess
 import sys
+from typing import cast
 
 import numpy as np
 import network as n
@@ -162,11 +163,11 @@ def run(output: Path, *, expected_head_sha: str | None = None) -> dict:
                "numeric_status": "PROVISIONAL_NUMERICAL_PASS" if all(checks.values()) else "FAILED",
                "adoption_status": "NOT_ADOPTED", "independent_review": "PENDING", "checks": checks,
                "nominal_runs": len(metrics), "wolfram_records": len(wolfram_errors),
-               "max_oracle_error": max(float(m["oracle_error"]) for m in metrics),
+               "max_oracle_error": max(cast(float, m["oracle_error"]) for m in metrics),
                "max_wolfram_error": max(wolfram_errors), "max_local_error": max(local_errors),
-               "max_condition": max(float(m["condition"]) for m in metrics),
-               "max_backward_error": max(float(m["backward_error"]) for m in metrics),
-               "max_power_error": max(float(m["power_error"]) for m in metrics),
+               "max_condition": max(cast(float, m["condition"]) for m in metrics),
+               "max_backward_error": max(cast(float, m["backward_error"]) for m in metrics),
+               "max_power_error": max(cast(float, m["power_error"]) for m in metrics),
                "mutation_errors": mutation_errors, "singular_fixture": singular_record,
                "evidence_sha256": evidence, "identity": identity, "run_identity_sha256": n.digest(identity)}
     # Completion marker last; no incomplete directory can masquerade as successful output.
