@@ -213,7 +213,8 @@ def test_extreme_positive_medium_cannot_create_nonfinite_impedance(rho, speed):
         n.prepare(replace(n.fixture(), rho=rho, speed=speed))
 
 
-def test_source_checkout_attestation_rejects_spoofed_git_sha():
+def test_source_checkout_attestation_rejects_spoofed_git_sha(monkeypatch):
+    monkeypatch.syspath_prepend(str(EXP))
     module = load("og1_run_attestation", "run.py")
     attested = module.checkout_attestation(None)
     assert len(attested["head_sha"]) == 40
