@@ -1,10 +1,14 @@
 """Run OG-0 research-only acoustic port experiment; no adopted claim."""
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import platform
+import re
+import subprocess
 
 import numpy as np
 from port_network import MODEL_VERSION, prepare_serial_graph, reference_spec
@@ -14,9 +18,42 @@ REPO = HERE.parents[1]
 ORACLE = REPO / "tests/scientific/oracles/og0_wolfram.json"
 WAVE_ORACLE = REPO / "tests/scientific/oracles/og0_wave_amendment01_wolfram.json"
 MODEL_SOURCE = HERE / "port_network.py"
+WL_SOURCE = HERE / "wolfram" / "og0_oracle.wl"
+
+
+def checkout_attestation(expected_head_sha: str | None) -> dict[str, object]:
+    """Independently derive Git source identity; caller cannot spoof a HEAD."""
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=REPO, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+
+    head = git("rev-parse", "HEAD")
+    if re.fullmatch(r"[0-9a-f]{40}", head) is None:
+        raise RuntimeError("INVALID_HEAD_SHA")
+    if git("status", "--porcelain", "--untracked-files=no"):
+        raise RuntimeError("DIRTY_TRACKED_CHECKOUT")
+    if expected_head_sha is not None and head != expected_head_sha:
+        raise RuntimeError(f"HEAD_SHA_MISMATCH expected={expected_head_sha} actual={head}")
+    return {
+        "head_sha": head,
+        "clean_tracked_checkout": True,
+        "github_run_id": os.getenv("GITHUB_RUN_ID"),
+        "github_run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
+        "github_job": os.getenv("GITHUB_JOB"),
+        "github_event_name": os.getenv("GITHUB_EVENT_NAME"),
+    }
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--expected-head-sha", default=None)
+    parser.add_argument("--output-dir", type=Path, default=None)
+    args = parser.parse_args()
+    attestation = checkout_attestation(args.expected_head_sha)
+    if args.output_dir is not None:
+        args.output_dir.mkdir(parents=True, exist_ok=False)
     expected = json.loads(ORACLE.read_text(encoding="utf-8"))
     wave_expected = json.loads(WAVE_ORACLE.read_text(encoding="utf-8"))
     f = np.asarray(expected["frequency_grid_hz"], dtype=np.float64)
@@ -102,12 +139,17 @@ def main() -> None:
             "runner": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "original_wolfram_oracle": hashlib.sha256(ORACLE.read_bytes()).hexdigest(),
             "amended_wolfram_oracle": hashlib.sha256(WAVE_ORACLE.read_bytes()).hexdigest(),
+            "wolfram_source": hashlib.sha256(WL_SOURCE.read_bytes()).hexdigest(),
         },
         "numpy_version": np.__version__,
         "python_version": platform.python_version(),
+        "checkout_attestation": attestation,
     }
     signature = hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     result = {
+        "evidence_schema": "og0.evidence.v2",
+        "checkout_attestation": attestation,
+        "source_hashes_sha256": identity["sources_sha256"],
         "experiment": "030 / OG-0",
         "status": "PROVISIONAL_NUMERICAL_PASS" if all(checks.values()) else "FAILED",
         "review_status": "NOT_INDEPENDENTLY_REVIEWED",
@@ -131,7 +173,14 @@ def main() -> None:
         "numpy_version": np.__version__,
         "python_version": platform.python_version(),
     }
-    print(json.dumps(result, indent=2, sort_keys=True))
+    payload = json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    if args.output_dir is not None:
+        (args.output_dir / "decision.json").write_text(payload, encoding="utf-8")
+        (args.output_dir / "evidence_sha256.txt").write_text(
+            hashlib.sha256(payload.encode("utf-8")).hexdigest() + "\n",
+            encoding="utf-8",
+        )
+    print(payload, end="")
     if not all(checks.values()):
         raise SystemExit(1)
 

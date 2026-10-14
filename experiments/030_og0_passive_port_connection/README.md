@@ -40,3 +40,12 @@ The separately versioned [post-exploratory Wolfram wave oracle](../../tests/scie
 The added results are **controlled regression evidence on previously observed fixtures, not an independently preregistered confirmatory experiment**. A future unseen fixture plus independently approved protocol would be required for that stronger scientific status.
 
 Scientific adoption status remains **NOT ADOPTED** even when provisional automated checks pass. Independent code and physics review and a recorded frozen-gate judgment are still necessary.
+
+
+## AI-Machine v1 audit correction (2026-10-14)
+
+- Derived `Z=rho*c/area` and its reciprocal must be finite/positive in float64; subnormal but positive primitive SI values are rejected as `INVALID` rather than propagating infinite impedance.
+- Before an `UNSUPPORTED` result for a larger graph, basic geometry, medium, port/edge kinds, direction and duplicates are validated; malformed graphs must return `INVALID`.
+- The runner optionally accepts `--expected-head-sha <40-hex-SHA> --output-dir <new-path>`. It independently retrieves the clean tracked Git checkout HEAD, validates expected SHA, records GitHub CI run identifiers when available, exports `decision.json`, and hashes exact JSON to `evidence_sha256.txt`. Output destinations are never reused. The original no-argument stdout mode is preserved for historical tests.
+- The dedicated `.github/workflows/experiment-030-og0.yml` pins actual PR HEAD and runs scientific tests, full regression, original production mypy, wrong SHA negative control, stale-output refusal, and artifact checksum attestation over Python 3.11/3.12/3.13. A separate independent Wolfram evaluation is recorded on #93. Wolfram itself is not implicitly executed by GitHub Actions.
+- These changes do not retroactively preregister the amended physical wave checks. Both the boundary-condition correction and its controlled-regression status are retained.

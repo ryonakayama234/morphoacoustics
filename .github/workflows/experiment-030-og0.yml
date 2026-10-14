@@ -1,0 +1,89 @@
+name: experiment-030-og0
+
+on:
+  push:
+    paths:
+      - "experiments/030_og0_passive_port_connection/**"
+      - "tests/test_experiment_030_og0.py"
+      - "tests/scientific/oracles/og0*"
+      - ".github/workflows/experiment-030-og0.yml"
+  pull_request:
+    paths:
+      - "experiments/030_og0_passive_port_connection/**"
+      - "tests/test_experiment_030_og0.py"
+      - "tests/scientific/oracles/og0*"
+      - ".github/workflows/experiment-030-og0.yml"
+
+jobs:
+  og0-science:
+    name: "OG0 / Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install declared dev dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Run OG-0 scientific tests
+        run: python -m pytest tests/test_experiment_030_og0.py -q
+      - name: Run full regression suite
+        run: python -m pytest -q
+      - name: Typecheck unchanged production code
+        run: python -m mypy
+      - name: Generate SHA-pinned scientific evidence
+        run: python experiments/030_og0_passive_port_connection/run.py --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}" --output-dir experiment-030-output > experiment-030-summary.log
+      - name: "Negative control: refuse mismatched HEAD"
+        shell: bash
+        run: |
+          if python experiments/030_og0_passive_port_connection/run.py --expected-head-sha 0000000000000000000000000000000000000000 --output-dir wrong-head-output > wrong-head.log 2>&1; then
+            echo "Wrong SHA accepted"
+            exit 1
+          fi
+          test ! -e wrong-head-output
+          grep -q HEAD_SHA_MISMATCH wrong-head.log
+      - name: "Negative control: refuse stale evidence output"
+        shell: bash
+        run: |
+          if python experiments/030_og0_passive_port_connection/run.py --expected-head-sha "${{ github.event.pull_request.head.sha || github.sha }}" --output-dir experiment-030-output > replay.log 2>&1; then
+            echo "Stale output accepted"
+            exit 1
+          fi
+          grep -q FileExistsError replay.log
+      - name: Verify scientific decision integrity
+        env:
+          OG0_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          folder=Path("experiment-030-output")
+          raw=(folder/"decision.json").read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==(folder/"evidence_sha256.txt").read_text().strip()
+          x=json.loads(raw)
+          assert x["evidence_schema"]=="og0.evidence.v2"
+          assert x["checkout_attestation"]["head_sha"]==os.environ["OG0_EXPECTED_SHA"]
+          assert x["checkout_attestation"]["head_sha"]==subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+          assert x["checkout_attestation"]["clean_tracked_checkout"]
+          assert x["checkout_attestation"]["github_run_id"]==os.environ["GITHUB_RUN_ID"]
+          assert x["status"]=="PROVISIONAL_NUMERICAL_PASS"
+          assert x["interpretation"]=="POST_EXPLORATORY_CONTROLLED_REGRESSION_NOT_PREREGISTERED"
+          assert all(x["checks"].values())
+          PY
+      - name: Upload OG-0 audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "og0-evidence-py${{ matrix.python-version }}"
+          path: |
+            experiment-030-output/
+            experiment-030-summary.log
+            wrong-head.log
+            replay.log
+          if-no-files-found: warn

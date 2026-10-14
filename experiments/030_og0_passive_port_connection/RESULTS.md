@@ -33,3 +33,8 @@ Earlier local debugging passed six targeted tests against a minimal reconstructi
 - [ ] Research decision formally recorded on parent [issue #90](https://github.com/ryonakayama234/morphoacoustics/issues/90).
 
 **Status: PROVISIONAL_NUMERICAL_PASS / NOT INDEPENDENTLY REVIEWED / NOT ADOPTED.** This does not demonstrate arbitrary graphs, branches, tissue FSI or actual sound synthesis.
+
+
+## AI-Machine v1 audit remediation (2026-10-14)
+
+This section is a new, explicitly post-hoc software/evidence remediation, not a change to the scientific tolerance, frozen original or amendment oracle, or 1D acoustic law. It adds (a) finite derived impedance validation (b) malformed multi-organ rejection before serial-backend capability classification (c) clean actual HEAD and CI provenance + SHA-256 evidence artifacts, and (d) per-Python scientific/full-suite/prod-mypy CI. See independent audit #93 for new current-HEAD metrics and merge decision. Legacy exploratory and amendment-based controlled-regression claims above remain historical, not prospective confirmation.
