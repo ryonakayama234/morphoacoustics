@@ -114,6 +114,11 @@ def validate(graph: Graph) -> None:
         ids.add(tube.id)
         _positive(tube.length_m, "length")
         _positive(tube.area_m2, "area")
+        # Strictly validate the derived p/U impedance before accepting a
+        # nominally positive finite but numerically pathological geometry.
+        z = graph.rho * graph.speed / tube.area_m2
+        if not isfinite(z) or z <= 0 or not isfinite(1.0 / z):
+            raise InvalidGraph(f"nonfinite derived impedance for {tube.id}")
         ports.update((Port(tube.id, "in"), Port(tube.id, "out")))
     for junction in graph.junctions:
         if not isinstance(junction, Junction):
@@ -356,7 +361,11 @@ def local_scatter(areas: tuple[float, float, float], incident: np.ndarray) -> np
     waves = np.asarray(incident, dtype=np.complex128)
     if waves.shape != (3,) or not np.all(np.isfinite(waves)):
         raise InvalidGraph("three finite complex incident amplitudes required")
-    y = np.asarray(areas) / areas[0]  # common rho*c cancels
+    # Ratios are bounded by one, avoiding spurious overflow if the
+    # first port is small. Fail closed if a positive ratio underflows.
+    y = np.asarray(areas, dtype=float) / max(areas)  # rho*c cancels
+    if not np.all(np.isfinite(y)) or np.any(y <= 0):
+        raise InvalidGraph("nonrepresentable local port admittance ratio")
     matrix = np.array([[1, -1, 0], [1, 0, -1], y], dtype=np.complex128)
     rhs = np.array([waves[1]-waves[0], waves[2]-waves[0], y @ waves])
     return np.linalg.solve(matrix, rhs)

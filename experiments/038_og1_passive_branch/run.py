@@ -6,7 +6,9 @@ from dataclasses import replace
 from hashlib import sha256
 import itertools
 import json
+import os
 from pathlib import Path
+import re
 import platform
 import subprocess
 import sys
@@ -36,11 +38,30 @@ def git_blob(path: Path) -> str:
     return sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest()
 
 
-def git_revision() -> str:
-    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+def checkout_attestation(expected_head_sha: str | None) -> dict[str, object]:
+    """Derive true source identity from Git; never trust a claimed head SHA."""
+    def git(*args: str) -> str:
+        return subprocess.run(["git", *args], cwd=ROOT, check=True,
+                              capture_output=True, text=True).stdout.strip()
+
+    head = git("rev-parse", "HEAD")
+    if re.fullmatch(r"[0-9a-f]{40}", head) is None:
+        raise RuntimeError("INVALID_GIT_HEAD")
+    if git("status", "--porcelain", "--untracked-files=no"):
+        raise RuntimeError("DIRTY_TRACKED_CHECKOUT")
+    if expected_head_sha is not None and expected_head_sha != head:
+        raise RuntimeError(f"HEAD_SHA_MISMATCH expected={expected_head_sha} actual={head}")
+    return {
+        "head_sha": head, "tracked_checkout_clean": True,
+        "github_run_id": os.getenv("GITHUB_RUN_ID"),
+        "github_run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
+        "github_job": os.getenv("GITHUB_JOB"),
+        "github_event_name": os.getenv("GITHUB_EVENT_NAME"),
+    }
 
 
-def run(output: Path) -> dict:
+def run(output: Path, *, expected_head_sha: str | None = None) -> dict:
+    checkout = checkout_attestation(expected_head_sha)
     # Reserve exclusively. Failed/incomplete directories never count as fresh evidence.
     output.mkdir(parents=True, exist_ok=False)
     primitive = ROOT / "src/morphoacoustics/acoustics/uniform_tube.py"
@@ -132,10 +153,12 @@ def run(output: Path) -> dict:
                             HERE / "wolfram/oracle.wl", HERE / "wolfram/oracle.json", primitive]}
     evidence = {name: file_hash(output / name)
                 for name in ("states.csv", "metrics.json", "graphs.json", "local_scattering.json")}
-    identity = {"revision": git_revision(), "sources": sources, "frequencies_hz": FREQUENCIES,
+    identity = {"revision": checkout["head_sha"], "checkout_attestation": checkout,
+                "sources": sources, "frequencies_hz": FREQUENCIES,
                 "environment": {"python": platform.python_version(), "numpy": np.__version__,
                                 "platform": platform.platform()}, "graph_digests": sorted(graphs)}
-    summary = {"numeric_status": "PROVISIONAL_NUMERICAL_PASS" if all(checks.values()) else "FAILED",
+    summary = {"evidence_schema": "og1.evidence.v2", "checkout_attestation": checkout,
+               "numeric_status": "PROVISIONAL_NUMERICAL_PASS" if all(checks.values()) else "FAILED",
                "adoption_status": "NOT_ADOPTED", "independent_review": "PENDING", "checks": checks,
                "nominal_runs": len(metrics), "wolfram_records": len(wolfram_errors),
                "max_oracle_error": max(m["oracle_error"] for m in metrics),
@@ -147,15 +170,17 @@ def run(output: Path) -> dict:
                "evidence_sha256": evidence, "identity": identity, "run_identity_sha256": n.digest(identity)}
     # Completion marker last; no incomplete directory can masquerade as successful output.
     write_json(output / "summary.json", summary)
+    (output / "summary_sha256.txt").write_text(file_hash(output / "summary.json") + "\n")
     return summary
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--expected-head-sha", default=None)
     args = parser.parse_args()
     try:
-        summary = run(args.output_dir)
+        summary = run(args.output_dir, expected_head_sha=args.expected_head_sha)
     except (n.InvalidGraph, n.UnsupportedGraph, n.NumericallyUnresolved) as exc:
         failure = {"numeric_status": exc.status, "diagnostic": str(exc), "adoption_status": "NOT_ADOPTED"}
         if args.output_dir.is_dir() and not (args.output_dir / "summary.json").exists():

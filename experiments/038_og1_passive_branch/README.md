@@ -94,3 +94,10 @@ are unchanged. No general graph solver, biological nasal claim, moving tissue, F
 source-load feedback, lip radiation or natural voice is demonstrated.
 
 See [RESULTS.md](RESULTS.md) and [REVIEW_PACKET.md](REVIEW_PACKET.md).
+
+
+## AI-Machine v1 remediation (2026-10-14)
+
+The independent audit tracked by [#94](https://github.com/ryonakayama234/morphoacoustics/issues/94) adds a precomputed `rho*c/area` and reciprocal finite/positive check in the experiment-only validator (including positive subnormal geometries/media), stable local-scatter normalization, explicit checked-out SHA/run-ID attestation and a `summary_sha256.txt` sidecar, and a dedicated per-version CI that verifies scientific, whole-suite, production and experiment-local typechecks, two byte-identical clean runs, a spoofed SHA, stale output, and source/evidence hashes. `--expected-head-sha` pins runner input to actual Git HEAD; non-existent output directories remain mandatory.
+
+These checks are **additional post-implementation software/evidence hardening**, not changes to 288 prospectively written author-defined model fixtures, 24 independent Wolfram numeric records, scientific threshold, original protocol or declared ideal acoustics. No claim of third-party human review, physiological nasal voice, FSI or public API promotion is implied.

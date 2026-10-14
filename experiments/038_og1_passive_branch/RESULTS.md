@@ -44,3 +44,8 @@ actual completion; this local report does not assert unobserved remote success.
 Independent numerical/code audits, OG-0 adoption resolution and separate future API
 integration remain outstanding. No waveform synthesis, biological nose or creator
 editor has been introduced.
+
+
+## AI-Machine v1 audit correction (2026-10-14)
+
+The experiment-only finite-derived-impedance guard, source SHA/run identity checks, spoofed-SHA negative control, summary SHA-256 sidecar and dedicated scientific/full regression plus mypy are added after initial implementation. Previous measured values above are historical. Only subsequent exact-HEAD CI artifacts may count toward an adoption decision; OG-0 #93 is now independently gated and integrated on main. Frozen 24 Wolfram values and original scientific tolerances are untouched. This is a controlled software audit, not blind preregistration or evidence of 3D tissue/phonation validity.

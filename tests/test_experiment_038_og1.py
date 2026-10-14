@@ -189,3 +189,34 @@ def test_runner_recomputes_and_rejects_stale_evidence(tmp_path):
                            capture_output=True, timeout=60)
     assert stale.returncode != 0
     assert (first / "summary.json").read_bytes() == (second / "summary.json").read_bytes()
+
+
+@pytest.mark.parametrize(("field", "value"), [
+    ("area_m2", 1e-320),  # primitive finite and positive, but Z overflows
+])
+def test_extreme_positive_geometry_cannot_create_nonfinite_impedance(field, value):
+    from dataclasses import replace
+    original = n.fixture()
+    malformed = replace(original, tubes=(original.tubes[0],
+        replace(original.tubes[1], **{field: value}), original.tubes[2]))
+    with pytest.raises(n.InvalidGraph, match="nonfinite derived impedance"):
+        n.prepare(malformed)
+
+
+@pytest.mark.parametrize(("rho", "speed"), [
+    (5e-324, 343.0),
+    (1.2, 5e-324),
+])
+def test_extreme_positive_medium_cannot_create_nonfinite_impedance(rho, speed):
+    from dataclasses import replace
+    with pytest.raises(n.InvalidGraph, match="nonfinite derived impedance"):
+        n.prepare(replace(n.fixture(), rho=rho, speed=speed))
+
+
+def test_source_checkout_attestation_rejects_spoofed_git_sha():
+    module = load("og1_run_attestation", "run.py")
+    attested = module.checkout_attestation(None)
+    assert len(attested["head_sha"]) == 40
+    assert attested["tracked_checkout_clean"] is True
+    with pytest.raises(RuntimeError, match="HEAD_SHA_MISMATCH"):
+        module.checkout_attestation("0" * 40)
