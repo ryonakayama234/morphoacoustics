@@ -101,3 +101,35 @@ The audited downstream packaging is a **sibling Core package**, `morphoacoustics
 ### Geometry-domain correction and Gate B handoff (2026-10-15)
 
 [RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
+
+
+## Historical Gate B trial receipt retained during design reconciliation
+
+### OG-3 Gate B implementation candidate — 2026-10-15 (Draft; NOT ADOPTED)
+
+[Gate B implementation notes](./og3-gate-b-implementation.md) add a proposed production-only import path through explicit new graph and preparation submodules, with **no change** to old Core initializers or uniform-tube law. Physical graph → validation → fixed2 backend preparation → unloaded complex observation; typed unsupported branch and error status; X2a manifest pins separately audited under #103. This does not change the overall Morphology→Gesture→physical state→acoustics→observation causal model, nor confer waveform or general graph capability. Actual CI and independent adoption remain gates.
+
+#### Gate B corrective architecture: protected legacy kernel vs Core-owned sibling graph API
+
+```mermaid
+flowchart LR
+ UI["Future Studio"] --> BP["Core-owned morphoacoustics_graph<br/>typed blueprint & preparation API (Draft)"]
+ BP --> PR["Existing morphoacoustics.acoustics.uniform_tube<br/>fixed 1D primitive, unchanged"]
+ V3["Frozen V3 Experiment028/029 + X2a"] --> PR
+ BP --> OBS["Graph observation, diagnostic and digest"]
+```
+
+First Gate B CI caught Experiment028/029 full source identity invalidation despite pinning new package files in X2a's own manifest. Consequently the **new graph package must live outside frozen `src/morphoacoustics/`**, as `src/morphoacoustics_graph/`; all existing Core source paths/blobs and X2a manifest restored, but physical primitive still reused (Core authority not forked). This is an implementation amendment *after an explicitly failed pilot*, not a retrospectively clean first attempt. See [Gate B notes](./og3-gate-b-implementation.md) for actual CI failure details. Scientific acceptance not yet determined.
+
+#### Gate B evidence orchestration (proposed)
+
+A new [dedicated exact-head CI](../../.github/workflows/og3-gate-b.yml) owns new graph scientific evidence and regenerates V3b/V3c/X2a **actual** compatibility proof on edits to the sibling `morphoacoustics_graph` package (legacy path-filtered jobs would otherwise not fire). The associated [runner](../../checks/check_og3_gate_b.py) only emits *provisional machine results* with SHA/complex oracle/error and fresh output rejection; it never grants physics/human signoff. Architecture remains one authoritative Core physics domain with a protected experimental source subtree.
+
+
+### Gate B reconciled implementation trial (2026-10-15; verification pending)
+
+PR #104 incorporates merged Gate A main `6d38d8b`. Sibling backend v2 enforces RFC §11's two exact geometry/medium fixtures and reconstructs prepared binding before evaluation. Old v1 candidate snapshots are refused, never rebound. Observation validation preserves original scalar types, checks all malformed values before resource/frequency capability, returns UNSUPPORTED for valid 4097-point grids, preserves N matrices/order/duplicates and hashes exact positive-zero bytes. Supplementary per-point flux threshold <=1e-12, wrong defect 0.5 and separate reverse-order controls are explicit. Tests and evidence runner match the [reconciliation work order](./og3-gate-b-reconciliation.md); current exact-head CI/artifact receipt will be attached to [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104). No legacy package, source pins or experiment/oracle changes; no release/adoption. Old trial receipts above are historical and do not attest this new implementation.
+
+### Gate C correction after external P1 review (2026-10-16)
+
+[PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104) received two P1 Codex findings: recursive traversal on legal long-but-unsupported graphs can raise RecursionError, and old OG-3 CI path filters miss changes to the inherited acoustic solver/oracles. Gate B switches to iterative cycle/connectivity validation and adds a 1205-node refusal regression; broad source/experiments/tests/checks/research-docs dependency triggers now enforce fresh exact-HEAD evidence. No physical law or frozen legacy source mutation; previous green run is historical only. See [implementation and audit corrections](./og3-gate-b-implementation.md).

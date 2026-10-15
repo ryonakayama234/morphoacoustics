@@ -119,3 +119,27 @@ Two automatically raised issues on [#102](https://github.com/ryonakayama234/morp
 ### Geometry-domain correction and Gate B handoff (2026-10-15)
 
 [RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
+
+
+## Historical Gate B trial receipt retained during design reconciliation
+
+### OG-3 Gate B Draft proposal (2026-10-15)
+
+Separately tracked **stacked Draft PR** `feat/og3-gate-b-minimal-public-fixed2` against `design/og3-gate-a-public-graph-20261015` pending Gate A design review. Code candidate includes fixed2 graph structure, Core validation/prepare, unloaded complex observation, immutable identity/snapshot tests, explicit 0..4000Hz refusal, and X2a explicit new-source pinning without rewriting old source. This is **work in progress**: generic CI green alone would not demonstrate genuine X2a two-take physics smoke or Gate C public signoff. Do not merge before audit.
+
+#### Gate B correction after first failed CI (2026-10-15)
+
+The initial full-package extension proposal is **superseded**: upstream Experiment028/029 source fingerprint rejects newly inserted `src/morphoacoustics/**.py` despite X2a-only explicit manifest pin. Original 23 source pins cannot safely be expanded to claim the V3 upstream freeze still matches. Revert X2a adapter change, place new Core-owned graph API in independently packaged sibling `src/morphoacoustics_graph/` and preserve all original source files/experiment fixtures. Mandatory exact-new-HEAD retest of all affected V3, X2a two real Takes, public 7-frequency matrix, and mypy remains. Detailed failed runs recorded in [experiment ledger](./organ-graph-experiment-ledger.md).
+
+#### Gate B exact-head workflow and artefact policy
+
+New `.github/workflows/og3-gate-b.yml` runs under PR HEAD, not a PR merge SHA. It forces V3b/Experiment028 and V3c/Experiment029 original gates despite their old path filters, real X2a two-take smoke and new OG-3 evidence `checks/check_og3_gate_b.py` twice; emits immutable raw artifacts and negative mismatch/replay tests. Do not interpret an unexecuted YAML definition as passing science or use existing historical artifacts as new evidence. This workflow is the new public capability's additional audit, not an amendment to old frozen experiments.
+
+
+### Gate B reconciled implementation trial (2026-10-15; verification pending)
+
+PR #104 incorporates merged Gate A main `6d38d8b`. Sibling backend v2 enforces RFC §11's two exact geometry/medium fixtures and reconstructs prepared binding before evaluation. Old v1 candidate snapshots are refused, never rebound. Observation validation preserves original scalar types, checks all malformed values before resource/frequency capability, returns UNSUPPORTED for valid 4097-point grids, preserves N matrices/order/duplicates and hashes exact positive-zero bytes. Supplementary per-point flux threshold <=1e-12, wrong defect 0.5 and separate reverse-order controls are explicit. Tests and evidence runner match the [reconciliation work order](./og3-gate-b-reconciliation.md); current exact-head CI/artifact receipt will be attached to [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104). No legacy package, source pins or experiment/oracle changes; no release/adoption. Old trial receipts above are historical and do not attest this new implementation.
+
+### Gate C P1 correction prerequisite (2026-10-16)
+
+Before marking PR #104 review-ready or merging: fix Codex P1 recursive-DFS large graph `UNSUPPORTED` failure without weakening `INVALID` precedence; fix missed OG-3 exact-head CI when inherited acoustic physics/oracle/Wolfram evidence changes; test and re-audit against **new exact HEAD**, not historical `a97a9ac`. Distinct external Codex re-review plus deliberate two-pass AI audit and Wolfram check are required for limited adoption. No general graph claim or automatic merge.

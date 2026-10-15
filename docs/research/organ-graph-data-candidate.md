@@ -125,3 +125,27 @@ The candidate `OrganGraphBlueprint`/prepared value is now held in sibling `src/m
 ### Geometry-domain correction and Gate B handoff (2026-10-15)
 
 [RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
+
+
+## Historical Gate B trial receipt retained during design reconciliation
+
+### OG-3 Gate B proposed data implementation (Draft, 2026-10-15)
+
+[Implementation documentation](./og3-gate-b-implementation.md) identifies concrete named immutable `OrganGraphBlueprint` and `PreparedPhysicalGraph` candidates. Python-only canonical `blueprint_digest` (explicit SI finite binary64-hex; collections sorted by node/edge ID but ordered junction endpoints retained), `preparation_digest` (backend/version/path mapping), `observation_digest` (normalized ±0, ordered f-grid, full complex real/imag bytes). Output represents **unloaded transfer** regardless of blueprint terminal metadata; no loaded impedance asserted. Compatibility: existing `CreatureSpec`, `PreparedMorphology[T]`, `BodyPresetRegistry`, experiment039, and creator contract unchanged. Cross-runtime JS/Python canonical bytes not yet demonstrated. Candidate interface not accepted until independent reviewed Gate C.
+
+#### Gate B data placement correction (after first CI, 2026-10-15)
+
+Proposed physical graph types are owned by sibling Core Python package `morphoacoustics_graph.model`, and prepare/observation API by `morphoacoustics_graph.preparation`, **not** the frozen `src/morphoacoustics/physical` and `preparation` Python tree. Exact typed p/U, SI, node revisions, oriented junction and three digest domains are unchanged; this change affects package distribution/import location, not physical equations or existing `CreatureSpec`. Original X2a source manifest restored. Docs above describing two newly pinned files inside the old source tree are superseded. See [correction](./og3-gate-b-implementation.md).
+
+#### Gate B evidence identity and pristine source protection
+
+The sibling graph package's observation stores seven ordered frequencies and all 4 complex two-port entries per frequency as explicit `[real,imag]` pairs, plus exact backend/blueprint/preparation/observation digests. A separate raw `checks/check_og3_gate_b.py` run attests Git head SHA, original Wolfram JSON hash, NumPy version and maximum normalized complex error. This **evidence identity** is distinct from immutable physical digest; no recorded X2a files are used as new audio. Dedicated CI verifies two freshly computed physical Takes.
+
+
+### Gate B reconciled implementation trial (2026-10-15; verification pending)
+
+PR #104 incorporates merged Gate A main `6d38d8b`. Sibling backend v2 enforces RFC §11's two exact geometry/medium fixtures and reconstructs prepared binding before evaluation. Old v1 candidate snapshots are refused, never rebound. Observation validation preserves original scalar types, checks all malformed values before resource/frequency capability, returns UNSUPPORTED for valid 4097-point grids, preserves N matrices/order/duplicates and hashes exact positive-zero bytes. Supplementary per-point flux threshold <=1e-12, wrong defect 0.5 and separate reverse-order controls are explicit. Tests and evidence runner match the [reconciliation work order](./og3-gate-b-reconciliation.md); current exact-head CI/artifact receipt will be attached to [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104). No legacy package, source pins or experiment/oracle changes; no release/adoption. Old trial receipts above are historical and do not attest this new implementation.
+
+### Gate C long-graph & CI dependency coverage (2026-10-16)
+
+Well-formed large graphs remain syntactically representable although only two fixture organs have a solver. Structural validation uses iterative DFS (cycle/connectedness, full port/finite checks); a valid 1205-organ serial chain MUST return typed `UNSUPPORTED/FIXED2_SERIAL_ONLY`, not a runtime RecursionError. Its structurally malformed counterpart MUST return `INVALID` first. Dedicated OG-3 CI is re-triggered on inherited `src/**`, Experiment039 oracle/`experiments/**`, Wolfram research docs, python project configuration, tests, and checks; do not rely on a stale older PR evidence run. [Notes](./og3-gate-b-implementation.md).
