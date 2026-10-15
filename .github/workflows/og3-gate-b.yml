@@ -1,19 +1,28 @@
 name: og3-gate-b
 
+# Keep every dependency of the frozen-physics gate inside BOTH event filters.
+# Broad source/research coverage prevents stale prior evidence for changed
+# UniformTube, V3 research, Experiment039 oracle or Wolfram source/results.
 on:
   push:
     paths:
-      - "src/morphoacoustics_graph/**"
-      - "tests/test_prepared_graph_public.py"
-      - "checks/check_og3_gate_b.py"
-      - "docs/research/og3-gate-b-implementation.md"
+      - "src/**"
+      - "experiments/**"
+      - "tests/**"
+      - "checks/**"
+      - "docs/research/og3-*"
+      - "docs/research/organ-graph-*"
+      - "pyproject.toml"
       - ".github/workflows/og3-gate-b.yml"
   pull_request:
     paths:
-      - "src/morphoacoustics_graph/**"
-      - "tests/test_prepared_graph_public.py"
-      - "checks/check_og3_gate_b.py"
-      - "docs/research/og3-gate-b-implementation.md"
+      - "src/**"
+      - "experiments/**"
+      - "tests/**"
+      - "checks/**"
+      - "docs/research/og3-*"
+      - "docs/research/organ-graph-*"
+      - "pyproject.toml"
       - ".github/workflows/og3-gate-b.yml"
 
 jobs:

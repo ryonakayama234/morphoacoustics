@@ -303,3 +303,41 @@ def test_mixed_medium_unsupported():
 def test_production_module_has_no_experiment_runtime_import():
     from morphoacoustics_graph import preparation as pg
     assert "experiments/039" not in pg.__file__
+
+
+def test_long_valid_graph_refuses_typed_unsupported_without_recursion_failure():
+    """Codex P1 regression: long valid graph may be unsupported, never crash."""
+    length = 1205  # exceeds the usual Python recursion limit; small runtime cost
+    nodes = tuple(
+        PassiveTubeOrgan(
+            f"long-node-{i}", "r1", 0.08, 3e-4,
+            AcousticPort(f"long-node-{i}.in", "inlet"),
+            AcousticPort(f"long-node-{i}.out", "outlet"),
+        )
+        for i in range(length)
+    )
+    edges = tuple(
+        AcousticJunction(
+            f"long-edge-{i}", SERIES_LAW,
+            (nodes[i].outlet.id, nodes[i + 1].inlet.id),
+        )
+        for i in range(length - 1)
+    )
+    graph = OrganGraphBlueprint(
+        SCHEMA, nodes, edges, nodes[0].inlet.id,
+        (nodes[-1].outlet.id,), "matched",
+    )
+    validate_graph(graph)
+    with pytest.raises(GraphError) as ex:
+        prepare_graph(graph)
+    assert (ex.value.status, ex.value.code) == ("UNSUPPORTED", "FIXED2_SERIAL_ONLY")
+
+    # Still check all structural data before the unsupported-capability refusal.
+    malformed = replace(
+        graph,
+        organs=nodes[:-1] + (replace(nodes[-1], area_m2=-3e-4),),
+    )
+    with pytest.raises(GraphError) as ex:
+        prepare_graph(malformed)
+    assert ex.value.status == "INVALID"
+    assert ex.value.code == "NONPOSITIVE_OR_NONFINITE"

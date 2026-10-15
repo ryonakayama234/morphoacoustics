@@ -161,19 +161,26 @@ def validate_graph(graph: OrganGraphBlueprint) -> None:
     if unassigned:
         _invalid("UNCONNECTED_PORT", unassigned[0])
 
+    # Iterative depth-first traversal: structural INVALID must take precedence
+    # over an eventual UNSUPPORTED capability decision even for long graphs.
+    # A recursive visitor silently crashed above Python's recursion limit.
     active: set[str] = set()
     visited: set[str] = set()
-    def visit(name: str) -> None:
+    stack: list[tuple[str, bool]] = [(ports[graph.source_port][0], False)]
+    while stack:
+        name, exiting = stack.pop()
+        if exiting:
+            active.remove(name)
+            visited.add(name)
+            continue
         if name in active:
             _invalid("CYCLE", name)
         if name in visited:
-            return
+            continue
         active.add(name)
-        for other in sorted(adjacent[name]):
-            visit(other)
-        active.remove(name)
-        visited.add(name)
-    visit(ports[graph.source_port][0])
+        stack.append((name, True))
+        for other in sorted(adjacent[name], reverse=True):
+            stack.append((other, False))
     if visited != set(nodes):
         _invalid("DISCONNECTED_GRAPH", ",".join(sorted(set(nodes) - visited)))
 
