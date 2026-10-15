@@ -11,7 +11,7 @@ from referencing import Registry, Resource
 
 from morphoacoustics import CavityKind, CavitySpec, CreatureSpec
 from morphoacoustics.integration.body_presets import BindingStatus, BodyPresetRegistry, make_body_preset
-from morphoacoustics.integration.performance_v1 import (
+from contracts.performance.v1.semantic_validation import (
     resolve_v1_binding,
     selected_body_binding,
     v1_input_digest,

@@ -15,7 +15,7 @@ flowchart LR
 - **v1 envelope, v0 creative snapshots.** Top-level `schema_version` is `performance-contract/v1`; embedded `CharacterSpec`, `Script` and `Direction` remain *exact, independent, unchanged* `performance-contract/v0` snapshots referenced via JSON Schema. This avoids duplicating or silently redefining creator-facing semantics. A future version may separately upgrade creative snapshots.
 - Request `embodiment = {preset_id, preset_revision}`, exact revision integer `>=1`; never `latest`, no physical geometry or pressure in creator fields.
 - Resolution `embodiment.status` is `BOUND`, `MISSING_PRESET`, `REVISION_MISMATCH` or `UNSUPPORTED_BACKEND`. When and only when `BOUND`, result stores exact `preset_id`, `preset_revision`, `backend_id`, `preparation_digest` (actual Core body binding). Status is *not* job lifecycle or physical realization; `job_status=SUCCEEDED` and `realization_outcome=INFEASIBLE` remain valid for a body that **was** successfully bound.
-- v1 request+result JSON Schemas are under `contracts/performance/v1`, Draft 2020-12; v0 files are untouched. The source helper `integration/performance_v1.py` only resolves exact prevalidated Core presets, never synthesizes a body, waveform, or approximate fallback.
+- v1 request+result JSON Schemas are under `contracts/performance/v1`, Draft 2020-12; v0 files are untouched. The source helper `contracts/performance/v1/semantic_validation.py` only resolves exact prevalidated Core presets, never synthesizes a body, waveform, or approximate fallback.
 - The v1 fixture uses illustrative `sha256` values and `UNSUPPORTED` with no audio: **not** a claim that a validated live two-body adapter exists or was executed.
 
 ## Digest and historical Takes
@@ -47,9 +47,13 @@ contracts/performance/v1/
   examples/request.json
   examples/result.fixture.json
   examples/result.revision-mismatch.json
-src/morphoacoustics/integration/performance_v1.py
+src/morphoacoustics/contracts/performance/v1/semantic_validation.py
 tests/test_performance_contract_v1.py
 docs/performance-contract-v1.md
 ```
 
 Existing [architecture/data proposal](./research/organ-graph-program.md) and [execution plan](./research/organ-graph-execution-plan.md) track the cross-work-package status; research physics remains independent of this contract.
+
+## Frozen source inventory compatibility
+
+The deployed limited-live experiment deliberately audits the complete existing \`src/morphoacoustics\` source inventory. Adding a new production module there would invalidate its independently frozen hash manifest. Therefore the v1 binding helper is scoped to \`contracts/performance/v1/semantic_validation.py\` in this design-and-contract test gate, outside the published Core package; it is *not* an installed runtime API. The production integration boundary must undergo a separate explicit frozen-manifest migration before any promotion to \`src/\`. Neither the audited manifest nor an old verification baseline has been modified.
