@@ -114,3 +114,7 @@ Two automatically raised issues on [#102](https://github.com/ryonakayama234/morp
 ### OG-3 Gate B Draft proposal (2026-10-15)
 
 Separately tracked **stacked Draft PR** `feat/og3-gate-b-minimal-public-fixed2` against `design/og3-gate-a-public-graph-20261015` pending Gate A design review. Code candidate includes fixed2 graph structure, Core validation/prepare, unloaded complex observation, immutable identity/snapshot tests, explicit 0..4000Hz refusal, and X2a explicit new-source pinning without rewriting old source. This is **work in progress**: generic CI green alone would not demonstrate genuine X2a two-take physics smoke or Gate C public signoff. Do not merge before audit.
+
+#### Gate B correction after first failed CI (2026-10-15)
+
+The initial full-package extension proposal is **superseded**: upstream Experiment028/029 source fingerprint rejects newly inserted `src/morphoacoustics/**.py` despite X2a-only explicit manifest pin. Original 23 source pins cannot safely be expanded to claim the V3 upstream freeze still matches. Revert X2a adapter change, place new Core-owned graph API in independently packaged sibling `src/morphoacoustics_graph/` and preserve all original source files/experiment fixtures. Mandatory exact-new-HEAD retest of all affected V3, X2a two real Takes, public 7-frequency matrix, and mypy remains. Detailed failed runs recorded in [experiment ledger](./organ-graph-experiment-ledger.md).

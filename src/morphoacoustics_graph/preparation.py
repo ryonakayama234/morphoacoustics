@@ -6,6 +6,7 @@ Review/adoption of this new public-facing submodule is pending.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import NoReturn
 import hashlib
 import json
 import math
@@ -17,7 +18,7 @@ import numpy as np
 import numpy.typing as npt
 
 from morphoacoustics.acoustics.uniform_tube import UniformTube
-from morphoacoustics.physical.organ_graph import (
+from morphoacoustics_graph.model import (
     AcousticJunction, AcousticPort, BRANCH_LAW, OrganGraphBlueprint,
     PORT_KIND, SERIES_LAW, SCHEMA, PassiveTubeOrgan, graph_from_dict,
     graph_to_dict,
@@ -40,7 +41,7 @@ class GraphError(ValueError):
         super().__init__(f"{status}:{code}:{path}")
 
 
-def _invalid(code: str, path: str) -> None:
+def _invalid(code: str, path: str) -> NoReturn:
     raise GraphError("INVALID", code, path)
 
 
@@ -140,22 +141,22 @@ def validate_graph(graph: OrganGraphBlueprint) -> None:
         if not isinstance(edge.ports, tuple) or len(edge.ports) != needed:
             _invalid("JUNCTION_ARITY", edge.id)
         owned: set[str] = set()
-        for i, port in enumerate(edge.ports):
-            _id(port, f"{edge.id}.port")
-            if port not in ports:
-                _invalid("UNKNOWN_EDGE_PORT", f"{edge.id}:{port}")
+        for i, port_id in enumerate(edge.ports):
+            _id(port_id, f"{edge.id}.port")
+            if port_id not in ports:
+                _invalid("UNKNOWN_EDGE_PORT", f"{edge.id}:{port_id}")
             role = "outlet" if i == 0 else "inlet"
-            if ports[port][1] != role:
-                _invalid("WRONG_EDGE_DIRECTION", f"{edge.id}:{port}")
-            if port in assigned:
-                _invalid("DUPLICATE_CONNECTION", f"{edge.id}:{port}")
-            assigned.add(port)
-            owned.add(ports[port][0])
+            if ports[port_id][1] != role:
+                _invalid("WRONG_EDGE_DIRECTION", f"{edge.id}:{port_id}")
+            if port_id in assigned:
+                _invalid("DUPLICATE_CONNECTION", f"{edge.id}:{port_id}")
+            assigned.add(port_id)
+            owned.add(ports[port_id][0])
         if len(owned) != needed:
             _invalid("SELF_CONNECTION", edge.id)
         upstream = ports[edge.ports[0]][0]
-        for port in edge.ports[1:]:
-            adjacent[upstream].add(ports[port][0])
+        for port_id in edge.ports[1:]:
+            adjacent[upstream].add(ports[port_id][0])
     unassigned = sorted(set(ports) - assigned)
     if unassigned:
         _invalid("UNCONNECTED_PORT", unassigned[0])

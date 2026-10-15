@@ -9,11 +9,11 @@ import numpy as np
 import pytest
 
 from morphoacoustics.acoustics.uniform_tube import UniformTube
-from morphoacoustics.physical.organ_graph import (
+from morphoacoustics_graph.model import (
     SCHEMA, AcousticPort, PassiveTubeOrgan, AcousticJunction,
     OrganGraphBlueprint, SERIES_LAW, BRANCH_LAW, graph_to_dict,
 )
-from morphoacoustics.preparation.graph import (
+from morphoacoustics_graph.preparation import (
     GraphError, validate_graph, prepare_graph, restore_prepared, observe_transfer,
 )
 
@@ -180,5 +180,5 @@ def test_mixed_medium_unsupported():
 
 
 def test_production_module_has_no_experiment_runtime_import():
-    from morphoacoustics.preparation import graph as pg
+    from morphoacoustics_graph import preparation as pg
     assert "experiments/039" not in pg.__file__

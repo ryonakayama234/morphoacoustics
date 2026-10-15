@@ -96,3 +96,15 @@ GitHub automated review identified absent bounded frequency capability and signe
 ### OG-3 Gate B implementation candidate — 2026-10-15 (Draft; NOT ADOPTED)
 
 [Gate B implementation notes](./og3-gate-b-implementation.md) add a proposed production-only import path through explicit new graph and preparation submodules, with **no change** to old Core initializers or uniform-tube law. Physical graph → validation → fixed2 backend preparation → unloaded complex observation; typed unsupported branch and error status; X2a manifest pins separately audited under #103. This does not change the overall Morphology→Gesture→physical state→acoustics→observation causal model, nor confer waveform or general graph capability. Actual CI and independent adoption remain gates.
+
+#### Gate B corrective architecture: protected legacy kernel vs Core-owned sibling graph API
+
+```mermaid
+flowchart LR
+ UI["Future Studio"] --> BP["Core-owned morphoacoustics_graph<br/>typed blueprint & preparation API (Draft)"]
+ BP --> PR["Existing morphoacoustics.acoustics.uniform_tube<br/>fixed 1D primitive, unchanged"]
+ V3["Frozen V3 Experiment028/029 + X2a"] --> PR
+ BP --> OBS["Graph observation, diagnostic and digest"]
+```
+
+First Gate B CI caught Experiment028/029 full source identity invalidation despite pinning new package files in X2a's own manifest. Consequently the **new graph package must live outside frozen `src/morphoacoustics/`**, as `src/morphoacoustics_graph/`; all existing Core source paths/blobs and X2a manifest restored, but physical primitive still reused (Core authority not forked). This is an implementation amendment *after an explicitly failed pilot*, not a retrospectively clean first attempt. See [Gate B notes](./og3-gate-b-implementation.md) for actual CI failure details. Scientific acceptance not yet determined.

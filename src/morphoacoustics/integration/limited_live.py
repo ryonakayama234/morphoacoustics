@@ -60,9 +60,6 @@ AUDITED_PACKAGE_GIT_BLOBS: dict[str, str] = {
     "src/morphoacoustics/physical/__init__.py": "7eb2eb01dab33256dd6b289c42a4545f6ba4a496",
     "src/morphoacoustics/physical/tract1d.py": "62f3ddf6d3cbf2e43072f9d8b2be6ee84f4c3ca7",
     "src/morphoacoustics/preparation/__init__.py": "26e992bba685d989861361120be6f64d38accb3e",
-    # OG-3 Gate B proposed modules: explicit Git-blob pins. Legacy 23 entries unchanged.
-    "src/morphoacoustics/physical/organ_graph.py": "ea72548dd3fb771436dbfe0980ae5ab5ed3e9b17",
-    "src/morphoacoustics/preparation/graph.py": "405fb65ce65118b86384896e3406871da9408528",
     "src/morphoacoustics/preparation/protocol.py": "72a6a536e5dd1800aac1328c3b84026bacad896e",
     "src/morphoacoustics/preparation/tract1d.py": "90860b19a6b181ba88ff3d4a01379c10ab23e226",
     "src/morphoacoustics/realization/__init__.py": "469760748767b788f051a50dc152d513cb704c58",
