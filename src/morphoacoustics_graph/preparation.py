@@ -24,7 +24,7 @@ from morphoacoustics_graph.model import (
     graph_to_dict,
 )
 
-BACKEND_ID = "og3.fixed.passive.serial2.pu.v1"
+BACKEND_ID = "og3.fixed.passive.serial2.pu.v2"
 DIGEST_VERSION = "og3.binary64-be-json.v1"
 MAX_FREQUENCY_HZ = 4000.0
 MAX_FREQUENCY_POINTS = 4096
@@ -243,6 +243,13 @@ def prepare_graph(graph: OrganGraphBlueprint) -> PreparedPhysicalGraph:
     if (float(first.sound_speed_m_s) != float(last.sound_speed_m_s) or
             float(first.air_density_kg_m3) != float(last.air_density_kg_m3)):
         raise GraphError("UNSUPPORTED", "MIXED_MEDIUM", edge.id)
+    # RFC section 11: exact binary64 capability, not a general-geometry band.
+    for node, length, areas in ((first, 0.08, (3e-4,)),
+                                (last, 0.09, (3e-4, 6e-4))):
+        if (float(node.length_m) != length or float(node.area_m2) not in areas or
+                float(node.air_density_kg_m3) != 1.21 or
+                float(node.sound_speed_m_s) != 343.0):
+            raise GraphError("UNSUPPORTED", "FROZEN_FIXTURE_CAPABILITY", node.id)
     ordered = (first, last)
     tubes = tuple(UniformTube(
         length_m=float(n.length_m), area_m2=float(n.area_m2),
@@ -315,26 +322,35 @@ def observe_transfer(
     """Return immutable full complex *unloaded* two-port, not source or WAV."""
     if not isinstance(graph, PreparedPhysicalGraph) or graph.backend_id != BACKEND_ID:
         raise GraphError("UNSUPPORTED", "WRONG_PREPARED_BACKEND", "prepared")
+    # Frozen dataclasses are publicly constructible. Revalidate their binding
+    # before evaluating, so a forged tube/snapshot cannot bypass the profile.
+    if graph != prepare_graph(graph.blueprint):
+        _invalid("PREPARED_BINDING_MISMATCH", "prepared")
     try:
-        grid = np.asarray(frequencies_hz)
+        # Preserve bool/string/complex scalar types in mixed native sequences.
+        grid = np.asarray(frequencies_hz, dtype=object)
     except (ValueError, TypeError, OverflowError) as error:
         raise GraphError("INVALID", "BAD_FREQUENCY_SHAPE", "frequencies_hz") from error
-    if (grid.ndim != 1 or not (1 <= grid.size <= MAX_FREQUENCY_POINTS) or
-            grid.dtype.kind not in "ifu"):
+    if grid.ndim != 1 or grid.size == 0:
         _invalid("BAD_FREQUENCY_SHAPE", "frequencies_hz")
     fs: list[float] = []
-    for value in grid:
-        if isinstance(value, (bool, np.bool_)):
-            _invalid("BAD_FREQUENCY_TYPE", "frequencies_hz")
+    for index, value in enumerate(grid):
+        path = f"frequencies_hz[{index}]"
+        if (isinstance(value, (bool, np.bool_)) or
+                not isinstance(value, (int, float, np.integer, np.floating))):
+            _invalid("BAD_FREQUENCY_TYPE", path)
         try:
             f = float(value)
         except (ValueError, OverflowError):
-            _invalid("BAD_FREQUENCY_TYPE", "frequencies_hz")
+            _invalid("BAD_FREQUENCY_TYPE", path)
         if not math.isfinite(f) or f < 0:
-            _invalid("NEGATIVE_OR_NONFINITE_FREQUENCY", "frequencies_hz")
-        if f > MAX_FREQUENCY_HZ:
-            raise GraphError("UNSUPPORTED", "FREQUENCY_CAPABILITY", "frequencies_hz")
+            _invalid("NEGATIVE_OR_NONFINITE_FREQUENCY", path)
         fs.append(0.0 if f == 0.0 else f)  # -0.0 canonicalizes before digest
+    # All malformed values precede capability refusal, regardless of position.
+    if len(fs) > MAX_FREQUENCY_POINTS:
+        raise GraphError("UNSUPPORTED", "FREQUENCY_RESOURCE_LIMIT", "frequencies_hz")
+    if any(f > MAX_FREQUENCY_HZ for f in fs):
+        raise GraphError("UNSUPPORTED", "FREQUENCY_CAPABILITY", "frequencies_hz")
     farray = np.asarray(fs, dtype=np.float64)
     a, b = graph.tubes_in_path_order
     with np.errstate(all="ignore"):

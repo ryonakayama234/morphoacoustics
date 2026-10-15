@@ -57,14 +57,14 @@ Integrated exact HEAD `5711a3a` passed [scientific CI #38667264999](https://gith
 
 **Owner:** Core; [planning and design gate #100](https://github.com/ryonakayama234/morphoacoustics/issues/100). **Deliverable:** versioned, production-visible **exactly-two-module fixed passive serial** `validate_graph` / `prepare_graph` / acoustic observation façade, with the specific final function/class names selected in a reviewed RFC. Preserve current `CreatureSpec`/semantic cavities, `PreparedMorphology[T]`/preparation provenance, and `BodyPresetRegistry`; do not elevate the Experiment039 Python class directly without API/compatibility review.
 
-**Likely source locations (suggestions, NOT present claims):**
-- `src/morphoacoustics/physical/organ_graph.py` — immutable typed physical organ/port/edge blueprint
-- `src/morphoacoustics/preparation/graph.py` — validation, typed outcomes and deterministic resolved graph digest
-- `src/morphoacoustics/acoustics/` — keep existing `UniformTube`, thin observation adapter only if necessary
+**Required source isolation (reconciled with RFC §10; exact internal split remains a suggestion):**
+- `src/morphoacoustics_graph/model.py` — immutable typed physical organ/port/edge blueprint
+- `src/morphoacoustics_graph/preparation.py` — validation, typed outcomes, resolved digest and observation façade
+- Existing `morphoacoustics.acoustics.uniform_tube.UniformTube` — reuse unchanged via explicit sibling import; entire `src/morphoacoustics/`, its initializers and X2a manifest/pins remain byte-identical
 - `tests/test_prepared_graph_public.py` and `tests/scientific/test_graph_port_physics.py`
 - `docs/architecture.md`, `docs/invariants.md`, formal data contract notes and `experiments/README.md`.
 
-**API case:** a caller constructs A (0.08 m, 3e-4 m²) and B (0.09 m, 3e-4 or 6e-4 m²) with named inlet/outlet `acoustic.p_u` ports, physical `ideal.series.p_u` edge and explicit source/load boundaries, then obtains either typed refusal or immutable prepared identity and the dimensionless normalized full complex 2-port matrix at the frozen grid. No fallback flattening to anonymous segments; do not treat visual graph coordinates as physics.
+**API case:** named A/B organs and ideal p/U serial edge, explicit source/load metadata, immutable prepared identity, and one normalized full complex matrix per requested frequency. Follow RFC §9: `1<=N<=4096`, `0<=f<=4000`, preserve order/duplicates; 4097 finite in-band points are `UNSUPPORTED` with no observation. Malformed requests are `INVALID`; ±0 canonicalize to identical exact zero bytes. The seven-point grid is only the frozen oracle fixture. No fallback flattening or visual coordinates as physics.
 
 **Quantitative regression:** inherit *only* existing Experiment039 fixed-fixture mathematical oracle and errors. For any novel fixture, fix hypotheses and thresholds BEFORE implementing the new experiment. Structural invariants: module reorder with same IDs → same canonical digest, B area/revision change → changed digest but invariant A, stable roundtrip serialization and exact no-`latest` semantics, nonfinite `rho*c/A` refused, valid three-port shape but unsupported serial backend refused. Distinguish validation INVALID, capability UNSUPPORTED, supported physical task INFEASIBLE, numerical unresolved and infrastructure FAILED.
 
@@ -105,11 +105,23 @@ Issue [#100](https://github.com/ryonakayama234/morphoacoustics/issues/100) has a
 
 ### OG-3 Gate A post-author technical self-audit (2026-10-15)
 
-Review comment [Gate A self-audit PR #102 comment](https://github.com/ryonakayama234/morphoacoustics/pull/102#issuecomment-6188922718) plus [RFC §8](./og3-public-preparation-rfc.md) and [candidate protocol amendment](./og3-gate-a-protocol.md) resolve design choices provisionally: no eager `__init__` edits, explicit hash-pinned new source inventory for X2a, separated versioned digest domains, termination stored in Blueprint while *unloaded* transfer remains termination-independent, frequency vector shape/complex JSON and typed errors. **These are candidate dispositions only.** Gate A remains review-required; Gate B implementation cannot begin as an adopted contract until independent design critiques and X2a plan are recorded. No X2a manifest modified yet.
+Review comment [Gate A self-audit PR #102](https://github.com/ryonakayama234/morphoacoustics/pull/102#issuecomment-6188922718) recorded digest, termination and vector-shape candidates. **Its in-package pin-extension proposal is superseded** by RFC §10 and the handoff below. Current instructions are sibling-only source additions, frozen original tree/manifest, separate new-source hashes/import audit and complete legacy smoke. Candidate dispositions are not adoption; no X2a manifest change is allowed by this plan.
 
 ### Gate A Codex review disposition / Gate B branch plan (2026-10-15)
 
 Two automatically raised issues on [#102](https://github.com/ryonakayama234/morphoacoustics/pull/102) were accepted: frequency window **0..4000 Hz** and signed-zero canonicalization. Amendment is synchronized across RFC/architecture/data/ledger/protocol. Gate A technical design review is recorded, but no independent human approval or API adoption is claimed. Implement Gate B in a **separate Draft PR stacked on the Gate A branch** (initial base branch `design/og3-gate-a-public-graph-20261015`); this isolates the code diff and avoids merging unapproved Gate A into main. The Gate B Draft remains not approved and never merges until both physics and code review, historical source inventory protection and exact-head evidence are satisfied.
+
+### OG-3 Gate A handoff revised after real failed/green Gate B experimental runs (2026-10-15)
+
+[PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104) first attempted to explicitly pin new Python files in X2a guard; Experiment028/029 original source fingerprints **FAILED**. It was corrected to Core-owned sibling `src/morphoacoustics_graph` that reuses unchanged UniformTube without changing `src/morphoacoustics` or original X2a manifest. Exact trial passes [all Python 3.11–3.13+typecheck](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38731395318) and [specialized original V3 plus X2a genuine live and 7-point OG-3 oracle](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38731394921), but remains Draft and NOT_ADOPTED. **Design acceptance is provisional technical disposition only**; independent review and explicit Gate C needed before any merge. Graph package is in same Core project; Studio remains unchanged.
+
+
+### Geometry-domain correction and Gate B handoff (2026-10-15)
+
+[RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
+
+
+## Historical Gate B trial receipt retained during design reconciliation
 
 ### OG-3 Gate B Draft proposal (2026-10-15)
 
@@ -122,3 +134,8 @@ The initial full-package extension proposal is **superseded**: upstream Experime
 #### Gate B exact-head workflow and artefact policy
 
 New `.github/workflows/og3-gate-b.yml` runs under PR HEAD, not a PR merge SHA. It forces V3b/Experiment028 and V3c/Experiment029 original gates despite their old path filters, real X2a two-take smoke and new OG-3 evidence `checks/check_og3_gate_b.py` twice; emits immutable raw artifacts and negative mismatch/replay tests. Do not interpret an unexecuted YAML definition as passing science or use existing historical artifacts as new evidence. This workflow is the new public capability's additional audit, not an amendment to old frozen experiments.
+
+
+### Gate B reconciled implementation trial (2026-10-15; verification pending)
+
+PR #104 incorporates merged Gate A main `6d38d8b`. Sibling backend v2 enforces RFC §11's two exact geometry/medium fixtures and reconstructs prepared binding before evaluation. Old v1 candidate snapshots are refused, never rebound. Observation validation preserves original scalar types, checks all malformed values before resource/frequency capability, returns UNSUPPORTED for valid 4097-point grids, preserves N matrices/order/duplicates and hashes exact positive-zero bytes. Supplementary per-point flux threshold <=1e-12, wrong defect 0.5 and separate reverse-order controls are explicit. Tests and evidence runner match the [reconciliation work order](./og3-gate-b-reconciliation.md); current exact-head CI/artifact receipt will be attached to [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104). No legacy package, source pins or experiment/oracle changes; no release/adoption. Old trial receipts above are historical and do not attest this new implementation.

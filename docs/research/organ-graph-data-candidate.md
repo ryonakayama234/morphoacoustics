@@ -107,7 +107,7 @@ Parallel [CC-A1 Draft PR #101](https://github.com/ryonakayama234/morphoacoustics
 
 ## OG-3 candidate public binding (2026-10-15; NOT a published ABI)
 
-See the [Gate A RFC](./og3-public-preparation-rfc.md) for the specific **two fixed serial acoustic tubes + one typed p/U series law** interface. This remains distinct from the illustrative candidate JSON above and Experiment039's private Python `Blueprint`. Contract preserves named organ IDs and exact revisions, SI lengths/areas and medium, port IDs/direction/units, edge law/version, source/load boundaries and mapping. Split `blueprint_digest`, backend-specific `preparation_digest`, `observation/evidence_digest`; omit Studio canvas coordinates from physical identity. Only Core canonical digest is authoritative pending cross-language bytes test. `CreatureSpec` is semantic; `PreparedMorphology[T]` and `BodyPresetRegistry` remain unchanged, and CC-A1 PR #101 is separately draft. WARNING: X2a frozen `src` manifest prevents naive new modules; the RFC mandates explicit hash-pinned compatibility re-audit, not bypass. [Protocol](./og3-gate-a-protocol.md).
+See the [Gate A RFC](./og3-public-preparation-rfc.md) for exactly two fixed serial tubes, typed p/U law, immutable identity and separate blueprint/preparation/observation digests. The illustrative JSON and Experiment039 private types are not the public ABI. `CreatureSpec`, registry and draft CC-A1 remain separate. New code is isolated in `src/morphoacoustics_graph/`; original Core tree/manifest/pins remain byte-identical, with separately audited sibling hashes/imports and legacy regression. X2a manifest extension alone is rejected.
 
 ### OG-3 Gate A canonical-byte candidate, review pending (2026-10-15)
 
@@ -115,7 +115,19 @@ See the [Gate A RFC](./og3-public-preparation-rfc.md) for the specific **two fix
 
 ### Candidate normalized observation-grid bytes (Gate A review 2026-10-15)
 
-Ordered frequency values are float64 SI Hz, zero sign canonicalized to **positive zero** before big-endian binary64 hexadecimal serialization. Source grid must be nonempty 1-D of at most 4096 entries, each finite and `0<=f<=4000` Hz. Different input array order intentionally changes observation identity, unlike sorting named organ nodes. >4000Hz is valid numeric but backend **UNSUPPORTED**; invalid type/shape/nonfinite/negative is **INVALID**. This *numerical support bound* does not extend seven-point frozen science to full spectral physiological validation. See [RFC §9](./og3-public-preparation-rfc.md).
+Ordered frequencies are finite float64 SI Hz, `1<=N<=4096`, `0<=f<=4000`. Normalize ±0 before evaluation/snapshot/hash to exact binary64 hex `0000000000000000`, never `8000000000000000`. Output `(N,2,2)` complex pairs preserves order/duplicates; seven points apply only to the frozen oracle. A well-formed finite nonnegative N>4096 grid is `UNSUPPORTED` (resource limit); >4000 Hz is `UNSUPPORTED` (frequency capability). Malformed/type/nonfinite/negative input is `INVALID`. All refusals carry no observation/matrix/digest. Invalid input takes precedence, then resource cap, then band. This is numerical support, not full-band physiology. See RFC §9 and protocol boundary cases.
+
+### Gate A approved-for-trial only: Core sibling graph type, original frozen physics unchanged
+
+The candidate `OrganGraphBlueprint`/prepared value is now held in sibling `src/morphoacoustics_graph/`, with `UniformTube` imported unchanged from frozen `src/morphoacoustics/acoustics/`. All original 23 X2a pins and source bytes are retained, and no generic branching solver is inferred. Exact frequency capability 0..4000Hz, signed-zero normalization, identity splits and orphan invalid refusal remain the proposal. The first failed-in-frozen-tree trial and corrected machine-green sibling trial are linked in [scientific ledger](./organ-graph-experiment-ledger.md); this is not an adopted external ABI.
+
+
+### Geometry-domain correction and Gate B handoff (2026-10-15)
+
+[RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
+
+
+## Historical Gate B trial receipt retained during design reconciliation
 
 ### OG-3 Gate B proposed data implementation (Draft, 2026-10-15)
 
@@ -128,3 +140,8 @@ Proposed physical graph types are owned by sibling Core Python package `morphoac
 #### Gate B evidence identity and pristine source protection
 
 The sibling graph package's observation stores seven ordered frequencies and all 4 complex two-port entries per frequency as explicit `[real,imag]` pairs, plus exact backend/blueprint/preparation/observation digests. A separate raw `checks/check_og3_gate_b.py` run attests Git head SHA, original Wolfram JSON hash, NumPy version and maximum normalized complex error. This **evidence identity** is distinct from immutable physical digest; no recorded X2a files are used as new audio. Dedicated CI verifies two freshly computed physical Takes.
+
+
+### Gate B reconciled implementation trial (2026-10-15; verification pending)
+
+PR #104 incorporates merged Gate A main `6d38d8b`. Sibling backend v2 enforces RFC §11's two exact geometry/medium fixtures and reconstructs prepared binding before evaluation. Old v1 candidate snapshots are refused, never rebound. Observation validation preserves original scalar types, checks all malformed values before resource/frequency capability, returns UNSUPPORTED for valid 4097-point grids, preserves N matrices/order/duplicates and hashes exact positive-zero bytes. Supplementary per-point flux threshold <=1e-12, wrong defect 0.5 and separate reverse-order controls are explicit. Tests and evidence runner match the [reconciliation work order](./og3-gate-b-reconciliation.md); current exact-head CI/artifact receipt will be attached to [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104). No legacy package, source pins or experiment/oracle changes; no release/adoption. Old trial receipts above are historical and do not attest this new implementation.

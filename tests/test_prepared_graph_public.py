@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
 import json
 from pathlib import Path
+import struct
 
 import numpy as np
 import pytest
@@ -74,7 +76,8 @@ def test_energy_flux_law_kills_particle_velocity_mutation():
     good = observe_transfer(prepared, FS).matrix_numpy()
     j = np.array([[0., 1.], [1., 0.]])
     pwr = np.conjugate(good.transpose(0, 2, 1)) @ j @ good
-    assert np.max(np.abs(pwr - j)) < 1e-10
+    analytic = json.loads((ROOT / "docs/research/og3-wolfram-gate-a-result.json").read_text())
+    assert np.max(np.abs(pwr - j)) <= analytic["flux_control"]["absolute_tolerance"]
     assert np.max(np.abs(np.linalg.det(good) - 1)) < 1e-10
     a, b = prepared.tubes_in_path_order
     z = a.characteristic_impedance_pa_s_m3
@@ -82,7 +85,12 @@ def test_energy_flux_law_kills_particle_velocity_mutation():
              np.diag([1, a.area_m2 / b.area_m2]) @
              b.transfer_matrix(FS) @ np.diag([1, 1/z]))
     wrong_pwr = np.conjugate(wrong.transpose(0, 2, 1)) @ j @ wrong
-    assert np.max(np.abs(wrong_pwr - j)) > 1e-3
+    defects = np.max(np.abs(wrong_pwr - j), axis=(1, 2))
+    assert np.all(defects > 1e-3)
+    assert np.all(np.abs(defects - 0.5) <= 1e-12)
+    swapped = (np.diag([1, z]) @ b.transfer_matrix(FS) @
+               a.transfer_matrix(FS) @ np.diag([1, 1/z]))
+    assert np.max(np.abs(swapped - good)) > 1e-3
 
 
 def test_canonical_identity_roundtrip_exact_revision_and_terminal_metadata():
@@ -114,6 +122,23 @@ def test_signed_zero_same_bytes_response_and_observation_hash():
     assert np.array_equal(minus.matrix_numpy(), plus.matrix_numpy())
     assert np.array_equal(minus.matrix_numpy()[0], np.eye(2))
     assert observe_transfer(p, [80.0, 0.0]).observation_digest != plus.observation_digest
+    # Rebuild the specified hash bytes using public results and a literal zero
+    # encoding; equal Python floats alone would not detect negative-zero bits.
+    for frequency in (0.0, -0.0):
+        result = observe_transfer(p, [frequency])
+        assert struct.pack(">d", result.frequencies_hz[0]).hex() == "0000000000000000"
+        payload = {
+            "domain": "morphoacoustics.og3.observation.v1",
+            "backend": result.backend_id, "prepared": p.preparation_digest,
+            "kind": "unloaded_full_complex_two_port",
+            "frequencies_be64": ["0000000000000000"],
+            "matrix_re_im_be64": [
+                [[struct.pack(">d", re).hex(), struct.pack(">d", im).hex()]
+                 for re, im in row] for row in result.rows_re_im
+            ],
+        }
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        assert result.observation_digest == "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
 def test_frequency_refusal_outside_explicit_capability_not_plausible_matrix():
@@ -124,12 +149,108 @@ def test_frequency_refusal_outside_explicit_capability_not_plausible_matrix():
         ([float("inf")], "INVALID"), ([], "INVALID"),
         ([[80.0]], "INVALID"), (80.0, "INVALID"),
         (["80"], "INVALID"), ([True], "INVALID"),
-        ([0.0] * 4097, "INVALID"),
+        ([0.0] * 4097, "UNSUPPORTED"),
+        ([True, 80.0], "INVALID"), ([80.0, np.bool_(False)], "INVALID"),
+        ([80.0, "200"], "INVALID"), ([80.0, 200j], "INVALID"),
+        ([5000.0, float("nan")], "INVALID"),
+        ([0.0] * 4096 + [-1.0], "INVALID"),
     ]:
         with pytest.raises(GraphError) as e:
             observe_transfer(p, values)
         assert e.value.status == status
     assert observe_transfer(p, [4000.0]).matrix_numpy().shape == (1, 2, 2)
+
+
+@pytest.mark.parametrize("grid", [[733.0], [4000.0, 80.0, 4000.0], FS,
+                                  np.linspace(0, 4000, 4096)])
+def test_arbitrary_accepted_grid_preserves_every_requested_matrix(grid):
+    p = prepare_graph(fixture())
+    result = observe_transfer(p, grid)
+    assert result.matrix_numpy().shape == (len(grid), 2, 2)
+    assert list(result.frequencies_hz) == list(grid)
+    for index in (0, len(grid)-1):
+        assert np.array_equal(result.matrix_numpy()[index],
+                              observe_transfer(p, [grid[index]]).matrix_numpy()[0])
+
+
+@pytest.mark.parametrize("grid,code", [
+    ([0.] * 4097, "FREQUENCY_RESOURCE_LIMIT"),
+    ([5000.] * 4097, "FREQUENCY_RESOURCE_LIMIT"),
+    ([5000.], "FREQUENCY_CAPABILITY"),
+])
+def test_resource_then_frequency_capability_diagnostics(grid, code):
+    with pytest.raises(GraphError) as ex:
+        observe_transfer(prepare_graph(fixture()), grid)
+    assert ex.value.status == "UNSUPPORTED"
+    assert ex.value.code == code
+
+
+@pytest.mark.parametrize("index", [0, 1])
+@pytest.mark.parametrize("field", ["length_m", "area_m2", "air_density_kg_m3", "sound_speed_m_s"])
+def test_each_off_fixture_positive_quantity_is_unsupported(index, field):
+    bp = fixture()
+    organs = list(bp.organs)
+    value = float(getattr(organs[index], field))
+    organs[index] = replace(organs[index], **{field: float(np.nextafter(value, np.inf))})
+    changed = replace(bp, organs=tuple(organs))
+    validate_graph(changed)  # legal geometry, outside this backend's profile
+    with pytest.raises(GraphError) as ex:
+        prepare_graph(changed)
+    assert ex.value.status == "UNSUPPORTED"
+
+
+def test_large_area_shared_medium_and_reversed_physical_path_are_unsupported():
+    bp = fixture()
+    a, b = bp.organs
+    cases = [
+        replace(bp, organs=(a, replace(b, area_m2=0.1))),
+        replace(bp, organs=(replace(a, sound_speed_m_s=350.), replace(b, sound_speed_m_s=350.))),
+        replace(bp, organs=(replace(a, air_density_kg_m3=1.2), replace(b, air_density_kg_m3=1.2))),
+        replace(bp, source_port=b.inlet.id, load_ports=(a.outlet.id,),
+                junctions=(replace(bp.junctions[0], ports=(b.outlet.id, a.inlet.id)),)),
+    ]
+    for changed in cases:
+        validate_graph(changed)
+        with pytest.raises(GraphError) as ex:
+            prepare_graph(changed)
+        assert ex.value.status == "UNSUPPORTED"
+
+
+def test_profile_uses_resolved_path_not_names_and_both_terminations_work():
+    for area in (3e-4, 6e-4):
+        for terminal in ("matched", "pressure_release"):
+            bp = fixture(b_area=area, b_revision="historical-r7", termination=terminal)
+            a, b = bp.organs
+            renamed = replace(bp, organs=(replace(b, id="named-last"), replace(a, id="named-first")))
+            prepared = prepare_graph(renamed)
+            assert prepared.organs_in_path_order[0].id == "named-first"
+            assert np.array_equal(observe_transfer(prepared, FS).matrix_numpy(),
+                                  observe_transfer(prepare_graph(bp), FS).matrix_numpy())
+
+
+def test_snapshot_and_prepared_constructor_cannot_bypass_profile(monkeypatch):
+    import morphoacoustics_graph.preparation as api
+    p = prepare_graph(fixture())
+    bp = replace(p.blueprint, organs=(p.blueprint.organs[0],
+                 replace(p.blueprint.organs[1], area_m2=0.1)))
+    snapshot = p.to_snapshot()
+    snapshot["blueprint"] = graph_to_dict(bp)
+    def no_transfer(*args, **kwargs):
+        pytest.fail("refused input reached the numerical transfer primitive")
+    monkeypatch.setattr(UniformTube, "transfer_matrix", no_transfer)
+    with pytest.raises(GraphError) as ex:
+        restore_prepared(snapshot)
+    assert ex.value.status == "UNSUPPORTED"
+    with pytest.raises(GraphError) as ex:
+        observe_transfer(replace(p, blueprint=bp), FS)
+    assert ex.value.status == "UNSUPPORTED"
+    bad = replace(p, tubes_in_path_order=(p.tubes_in_path_order[0],
+                                        replace(p.tubes_in_path_order[1], area_m2=0.1)))
+    with pytest.raises(GraphError, match="PREPARED_BINDING_MISMATCH"):
+        observe_transfer(bad, FS)
+    with pytest.raises(GraphError) as ex:
+        restore_prepared({**p.to_snapshot(), "backend_id": "og3.fixed.passive.serial2.pu.v1"})
+    assert ex.value.status == "UNSUPPORTED"
 
 
 @pytest.mark.parametrize("mutate,code", [
