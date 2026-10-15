@@ -88,3 +88,7 @@ The concrete delegated implementation tasks, expected source/test paths, indepen
 ### OG-3 Gate A self-audit follow-up (2026-10-15, PROPOSED)
 
 The [amended public graph RFC §8](./og3-public-preparation-rfc.md) explicitly distinguishes *unloaded* transfer matrix from subsequent terminal-loaded acoustic observations; same A/B graph has same two-port `T` under matched vs pressure-release endpoint metadata. Direct new submodule imports, rather than eager `__init__` exports, are proposed to preserve old X2a import graph. All X2a source pins still require separately audited fail-closed extension during Gate B. See [candidate acceptance amendment](./og3-gate-a-protocol.md) and [Gate A self-audit PR #102 comment](https://github.com/ryonakayama234/morphoacoustics/pull/102#issuecomment-6188922718); this is not independent approval.
+
+### Gate A reviewer amendment (2026-10-15, proposed)
+
+GitHub automated review identified absent bounded frequency capability and signed-zero frequency identity. [RFC §9](./og3-public-preparation-rfc.md) now proposes the exact ordered nonempty 1D `0..4000 Hz` backend window, >4000 `UNSUPPORTED`, invalid shape/nonfinite/negative `INVALID`, and `-0.0` → `+0.0` before observation hashing. Only seven original Wolfram frequencies carry frozen oracle evidence; no blanket biological 4 kHz validity is implied. [Protocol](./og3-gate-a-protocol.md) and ledger were updated together. Gate B is a distinct Draft PR, not a merge or adoption.
