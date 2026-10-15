@@ -1,0 +1,36 @@
+{
+  "oracle": "Wolfram Language independent traveling-wave amplitude and boundary equation solution",
+  "chronology": "Amendment 01 prepared after OG-0 exploratory implementation/CI and not preregistered",
+  "protocol": "https://github.com/ryonakayama234/morphoacoustics/pull/91",
+  "analytic_model": "inlet/outlet wave propagation: A.in=[a(exp(i thetaA)+r exp(-i thetaA)),a(exp(i thetaA)-r exp(-i thetaA))/ZA], B.out=t a exp(-i thetaB)[1,1/ZB]",
+  "incident_pressure_pa_re_im": [
+    1,
+    0.4
+  ],
+  "frequency_grid_hz": [
+    80,
+    250,
+    400,
+    733,
+    1200,
+    2000,
+    4000
+  ],
+  "upstream_area_m2": 0.0003,
+  "downstream_area_m2": 0.0006,
+  "reflection_pressure": -0.3333333333333333,
+  "transmission_pressure": 0.6666666666666666,
+  "reflected_power_fraction": 0.1111111111111111,
+  "transmitted_power_fraction": 0.8888888888888888,
+  "a_in_733_re_im_pa_and_m3_s": [
+    -0.15127647387398807,
+    1.2993231900501705,
+    2.921350962427158e-7,
+    6.124202847069135e-7
+  ],
+  "max_normalized_independent_wave_difference_wolfram_high_precision": 0,
+  "wrong_junction": "J=diag(1,SA/SB) erroneous particle-flow continuity instead of volume flow",
+  "wrong_junction_733_max_normalized_incident_wave_state_error_wolfram": 0.5861352498274852,
+  "mutation_min_normalized_residual": 0.1,
+  "note": "Wave oracle is independent of experimental transfer-matrix graph code. This is an amended regression test, not an unobserved prospective scientific confirmation."
+}

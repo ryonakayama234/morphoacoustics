@@ -1,0 +1,51 @@
+{
+  "oracle": "Wolfram Language evaluator, independently calculated before Python graph implementation",
+  "baseline_main_sha": "8868df1188443fc4523533c6cb0bb9cd72995c32",
+  "model": "rigid lossless 1D tubes, exp(+j omega t), ideal zero-length p/U junction",
+  "frequency_grid_hz": [
+    80,
+    250,
+    400,
+    733,
+    1200,
+    2000,
+    4000
+  ],
+  "air_density_kg_m3": 1.2,
+  "sound_speed_m_s": 343,
+  "upstream": {
+    "id": "A",
+    "length_m": 0.08,
+    "area_m2": 0.0003
+  },
+  "downstream": {
+    "id": "B",
+    "length_m": 0.09,
+    "equal_area_m2": 0.0003,
+    "mismatched_area_m2": 0.0006
+  },
+  "equal_area": {
+    "equivalent_total_length_m": 0.17,
+    "first_quarter_wave_hz": 504.4117647058824,
+    "wolfram_normalized_transfer_max_roundoff": 4.440892098500626e-16,
+    "wolfram_det_max_roundoff": 3.3306690738754696e-16
+  },
+  "area_mismatch": {
+    "z_up_pa_s_m3": 1372000,
+    "z_down_pa_s_m3": 686000,
+    "reflection_pressure_real": -0.3333333333333333,
+    "reflected_power_fraction": 0.1111111111111111,
+    "transmitted_power_fraction": 0.8888888888888888,
+    "pressure_release_733hz_input_impedance_real": 0,
+    "pressure_release_733hz_input_impedance_imag": -3027514.9008453414,
+    "matched_outlet_733hz": {
+      "outlet_flow_m3_s": 0.000001,
+      "junction_pressure_real_pa": 0.2431595285378482,
+      "junction_pressure_imag_pa": 0.6414588402082018,
+      "junction_flow_real_m3_s": 3.54459954136805e-7,
+      "junction_flow_imag_m3_s": 9.350711956387781e-7,
+      "mean_power_w": 3.43e-7
+    }
+  },
+  "caution": "Matched single-junction scattering is not the net finite pressure-release pipe reflection. Ideal quarter-wave poles excluded from impedance tolerance checks."
+}
