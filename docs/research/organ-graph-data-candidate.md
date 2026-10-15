@@ -120,3 +120,8 @@ Ordered frequencies are finite float64 SI Hz, `1<=N<=4096`, `0<=f<=4000`. Normal
 ### Gate A approved-for-trial only: Core sibling graph type, original frozen physics unchanged
 
 The candidate `OrganGraphBlueprint`/prepared value is now held in sibling `src/morphoacoustics_graph/`, with `UniformTube` imported unchanged from frozen `src/morphoacoustics/acoustics/`. All original 23 X2a pins and source bytes are retained, and no generic branching solver is inferred. Exact frequency capability 0..4000Hz, signed-zero normalization, identity splits and orphan invalid refusal remain the proposal. The first failed-in-frozen-tree trial and corrected machine-green sibling trial are linked in [scientific ledger](./organ-graph-experiment-ledger.md); this is not an adopted external ABI.
+
+
+### Geometry-domain correction and Gate B handoff (2026-10-15)
+
+[RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.

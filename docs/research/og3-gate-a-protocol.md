@@ -2,6 +2,8 @@
 
 Date: 2026-10-15 JST. Base `1fb6c9f691f94558c6d5ccaf4b018eb05389cafe`. Issue [#100](https://github.com/ryonakayama234/morphoacoustics/issues/100). **NOT an adopted protocol / NOT newly blinded prospective scientific replication / no new Core implementation in this PR.** Freeze after independent design review, before Gate B public implementation. Earlier Experiment039 fixture values and tolerance are inherited **controlled regressions**, not new data-dependent threshold tuning.
 
+**Mandatory domain:** all support/grid acceptance cases apply only to RFC §11's two exact ordered geometries with rho=1.21 and c=343. Other valid geometry/medium is UNSUPPORTED at preparation; the 4 kHz band is never a universal geometry claim.
+
 ## Claim and hypothesis
 
 **Narrow claim:** Production API, with no imports from `experiments/039_og2_prepared_graph`, prepares exactly two independently identified fixed rigid uniform lossless 1D acoustic tubes with one typed ideal series p/U port, deterministically binds their identity/provenance, and returns the complete complex two-port response matching existing independently evaluated Wolfram and analytic reference.
@@ -95,3 +97,8 @@ All refusals return **no observation**, no response matrix and no observation di
 The committed [Wolfram source](./og3-wolfram-gate-a.wl) now constructs J_flux, proves the symbolic tube/wrong-junction identities, evaluates both defects with 50-digit intermediates, exports per-frequency defects, thresholds and `all_controls_pass`, and exits nonzero on flux-control failure. JSON numbers are serialized as machine reals after high-precision computation. A rerun of this exact source returned both symbolic identities true, correct defect numerically zero at ~49 decimal places, wrong defect 0.5 at all seven points and `all_controls_pass=true`. This is analytic evidence only; Gate B must apply the same checks to its actual output on a new exact HEAD. Preserve/hash the source and raw JSON with that submission.
 
 The [raw JSON from that rerun](./og3-wolfram-gate-a-result.json) and source/result SHA-256 receipt are recorded in the [ledger](./organ-graph-experiment-ledger.md). It is supplementary analysis, never the frozen Experiment039 oracle.
+
+
+## Geometry correction / implementation reconciliation
+
+[RFC §11](./og3-public-preparation-rfc.md) fixes the supported geometry/medium, exact binary64 capability matching, invalid-before-unsupported ordering and prepared/snapshot bypass protection. [Gate B work order](./og3-gate-b-reconciliation.md) is the acceptance checklist before its next trial. Existing numerical thresholds and Experiment039 oracles remain untouched.
