@@ -184,3 +184,50 @@ def test_refusal_cannot_falsely_claim_resolved_digest() -> None:
     result["embodiment"]["preparation_digest"] = "sha256:" + "a" * 64
     with pytest.raises(Exception):
         validate("performance-result", result)
+
+
+def test_result_pair_rejects_forged_body_provenance_and_request_id() -> None:
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    q = request()
+    resolution, digest = resolve_v1_binding(
+        q, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result = document("v1", "examples/result.fixture.json")
+    result["provenance"]["backend"] = "fidelity0.tract1d"
+    result["provenance"]["backend_version"] = "v1"
+    result["provenance"]["input_digest"] = digest
+    result["embodiment"] = v1_resolved_embodiment(resolution)
+    result["request_id"] = q["request_id"]
+    validate("performance-result", result)
+    verify_v1_result_pair(
+        q, result, resolution,
+        backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    bad = deepcopy(result)
+    bad["provenance"]["input_digest"] = "sha256:" + "0" * 64
+    with pytest.raises(ValueError, match="provenance"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    bad = deepcopy(result)
+    bad["embodiment"]["preset_revision"] = 2
+    with pytest.raises(ValueError, match="embodiment"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    bad = deepcopy(result)
+    bad["request_id"] = "another_take_request"
+    with pytest.raises(ValueError, match="request_id"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    altered = deepcopy(q)
+    altered["embodiment"]["preset_revision"] = 2
+    with pytest.raises(ValueError, match="provenance"):
+        verify_v1_result_pair(
+            altered, result, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )

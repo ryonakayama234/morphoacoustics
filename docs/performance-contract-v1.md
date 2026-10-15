@@ -57,3 +57,7 @@ Existing [architecture/data proposal](./research/organ-graph-program.md) and [ex
 ## Frozen source inventory compatibility
 
 The deployed limited-live experiment deliberately audits the complete existing \`src/morphoacoustics\` source inventory. Adding a new production module there would invalidate its independently frozen hash manifest. Therefore the v1 binding helper is scoped to \`contracts/performance/v1/semantic_validation.py\` in this design-and-contract test gate, outside the published Core package; it is *not* an installed runtime API. The production integration boundary must undergo a separate explicit frozen-manifest migration before any promotion to \`src/\`. Neither the audited manifest nor an old verification baseline has been modified.
+
+## Request-result semantic pair gate
+
+The contract-local `verify_v1_result_pair` helper checks a **new result** against a previously schema-validated request and exact authoritative `BodyBindingResolution`: request ID, seed, backend ID/version, v1 canonical input SHA-256, status and the full resolved physical binding must all match. Forged bodies, stale input digests and mismatch of a request to another Take fail closed. It does not re-resolve archived Takes against mutable catalogs; pass their stored immutable resolved snapshot when interpreting history. This is a **reference conformance utility**, not a published backend service or a substitute for authenticated artifact storage.

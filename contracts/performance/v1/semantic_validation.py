@@ -97,3 +97,47 @@ def v1_resolved_embodiment(resolution: BodyBindingResolution) -> dict[str, objec
             preparation_digest=snapshot.preparation_digest,
         )
     return record
+
+def verify_v1_result_pair(
+    request: Mapping[str, object],
+    result: Mapping[str, object],
+    resolution: BodyBindingResolution,
+    *,
+    backend_id: str,
+    backend_version: str,
+) -> None:
+    """Verify a newly produced result against its frozen request + resolved binding.
+
+    The caller must first validate both objects using the versioned JSON
+    Schemas. For historical Takes, pass the archived resolution snapshot;
+    do not rebind it against a newer mutable preset catalog.
+    """
+    selected_body_binding(request)
+    if result.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError("INVALID:result.schema_version")
+    if result.get("request_id") != _nonblank(request.get("request_id"), "request_id"):
+        raise ValueError("INVALID:result.request_id:mismatched input")
+    provenance = result.get("provenance")
+    if not isinstance(provenance, Mapping):
+        raise ValueError("INVALID:result.provenance:missing")
+    expected = v1_input_digest(
+        request, backend_id=backend_id, backend_version=backend_version
+    )
+    if (
+        provenance.get("contract_version") != SCHEMA_VERSION
+        or provenance.get("backend") != backend_id
+        or provenance.get("backend_version") != backend_version
+        or provenance.get("input_digest") != expected
+        or provenance.get("input_digest_algorithm") != DIGEST_ALGORITHM
+        or provenance.get("seed") != request.get("seed")
+    ):
+        raise ValueError("INVALID:result.provenance:request/digest mismatch")
+    recorded = result.get("embodiment")
+    if recorded != v1_resolved_embodiment(resolution):
+        raise ValueError("INVALID:result.embodiment:resolved body mismatch")
+    if (
+        result.get("job_status") == "SUCCEEDED"
+        and result.get("realization_outcome") in ("FEASIBLE", "INFEASIBLE")
+        and resolution.status is not BindingStatus.BOUND
+    ):
+        raise ValueError("INVALID:result.realization_outcome:physical task requires bound body")

@@ -1,0 +1,35 @@
+name: contract-v1
+
+on:
+  push:
+    paths:
+      - "contracts/performance/v1/**"
+      - "tests/test_performance_contract_v1.py"
+      - ".github/workflows/contract-v1.yml"
+  pull_request:
+    paths:
+      - "contracts/performance/v1/**"
+      - "tests/test_performance_contract_v1.py"
+      - ".github/workflows/contract-v1.yml"
+
+jobs:
+  contract-v1:
+    name: "Contract v1 / Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Validate old and new contracts and body preset semantics
+        run: python -m pytest tests/test_performance_contract_v0.py tests/test_body_presets.py tests/test_performance_contract_v1.py -q
+      - name: Type check contract-local semantic reference implementation
+        run: MYPYPATH=src python -m mypy contracts/performance/v1/semantic_validation.py
