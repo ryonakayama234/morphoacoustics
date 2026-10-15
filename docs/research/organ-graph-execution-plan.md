@@ -118,3 +118,7 @@ Separately tracked **stacked Draft PR** `feat/og3-gate-b-minimal-public-fixed2` 
 #### Gate B correction after first failed CI (2026-10-15)
 
 The initial full-package extension proposal is **superseded**: upstream Experiment028/029 source fingerprint rejects newly inserted `src/morphoacoustics/**.py` despite X2a-only explicit manifest pin. Original 23 source pins cannot safely be expanded to claim the V3 upstream freeze still matches. Revert X2a adapter change, place new Core-owned graph API in independently packaged sibling `src/morphoacoustics_graph/` and preserve all original source files/experiment fixtures. Mandatory exact-new-HEAD retest of all affected V3, X2a two real Takes, public 7-frequency matrix, and mypy remains. Detailed failed runs recorded in [experiment ledger](./organ-graph-experiment-ledger.md).
+
+#### Gate B exact-head workflow and artefact policy
+
+New `.github/workflows/og3-gate-b.yml` runs under PR HEAD, not a PR merge SHA. It forces V3b/Experiment028 and V3c/Experiment029 original gates despite their old path filters, real X2a two-take smoke and new OG-3 evidence `checks/check_og3_gate_b.py` twice; emits immutable raw artifacts and negative mismatch/replay tests. Do not interpret an unexecuted YAML definition as passing science or use existing historical artifacts as new evidence. This workflow is the new public capability's additional audit, not an amendment to old frozen experiments.

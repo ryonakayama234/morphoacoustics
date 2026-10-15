@@ -1,0 +1,116 @@
+name: og3-gate-b
+
+on:
+  push:
+    paths:
+      - "src/morphoacoustics_graph/**"
+      - "tests/test_prepared_graph_public.py"
+      - "checks/check_og3_gate_b.py"
+      - "docs/research/og3-gate-b-implementation.md"
+      - ".github/workflows/og3-gate-b.yml"
+  pull_request:
+    paths:
+      - "src/morphoacoustics_graph/**"
+      - "tests/test_prepared_graph_public.py"
+      - "checks/check_og3_gate_b.py"
+      - "docs/research/og3-gate-b-implementation.md"
+      - ".github/workflows/og3-gate-b.yml"
+
+jobs:
+  science-and-frozen-legacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install audited numeric environment and dev tests
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e '.[dev]'
+          python -c "import numpy; assert numpy.__version__=='2.4.6'"
+      - name: Production public API and inherited research numerical gates
+        run: |
+          python -m pytest -q tests/test_prepared_graph_public.py tests/test_experiment_039_og2.py
+          python -m mypy
+      - name: Frozen Experiment028 and Experiment029 evidence must keep original decisions
+        run: |
+          python experiments/028_task_field_morphology_transfer/run.py --output-dir og3-exp028
+          python experiments/029_task_field_embodied_infeasibility/run.py --output-dir og3-exp029
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          actual28=json.loads(Path("og3-exp028/decision.json").read_text())
+          actual29=json.loads(Path("og3-exp029/decision.json").read_text())
+          assert actual28["decision"]=="SUPPORT_TASK_TRANSFER",actual28["decision"]
+          assert actual29["decision"]=="SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY",actual29["decision"]
+          print("V3b/V3c frozen research decisions retained")
+          PY
+      - name: Strict old package source and tamper guards
+        run: |
+          python -m pytest -q tests/test_limited_live_policy.py checks/test_limited_live_smoke.py
+      - name: Genuine separate two-Take X2a CLI smoke (no fixtures/replays)
+        run: |
+          cat > og3-x2a-request.json <<'JSON'
+          {
+            "schema_version":"morpho-live/v1",
+            "pronunciation_id":"v3a-a-to-i-like/v1",
+            "body_id":"v3c-M_plus/v1",
+            "segment_id":"s1","text":"あい","seed":0
+          }
+          JSON
+          python -m morphoacoustics.integration.limited_live --request og3-x2a-request.json --output-dir og3-live-take-1 > og3-cli-1.json
+          python -m morphoacoustics.integration.limited_live --request og3-x2a-request.json --output-dir og3-live-take-2 > og3-cli-2.json
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,wave
+          manifests=[]
+          for i in (1,2):
+              path=Path(f"og3-live-take-{i}")
+              result=json.loads((path/"result.json").read_text())
+              assert result["job_status"]=="SUCCEEDED"
+              assert result["realization_outcome"]=="FEASIBLE"
+              assert result["execution"]["acoustic_transfer_calls"]==102
+              for artifact in result["artifacts"]:
+                  name=path/artifact["path"]
+                  assert hashlib.sha256(name.read_bytes()).hexdigest()==artifact["sha256"]
+              with wave.open(str(path/"audio.wav"),"rb") as audio:
+                  assert audio.getframerate()==48000
+                  assert audio.getnframes()==24000
+              assert (path/"raw_pressure_pa.npy").is_file()
+              assert (path/"physical_trace.csv").is_file()
+              manifests.append(result)
+          assert (Path("og3-live-take-1")/"audio.wav").read_bytes()==(Path("og3-live-take-2")/"audio.wav").read_bytes()
+          assert (Path("og3-live-take-1")/"raw_pressure_pa.npy").read_bytes()==(Path("og3-live-take-2")/"raw_pressure_pa.npy").read_bytes()
+          print("two independently produced physical Takes are byte-identical under fixed request")
+          PY
+      - name: Reproducible new public physical observation evidence twice
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python checks/check_og3_gate_b.py --output-dir og3-gate-b-run-1 --expected-head-sha "$HEAD_SHA"
+          python checks/check_og3_gate_b.py --output-dir og3-gate-b-run-2 --expected-head-sha "$HEAD_SHA"
+          cmp og3-gate-b-run-1/observation.json og3-gate-b-run-2/observation.json
+          cmp og3-gate-b-run-1/sha256.txt og3-gate-b-run-2/sha256.txt
+          if python checks/check_og3_gate_b.py --output-dir bad-head --expected-head-sha 0000000000000000000000000000000000000000; then
+            echo "wrong HEAD was accepted"; exit 1
+          fi
+          test ! -e bad-head
+          if python checks/check_og3_gate_b.py --output-dir og3-gate-b-run-1 --expected-head-sha "$HEAD_SHA"; then
+            echo "stale output was accepted"; exit 1
+          fi
+      - name: Upload raw scientific and frozen-live proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: og3-gate-b-evidence
+          path: |
+            og3-gate-b-run-1/
+            og3-gate-b-run-2/
+            og3-exp028/decision.json
+            og3-exp029/decision.json
+            og3-live-take-1/
+            og3-live-take-2/
+          if-no-files-found: warn
