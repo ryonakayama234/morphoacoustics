@@ -80,3 +80,24 @@ See companion [data-model candidate](./organ-graph-data-candidate.md) and [exper
 ## Execution work orders
 
 The concrete delegated implementation tasks, expected source/test paths, independent Wolfram criteria, acceptance gates and failure decisions are in [the four-work-package implementation plan](./organ-graph-execution-plan.md). Production graph API design is separately tracked as [Core OG-3 #100](https://github.com/ryonakayama234/morphoacoustics/issues/100) and may not start without OG-2 limited adoption. Creator-facing presets remain [Core CC-A1 #72](https://github.com/ryonakayama234/morphoacoustics/issues/72) → [Studio CC-A2 #14](https://github.com/ryonakayama234/morphoacoustics-studio/issues/14).
+
+## 2026-10-15 OG-3 Gate A design handoff (proposal, not adopted)
+
+[OG-3 RFC](./og3-public-preparation-rfc.md) supplies the two-rigid-tube preparation boundary. New production code belongs only in Core sibling `src/morphoacoustics_graph/`; the entire frozen `src/morphoacoustics/` and X2a manifest remain byte-identical. Audit sibling sources/imports separately and run original Experiment028/029 plus X2a smoke on exact Gate B HEAD. Extending X2a pins alone failed and is not an operative option. Gate A adds no public implementation; see RFC §5/§6/§10 and the protocol.
+
+### OG-3 Gate A self-audit follow-up (2026-10-15, PROPOSED)
+
+The [RFC §8](./og3-public-preparation-rfc.md) distinguishes unloaded transfer from terminal-loaded observables. Same tubes give identical T under matched vs pressure-release metadata. Its earlier pin-extension proposal is superseded by sibling isolation (§10); original source/pins stay unchanged. This is not independent adoption.
+
+### Gate A reviewer amendment (2026-10-15, proposed)
+
+GitHub review requirements are synchronized in RFC §9 and the protocol: ordered 1D `1<=N<=4096`, `0<=f<=4000` Hz, one `(2,2)` complex matrix per input including repeats; oversize or out-of-band valid grids `UNSUPPORTED` with no observation; malformed/type/nonfinite/negative `INVALID`; ±0 normalize to exact `0000000000000000` frequency hex before evaluation/hash. Only seven original frequencies carry frozen oracle evidence. The Wolfram source exports the dimensionless J_flux defect and explicit thresholds; Gate B remains separate from adoption.
+
+### Gate A compatibility decision supported by first Gate B experiment (2026-10-15)
+
+The audited downstream packaging is a **sibling Core package**, `morphoacoustics_graph`, not a new module inserted into frozen `morphoacoustics`. Trial #104 initially falsified the add-pins-in-frozen-tree approach with Exp028/029/X2a identity failures; corrected build reused frozen UniformTube and passed Exp028/029 original decisions + X2a fresh two Take gate and graph oracle on [run #38731394921](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38731394921). This supersedes older draft architecture paths, preserves the five-layer causal model, and remains nonadopted until independent Gate A review and Gate C release approval.
+
+
+### Geometry-domain correction and Gate B handoff (2026-10-15)
+
+[RFC §11](./og3-public-preparation-rfc.md) restricts every 0..4000 Hz support claim to the two frozen **ordered** fixtures (first 0.08 m/3e-4 m², second 0.09 m/{3e-4,6e-4} m²; rho 1.21, c 343). All other valid geometry/medium is UNSUPPORTED before preparation; malformed input is INVALID. No arbitrary-geometry 4 kHz claim. Caller IDs/revision labels and collection reorder remain independent of physical path. Backend candidate v2 must refuse old candidate snapshots and forged prepared values rather than bypass capability. New code stays in the sibling package; old Core tree/oracles/pins stay unchanged. The [reconciliation work order](./og3-gate-b-reconciliation.md) records #104 blockers and acceptance before its next exact-head run. Design-only merge does not release or scientifically adopt Gate B.
