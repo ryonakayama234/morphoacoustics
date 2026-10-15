@@ -92,3 +92,7 @@ The [amended public graph RFC §8](./og3-public-preparation-rfc.md) explicitly d
 ### Gate A reviewer amendment (2026-10-15, proposed)
 
 GitHub automated review identified absent bounded frequency capability and signed-zero frequency identity. [RFC §9](./og3-public-preparation-rfc.md) now proposes the exact ordered nonempty 1D `0..4000 Hz` backend window, >4000 `UNSUPPORTED`, invalid shape/nonfinite/negative `INVALID`, and `-0.0` → `+0.0` before observation hashing. Only seven original Wolfram frequencies carry frozen oracle evidence; no blanket biological 4 kHz validity is implied. [Protocol](./og3-gate-a-protocol.md) and ledger were updated together. Gate B is a distinct Draft PR, not a merge or adoption.
+
+### OG-3 Gate B implementation candidate — 2026-10-15 (Draft; NOT ADOPTED)
+
+[Gate B implementation notes](./og3-gate-b-implementation.md) add a proposed production-only import path through explicit new graph and preparation submodules, with **no change** to old Core initializers or uniform-tube law. Physical graph → validation → fixed2 backend preparation → unloaded complex observation; typed unsupported branch and error status; X2a manifest pins separately audited under #103. This does not change the overall Morphology→Gesture→physical state→acoustics→observation causal model, nor confer waveform or general graph capability. Actual CI and independent adoption remain gates.

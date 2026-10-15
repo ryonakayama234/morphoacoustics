@@ -110,3 +110,7 @@ Review comment [Gate A self-audit PR #102 comment](https://github.com/ryonakayam
 ### Gate A Codex review disposition / Gate B branch plan (2026-10-15)
 
 Two automatically raised issues on [#102](https://github.com/ryonakayama234/morphoacoustics/pull/102) were accepted: frequency window **0..4000 Hz** and signed-zero canonicalization. Amendment is synchronized across RFC/architecture/data/ledger/protocol. Gate A technical design review is recorded, but no independent human approval or API adoption is claimed. Implement Gate B in a **separate Draft PR stacked on the Gate A branch** (initial base branch `design/og3-gate-a-public-graph-20261015`); this isolates the code diff and avoids merging unapproved Gate A into main. The Gate B Draft remains not approved and never merges until both physics and code review, historical source inventory protection and exact-head evidence are satisfied.
+
+### OG-3 Gate B Draft proposal (2026-10-15)
+
+Separately tracked **stacked Draft PR** `feat/og3-gate-b-minimal-public-fixed2` against `design/og3-gate-a-public-graph-20261015` pending Gate A design review. Code candidate includes fixed2 graph structure, Core validation/prepare, unloaded complex observation, immutable identity/snapshot tests, explicit 0..4000Hz refusal, and X2a explicit new-source pinning without rewriting old source. This is **work in progress**: generic CI green alone would not demonstrate genuine X2a two-take physics smoke or Gate C public signoff. Do not merge before audit.
