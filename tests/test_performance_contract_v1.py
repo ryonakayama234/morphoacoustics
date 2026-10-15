@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -11,16 +12,19 @@ from referencing import Registry, Resource
 
 from morphoacoustics import CavityKind, CavitySpec, CreatureSpec
 from morphoacoustics.integration.body_presets import BindingStatus, BodyPresetRegistry, make_body_preset
-from contracts.performance.v1.semantic_validation import (
-    resolve_v1_binding,
-    selected_body_binding,
-    v1_input_digest,
-    v1_resolved_embodiment,
-)
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 
 ROOT = Path(__file__).resolve().parents[1] / "contracts" / "performance"
+
+# External draft contract helper is deliberately not an installed Core module.
+# Load it from the checked-out contract path without mutating sys.path or the
+# adopted limited-live package source-inventory attestation.
+_semantics = runpy.run_path(str(ROOT / "v1" / "semantic_validation.py"))
+resolve_v1_binding = _semantics["resolve_v1_binding"]
+selected_body_binding = _semantics["selected_body_binding"]
+v1_input_digest = _semantics["v1_input_digest"]
+v1_resolved_embodiment = _semantics["v1_resolved_embodiment"]
 
 
 def document(version: str, name: str) -> dict:
