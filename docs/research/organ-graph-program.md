@@ -80,3 +80,7 @@ See companion [data-model candidate](./organ-graph-data-candidate.md) and [exper
 ## Execution work orders
 
 The concrete delegated implementation tasks, expected source/test paths, independent Wolfram criteria, acceptance gates and failure decisions are in [the four-work-package implementation plan](./organ-graph-execution-plan.md). Production graph API design is separately tracked as [Core OG-3 #100](https://github.com/ryonakayama234/morphoacoustics/issues/100) and may not start without OG-2 limited adoption. Creator-facing presets remain [Core CC-A1 #72](https://github.com/ryonakayama234/morphoacoustics/issues/72) → [Studio CC-A2 #14](https://github.com/ryonakayama234/morphoacoustics-studio/issues/14).
+
+## 2026-10-15 OG-3 Gate A design handoff (proposal, not adopted)
+
+[OG-3 RFC](./og3-public-preparation-rfc.md) supplies the **narrow two-rigid-tube public preparation boundary** and diagram. [Gate A protocol](./og3-gate-a-protocol.md) defines inherited seven-frequency control and refusal gates; [Wolfram source](./og3-wolfram-gate-a.wl) independently recomputes analytic planning values. No public API implementation has been added by this docs PR. The current X2a live path has a **frozen full-package source inventory**: any added `.py` under `src/morphoacoustics/` will fail its audited preflight until a separate fail-closed, hash-pinned compatibility re-audit. See RFC §6; do **not** waive X2a tests to promote OG-3. The design is a review candidate and implementation requires a separate Gate B.

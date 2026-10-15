@@ -76,3 +76,11 @@ This JSON is a **template with null placeholders**, not an actually executed or 
 **Practical PR policy:** no changing a physical capability without updating all three views, declaring old/new limits, linking tests/oracle/CI and recording acceptance or rejection. For pure documentation plans, explicitly label the record PROPOSED and do not synthesize test results.
 
 Companions: [program](./organ-graph-program.md) · [data candidate](./organ-graph-data-candidate.md).
+
+## OG-3 public API Gate A planning record — 2026-10-15 (PROPOSED / NOT ADOPTED)
+
+- Tracker [#100](https://github.com/ryonakayama234/morphoacoustics/issues/100); base `1fb6c9f691f94558c6d5ccaf4b018eb05389cafe`. This entry records **design and Wolfram analytic planning only**, not OG-3 production code, successful production tests, new prospective blind science, or adoption.
+- [RFC/diagram](./og3-public-preparation-rfc.md), [candidate validation protocol](./og3-gate-a-protocol.md), [independent Wolfram source](./og3-wolfram-gate-a.wl). Original OG-2 oracle/AMENDMENT_001 unchanged. Reused seven-frequency physical fixtures are **controlled regressions**.
+- Direct Wolfram calculation for B area 3e-4→6e-4 m², f=733 Hz gave dimensionless transfer `[[-1.4753529760, +0.5343984190i],[+1.2026670440i, -0.2421770511]]` and max intervention deviation `0.8221172833`; matched-interface r/t = -1/3, 2/3; R/T = 1/9, 8/9; power sum 1. Over the seven frequency fixture: false particle-velocity junction max deviation `0.9019457527`, reversed organ order max `1.3529186291`. These match the OG-2 limited regression expectations; **not** an execution of proposed OG-3 API.
+- **Open blocker:** adding a public Core `.py` module violates the audited X2a complete-source inventory. Require explicit hash-pinned inventory design and independent compatibility audit plus current-head X2a CLI smoke **before** Gate B can be accepted; do not silently disable manifest or rehash legacy accepted files.
+- Next evidence slots: Gate A reviewer dispositions and frozen contract; then Gate B implementation/head SHA, 7 complex frequency matrices, mutation rejects, identity/digest, raw artifacts, Python 3.11/3.12/3.13 CI and legacy X2a smoke; finally separate Gate C public decision. Current `GO`: **not evaluated**.
