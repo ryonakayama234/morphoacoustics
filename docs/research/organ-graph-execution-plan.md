@@ -1,5 +1,7 @@
 # Organ Graph Foundation — execution work orders / acceptance plan (2026-10-14 JST)
 
+**Current execution update (2026-10-16; corrected after Codex P2):** **WP-02 = OG-3 fixed2 Core graph preparation+observation, ADOPTED LIMITED and merged** via [PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104); see [Gate C decision](./og3-gate-c-limited-adoption.md). **WP-03 = creator-selected exact body preset contract v1** remains a **separate Core contract workstream** (its draft status is not changed or adopted by OG-3). **WP-04 = Studio validated A/B body preset selector** likewise remains separate and **not delivered by OG-3**. These WP identifiers follow the explicit graph and section headings below; the old 2026-10-15 status line is retained only as historical prerelease planning, not as the current authoritative status.
+
 **Status: WORK PLAN / 2026-10-15 UPDATE — WP-01 ADOPTED LIMITED RESEARCH AND MERGED; WP-03 DRAFT IMPLEMENTED, NOT ADOPTED; WP-02/04 UNIMPLEMENTED.**
 Parent [Studio Character Creator #12](https://github.com/ryonakayama234/morphoacoustics-studio/issues/12), previous synchronized proposal [Draft PR #99](https://github.com/ryonakayama234/morphoacoustics/pull/99). This document records exact expected work, outputs and fail-closed gates so implementation may be delegated without authoring decisions about the science during coding.
 

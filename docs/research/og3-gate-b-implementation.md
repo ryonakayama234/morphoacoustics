@@ -1,5 +1,7 @@
 # OG-3 Gate B — bounded two-fixture graph candidate (2026-10-15)
 
+**Current Gate C status (2026-10-16): `ADOPTED_LIMITED_FIXED2_PASSIVE_SERIAL_CORE`** — [PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104) merged into `main@8fb021ef2abc9eb92275a9e6cc6f92e8a6cb405f`. [Release evidence and scoped decision](./og3-gate-c-limited-adoption.md). The **DRAFT / NOT ADOPTED** paragraphs below are time-stamped historical Gate B *pre-merge* records, not the current Core status. All numerical runner receipts still say `PROVISIONAL_...` because machine evidence alone is not an adoption verdict; separate Gate C decision controls adoption. Fixed-two-fixture only, no arbitrary geometry or stable Studio ABI.
+
 **DRAFT / NOT ADOPTED / implementation review pending.** Design [PR #102](https://github.com/ryonakayama234/morphoacoustics/pull/102) merged documentation-only to main `6d38d8b219e72170ca97a895134bf98f0babcbc9`. This implementation incorporates that design/main history and is based on main. It does not imply an adopted public API, new voice generator or Studio capability. [Reconciliation work order](./og3-gate-b-reconciliation.md) records acceptance before this trial; [parent #100](https://github.com/ryonakayama234/morphoacoustics/issues/100).
 
 ## System and capability

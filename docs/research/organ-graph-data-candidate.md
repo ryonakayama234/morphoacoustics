@@ -1,5 +1,7 @@
 # Organ Graph data contracts — experiment-local candidate (2026-10-14)
 
+**Current production-facing exception (2026-10-16):** the *specific* typed two-node passive serial graph schema in `src/morphoacoustics_graph/` is **adopted limited on Core main**, [Gate C decision](./og3-gate-c-limited-adoption.md). The older *general* graph schema and separate `CreatureSpec`/Studio body-binding contract described below remain candidate and **NOT adopted**. Two exact geometries, fixed common medium and full unloaded complex response only; no aliasing UI coordinates or physical time state.
+
 **NOT A PUBLISHED API.** This is a reviewable, minimal conceptual schema for [Core OG-2 #96](https://github.com/ryonakayama234/morphoacoustics/issues/96), not a replacement for `CreatureSpec`, `PreparedMorphology[T]`, `Tract1DGeometry` or the Studio Performance Contract v0. Exact field names and JSON serialization are unapproved.
 
 ## Four different objects — do not collapse them

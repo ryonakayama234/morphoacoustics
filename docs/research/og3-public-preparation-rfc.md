@@ -1,5 +1,7 @@
 # OG-3 Gate A — narrow public Organ Graph preparation RFC (candidate)
 
+**Historical Gate A RFC.** Since this text was authored, Gate A [PR #102](https://github.com/ryonakayama234/morphoacoustics/pull/102) and narrowed Gate B [PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104) merged. The **exact two-fixture passive serial Core API** is now **ADOPTED LIMITED** under the separate [Gate C decision](./og3-gate-c-limited-adoption.md). The RFC's original "not adopted" labels refer to its *pre-implementation status* and continue to hold for arbitrary topology, real anatomy/voice and external stable cross-language contracts.
+
 Date: 2026-10-15 JST · Tracker: [Core #100](https://github.com/ryonakayama234/morphoacoustics/issues/100) · Base: `1fb6c9f691f94558c6d5ccaf4b018eb05389cafe`
 
 **Status: DESIGN REVIEW; documentation-only merge under review. No production implementation or public API adoption in this PR.**

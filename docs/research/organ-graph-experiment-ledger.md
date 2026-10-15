@@ -1,5 +1,7 @@
 # Organ Graph scientific ledger — status and update template
 
+**Gate C outcome (2026-10-16):** OG-3 fixed2 Core backend **ADOPTED LIMITED**, [PR #104 merged](https://github.com/ryonakayama234/morphoacoustics/pull/104) to `main@8fb021ef2abc9eb92275a9e6cc6f92e8a6cb405f`; [exact-head audit decision](https://github.com/ryonakayama234/morphoacoustics/pull/104#issuecomment-6197561497), [post-merge OG-3 + X2a genuine physics](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38773196170), [post-merge Python+typecheck](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38773196256): 27/27 post-merge workflows green. Original Exp028/029 decisions and frozen Experiment039 oracle unchanged; 2 historical P1 Codex issues fixed and re-reviewed. [Full decision ledger](./og3-gate-c-limited-adoption.md). Table rows and entries below record earlier research stages and premerge candidate decisions and remain valid historical evidence, **not current status**.
+
 **Record date: 2026-10-14 JST.** This file is a searchable index, not a replacement for original evidence, post hoc corrections, frozen protocols, or actual GitHub Actions records. Experiment-local success must never be described as public API or biological validity.
 
 ## Current experimental gates
