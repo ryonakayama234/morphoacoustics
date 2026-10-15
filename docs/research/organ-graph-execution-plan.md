@@ -1,6 +1,6 @@
 # Organ Graph Foundation — execution work orders / acceptance plan (2026-10-14 JST)
 
-**Status: IMPLEMENTATION PLAN, NOT IMPLEMENTED / NOT PUBLIC ADOPTION.**
+**Status: WORK PLAN / 2026-10-15 UPDATE — WP-01 ADOPTED LIMITED RESEARCH AND MERGED; WP-03 DRAFT IMPLEMENTED, NOT ADOPTED; WP-02/04 UNIMPLEMENTED.**
 Parent [Studio Character Creator #12](https://github.com/ryonakayama234/morphoacoustics-studio/issues/12), previous synchronized proposal [Draft PR #99](https://github.com/ryonakayama234/morphoacoustics/pull/99). This document records exact expected work, outputs and fail-closed gates so implementation may be delegated without authoring decisions about the science during coding.
 
 ## Milestone definition
@@ -44,6 +44,14 @@ flowchart TD
 **Acceptance:** the frozen OG-2 gate in `PREREGISTRATION.md`: max dimensionless full complex transfer error `<=1e-10`; power/scattering absolute error `<=1e-12`; false particle-velocity coupling max normalized mismatch `>1e-3`; identity invariance vs B intervention, both positive/negative structural/capability diagnostics; no experimental code import from production. Results must be tied to **new integrated exact HEAD** and cannot rely only on old 38430414632 successes. Human voices/3D/FSI/WAV not claimed.
 
 **Decision/output:** exact SHA-scoped [audit #98](https://github.com/ryonakayama234/morphoacoustics/issues/98) with `SUPPORT_LIMITED_PASSIVE_2PORT_PREPARATION` / `INCONCLUSIVE` / `REJECT`; research PR may be considered for merge only after the decision, and its merge is **not** public API approval. Post-merge main exact-SHA regression if merged.
+
+### WP-01 execution receipt — 2026-10-15 JST
+
+Integrated exact HEAD `5711a3a` passed [scientific CI #38667264999](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38667264999) and [full regression #38667265000](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38667265000), with [artifact hash and 11 controls](./organ-graph-experiment-ledger.md), [independent audit and explicit limited decision](https://github.com/ryonakayama234/morphoacoustics/issues/98#issuecomment-6182585021). [PR #97 merged](https://github.com/ryonakayama234/morphoacoustics/pull/97) as research only to `main@2f325956`; production graph ABI remains unapproved. Post-merge main CI is separately tracked in the ledger.
+
+### WP-03 initial execution receipt — 2026-10-15 JST
+
+[Draft PR #101](https://github.com/ryonakayama234/morphoacoustics/pull/101) adds v1 JSON schemas, fixtures, exact binding semantics, request digest and contract tests with unchanged v0; the reference resolver is **under `contracts/performance/v1/`, not published `src/`**, to keep the frozen limited-live source inventory byte-identical. Initial [green v1 CI #38668068786](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38668068786) Python 3.11/3.12/3.13 and mypy followed remediation. A fresh integrated-head CI is required before acceptance.
 
 ## WP-02 — Core narrow public graph API, only if WP-01 supported
 
