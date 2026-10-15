@@ -107,7 +107,7 @@ Parallel [CC-A1 Draft PR #101](https://github.com/ryonakayama234/morphoacoustics
 
 ## OG-3 candidate public binding (2026-10-15; NOT a published ABI)
 
-See the [Gate A RFC](./og3-public-preparation-rfc.md) for the specific **two fixed serial acoustic tubes + one typed p/U series law** interface. This remains distinct from the illustrative candidate JSON above and Experiment039's private Python `Blueprint`. Contract preserves named organ IDs and exact revisions, SI lengths/areas and medium, port IDs/direction/units, edge law/version, source/load boundaries and mapping. Split `blueprint_digest`, backend-specific `preparation_digest`, `observation/evidence_digest`; omit Studio canvas coordinates from physical identity. Only Core canonical digest is authoritative pending cross-language bytes test. `CreatureSpec` is semantic; `PreparedMorphology[T]` and `BodyPresetRegistry` remain unchanged, and CC-A1 PR #101 is separately draft. WARNING: X2a frozen `src` manifest prevents naive new modules; the RFC mandates explicit hash-pinned compatibility re-audit, not bypass. [Protocol](./og3-gate-a-protocol.md).
+See the [Gate A RFC](./og3-public-preparation-rfc.md) for exactly two fixed serial tubes, typed p/U law, immutable identity and separate blueprint/preparation/observation digests. The illustrative JSON and Experiment039 private types are not the public ABI. `CreatureSpec`, registry and draft CC-A1 remain separate. New code is isolated in `src/morphoacoustics_graph/`; original Core tree/manifest/pins remain byte-identical, with separately audited sibling hashes/imports and legacy regression. X2a manifest extension alone is rejected.
 
 ### OG-3 Gate A canonical-byte candidate, review pending (2026-10-15)
 
@@ -115,7 +115,7 @@ See the [Gate A RFC](./og3-public-preparation-rfc.md) for the specific **two fix
 
 ### Candidate normalized observation-grid bytes (Gate A review 2026-10-15)
 
-Ordered frequency values are float64 SI Hz, zero sign canonicalized to **positive zero** before big-endian binary64 hexadecimal serialization. Source grid must be nonempty 1-D of at most 4096 entries, each finite and `0<=f<=4000` Hz. Different input array order intentionally changes observation identity, unlike sorting named organ nodes. >4000Hz is valid numeric but backend **UNSUPPORTED**; invalid type/shape/nonfinite/negative is **INVALID**. This *numerical support bound* does not extend seven-point frozen science to full spectral physiological validation. See [RFC §9](./og3-public-preparation-rfc.md).
+Ordered frequencies are finite float64 SI Hz, `1<=N<=4096`, `0<=f<=4000`. Normalize ±0 before evaluation/snapshot/hash to exact binary64 hex `0000000000000000`, never `8000000000000000`. Output `(N,2,2)` complex pairs preserves order/duplicates; seven points apply only to the frozen oracle. A well-formed finite nonnegative N>4096 grid is `UNSUPPORTED` (resource limit); >4000 Hz is `UNSUPPORTED` (frequency capability). Malformed/type/nonfinite/negative input is `INVALID`. All refusals carry no observation/matrix/digest. Invalid input takes precedence, then resource cap, then band. This is numerical support, not full-band physiology. See RFC §9 and protocol boundary cases.
 
 ### Gate A approved-for-trial only: Core sibling graph type, original frozen physics unchanged
 
