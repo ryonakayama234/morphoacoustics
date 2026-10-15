@@ -116,3 +116,7 @@ See the [Gate A RFC](./og3-public-preparation-rfc.md) for the specific **two fix
 ### Candidate normalized observation-grid bytes (Gate A review 2026-10-15)
 
 Ordered frequency values are float64 SI Hz, zero sign canonicalized to **positive zero** before big-endian binary64 hexadecimal serialization. Source grid must be nonempty 1-D of at most 4096 entries, each finite and `0<=f<=4000` Hz. Different input array order intentionally changes observation identity, unlike sorting named organ nodes. >4000Hz is valid numeric but backend **UNSUPPORTED**; invalid type/shape/nonfinite/negative is **INVALID**. This *numerical support bound* does not extend seven-point frozen science to full spectral physiological validation. See [RFC §9](./og3-public-preparation-rfc.md).
+
+### Gate A approved-for-trial only: Core sibling graph type, original frozen physics unchanged
+
+The candidate `OrganGraphBlueprint`/prepared value is now held in sibling `src/morphoacoustics_graph/`, with `UniformTube` imported unchanged from frozen `src/morphoacoustics/acoustics/`. All original 23 X2a pins and source bytes are retained, and no generic branching solver is inferred. Exact frequency capability 0..4000Hz, signed-zero normalization, identity splits and orphan invalid refusal remain the proposal. The first failed-in-frozen-tree trial and corrected machine-green sibling trial are linked in [scientific ledger](./organ-graph-experiment-ledger.md); this is not an adopted external ABI.

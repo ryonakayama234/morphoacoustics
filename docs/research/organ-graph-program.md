@@ -92,3 +92,7 @@ The [amended public graph RFC §8](./og3-public-preparation-rfc.md) explicitly d
 ### Gate A reviewer amendment (2026-10-15, proposed)
 
 GitHub automated review identified absent bounded frequency capability and signed-zero frequency identity. [RFC §9](./og3-public-preparation-rfc.md) now proposes the exact ordered nonempty 1D `0..4000 Hz` backend window, >4000 `UNSUPPORTED`, invalid shape/nonfinite/negative `INVALID`, and `-0.0` → `+0.0` before observation hashing. Only seven original Wolfram frequencies carry frozen oracle evidence; no blanket biological 4 kHz validity is implied. [Protocol](./og3-gate-a-protocol.md) and ledger were updated together. Gate B is a distinct Draft PR, not a merge or adoption.
+
+### Gate A compatibility decision supported by first Gate B experiment (2026-10-15)
+
+The audited downstream packaging is a **sibling Core package**, `morphoacoustics_graph`, not a new module inserted into frozen `morphoacoustics`. Trial #104 initially falsified the add-pins-in-frozen-tree approach with Exp028/029/X2a identity failures; corrected build reused frozen UniformTube and passed Exp028/029 original decisions + X2a fresh two Take gate and graph oracle on [run #38731394921](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38731394921). This supersedes older draft architecture paths, preserves the five-layer causal model, and remains nonadopted until independent Gate A review and Gate C release approval.
