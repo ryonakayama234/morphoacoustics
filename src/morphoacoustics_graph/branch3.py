@@ -12,7 +12,7 @@ import json
 import math
 import re
 import struct
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import numpy as np
 
@@ -176,7 +176,7 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
                           "law": law, "ports": ports})
     source = s.obj(d.get("source"), {"kind", "phasor_schema", "port",
                                      "amplitude_m3_s", "scale"}, "/source")
-    src = {"kind": s.literal(source.get("kind"), ("prescribed_volume_flow",), "/source/kind"),
+    src: dict[str, Any] = {"kind": s.literal(source.get("kind"), ("prescribed_volume_flow",), "/source/kind"),
            "phasor_schema": s.literal(source.get("phasor_schema"), (PHASOR_SCHEMA,),
                                       "/source/phasor_schema"),
            "port": s.ident(source.get("port"), "/source/port"),
@@ -206,7 +206,7 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
                 "source": src, "loads": loads}
     # Validate graph relationships independently from narrow backend capability.
     ids = [o["id"] for o in organs]
-    ports = {p["id"]: (o["id"], end) for o in organs
+    port_owner = {p["id"]: (o["id"], end) for o in organs
              for end in ("inlet", "outlet") for p in (o[end],)}
     raw_port_ids = [o[end]["id"] for o in organs for end in ("inlet", "outlet")]
     if len(set(ids)) != len(ids) or len(set(raw_port_ids)) != len(raw_port_ids):
@@ -215,12 +215,12 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
         _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
     assignments: list[str] = []
     source_id = src["port"]
-    if source_id not in ports or ports[source_id][1] != "inlet":
+    if source_id not in port_owner or port_owner[source_id][1] != "inlet":
         _err("INVALID", "BLUEPRINT_STRUCTURE", "/source/port")
     assignments.append(source_id)
     for j in junctions:
         jports = j["ports"]
-        owners = [ports.get(pid) for pid in jports]
+        owners = [port_owner.get(pid) for pid in jports]
         if (any(a is None for a in owners) or
                 owners[0][1] != "outlet" or
                 any(a[1] != "inlet" for a in owners[1:]) or
@@ -229,7 +229,7 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
             _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
         assignments.extend(jports)
     load_ids = [x["port"] for x in loads]
-    if any(pid not in ports or ports[pid][1] != "outlet" for pid in load_ids):
+    if any(pid not in port_owner or port_owner[pid][1] != "outlet" for pid in load_ids):
         _err("INVALID", "BLUEPRINT_STRUCTURE", "/loads")
     assignments.extend(load_ids)
     if len(assignments) != len(set(assignments)):
@@ -239,13 +239,13 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
     # Undirected, iterative connectivity; a well-formed larger graph is UNSUPPORTED.
     adjacency: dict[str, set[str]] = {name: set() for name in ids}
     for j in junctions:
-        upstream = ports[j["ports"][0]][0]
+        upstream = port_owner[j["ports"][0]][0]
         for pid in j["ports"][1:]:
-            down = ports[pid][0]
+            down = port_owner[pid][0]
             adjacency[upstream].add(down)
             adjacency[down].add(upstream)
     visited: set[str] = set()
-    stack = [ports[source_id][0]]
+    stack = [port_owner[source_id][0]]
     while stack:
         node = stack.pop()
         if node not in visited:
@@ -285,10 +285,10 @@ def _check_capability(bp: dict[str, Any]) -> None:
 
 def _fresh(bp: dict[str, Any]) -> "PreparedBranch3":
     organs = {o["id"]: o for o in bp["organs"]}
-    tubes = tuple(UniformTube(
+    tubes = cast(tuple[UniformTube, UniformTube, UniformTube], tuple(UniformTube(
         length_m=organs[n]["length_m"], area_m2=organs[n]["area_m2"],
         sound_speed_m_s=organs[n]["sound_speed_m_s"],
-        air_density_kg_m3=organs[n]["air_density_kg_m3"]) for n in "ABC")
+        air_density_kg_m3=organs[n]["air_density_kg_m3"]) for n in "ABC"))
     bd = _digest("blueprint", bp)
     pd = _digest("preparation", {
         "digest_version": DIGEST_VERSION, "backend_id": BACKEND_ID,
@@ -364,13 +364,13 @@ class PreparedBranch3:
                 cond = float(np.linalg.cond(m))
                 if not math.isfinite(cond) or cond > 1e8:
                     _err("NUMERICALLY_UNRESOLVED", "CONDITION_OR_SOLVE", path)
-                x = np.linalg.solve(m, rhs)
-                if not np.all(np.isfinite(x)):
+                solution = np.linalg.solve(m, rhs)
+                if not np.all(np.isfinite(solution)):
                     _err("NUMERICALLY_UNRESOLVED", "CONDITION_OR_SOLVE", path)
                 denom = max(float(np.linalg.norm(m, ord=np.inf) *
-                                  np.linalg.norm(x, ord=np.inf) +
+                                  np.linalg.norm(solution, ord=np.inf) +
                                   np.linalg.norm(rhs, ord=np.inf)), 1e-300)
-                backwards = float(np.linalg.norm(m @ x - rhs, ord=np.inf) / denom)
+                backwards = float(np.linalg.norm(m @ solution - rhs, ord=np.inf) / denom)
             except (np.linalg.LinAlgError, FloatingPointError, OverflowError, ValueError) as exc:
                 if isinstance(exc, Branch3Error):
                     raise
@@ -379,11 +379,11 @@ class PreparedBranch3:
                 _err("NUMERICALLY_UNRESOLVED", "CONDITION_OR_SOLVE", path)
             if backwards > 1e-12:
                 _err("NUMERICALLY_UNRESOLVED", "BACKWARD_RESIDUAL", path)
-            p = x[0::2] * pref
-            u = x[1::2] * uref
+            p = solution[0::2] * pref
+            u = solution[1::2] * uref
             watts = np.array([.5 * (p[k] * np.conj(u[k])).real for k in range(6)])
-            jp = max(abs(x[2] - x[4]), abs(x[2] - x[8]))
-            ju = abs(x[3] - x[5] - x[9])
+            jp = max(abs(solution[2] - solution[4]), abs(solution[2] - solution[8]))
+            ju = abs(solution[3] - solution[5] - solution[9])
             scale = abs(bp["source"]["scale"])
             power = abs(watts[0] - watts[3] - watts[5]) / (
                 .5 * pref * uref * scale * scale)
@@ -441,7 +441,7 @@ def _system(tubes: tuple[UniformTube, ...], loads: dict[str, dict[str, Any]],
         else:
             m[row, k] = 1.
             if kind == "matched":
-                zload = tubes["ABC".index(organ)].characteristic_impedance_pa_s_m3
+                zload: complex = tubes["ABC".index(organ)].characteristic_impedance_pa_s_m3
             elif kind == "fixed_impedance":
                 z = load["impedance_pa_s_m3"]
                 zload = complex(z["real"], z["imag"])
@@ -493,7 +493,9 @@ def restore_branch3(snapshot: dict[str, object]) -> PreparedBranch3:
                                 ("backend_id", BACKEND_ID)):
         if snapshot[key] != expected_value:
             _err("UNSUPPORTED", "SNAPSHOT_VERSION", "/" + key)
-    prepared = prepare_branch3(snapshot["blueprint"])
+    if type(snapshot["blueprint"]) is not dict:
+        _err("INVALID", "SNAPSHOT_STRUCTURE", "/blueprint")
+    prepared = prepare_branch3(cast(dict[str, object], snapshot["blueprint"]))
     for field in ("blueprint_digest", "preparation_digest"):
         if snapshot[field] != getattr(prepared, field):
             _err("INVALID", "SNAPSHOT_DIGEST_MISMATCH", "/" + field)
