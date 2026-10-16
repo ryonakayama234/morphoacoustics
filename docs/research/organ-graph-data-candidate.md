@@ -250,3 +250,14 @@ OG-5 B2 now proposes a real strict `og5.passive.tree5.v1` adapter, three indepen
 **OG-5 B2 contract fidelity checkpoint:** No API/schema/digest fixture change in the CI correction; response test passes the fixture's `frequencies_hz`, and duplicated organ ID rejects prior to deriving invalid connections. [Record](./og5-gate-b2-contract.md).
 
 **B2 error state/data separation:** A1's six numerical seams produce `Tree5Error(status,code,path)` without partial Observation or digest, using matrix/solver fault injection in tests rather than making malformation part of the public physical blueprint. [Trial record](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.

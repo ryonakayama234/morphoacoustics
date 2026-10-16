@@ -13,8 +13,6 @@ import re
 import struct
 from typing import Any, NoReturn, cast
 
-from . import tree5 as physics
-
 SCHEMA = "og5.passive.tree5.v1"
 SNAPSHOT_SCHEMA = "og5.tree5.prepared.snapshot.v1"
 OBSERVATION_SCHEMA = "og5.tree5.observation.v1"
@@ -146,7 +144,7 @@ def _scan(v: object, spec: object, path: str, errors: list[tuple[str, str]]) -> 
         errors.append((path, "EXPECTED_OBJECT"))
         return None
     obj = cast(dict[object, object], v)
-    if any(type(k) is not str for k in obj):
+    if any(type(k) is not str or not cast(str, k).isascii() for k in obj):
         errors.append((path, "INVALID_STRING"))
         return None
     out: dict[str, object] = {}
@@ -171,7 +169,11 @@ def _scan(v: object, spec: object, path: str, errors: list[tuple[str, str]]) -> 
 def _relations(bp: dict[str, Any], prefix: str) -> None:
     errors: list[tuple[str, str]] = []
     organs = bp["organs"]
-    ports: dict[str, tuple[str, str, str]] = {}
+    # Ownership uses input object positions until uniqueness is established.
+    # Reusing an organ ID must not turn distinct physical owners into a false
+    # self-connection that sorts before the actual duplicate identity error.
+    ports: dict[str, tuple[int, str, str]] = {}
+    ambiguous_ports: set[str] = set()
     organ_ids: dict[str, str] = {}
     seen_junctions: dict[str, str] = {}
     for i, organ in enumerate(organs):
@@ -186,7 +188,9 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
             ident = port["id"]
             if ident in ports:
                 errors.append((path, "DUPLICATE_ID"))
-            ports[ident] = (oid, side, path)
+                ambiguous_ports.add(ident)
+            else:
+                ports[ident] = (i, side, path)
             expected_direction = "inlet" if side == "inlet" else "outlet"
             if port["direction"] != expected_direction:
                 errors.append((f"{prefix}/organs/{i}/{side}/direction",
@@ -199,12 +203,14 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
     bindings: dict[str, list[str]] = {key: [] for key in ports}
     edges: list[tuple[str, str]] = []
 
-    def bind(ident: str, path: str, expected: str) -> str | None:
+    def bind(ident: str, path: str, expected: str) -> int | None:
         p = ports.get(ident)
         if p is None:
             errors.append((path, "UNKNOWN_PORT"))
             return None
         bindings[ident].append(path)
+        if ident in ambiguous_ports:
+            return None
         if p[1] != expected:
             errors.append((path, "INVALID_CONNECTION"))
         return p[0]
@@ -224,10 +230,10 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
             if parent in children or children[0] == children[1]:
                 errors.append((f"{prefix}/junctions/{i}/ports/0", "INVALID_CONNECTION"))
             else:
-                edges.extend((parent, cast(str, x)) for x in children)
-    # Ambiguous duplicate identities must stop before deriving secondary connection errors.
-    _fail([e for e in errors if e[1] == "DUPLICATE_ID"])
+                edges.extend((organs[parent]["id"], organs[cast(int, x)]["id"]) for x in children)
     for ident, refs in bindings.items():
+        if ident in ambiguous_ports:
+            continue
         if len(refs) > 1:
             errors.append((sorted(refs, key=lambda z: z.encode("ascii"))[-1], "DUPLICATE_BINDING"))
         if not refs:
@@ -260,7 +266,7 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
     reached: set[str] = set()
     search = [src["port"]]
     if src["port"] in ports:
-        search = [ports[src["port"]][0]]
+        search = [organs[ports[src["port"]][0]]["id"]]
     while search:
         cur = search.pop()
         if cur in reached:
@@ -283,6 +289,8 @@ def _normalize_blueprint(value: object, prefix: str = "") -> dict[str, Any]:
 
 
 def _capability(bp: dict[str, Any], prefix: str = "") -> None:
+    from . import tree5 as physics
+
     if bp["schema"] != SCHEMA:
         _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED", prefix + "/schema")
     source = bp["source"]
@@ -387,6 +395,8 @@ class PreparedTree5:
         return self._binding()
 
     def response(self, frequencies_hz: list[int | float]) -> dict[str, Any]:
+        from . import tree5 as physics
+
         snap = self._binding()
         if type(frequencies_hz) is not list:
             _raise("INVALID", "EXPECTED_LIST", "/frequencies_hz")
@@ -445,6 +455,8 @@ class PreparedTree5:
 
 
 def _finite(x: float) -> float:
+    from . import tree5 as physics
+
     value = float(x)
     if not math.isfinite(value):
         raise physics.Tree5NumericalError("NUMERIC_NONFINITE")

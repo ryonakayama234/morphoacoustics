@@ -224,3 +224,14 @@ OG-5 Gate B2 introduces a separate strictly typed frozen v1 Blueprint→Prepared
 **OG-5 B2 correction:** Original test harness misread frozen response fixture envelope; a duplicate identity generated ambiguous secondary binding error, now prioritized as primary duplicate before references. A1 expected semantics unchanged; [red-run receipt](./og5-gate-b2-contract.md).
 
 **B2 numerical architecture evidence:** Six registered A1 solver-seam mutants are now exercised against the actual 20×20 matrix and NumPy linear-solve operations, with exact typed refusal and late-sample atomicity. Physical dynamics and junction equations remain unchanged. [Trial record](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.

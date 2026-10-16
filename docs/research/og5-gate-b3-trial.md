@@ -1,5 +1,7 @@
 # OG-5 Gate B3 — independent Core/full-port evidence candidate
 
+**Current review: Gate C INCONCLUSIVE at `ca07c974`; remediation and new-HEAD evidence are tracked in [Gate C remediation](./og5-gate-c-remediation.md). Earlier B3 successes below are historical receipts.**
+
 **State: GATE B3 MACHINE PASS at historical exact HEAD `205484690250b366760c574f8621dc066710e5a0` / GATE C PENDING / NOT ADOPTED.** PR #112. A1 frozen acceptance remains authoritative; this file is a live experiment receipt and workflow instruction, not a Gate C scientific decision.
 
 ## What is being checked
@@ -32,7 +34,7 @@ HEAD="$(git rev-parse HEAD)"
 python checks/check_og5_gate_b3.py --expected-head "$HEAD" --output-dir /tmp/og5-b3-evidence
 ```
 
-The dedicated `.github/workflows/og5-gate-b3-independent.yml` uses the PR's **head SHA**, not GitHub's synthetic PR merge commit, with two isolated workers `a` and `b`. Each stores 144 raw Core+oracle case outputs, eight control outcomes, metrics, versioned source/oracle SHA256, Git HEAD, workflow run identifiers, and per-file checksum sidecars. A comparison job requires the full receipts to be byte-for-byte identical and checks all sidecar hashes. Failure does not satisfy adoption.
+The dedicated `.github/workflows/og5-gate-b3-independent.yml` uses the PR's **head SHA**, not GitHub's synthetic PR merge commit, with two isolated workers `a` and `b`. Each stores 144 raw Core+oracle case outputs, eight control outcomes, metrics, versioned source/oracle SHA256, Git HEAD, workflow run identifiers, and per-file checksum sidecars. A comparison job checks each archive byte-exact against its own checksums, then compares physical outputs using frozen A1 tolerances; cross-worker floating-point bytes need not match. Failure does not satisfy adoption.
 
 The scorer uses the real `prepare_tree5().response()` public candidate path; it never supplies Wolfram states to the physical solver. The mutation harness injects changes only into the Core linear-system rows or Core's reported endpoint identity, leaving the oracle pinned. It reverts each injection after one case.
 

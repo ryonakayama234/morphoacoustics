@@ -4,13 +4,29 @@ on:
   pull_request:
     paths:
       - "src/morphoacoustics_graph/tree5.py"
+      - "src/morphoacoustics_graph/tree5_contract.py"
+      - "src/morphoacoustics_graph/__init__.py"
+      - "src/morphoacoustics/acoustics/uniform_tube.py"
+      - "tests/test_tree5_contract.py"
       - "tests/test_tree5_numeric_trial.py"
+      - "checks/check_og5_gate_b3.py"
+      - "checks/check_og5_b3_twin.py"
+      - "tests/test_og5_evidence_guards.py"
+      - "pyproject.toml"
       - "docs/research/og5-*"
       - ".github/workflows/og5-gate-b1-trial.yml"
   push:
     paths:
       - "src/morphoacoustics_graph/tree5.py"
+      - "src/morphoacoustics_graph/tree5_contract.py"
+      - "src/morphoacoustics_graph/__init__.py"
+      - "src/morphoacoustics/acoustics/uniform_tube.py"
+      - "tests/test_tree5_contract.py"
       - "tests/test_tree5_numeric_trial.py"
+      - "checks/check_og5_gate_b3.py"
+      - "checks/check_og5_b3_twin.py"
+      - "tests/test_og5_evidence_guards.py"
+      - "pyproject.toml"
       - "docs/research/og5-*"
       - ".github/workflows/og5-gate-b1-trial.yml"
 

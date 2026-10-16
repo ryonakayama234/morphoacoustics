@@ -13,10 +13,13 @@ import hashlib
 import json
 import math
 import os
+import platform
 from pathlib import Path
 import subprocess
 import sys
 from typing import Any, Callable
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -254,9 +257,13 @@ def mutations(baseline: dict[str, Any], base: dict[str, Any]) -> list[dict[str, 
 
 
 def run(output: Path, expected_head: str) -> dict[str, Any]:
+    if output.exists():
+        _fail(f"STALE_OUTPUT: {output}")
     actual_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     if not expected_head or actual_head != expected_head:
         _fail(f"STALE_GIT_HEAD: actual={actual_head} expected={expected_head}")
+    if subprocess.run(["git", "diff", "--quiet", "HEAD", "--"], cwd=ROOT).returncode != 0:
+        _fail("DIRTY_TRACKED_WORKTREE: commit changes before collecting exact-HEAD evidence")
     cases, oracle_hashes = load_oracle()
     base = json.loads(GOLDENS.read_text())["blueprint_snapshot_variants"]["baseline"]["input"]
     if len(cases) != 144:
@@ -272,7 +279,13 @@ def run(output: Path, expected_head: str) -> dict[str, Any]:
     cases_file.write_text("".join(_json(x) + "\n" for x in records), encoding="utf-8")
     (output / "mutations.json").write_text(_json(mutant_results) + "\n", encoding="utf-8")
     tracked = [ROOT / "docs/research/og5-gate-b3-independent-oracle.wl",
-               ROOT / "checks/check_og5_gate_b3.py", GOLDENS, *ORACLE_FILES]
+               ROOT / "checks/check_og5_gate_b3.py",
+               ROOT / "checks/check_og5_b3_twin.py",
+               ROOT / "src/morphoacoustics_graph/tree5.py",
+               ROOT / "src/morphoacoustics_graph/tree5_contract.py",
+               ROOT / "src/morphoacoustics_graph/__init__.py",
+               ROOT / "src/morphoacoustics/acoustics/uniform_tube.py",
+               ROOT / "pyproject.toml", GOLDENS, *ORACLE_FILES]
     tracked_hashes = {path.relative_to(ROOT).as_posix(): _sha(path) for path in tracked}
     summary = {
         "status": "B3_SCIENTIFIC_MACHINE_CANDIDATE_PASS_NOT_GATE_C",
@@ -297,6 +310,8 @@ def run(output: Path, expected_head: str) -> dict[str, Any]:
         "git_head": actual_head, "git_sha_env": os.getenv("GITHUB_SHA"),
         "run_id": os.getenv("GITHUB_RUN_ID"), "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT"),
         "run_slot": os.getenv("OG5_RUN_SLOT"), "python": sys.version,
+        "numpy_version": np.__version__, "platform": platform.platform(),
+        "numpy_build_config": np.show_config(mode="dicts"),
         "source_file_sha256": tracked_hashes,
         "case_results_sha256": _sha(cases_file),
         "mutations_sha256": _sha(output / "mutations.json"),
@@ -316,12 +331,14 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--expected-head", required=True)
     args = parser.parse_args()
+    output_was_present = args.output_dir.exists()
     try:
         summary = run(args.output_dir, args.expected_head)
     except Exception as exc:
-        args.output_dir.mkdir(parents=True, exist_ok=True)
-        failure = {"status": "FAILED_NOT_ADOPTED", "exception": type(exc).__name__, "detail": str(exc)}
-        (args.output_dir / "failure.json").write_text(_json(failure) + "\n", encoding="utf-8")
+        if not output_was_present:
+            args.output_dir.mkdir(parents=True, exist_ok=True)
+            failure = {"status": "FAILED_NOT_ADOPTED", "exception": type(exc).__name__, "detail": str(exc)}
+            (args.output_dir / "failure.json").write_text(_json(failure) + "\n", encoding="utf-8")
         raise
     print(_json({k: v for k, v in summary.items() if k not in ("source_file_sha256", "oracle_shards_sha256", "eight_mutants")}))
     return 0

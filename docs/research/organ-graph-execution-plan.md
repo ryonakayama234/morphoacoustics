@@ -222,3 +222,14 @@ OG-5 Gate B2: [x] code candidate for Blueprint→Prepared/Snapshot→Response an
 **OG-5 B2 initial red CI:** first run 619 green / 7 failed (Python3.13), 11 mypy errors. Six harness-envelope mistakes and one duplicate-organ precedence issue are patched for a fresh HEAD. No goalposts changed and no claim of B2 completion before all corrections pass. [Receipt](./og5-gate-b2-contract.md).
 
 **B2 fixed A1 seams:** [x] Six solver-boundary numerical fault fixtures authored at actual 20×20 matrix/solve seam, including rank, condition, nonfinite, solver failure, algebraic residual and late-sample atomic failure. [ ] Exact-HEAD CI results for added controls. B3 requires 144 independent Wolfram full-state cases and all eight wrong-law controls; Gate C separate. [Trial](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.

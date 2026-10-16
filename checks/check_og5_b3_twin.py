@@ -11,6 +11,8 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import struct
+import subprocess
 import sys
 from typing import Any
 
@@ -21,11 +23,71 @@ EXPECTED_NAMES = ("case-results.jsonl", "mutations.json", "summary.json",
                   "provenance.json", "sha256sums.txt")
 SCORED_METRICS = ("max_global_error", "max_recursive_error",
                   "max_power_defect", "max_condition_2")
+ROOT = Path(__file__).resolve().parents[1]
+PORTS = [f"{n}.{side}" for n in "ABCDE" for side in ("in", "out")]
 
 
 def require(condition: Any, message: str) -> None:
     if not condition:
         raise AssertionError(message)
+
+
+def canonical(value: Any) -> bytes:
+    """Standalone A1 byte encoder; this audit imports no production Core."""
+    if type(value) in (int, float):
+        require(math.isfinite(value), "nonfinite canonical value")
+        return b"d" + struct.pack(">d", 0. if value == 0 else float(value))
+    if type(value) is str:
+        raw = value.encode("ascii")
+        return b"s" + struct.pack(">I", len(raw)) + raw
+    if type(value) is list:
+        return b"l" + struct.pack(">I", len(value)) + b"".join(map(canonical, value))
+    require(type(value) is dict, "invalid canonical type")
+    return b"m" + struct.pack(">I", len(value)) + b"".join(
+        canonical(k) + canonical(value[k]) for k in sorted(value))
+
+
+def digest(domain: str, value: Any) -> str:
+    prefix = f"morphoacoustics.og5.{domain}.v1".encode("ascii") + b"\0"
+    return "sha256:" + hashlib.sha256(prefix + canonical(value)).hexdigest()
+
+
+def audit_record(record: dict[str, Any]) -> None:
+    """Recompute raw comparisons, identities and power; distrust stored errors."""
+    c, o, bp = record["case"], record["core_response"], record["input_blueprint"]
+    require(o["port_ids"] == PORTS and o["status"] == "SUCCESS", "wrong port mapping/status")
+    require(o["frequencies_hz"] == [float(c["frequency_hz"])], "wrong sample frequency")
+    for collection, key in (("organs", "id"), ("junctions", "id"), ("loads", "port")):
+        require(bp[collection] == sorted(bp[collection], key=lambda x: x[key]), "noncanonical blueprint")
+    require(next(x["area_m2"] for x in bp["organs"] if x["id"] == "C") == c["c_area_m2"]
+            and next(x["kind"] for x in bp["loads"] if x["port"] == "C.out") == c["c_load"]
+            and bp["source"]["scale"] == c["scale"], "case/input mismatch")
+    require(o["blueprint_digest"] == digest("blueprint", bp), "wrong blueprint digest")
+    prepared = {"schema": "og5.tree5.prepared.snapshot.v1", "digest_version": o["digest_version"],
+                "backend_id": o["backend_id"], "blueprint_digest": o["blueprint_digest"]}
+    require(o["preparation_digest"] == digest("preparation", prepared), "wrong preparation digest")
+    require(o["observation_digest"] == digest("observation", {
+        k: v for k, v in o.items() if k != "observation_digest"}), "wrong observation digest")
+    states = []
+    for name, scale in (("pressure_pa", P_REF), ("volume_flow_m3_s", U_REF)):
+        require(len(o[name]) == 1 and len(o[name][0]) == 10, "wrong state shape")
+        values = [pair(z) for z in o[name][0]]
+        states.append(values)
+        for method in ("global", "recursive"):
+            refs = c[method][name]
+            require(len(refs) == 10, "wrong oracle shape")
+            error = max(abs(v - complex(*r)) / scale for v, r in zip(values, refs))
+            require(math.isfinite(error) and error <= PHYSICAL_TOL, "raw Core/oracle mismatch")
+    powers = o["mean_power_w"][0]
+    require(len(o["mean_power_w"]) == 1 and len(powers) == 10, "wrong power shape")
+    p, u = states
+    floor = .5 * P_REF * U_REF * abs(c["scale"])**2
+    for v, a, b in zip(powers, p, u):
+        expected = .5 * (a * b.conjugate()).real
+        require(math.isfinite(v) and abs(v - expected) <= PHYSICAL_TOL * max(abs(expected), floor),
+                "wrong raw power")
+    require(powers[0] > 0 and abs(powers[0] - powers[5] - powers[7] - powers[9])
+            <= PHYSICAL_TOL * max(abs(powers[0]), floor), "raw energy imbalance")
 
 
 def load(folder: Path) -> tuple[list[dict[str, Any]], Any, dict[str, Any], dict[str, Any]]:
@@ -45,6 +107,12 @@ def load(folder: Path) -> tuple[list[dict[str, Any]], Any, dict[str, Any], dict[
     provenance = json.loads((folder / "provenance.json").read_text())
     require(summary["positive_success"] == 144 and len(cases) == 144, "positive denominator lost")
     require(summary["status"] == "B3_SCIENTIFIC_MACHINE_CANDIDATE_PASS_NOT_GATE_C", "wrong status")
+    expected = [(f, a, l, s) for f in (80, 250, 400, 733, 997, 1200, 2000, 4000)
+                for a in (.00015, .0003, .0006) for l in ("matched", "rigid_closed") for s in (1., .5, -1.)]
+    require([(r["case"]["frequency_hz"], r["case"]["c_area_m2"], r["case"]["c_load"], r["case"]["scale"])
+             for r in cases] == expected, "incomplete/duplicate physical coverage")
+    for record in cases:
+        audit_record(record)
     require(len(summary["eight_mutants"]) == 8 and len(mutations) == 8, "mutation coverage lost")
     require(summary["eight_mutants"] == mutations, "summary mutation receipt differs")
     require(provenance["case_results_sha256"] == summary["raw_case_results_sha256"], "case checksum mismatch")
@@ -52,6 +120,11 @@ def load(folder: Path) -> tuple[list[dict[str, Any]], Any, dict[str, Any], dict[
     require(provenance["summary_sha256"] == hashlib.sha256((folder / "summary.json").read_bytes()).hexdigest(),
             "summary checksum mismatch")
     require(provenance["source_file_sha256"] == summary["source_file_sha256"], "source hash mismatch")
+    required_sources = {"src/morphoacoustics_graph/tree5.py", "src/morphoacoustics_graph/tree5_contract.py",
+                        "src/morphoacoustics/acoustics/uniform_tube.py", "checks/check_og5_b3_twin.py"}
+    require(required_sources <= set(summary["source_file_sha256"]), "missing production source hashes")
+    for name, sha in summary["source_file_sha256"].items():
+        require(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == sha, f"source differs: {name}")
     return cases, mutations, summary, provenance
 
 
@@ -74,6 +147,8 @@ def compare_two(root: Path) -> float:
     bb, mb, sb, pb = load(root / "og5-b3-b")
     require(pa["run_slot"] == "a" and pb["run_slot"] == "b", "runner slot mislabeled")
     require(pa["git_head"] == pb["git_head"] == sa["git_head"] == sb["git_head"], "cross-head evidence")
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    require(pa["git_head"] == head, "archives do not match checked-out HEAD")
     require(sa["source_file_sha256"] == sb["source_file_sha256"], "not the same pinned source")
     require(sa["oracle_shards_sha256"] == sb["oracle_shards_sha256"], "different oracle")
     require(sa["oracle_kernel"] == sb["oracle_kernel"], "different Wolfram kernel")

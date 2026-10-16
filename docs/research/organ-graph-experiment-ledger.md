@@ -254,3 +254,14 @@ OG-5 Gate B2 implementation candidate (2026-10-16 JST): Separate typed and domai
 **OG-5 B2 red CI checkpoint (2026-10-16):** first B2 commit `fd52b4b` returned Python3.13 619 passed/7 failed and 11 mypy type errors. Six errors from test wrapper not extracting frozen `frequencies_hz`, one primary duplicate ID error shadowed by downstream connection error. Patch is typed validation/test correction, not acoustic equation edit; preserve failed run `38895168890`, OG4 `38895168822`, ensure exact-head CI rerun. [Detailed receipt](./og5-gate-b2-contract.md).
 
 **B2 science ledger: 6 registered numerical-seam controls** added at actual matrix/solve boundary, expected `NUMERICALLY_UNRESOLVED` across exact status/code/frequency-pointer fixtures, with no observation/digest returned. Previous exception-only late-sample test is historical smoke test, not proof of a real singular matrix route. These controls are new assertions requiring exact-HEAD CI. No Wolfram/Core 144 full-port comparison or adoption claimed. [Contract log](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.

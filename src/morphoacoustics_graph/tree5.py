@@ -1,8 +1,8 @@
-"""OG-5 Gate B1 candidate: fixed passive 5-tube / 2-junction complex solver.
+"""OG-5 fixed passive 5-tube / 2-junction complex solver and v1 API facade.
 
-INTERNAL NUMERICAL TRIAL ONLY; no prepare_tree5/restore_tree5/public ABI yet.
-The frozen Gate A A1 data, error and canonical byte contract governs future B2.
-No arbitrary graph, wav, phonation, anatomy or scientific adoption.
+The frozen Gate A/A1 contract governs prepare/restore/response. Gate C adoption
+is recorded separately in the research receipts, never inferred from imports.
+No arbitrary graph, wav, phonation or anatomical model.
 """
 from __future__ import annotations
 

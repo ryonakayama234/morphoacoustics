@@ -4,6 +4,8 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -14,6 +16,43 @@ from morphoacoustics_graph.tree5_contract import _encode, _hash, _snapshot, _nor
 
 FIX = json.loads((Path(__file__).resolve().parents[1] / "docs/research/og5-contract-goldens.json").read_text())
 VARIANTS = FIX["blueprint_snapshot_variants"]
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+@pytest.mark.parametrize("nested", [False, True])
+def test_non_ascii_keys_refuse_at_containing_object(operation: str, nested: bool) -> None:
+    value = copy.deepcopy(VARIANTS["baseline"]["input" if operation == "prepare" else "snapshot"])
+    bp = value if operation == "prepare" else value["blueprint"]
+    target = bp["organs"][0] if nested else bp
+    target["未知"] = 0
+    path = ("/blueprint" if operation == "restore" else "") + ("/organs/0" if nested else "")
+    with pytest.raises(Tree5Error) as error:
+        (prepare_tree5 if operation == "prepare" else restore_tree5)(value)
+    assert error.value.receipt() == {"status": "INVALID", "code": "INVALID_STRING", "path": path}
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+@pytest.mark.parametrize("duplicate", ["organ", "port", "junction"])
+def test_independent_reference_error_competes_with_duplicate_identity(operation: str, duplicate: str) -> None:
+    value = copy.deepcopy(VARIANTS["baseline"]["input" if operation == "prepare" else "snapshot"])
+    bp = value if operation == "prepare" else value["blueprint"]
+    bp["junctions"][0]["ports"][0] = "missing"
+    if duplicate == "organ":
+        bp["organs"][1]["id"] = "A"
+    elif duplicate == "port":
+        bp["organs"][1]["inlet"]["id"] = "A.in"
+    else:
+        bp["junctions"][1]["id"] = "J1"
+    prefix = "/blueprint" if operation == "restore" else ""
+    with pytest.raises(Tree5Error) as error:
+        (prepare_tree5 if operation == "prepare" else restore_tree5)(value)
+    assert error.value.receipt() == {
+        "status": "INVALID", "code": "UNKNOWN_PORT", "path": prefix + "/junctions/0/ports/0"}
+
+
+@pytest.mark.parametrize("module", ["tree5", "tree5_contract"])
+def test_import_order_does_not_require_preloading_public_facade(module: str) -> None:
+    subprocess.run([sys.executable, "-c", f"import morphoacoustics_graph.{module}"], check=True)
 
 
 @pytest.mark.parametrize("name", list(VARIANTS))
