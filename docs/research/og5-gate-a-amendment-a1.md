@@ -1,10 +1,10 @@
 # OG-5 Gate A Amendment A1 — complete bounded handoff
 
-2026-10-16 JST. Disposition: **DESIGN COMPLETE CANDIDATE / REVIEW PENDING / NOT ADOPTED**.
+2026-10-16 JST. Disposition: **GATE A ACCEPTED / SPECIFICATION FROZEN / NO RUNTIME ADOPTION**.
 Addresses [PR #110 review R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786).
 This amendment is normative over conflicting original draft language in the
-[API](./og5-tree5-api-v1.md) and [protocol](./og5-gate-a-protocol.md). It does not
-authorize Gate B before acceptance, alter OG3/OG4, or claim a Core execution.
+[API](./og5-tree5-api-v1.md) and [protocol](./og5-gate-a-protocol.md). [Gate A acceptance](./og5-gate-a-acceptance.md) authorizes a separate Gate B
+implementation trial. It does not alter OG3/OG4 or claim a Core execution.
 The original eight [records](./og5-wolfram-gate-a-result.json) stay byte-identical.
 
 ## A1.1 Exact values and structural language (R1, R2)
@@ -354,6 +354,6 @@ Run `python docs/research/og5-contract-fixtures.py --check` then
 `node docs/research/og5-contract-fixtures.mjs`. Run the A1 Wolfram script with
 the sibling original source available. The standalone full-port pressure-node
 review is archived as `og5-review-nodal.py`; it imports no production Core code.
-Fixtures and supplementary receipts are source-only design evidence. Gate A
-acceptance requires a review of this amendment at its exact new HEAD; correcting
-the author's review findings is not by itself an independent signoff or adoption.
+Fixtures and supplementary receipts are source-only design evidence. The exact technical revision and final design acceptance are recorded in
+og5-gate-a-acceptance.md. Algorithmic comparison and owner-authorized AI technical
+review do not constitute an independent human signoff or Core runtime adoption.

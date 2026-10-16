@@ -1,9 +1,9 @@
 # OG-5 Gate A: five passive tubes, two ideal 3-port junctions
 
-**Status: AUTHOR-PROPOSED / GATE A DRAFT / NOT APPROVED / NOT ADOPTED. 2026-10-16 JST.**
+**Status: GATE A ACCEPTED / SPECIFICATION FROZEN / CORE IMPLEMENTATION NOT ADOPTED. 2026-10-16 JST.**
 Parent [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109); inherited OG-3 fixed2 [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104), OG-4 branch3 [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108). All work here is DESIGN + Wolfram exploration, not runtime or public support. Existing OG-1/OG-3/OG-4 evidence immutable.
 
-**Amendment A1 is normative:** [complete handoff](./og5-gate-a-amendment-a1.md), [full fixtures](./og5-contract-goldens.json), [supplementary Wolfram receipt](./og5-wolfram-gate-a-a1-result.json). This is still a candidate pending exact-HEAD design review.
+**Amendment A1 is normative:** [complete handoff](./og5-gate-a-amendment-a1.md), [full fixtures](./og5-contract-goldens.json), [supplementary Wolfram receipt](./og5-wolfram-gate-a-a1-result.json). [Gate A acceptance](./og5-gate-a-acceptance.md) records the exact reviewed specification and permits a separate Gate B trial.
 
 ## Physical fixture and explicit claim boundary
 
@@ -63,12 +63,12 @@ Source [og5-wolfram-gate-a.wl](./og5-wolfram-gate-a.wl) (full 20x20 scaled coeff
 
 ## Mandatory controlled execution
 
-1. **Gate A (this docs-only Draft):** reviewers ratify physical signs, full source/output provenance, candidate schema [OG-5 API](./og5-tree5-api-v1.md), sample matrix, numerical floors, golden hashes and independent physical/kind/compatibility review. No code merge by author self-assessment alone.
+1. **Gate A (this design specification):** reviewers ratify physical signs, full source/output provenance, candidate schema [OG-5 API](./og5-tree5-api-v1.md), sample matrix, numerical floors, golden hashes and independent physical/kind/compatibility review. No code merge by author self-assessment alone.
 2. **Gate B (SEPARATE Draft after Gate A accepted):** isolated `morphoacoustics_graph.tree5`, `prepare_tree5` / `restore_tree5` / `response`; reuse public `UniformTube` without changing OG3/OG4. Production NEVER imports experimental oracle. Actual backend 144 cases × 20 complex endpoint states, compare independent Wolfram reference and the 8 frozen records; mutation trials, entire 3.11/3.12/3.13+mypy, OG3/OG4, original Exp028/029 and genuine X2a two-Take preservation.
 3. **Gate C:** independent critical physics/numerics and separate data/ABI/security review at exact HEAD, two fresh evidence runs, hashes, source/oracle pin, workflow and downloadable raw artifact examination. Explicit `SUPPORTED_LIMITED` / `INCONCLUSIVE` / `REJECT` receipt; only reviewed accepted version may merge; recheck postmerge.
 4. Updating the **architecture, candidate schema, execution plan and ledger** is mandatory in every capability-related PR. Historical decisions remain immutable.
 
-No Gate A approval, Gate B implementation, run of GitHub CI or merge is claimed by this protocol.
+The original proposal did not claim approval. The subsequent Gate A acceptance is recorded separately in og5-gate-a-acceptance.md; no Gate B implementation or runtime adoption is implied.
 
 
 ## Amendment A1 review response — 2026-10-16 JST
