@@ -194,3 +194,6 @@ flowchart TD
 ~~~
 
 This is a **Gate A docs-only Draft**: geometry/material not dynamic, no FSI/3D/source/WAV/nasal physiology, no Studio connection. The two 3-port junctions are multi-port physical relations, not arbitrary pairwise wires; causal direction is the model-to-observation flow, while acoustic waves can travel both ways. [Data candidate](./organ-graph-data-candidate.md), [execution](./organ-graph-execution-plan.md) and [ledger](./organ-graph-experiment-ledger.md) are updated in the same change; Core CC-A1 → Studio CC-A2 remains independent.
+
+
+**OG-5 Gate A evidence update (later 2026-10-16):** The committed [Wolfram candidate oracle](./og5-gate-a-oracle.wl) was executed for all 144 proposed fixed-family conditions, and separate deliberately wrong J1/load controls were compared in [the dated receipt](./og5-gate-a-wolfram-receipt.md). This still changes **no Core solver or physical support claim**. Architecture above remains a proposed staged boundary until Gate A review.

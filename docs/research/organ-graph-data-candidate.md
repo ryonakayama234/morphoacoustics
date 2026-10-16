@@ -236,3 +236,6 @@ classDiagram
 ~~~
 
 Each acoustic Port carries Pa pressure and m^3/s **volume flow**, explicit fixed orientation, unique ID and lawful junction role. Two distinct multiports reference three ordered endpoints each. Prepared topology and revision/hash identity are immutable, while solver p/U values belong only to observation. Graph collection order is canonicalized but ordered physical ports remain meaningful; canvas coordinates excluded. Exact scalar/complex wire format, byte-canonical hashing, legacy-invalid-versus-unsupported precedence, negative controls, tamper defense and no partial artifacts must be frozen by design review. Neither Studio CharacterSpec nor original Core CreatureSpec/PreparedMorphology changes here. See [Gate A Wolfram receipt](./og5-gate-a-wolfram-receipt.md).
+
+
+**OG-5 post-filing mutation/data consequence:** A physically incorrect *positive* C terminal impedance preserved junction flow and global passive power even as all-port response differed by normalized 0.4185; hence body/load kind and value MUST bind to the proposed physical identity/provenance, and full complex state comparison is necessary. [Evidence](./og5-gate-a-wolfram-receipt.md). Candidate schema remains unratified.

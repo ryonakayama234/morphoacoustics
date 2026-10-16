@@ -25,3 +25,22 @@ After pressure/flow normalization, the maximum full-20-complex-state global-vers
 ## What remains for Gate A acceptance
 
 Run/review 144 proposed discovery cases; independently review branch recursion and phasor signs; freeze finite/condition tolerance with documented numerical rationale; write wrong-law mutation/control outputs; pin executable source blob SHA and raw case-level outputs; decide whether to ratify candidate schema and thresholds. This receipt authorizes no Gate B implementation until Gate A is approved.
+
+
+## Follow-up post-commit exploration — executed 2026-10-16 JST (never reclassified as blind preregistration)
+
+**Original Draft commit** 3f92f7506860346a89d83a8630c3b2cb8c276e4e froze the executable *candidate* 144-case grid before this sweep execution. Confirmed exact committed Wolfram source blob d0fd961fdfcc6eae0a263d8e17aba87ba60db8b4 (Git blob SHA-1; not a SHA-256 scientific artifact sidecar). WolframLanguageEvaluator ran precisely that fetched file source with a final duplicate summary expression and produced:
+
+- 144 / 144 scheduled evaluations returned computed records at the specified 30-digit solve precision. Maximum normalized disagreement across **all 20 complex endpoint states** between global 20x20 and separate recursive impedance method: **5.682202313875164e-48**.
+- Maximum displayed mean input/terminal power relative defect: **0 at 14-digit reporting precision** (NOT proof of mathematically exact zero for all cases); maximum scaled 2-norm matrix condition number **223.7427248146314**.
+- These are Wolfram-vs-Wolfram results; no Python Core tree5 candidate exists yet, no signed full case-level archive, no frozen third-party review. This broad positive sweep neither guarantees negative controls nor proves real-body acoustic physics.
+
+An additional independently constructed Wolfram 733-Hz wrong-law mutation run (new [negative control source](./og5-gate-a-negative-controls.wl)) checked that the *correct* 20-state solution does not accidentally agree with three wrong laws:
+
+| Deliberately invalid alternative | Normalized full-port error vs correct physical solution | J1 physical flow defect (dimensionless) | Relative power defect |
+| --- | ---: | ---: | ---: |
+| Substitute particle velocity instead of volume flow at J1 | 0.471977331827501 | 0.552670737985430 | 0.363572678461091 |
+| Reverse sign of B flow at J1 | 0.886740929596392 | 1.038345977473847 | 6.015444270260797 |
+| Mismatch C load to Zref rather than its own Zc | 0.418514495908273 | ~0 | ~0 |
+
+**Interpretation:** all three are easily killed by the all-port independent comparator (proposed threshold 1e-10). The wrong matched-load impedance is still a passive load: it *does not* violate KCL or passive power conservation, and therefore **cannot be killed by conservation-only tests**. This is an essential reason to require full-port oracle comparison. This is exploratory mutation evidence; future Gate B must reproduce it against production Core and store case-level raw evidence with SHA-256 sidecars.

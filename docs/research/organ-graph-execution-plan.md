@@ -190,3 +190,6 @@ Owner Core, tracking [issue #109](https://github.com/ryonakayama234/morphoacoust
 - [ ] Gate C: critical physics + code/security/ABI + reproducibility reviews, disclose correlated AI context, inspect actual artifacts and source SHA, decide SUPPORTED_LIMITED / INCONCLUSIVE / REJECT, only then review merge and verify post-merge.
 
 No broad support for cycles/multiple sources/time-varying morphology or Studio canvas. Creator body A/B path CC-A1 (Core PR #101) → CC-A2 (Studio #14) is parallel and not gated by OG-5.
+
+
+**OG-5 post-filing Wolfram checkpoint (later 2026-10-16):** [x] All 144 candidate discovery cases were computed in Wolfram from original Draft commit 3f92f7506860346a89d83a8630c3b2cb8c276e4e, with max 20-state comparator error 5.682e-48 and max scaled cond2 223.74; [x] 3 wrong laws numerically distinguished. [ ] Actual case-by-case immutable raw archive, peer review/freeze, approved ABI+goldens, production Core backend and cross-language independent comparison. These positive Wolfram runs do NOT authorize skipping Gate A ratification; see [receipt](./og5-gate-a-wolfram-receipt.md).

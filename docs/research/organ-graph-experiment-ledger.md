@@ -209,3 +209,8 @@ Corrected-HEAD trial `ac8c416`: dedicated OG-4/OG-3 CI passed, but general CI fa
 | Promotion | Gate A explicit approval then separate Gate B; Gate C decision after independent critical audits and artifact re-read. Historical OG3/OG4 fixtures, hashes and frozen experiment codes untouched. |
 
 An observed numerically consistent idealized Wolfram solution is not a physical validation of vocal anatomy and not proof that an unimplemented Core solver works. All subsequent results and amendments must link this original preregistration, exact HEAD and oracle SHA rather than silently replacing it.
+
+
+### OG-5 post-proposal dated Wolfram sweep and wrong-law receipt (2026-10-16 JST)
+
+The original preregistration **commit 3f92f7506860346a89d83a8630c3b2cb8c276e4e** preceded the exploratory run; oracle Git blob d0fd961fdfcc6eae0a263d8e17aba87ba60db8b4. 144/144 candidate cases returned Wolfram calculations, max 20-complex-port global-vs-recursion normalized discrepancy 5.682202313875164e-48, reported power defect 0 at 14 digits, max scaled cond2 223.7427248146314. [Raw-producing code and receipt](./og5-gate-a-wolfram-receipt.md), [distinct wrong-law control source](./og5-gate-a-negative-controls.wl). Wrong particle-velocity junction/sign/C load controls yielded normalized all-port errors 0.47197733 / 0.88674093 / 0.41851450 respectively; wrong passive C load preserved KCL and mean power, proving conservation **alone** is insufficient. These are **post-proposal exploratory Wolfram runs**, not pre-blinded evidence or Core backend adoption. The 144 individual case payload/hash archive, formal Gate A review, fixed ABI/goldens and Gate B production implementation remain OPEN.

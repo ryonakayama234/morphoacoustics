@@ -113,3 +113,8 @@ flowchart TD
 ## 7. Sources and review checkpoints
 
 Normative baseline: [OG-4 API v1](./og4-branch3-api-v1.md), [adopted OG-4 implementation](../../src/morphoacoustics_graph/branch3.py), [graph program](./organ-graph-program.md), [data contract](./organ-graph-data-candidate.md), [execution](./organ-graph-execution-plan.md), [scientific ledger](./organ-graph-experiment-ledger.md). The older documents contain historical pre-merge OG-4 statements; this proposal does not rewrite history and distinguishes current merged PR #108 from legacy text. Tube transfer and impedance conventions must be reviewed against the implemented UniformTube and OG-4 numerical sign choices, independently of any idealized Wolfram derivation.
+
+
+### Chronological post-filing experiment note (2026-10-16 JST; not a Gate A ratification)
+
+At the first proposal commit, the 144-case sweep had not run. It was then executed **from that exact committed Wolfram source** (blob d0fd961fdfcc6eae0a263d8e17aba87ba60db8b4): 144 cases evaluated, maximal 20-state recursive/global discrepancy 5.682202313875164e-48, maximum observed scaled condition number 223.7427248146314, terminal power balance zero at **14-digit reported precision**. Three deliberately wrong laws were separately solved at 733 Hz and rejected by full-port comparison, including a **wrong positive-real C impedance that passes energy conservation**. See [chronologically appended receipt](./og5-gate-a-wolfram-receipt.md) and [negative-control source](./og5-gate-a-negative-controls.wl). These are post-filing *discovery runs*, **not independent Core verification, not blind frozen tests, and not Gate A approval**. Exact raw 144 case-level archival remains open.
