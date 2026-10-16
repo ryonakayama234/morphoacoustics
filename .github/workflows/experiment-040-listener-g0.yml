@@ -1,0 +1,36 @@
+name: EL-G0 listener free-field analytical null
+
+on:
+  push:
+    branches:
+      - research/listener-g0-reception-20261017
+    paths:
+      - "experiments/040_listener_g0/**"
+      - "tests/test_experiment_040_listener_g0.py"
+      - ".github/workflows/experiment-040-listener-g0.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analytic-listener-null:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test runner
+        run: python -m pip install "pytest>=8"
+      - name: Frozen scientific regression tests
+        run: python -m pytest tests/test_experiment_040_listener_g0.py -q
+      - name: Generate immutable fresh evidence JSON
+        run: python experiments/040_listener_g0/run.py --output "${{ runner.temp }}/el-g0/RESULTS.json"
+      - name: Archive numerical evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: EL-G0-analytic-null
+          path: ${{ runner.temp }}/el-g0/RESULTS.json
+          if-no-files-found: error
