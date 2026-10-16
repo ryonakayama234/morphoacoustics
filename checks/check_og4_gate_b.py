@@ -18,7 +18,7 @@ import sys
 
 import numpy as np
 
-from morphoacoustics_graph.branch3 import prepare_branch3
+from morphoacoustics_graph.branch3 import prepare_branch3, _system
 
 ROOT = Path(__file__).resolve().parents[1]
 PORTS = ["A.in", "A.out", "B.in", "B.out", "C.in", "C.out"]
@@ -148,7 +148,47 @@ def main() -> None:
         })
     if len(python_cases) != 288 or len(wolfram_cases) != 24:
         raise AssertionError("case family incomplete")
+    # Deliberately falsify three independent junction laws on unequal areas.
+    negative = {}
+    test_bp = blueprint(base, 2, "matched", 1)
+    fixed_prepared = prepare_branch3(test_bp)
+    m0, rhs0 = _system(fixed_prepared._tubes,
+                       {load["port"]: load for load in test_bp["loads"]},
+                       1e-6*(1+.4j), 733)
+    expected = ref.port_states(2, 733, "matched")
+    for name in ("wrong_signed_flow", "wrong_particle_velocity", "wrong_pressure_sign"):
+        bad = m0.copy()
+        if name == "wrong_signed_flow":
+            bad[8, 5], bad[8, 9] = 1, 1
+        elif name == "wrong_particle_velocity":
+            bad[8, 9] = -.5
+        else:
+            bad[6, 4] = 1
+        solution = np.linalg.solve(bad, rhs0)
+        actual = {port: (solution[2*i]*1.372, solution[2*i+1]*1e-6)
+                  for i, port in enumerate(PORTS)}
+        discrepancy = float(ref.state_error(actual, expected, 1.372, 1e-6))
+        if not discrepancy > 1e-3:
+            raise AssertionError(("wrong-law falsifier not detected", name, discrepancy))
+        negative[name] = discrepancy
+    scattering = {}
+    for ratio in RATIOS:
+        y = np.asarray([1, 1, ratio], dtype=float)
+        si = 2 * np.tile(y/y.sum(), (3, 1)) - np.eye(3)
+        diag = np.diag(y)
+        defect = float(np.max(np.abs(si.T @ diag @ si - diag)))
+        reciprocity = float(np.max(np.abs(diag @ si - (diag @ si).T)))
+        mixed = np.array([1+.2j, -.3+.7j, .5-.8j])
+        power_defect = float(abs(np.vdot(mixed, diag @ mixed) -
+                                 np.vdot(si @ mixed, diag @ (si @ mixed))))
+        if max(defect, reciprocity, power_defect) > 1e-12:
+            raise AssertionError(("local scattering", ratio, defect, reciprocity))
+        scattering[str(ratio)] = {"weighted_energy_error": defect,
+                                  "reciprocity_error": reciprocity,
+                                  "complex_mixed_incidence_power_error": power_defect}
     evidence = {
+        "falsifying_mutation_normalized_errors": negative,
+        "local_scattering_independent_controls": scattering,
         "evidence_kind": "og4.gate-b.fresh-full-port.v1",
         "decision": "GATE_B_REFERENCE_COMPARISONS_ONLY_NOT_ADOPTED",
         "git_head": actual_head,
