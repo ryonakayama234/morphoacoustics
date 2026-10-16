@@ -176,3 +176,19 @@ Versioned branch3 implementation and its bounded physical data flow are now pres
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 The corrected PR #108 is reviewed against the accepted API in two critical scopes: physics/numerics and code/API/evidence. The [Gate C review](./og4-gate-c-review.md) records findings, repairs and the exact limited decision boundary. Validation now gathers independent structural failures before capability; every snapshot envelope is validated before unknown-version refusal. The existing diagram above remains the physical architecture. Corrections add no physical degree of freedom, change no numerical threshold and preserve the legacy source tree. Final readiness requires the corrected-HEAD receipt on PR #108; no merge is performed by this entry.
+
+## OG-5 Gate A design started — 2026-10-16 JST (DRAFT, NOT ADOPTED)
+
+[Issue #109](https://github.com/ryonakayama234/morphoacoustics/issues/109), [physics/falsification protocol](./og5-gate-a-protocol.md) and [API candidate](./og5-tree5-api-v1.md) extend adopted OG-3 two-tube [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104) and adopted limited OG-4 three-tube [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108) **only as a NEW proposal**. Diagram, explicitly scoped:
+
+```mermaid
+flowchart LR
+ A["A: 1D tube"] --> J1(("J1: ideal 3-port"))
+ J1 --> B["B: 1D tube"]
+ J1 --> C["C: 1D tube"]
+ B --> J2(("J2: ideal 3-port"))
+ J2 --> D["D: 1D tube"]
+ J2 --> E["E: 1D tube"]
+```
+
+Typed organ endpoint ports are semantic nodes/port identities; each J is a **multiport physical constraint** connecting exactly three endpoints. The composed pressure/volume-flow state is solved together. Persistent Blueprint -> structural/capability validation -> immutable PreparedGraph -> harmonic coupled solve -> full-endpoint observation and immutable evidence. No inference from Creator canvas wires to physical validity. Wolfram scaled global 20x20 vs scalar impedance recursion produced 8 exploratory full-port records, not public backend support. Creator CC-A1→CC-A2 separate; no UI graph editor or WAV in OG5. Architecture, schema, execution and scientific evidence were changed together in this Gate A PR.

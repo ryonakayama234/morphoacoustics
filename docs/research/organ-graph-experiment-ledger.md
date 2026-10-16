@@ -193,3 +193,22 @@ Starting review SHA `43fb39bebaec7a818f64d1b5afc8f3d0ad4a4583`. Reproduced error
 Local verification note: the first full-suite run during editing returned 577 passed / 4 failed because frozen research runners correctly refused `DIRTY_TRACKED_CHECKOUT`; this is retained as a failed verification attempt. Re-run on the committed clean checkout and corrected-HEAD CI before deciding acceptance. No freeze guard was weakened.
 
 Corrected-HEAD trial `ac8c416`: dedicated OG-4/OG-3 CI passed, but general CI failed with 580 passed / 2 failed because two newly added tests imported non-package `checks` by namespace. `python -m pytest` adds the repository root while the workflow's `pytest` entry point does not. Fixed by explicit `importlib` file loading, matching existing reference-test practice; no production/numerical change. Both original red workflow attempts remain visible. Re-attest all gates at the new HEAD.
+
+## OG-5 Gate A preregistration candidate / Wolfram preliminary execution — 2026-10-16 JST
+
+**Decision:** `PROPOSED / NOT RATIFIED / NOT ADOPTED`. Parent [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109). Baseline main SHA `af10985f180f7b9a8f1dbca269c1133bc1a94c0a`, after adopted limited OG-4 [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108). New Gate A Draft is source-only and cannot itself validate any new Core backend. Related synchronized architecture [program](./organ-graph-program.md), [data](./organ-graph-data-candidate.md), [plan](./organ-graph-execution-plan.md), [protocol](./og5-gate-a-protocol.md).
+
+Wolfram Language evaluator executed fresh on 2026-10-16 JST. New [source](./og5-wolfram-gate-a.wl) and [machine records](./og5-wolfram-gate-a-result.json) have eight cases: f=733/997 Hz × C area=0.00015/0.0006 m² × C termination matched/rigid_closed, scale 1.0, 10 endpoints per case and p/U complex for each. Distinct algorithms: dimensionless global 20×20 LinearSolve and scalar impedance recursion + propagated full endpoints, with common physical transfer identity. **Exploratory nonblind results predate acceptance of the protocol**, not fresh blind confirmation or 144-case success.
+
+| Preliminary metric | Actual evaluated maximum |
+| --- | ---: |
+| Max dimensionless all-endpoint global-vs-recursive complex difference | 9.930136612989092e-16 |
+| Max dimensionless global equation residual | 2.2887833992611187e-16 |
+| Max dimensionless J1/J2 signed flow residual | 1.1102230246251565e-16 |
+| Max dimensionless J1/J2 pressure residual | 2.220446049250313e-16 |
+| Max relative source vs 3 terminals mean-power defect | 8.094900779320129e-16 |
+| Max dimensionless coefficient matrix condition2 | 24.344944491350603 |
+
+Initial non-normalized mixed-Pa/m³/s full-system Solve emitted **ill-conditioning warning**; corrected via p/(Z_ref*U_ref), U/U_ref. Do not discard this observed failed numerical attempt; Gate B condition handling remains a genuine test obligation. [Golden proposal](./og5-blueprint-goldens.json) gives four candidate digest checks (baseline/area/revision/reordered); independent cross-language confirmation and exact snapshot/output golden vectors pending ratification. No Gate A external reviewer signature, no new Core outputs, no CI and no merge receipt can be inferred from these numbers.
+
+**Future Gate B planned, NOT executed:** 144 scenarios, new backend *actual* 20 complex values per sample compared to independent reference, 8 archived Wolfram records separately, source/power/revisions/port map/invalid topologies and wrong-law kills, immutable SHA evidence with exact git HEAD. Review decision `SUPPORTED_LIMITED` / `INCONCLUSIVE` / `REJECT` cannot be declared from this author-authored design.

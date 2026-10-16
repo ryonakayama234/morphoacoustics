@@ -203,3 +203,18 @@ The provisional branch3 implementation matched all 11 approved canonical binary/
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 Evidence format `og4.gate-b.fresh-full-port.v2` adds `observations`: 60 records, each containing the complete prepared snapshot, full ordered request grid and complete hashed observation. Existing 288/24 case rows bind to those observations by digest; all three identities and per-case actual endpoint associations are recomputed before export. Source SHA coverage includes graph modules, runner, workflow, tests and frozen API/Wolfram fixtures, with CI run/attempt context outside physical digests. Blueprint/preparation/observation v1 ABI is unchanged. Unknown-key error paths escape JSON Pointer tokens; structural and snapshot-envelope invalidity precede capability/version decisions. See [review](./og4-gate-c-review.md).
+
+## OG-5 five-organ, two-junction candidate contract — 2026-10-16 Gate A DRAFT
+
+**Not a retroactive OG-3/OG-4 schema update.** [Exact candidate](./og5-tree5-api-v1.md), [four blueprint digest goldens](./og5-blueprint-goldens.json), [protocol](./og5-gate-a-protocol.md). Blueprint `og5.passive.tree5.v1` contains five named and revisioned passive Tube organisms, each with typed inlet/outlet `acoustic.p_u` (p Pa, U m³/s), two oriented three-port ideal junction constraints J1=(A.out,B.in,C.in) and J2=(B.out,D.in,E.in), one prescribed peak-phasor A.in source and loads C/D/E. Shared rho, c, fixed SI lengths/areas and explicit versioned law. The junction is not three unconstrained pairwise wires. Separate immutable PreparedTree5 with backend and source/geometry identities, physical instantaneous state (not persistent anatomy), full 10-endpoint complex Observation and future Studio Take (only reference to evidence).
+
+```mermaid
+flowchart TD
+ Canvas["Studio appearance / canvas positions: NON-PHYSICAL"] -.-> Blueprint["Blueprint: organs/revisions/typed ports/J1/J2/source/loads"]
+ Blueprint --> Prepare["strict structural validation + bounded capability"]
+ Prepare --> Prepared["PreparedTree5: verified identity + digest"]
+ Prepared --> State["complex p,U at all 10 ports"]
+ State --> Observation["run outputs, power, diagnostics, exact immutable evidence"]
+```
+
+Proposal digests domain separate from OG-4; normalized binary64, ASCII strict keys, stable ID ordering (but J ports order remains semantic); source amplitude/scale/revisions/load/geometry enter body digest; UI layout and physical running state do not. Hash goldens must be ratified and prepared/observation golden extensions supplied before Gate B can start. Finite SI, typed errors and deterministic whole-input validation before capability. `INVALID`/`UNSUPPORTED`/`NUMERICALLY_UNRESOLVED` separate; never fall back to fixed OG4/3, invent a morphology or serialize solver cache.

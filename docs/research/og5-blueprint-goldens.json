@@ -1,0 +1,156 @@
+{
+  "status": "GATE_A_CANDIDATE_PRE_ADOPTION",
+  "digest_version": "og5.canonical.binary.v1",
+  "domain": "morphoacoustics.og5.blueprint.v1",
+  "algorithm": "sha256(ASCII domain + 0x00 + canonical_binary64_map)",
+  "baseline_blueprint": {
+    "schema": "og5.passive.tree5.v1",
+    "organs": [
+      {
+        "id": "A",
+        "revision": "r1",
+        "length_m": 0.08,
+        "area_m2": 0.0003,
+        "sound_speed_m_s": 343,
+        "air_density_kg_m3": 1.2,
+        "inlet": {
+          "id": "A.in",
+          "kind": "acoustic.p_u",
+          "direction": "inlet"
+        },
+        "outlet": {
+          "id": "A.out",
+          "kind": "acoustic.p_u",
+          "direction": "outlet"
+        }
+      },
+      {
+        "id": "B",
+        "revision": "r1",
+        "length_m": 0.09,
+        "area_m2": 0.0003,
+        "sound_speed_m_s": 343,
+        "air_density_kg_m3": 1.2,
+        "inlet": {
+          "id": "B.in",
+          "kind": "acoustic.p_u",
+          "direction": "inlet"
+        },
+        "outlet": {
+          "id": "B.out",
+          "kind": "acoustic.p_u",
+          "direction": "outlet"
+        }
+      },
+      {
+        "id": "C",
+        "revision": "r1",
+        "length_m": 0.06,
+        "area_m2": 0.00015,
+        "sound_speed_m_s": 343,
+        "air_density_kg_m3": 1.2,
+        "inlet": {
+          "id": "C.in",
+          "kind": "acoustic.p_u",
+          "direction": "inlet"
+        },
+        "outlet": {
+          "id": "C.out",
+          "kind": "acoustic.p_u",
+          "direction": "outlet"
+        }
+      },
+      {
+        "id": "D",
+        "revision": "r1",
+        "length_m": 0.07,
+        "area_m2": 0.0003,
+        "sound_speed_m_s": 343,
+        "air_density_kg_m3": 1.2,
+        "inlet": {
+          "id": "D.in",
+          "kind": "acoustic.p_u",
+          "direction": "inlet"
+        },
+        "outlet": {
+          "id": "D.out",
+          "kind": "acoustic.p_u",
+          "direction": "outlet"
+        }
+      },
+      {
+        "id": "E",
+        "revision": "r1",
+        "length_m": 0.05,
+        "area_m2": 0.0006,
+        "sound_speed_m_s": 343,
+        "air_density_kg_m3": 1.2,
+        "inlet": {
+          "id": "E.in",
+          "kind": "acoustic.p_u",
+          "direction": "inlet"
+        },
+        "outlet": {
+          "id": "E.out",
+          "kind": "acoustic.p_u",
+          "direction": "outlet"
+        }
+      }
+    ],
+    "junctions": [
+      {
+        "id": "J1",
+        "law": "ideal.branch3.p_u",
+        "ports": [
+          "A.out",
+          "B.in",
+          "C.in"
+        ]
+      },
+      {
+        "id": "J2",
+        "law": "ideal.branch3.p_u",
+        "ports": [
+          "B.out",
+          "D.in",
+          "E.in"
+        ]
+      }
+    ],
+    "source": {
+      "kind": "prescribed_volume_flow",
+      "phasor_schema": "og5.peak.exp_plus_i.v1",
+      "port": "A.in",
+      "amplitude_m3_s": {
+        "real": 0.000001,
+        "imag": 4e-7
+      },
+      "scale": 1
+    },
+    "loads": [
+      {
+        "port": "C.out",
+        "kind": "matched"
+      },
+      {
+        "port": "D.out",
+        "kind": "matched"
+      },
+      {
+        "port": "E.out",
+        "kind": "matched"
+      }
+    ]
+  },
+  "expected": {
+    "baseline": "sha256:dbb2c4a5a034dd60481288c8e0e71f0ef4f4ea96638d9ab041c1d37c6a7e113c",
+    "c_area_0006": "sha256:b9e0ba8596a6cfa5ae508681428d34e5e04fa3118caade0528bef92c13df434e",
+    "c_revision_r2": "sha256:99d4f46f12d3fbe59e4f112110c9f8d91fae731eae2b25429b691545cdd60afe",
+    "reversed_collection_order": "sha256:dbb2c4a5a034dd60481288c8e0e71f0ef4f4ea96638d9ab041c1d37c6a7e113c"
+  },
+  "mutations": {
+    "c_area_0006": "replace C.area_m2=0.0006",
+    "c_revision_r2": "replace C.revision=r2",
+    "reversed_collection_order": "reverse organs,junctions,loads arrays independently; keep oriented junction.ports order unchanged"
+  }
+}
