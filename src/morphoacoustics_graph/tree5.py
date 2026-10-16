@@ -167,3 +167,6 @@ def _solve_fixture(c_area_m2: float, c_load_kind: str, scale: float,
         j1_scaled_pressure_residual=j1p, j2_scaled_pressure_residual=j2p,
         j1_scaled_flow_residual=j1u, j2_scaled_flow_residual=j2u,
         relative_power_defect=power)
+
+# B2 frozen public contract adapter (separate from numerical kernel).
+from .tree5_contract import PreparedTree5, Tree5Error, decode_tree5_json, prepare_tree5, restore_tree5

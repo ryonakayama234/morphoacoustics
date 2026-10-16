@@ -239,3 +239,7 @@ Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](
 An internal frozen `Tree5PhysicalSample` carries 10 complex p/U endpoint pairs, per-port signed mean power and Gate A numeric diagnostics; **this is not** the accepted public `og5.tree5.observation.v1` JSON payload. The B1 helper accepts explicit frozen fixture scalars, **not** `og5.passive.tree5.v1` Blueprints. Frozen v1 canonical digests, binding checks and 27 stable error receipts remain B2 acceptance obligations. See [Gate A A1](./og5-gate-a-amendment-a1.md) and [B1 report](./og5-gate-b1-trial.md).
 
 **OG-5 B1 typing receipt:** Internal complex128 solver state remains an ndarray rather than a public serialized p/U observation. A `typing.cast` repairs static library typing only, with no data-model field added or canonical hashes changed. [Trial evidence](./og5-gate-b1-trial.md).
+
+## Gate B2 contract checkpoint (2026-10-16; DRAFT)
+
+OG-5 B2 now proposes a real strict `og5.passive.tree5.v1` adapter, three independent canonical SHA-256 identities, byte-encoded snapshot and full complex p/U observation; A1 is authoritative. [B2 implementation record](./og5-gate-b2-contract.md). Numerical computed fields remain distinct from immutable physical organ/revision metadata.

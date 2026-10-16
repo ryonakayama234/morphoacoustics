@@ -211,3 +211,7 @@ Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](
 Architecture, candidate data, execution and experiment ledger are updated in this same B1 Draft. Core Creator CC-A1/Studio CC-A2 remains a separate path.
 
 **OG-5 B1 first CI correction:** At initial HEAD `82e1c69`, five B1 focused pytest tests passed on Python3.11 but mypy failed one incompatible `np.linalg.solve` return type; downstream OG3/OG4 suites also stopped at the same source type check. Typed no-op repair is proposed in subsequent HEAD; exact-head rerun required before a B1 machine-pass checkpoint. [Trial log summary](./og5-gate-b1-trial.md).
+
+## Gate B2 contract checkpoint (2026-10-16; DRAFT)
+
+OG-5 Gate B2: [x] code candidate for Blueprint→Prepared/Snapshot→Response and golden fixtures submitted to same Draft PR #112; [ ] exact HEAD CI and test failures addressed; [ ] B3 independent 144 full-port comparisons, 8 wrong laws, 6 true solver-boundary seams, two evidence archives and separate Gate C critical review. [B2 record](./og5-gate-b2-contract.md).
