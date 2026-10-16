@@ -245,3 +245,5 @@ An internal frozen `Tree5PhysicalSample` carries 10 complex p/U endpoint pairs, 
 OG-5 B2 now proposes a real strict `og5.passive.tree5.v1` adapter, three independent canonical SHA-256 identities, byte-encoded snapshot and full complex p/U observation; A1 is authoritative. [B2 implementation record](./og5-gate-b2-contract.md). Numerical computed fields remain distinct from immutable physical organ/revision metadata.
 
 **OG-5 B2 contract fidelity checkpoint:** No API/schema/digest fixture change in the CI correction; response test passes the fixture's `frequencies_hz`, and duplicated organ ID rejects prior to deriving invalid connections. [Record](./og5-gate-b2-contract.md).
+
+**B2 error state/data separation:** A1's six numerical seams produce `Tree5Error(status,code,path)` without partial Observation or digest, using matrix/solver fault injection in tests rather than making malformation part of the public physical blueprint. [Trial record](./og5-gate-b2-contract.md).

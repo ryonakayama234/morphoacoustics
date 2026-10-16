@@ -117,3 +117,51 @@ def test_atomic_late_numeric_refusal(monkeypatch: pytest.MonkeyPatch) -> None:
     assert err.value.receipt() == {
         "status": "NUMERICALLY_UNRESOLVED",
         "code": "MATRIX_RANK_DEFICIENT", "path": "/frequencies_hz/1"}
+
+
+@pytest.mark.parametrize("fixture", FIX["numeric_refusal_test_seams"], ids=lambda x: x["name"])
+def test_a1_actual_solver_boundary_seams(fixture: dict, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the real coupled-matrix/rank/linear-solve certification path.
+
+    This test never fakes _solve_fixture or asks for an unsupported Blueprint.
+    """
+    from morphoacoustics_graph import tree5
+    import numpy as np
+
+    real_system = tree5._system
+    real_solve = tree5.np.linalg.solve
+    name = fixture["name"]
+    inject_index = fixture["inject_at_sample_index"]
+    target_frequency = fixture["frequencies_hz"][inject_index]
+
+    if name in ("rank", "condition", "nonfinite", "late_atomicity"):
+        def matrix_mutant(tubes, load, scale, frequency):
+            m, rhs = real_system(tubes, load, scale, frequency)
+            if frequency != target_frequency:
+                return m, rhs
+            mutant, b = m.copy(), rhs.copy()
+            if name in ("rank", "late_atomicity"):
+                mutant[-1, :] = mutant[-2, :]
+                b[-1] = b[-2]
+            elif name == "condition":
+                mutant = np.diag(np.array([1.] * 19 + [1e-5], dtype=np.complex128))
+                b = np.ones(20, dtype=np.complex128)
+            elif name == "nonfinite":
+                mutant[0, 0] = np.nan
+            return mutant, b
+        monkeypatch.setattr(tree5, "_system", matrix_mutant)
+    else:
+        def solver_mutant(m, rhs):
+            if name == "convergence":
+                raise np.linalg.LinAlgError("injected expected solver failure")
+            result = real_solve(m, rhs)
+            result[0] += 1e-3
+            return result
+        monkeypatch.setattr(tree5.np.linalg, "solve", solver_mutant)
+
+    receiver = restore_tree5(copy.deepcopy(fixture["receiver_snapshot"]))
+    with pytest.raises(Tree5Error) as failure:
+        receiver.response(fixture["frequencies_hz"])
+    assert failure.value.receipt() == fixture["expected_error"]
+    assert fixture["observation_must_be_absent"] is True
+    assert fixture["digest_must_be_absent"] is True

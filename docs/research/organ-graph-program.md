@@ -219,3 +219,5 @@ The frozen [Gate A acceptance](./og5-gate-a-acceptance.md) authorized an isolate
 OG-5 Gate B2 introduces a separate strictly typed frozen v1 Blueprint→PreparedTree5→Observation adapter around the unchanged B1 global acoustic equations; the two 3-port junctions remain physical laws rather than graphic wires. [B2 design/implementation record](./og5-gate-b2-contract.md). No Studio/FSI or voice claim.
 
 **OG-5 B2 correction:** Original test harness misread frozen response fixture envelope; a duplicate identity generated ambiguous secondary binding error, now prioritized as primary duplicate before references. A1 expected semantics unchanged; [red-run receipt](./og5-gate-b2-contract.md).
+
+**B2 numerical architecture evidence:** Six registered A1 solver-seam mutants are now exercised against the actual 20×20 matrix and NumPy linear-solve operations, with exact typed refusal and late-sample atomicity. Physical dynamics and junction equations remain unchanged. [Trial record](./og5-gate-b2-contract.md).
