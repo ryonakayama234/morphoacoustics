@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -129,7 +130,7 @@ def _certified_solution(m: npt.NDArray[np.complex128],
         raise Tree5NumericalError("NUMERIC_NONFINITE")
     if residual > 1e-12:
         raise Tree5NumericalError("RESIDUAL_TOO_LARGE")
-    return x, condition, residual
+    return cast(npt.NDArray[np.complex128], x), condition, residual
 
 
 def _solve_fixture(c_area_m2: float, c_load_kind: str, scale: float,

@@ -35,3 +35,7 @@ Any failing test or mypy/CI requires documented remediation and new exact-HEAD e
 # This document and living program/data/execution/ledger updates are part of
 # the same Draft PR as the numerical code; experiment history is immutable.
 ~~~
+
+## First exact-HEAD GitHub CI failure (2026-10-16 JST)
+
+At `82e1c69a1494279d2066901583e4151ce44579ae`, the GitHub Python 3.11 Gate B1 test runner executed **five focused tests successfully**, and the general suite passed on Python 3.11/3.12/3.13. The Gate B1 mypy check failed **one error** in `tree5.py:132`: NumPy solve inferred `ndarray[complexfloating[Any,Any]]` while the return annotation required `NDArray[np.complex128]`. The OG3 and OG4 gate jobs also stopped at the same new-file mypy failure; no reproduced acoustic-law/regression failure. Python3.12/3.13 B1 matrix jobs were cancelled after the failed check; they are not passes. Repair adds a static `typing.cast` after confirmed complex128 matrix/solve input, changing no physical matrix, test threshold, or numerical output. Original failed run IDs: B1 38893915197, general 38893915215, OG4 38893915199, OG3 38893915193; preserve red runs as history and retest exact corrected HEAD.

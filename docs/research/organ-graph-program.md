@@ -211,3 +211,5 @@ Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](
 ## OG-5 Gate B1 internal solver Draft — 2026-10-16 (NOT ADOPTED)
 
 The frozen [Gate A acceptance](./og5-gate-a-acceptance.md) authorized an isolated physical solver candidate, described in [B1 trial report](./og5-gate-b1-trial.md). Five fixed passive tube nodes are coupled through two three-port physical junction laws in a scaled global 20-state system. This is **internal Core numerics only**; it does not expose a new public or Studio graph/voice capability. Live architecture and future Blueprint-to-Prepared-to-Observation flow retain the Gate A A1 contract, separate from unchanged OG3/OG4.
+
+**OG-5 B1 numerical PR CI correction:** First trial HEAD's physics pytest succeeded but new NumPy solve type annotation failed mypy. Static typing repair changes no acoustic equations; see [dated trial report](./og5-gate-b1-trial.md). No new Core public capability claimed.

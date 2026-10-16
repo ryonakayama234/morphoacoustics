@@ -209,3 +209,5 @@ Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](
 - [ ] Gate C independent physics+API+reproducibility audit, explicit limited decision; never auto-merge before this decision.
 
 Architecture, candidate data, execution and experiment ledger are updated in this same B1 Draft. Core Creator CC-A1/Studio CC-A2 remains a separate path.
+
+**OG-5 B1 first CI correction:** At initial HEAD `82e1c69`, five B1 focused pytest tests passed on Python3.11 but mypy failed one incompatible `np.linalg.solve` return type; downstream OG3/OG4 suites also stopped at the same source type check. Typed no-op repair is proposed in subsequent HEAD; exact-head rerun required before a B1 machine-pass checkpoint. [Trial log summary](./og5-gate-b1-trial.md).
