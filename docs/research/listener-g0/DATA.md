@@ -33,7 +33,7 @@ The edges are **propagation/observation relations**, *not* tissue contact, organ
 | sound_speed_m_s | positive scalar, m/s | propagation |
 | air_density_kg_m3 | positive scalar, kg/m³ | monopole scaling |
 | volume_velocity_m3_s | scalar, m³/s | source complex volume-velocity amplitude |
-| time convention | literal | exp(-i ω t) with exp(-ikr) spatial phase |
+| time convention | literal | exp(+i ω t) with exp(-ikr) spatial phase |
 
 ## Result (schema el-g0-result-v0)
 | Key | Shape / units | Interpretation |
