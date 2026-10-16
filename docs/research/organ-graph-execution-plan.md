@@ -155,3 +155,10 @@ Before marking PR #104 review-ready or merging: fix Codex P1 recursive-DFS large
 Implementers must follow [API Amendment A1](./og4-branch3-api-v1.md), including full validity before capability, a nonempty 1-D 1..256-point request, immutable reconstructed snapshot binding and golden byte/hash vectors. The [protocol](./og4-gate-a-protocol.md) separately requires fresh new-backend-vs-Python 288 and new-backend-vs-Wolfram 24 comparisons. No resource/schema/digest boundary is deferred to Gate B; Gate A ratification is still pending.
 
 State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
+
+
+## OG-4 Gate B implementation work order initiated (2026-10-16)
+
+Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107) merged at \`572c115ea54084ea85acf13e2cf447e6a700d134\`. This separate Gate B Draft branch started at that exact main commit. Scope: new isolated \`morphoacoustics_graph.branch3\` prepare/restore/response; 12x12 lossless full finite-tube solve; immutable snapshot + hash; strict fail-closed capability; new independently scored 288 inherited Python / 24 Wolfram records; canonical Python/JS goldens; dedicated CI and exact-head dual output/negative replay controls. The branch adds no general graph, anatomy, voice or waveform claims.
+
+**Remaining acceptance tasks:** run exact-head GitHub general CI (Python 3.11/3.12/3.13 + mypy); dedicated Gate B runner including OG-1/OG-3 preserved tests, Experiment028/029 frozen decisions, and two real X2a Takes; inspect downloadable raw SHA evidence and repeat reproducibility; execute separately critical physics/numerics and code/API/CI reviews, address all findings and re-test on fresh HEAD. Only Gate C decision \`GO_LIMITED_CORE_FIXED_3PORT\` / \`INCONCLUSIVE\` / \`REJECT\` after review. No auto-merge.

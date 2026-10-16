@@ -161,3 +161,36 @@ Well-formed large graphs remain syntactically representable although only two fi
 [Amendment A1](./og4-branch3-api-v1.md) freezes discriminated source/load objects, Complex `{real,imag}`, the blueprint/prepared-snapshot/observation schema IDs, exact backend and digest-version strings, typed framed binary64 canonical bytes and complete hashed fields. [Golden fixtures](./og4-branch3-api-golden.json) and their [encoding checker](./og4-branch3-api-vectors.py) specify identity behavior, including signed zero and fixed-vs-matched load identity.
 
 State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
+
+
+## OG-4 Gate B branch3 concrete data flow (2026-10-16; Draft implementation)
+
+\`\`\`mermaid
+classDiagram
+  class Branch3BlueprintV1 {
+    schema: og4.passive.branch3.v1
+    organs: named A/B/C
+    junctions: J ideal.branch3.p_u
+    source: complex prescribed volume flow
+    loads: B matched, C typed boundary
+  }
+  class PreparedBranch3 {
+    blueprint_digest
+    preparation_digest
+    frozen UniformTube x3
+    binding integrity
+  }
+  class ObservationV1 {
+    frequencies_hz: 1..256 anchors
+    port_ids: A.in,A.out,B.in,B.out,C.in,C.out
+    pressure_pa: N x 6 complex
+    volume_flow_m3_s: N x 6 complex
+    mean_power_w: N x 6 float
+    diagnostics: N x 5
+    observation_digest
+  }
+  Branch3BlueprintV1 --> PreparedBranch3
+  PreparedBranch3 --> ObservationV1
+\`\`\`
+
+Blueprint is JSON-compatible and exact-key typed with \`{real,imag}\` complex scalars. Port identities and ordered J-port connections are semantic; graph collection ordering is not. \`restore_branch3\` recomputes physical binding and both digests rather than trusting persisted state. Canonical \`og4.canonical.binary.v1\` is separate from adopted OG-3. Observation digest includes all ordered frequencies, six complex endpoint states, powers and diagnostics. External evidence ties these physical identities to a Git HEAD and comparator hashes without contaminating physical identity with timestamps or UI metadata. A supported OG-3 fixed2 shape is explicitly NOT converted to branch3. New code is provisional until Gate B critical checks and Gate C limited decision.

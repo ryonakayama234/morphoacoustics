@@ -148,3 +148,20 @@ Main baseline `f82cff7e9e887b44ca3dfb26f9a41b36a5dbe3fa`. Parent [#106](https://
 Codex review at `4161e6d` found four issues: unspecified source/load/schema; incomplete digest bytes; unbounded repeated frequencies; incorrect all-288 Wolfram attribution. [Amendment A1](./og4-branch3-api-v1.md) and the [corrected protocol](./og4-gate-a-protocol.md) address these. The immutable Python reference is pinned separately from the 24-record Wolfram JSON. Wolfram separately recomputed baseline C impedance 1372000, rematched half/double-area impedances 2744000/686000 and case counts 288/24. This is arithmetic/design verification, not executed branch3 evidence. Encoding fixtures include an explicitly synthetic observation, never a physical result.
 
 State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
+
+
+## OG-4 Gate B implementation receipt — 2026-10-16 JST (provisional; evidence pending)
+
+| Field | Record |
+| --- | --- |
+| Gate A authority | Merged design-only [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107); approved design HEAD \`37d15e2dac2fbfcc72d43efe681c3042a521ac4a\`; main \`572c115ea54084ea85acf13e2cf447e6a700d134\` |
+| Gate B branch | \`implementation/og4-gate-b-branch3-20261016\`; separate Draft implementation |
+| Implemented source candidate | \`src/morphoacoustics_graph/branch3.py\`: typed preparation/snapshot/full-port solver and canonical identities |
+| Test source | \`tests/test_branch3_public.py\`: new Core responses vs 288 Python and **separately** 24 archived Wolfram full-port records plus ABI/refusal controls |
+| Evidence source | \`checks/check_og4_gate_b.py\`; strict HEAD/source hashes, 288+24 expected/actual endpoint payloads, 2 same-HEAD runs, stale/wrong HEAD negative controls, SHA sidecars |
+| CI source | \`.github/workflows/og4-gate-b.yml\`; frozen OG3/X2a and dedicated complete case evidence |
+| Wolfram analytic check | Separately executed rational ideal 3-port S weighted-energy and reciprocity residual matrices are exactly zero for arbitrary positive admittances; incoming-A splits for C area ratios 0.5/1/2 are (1/25,16/25,8/25), (1/9,4/9,4/9), (1/4,1/4,1/2). This is **local ideal law evidence**, not new Core finite-length acceptance. |
+| Current status | **CANDIDATE / GATE B MACHINE EVIDENCE PENDING / NOT ADOPTED**. No experimental evidence should be declared passed until exact branch HEAD CI and raw artifacts are inspected. |
+| Refusal/falsification | Wrong signed U / particle velocity, ill-conditioned singular test, malformed/unsupported input, forged snapshot, altered OG-3 source, stale artifact and wrong expected HEAD remain mandatory negative controls. |
+
+Original Exp038/Wolfram reference contents and OG3/X2a sources were not modified. Existing inherited thresholds remain openly non-blind controlled regression, not prospective unseen physical evidence.
