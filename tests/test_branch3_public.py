@@ -204,3 +204,65 @@ def test_response_complex_shapes_and_power():
     assert o["pressure_pa"][0] == o["pressure_pa"][2]
     for row in o["mean_power_w"]:
         assert abs(row[0] - row[3] - row[5]) <= 1e-15
+
+
+@pytest.mark.parametrize("mutation", ["wrong_signed_flow", "wrong_particle_velocity", "wrong_pressure_sign"])
+def test_mutated_junction_law_is_detected_by_independent_reference(mutation):
+    """Falsifiers deliberately corrupt one row; production solver stays immutable."""
+    ref = reference()
+    b = blueprint(2, "matched")
+    p = prepare_branch3(b)
+    loads = {row["port"]: row for row in b["loads"]}
+    m, rhs = _system(p._tubes, loads, 1e-6 * (1 + .4j), 733.)
+    if mutation == "wrong_signed_flow":
+        m[8, 5] = 1.
+        m[8, 9] = 1.
+    elif mutation == "wrong_particle_velocity":
+        # Enforcing U/A rather than volumetric-flow continuity at unequal area.
+        m[8, 9] = -.5
+    else:
+        m[6, 4] = 1.
+    x = np.linalg.solve(m, rhs)
+    pvals = x[0::2] * 1.372
+    uvals = x[1::2] * 1e-6
+    actual = {pid: (pvals[i], uvals[i]) for i, pid in enumerate(PORTS)}
+    error = ref.state_error(actual, ref.port_states(2, 733, "matched"), 1.372, 1e-6)
+    assert error > 1e-3, (mutation, error)
+
+
+def test_iterative_long_valid_graph_refusal_and_invalid_precedence():
+    base = blueprint()
+    previous = "B.out"
+    for i in range(1205):
+        name = f"D{i:04d}"
+        base["organs"].append({
+            "id": name, "revision": "v1", "length_m": .08, "area_m2": .0003,
+            "sound_speed_m_s": 343, "air_density_kg_m3": 1.2,
+            "inlet": {"id": name+".in", "kind": "acoustic.p_u", "direction": "inlet"},
+            "outlet": {"id": name+".out", "kind": "acoustic.p_u", "direction": "outlet"}})
+        base["junctions"].append({"id": f"E{i:04d}", "law": "ideal.series.p_u",
+                                  "ports": [previous, name+".in"]})
+        previous = name+".out"
+    base["loads"][0]["port"] = previous
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(base)
+    assert (exc.value.status, exc.value.code) == ("UNSUPPORTED", "BRANCH3_TOPOLOGY_ONLY")
+    base["organs"][-1]["area_m2"] = -1
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(base)
+    assert exc.value.status == "INVALID"
+
+
+def test_all_golden_digests_against_production_encoder():
+    for vector in GOLDEN["vectors"]:
+        assert _digest(vector["kind"], vector["input"]) == vector["digest"], vector["name"]
+
+
+def test_revisions_and_source_identity_and_loaded_boundary_identity():
+    p = prepare_branch3(blueprint())
+    edited = blueprint()
+    edited["organs"][0]["revision"] = "another-revision"
+    assert prepare_branch3(edited).blueprint_digest != p.blueprint_digest
+    fixed = prepare_branch3(blueprint(1, "fixed_impedance"))
+    assert p.blueprint_digest != fixed.blueprint_digest
+    assert p.response([733])["pressure_pa"] == fixed.response([733])["pressure_pa"]
