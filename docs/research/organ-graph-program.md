@@ -145,3 +145,34 @@ A new [issue #106](https://github.com/ryonakayama234/morphoacoustics/issues/106)
 The [Amendment A1 API contract](./og4-branch3-api-v1.md) now fixes complete source/load/observation fields, an isolated branch3 module and explicit fixed2 refusal, independent prepared reconstruction, and the 1..256-point response path. The system/data diagrams in the RFC remain the architecture; no backend or Studio integration is added.
 
 State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
+
+
+## OG-4 Gate B isolated branch3 candidate (2026-10-16; NOT ADOPTED)
+
+Gate A specification was accepted at [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107) reviewed design SHA `37d15e2dac2fbfcc72d43efe681c3042a521ac4a`. Gate B runs on a separate Draft PR; no Core/studio release is implied.
+
+```mermaid
+flowchart TD
+  Studio["Future creator Studio (not yet connected)"] -.-> Contract["Future versioned binding"]
+  Blueprint["OG4 Branch3Blueprint v1"] --> Validation["Structure, SI, ports, capability"]
+  Validation -->|INVALID / UNSUPPORTED| Refusal["Typed refusal; no state"]
+  Validation --> Prepared["Immutable PreparedBranch3 + exact identities"]
+  Prepared --> Tubes["3 existing UniformTube primitives (unchanged)"]
+  Tubes --> Equations["12x12 complex p/U + ideal 3-port law"]
+  Equations --> Diagnostics["cond2, backward, pressure/flow/power"]
+  Diagnostics -->|UNRESOLVED| Refusal
+  Diagnostics --> Observation["6 endpoints x p,U, power + observation digest"]
+  Observation --> Evidence["New Python 288 + frozen Wolfram 24 + mutations"]
+  Legacy["Existing OG3 serial2 backend (unchanged)"] -.-> Validation
+```
+
+Core owns all conservation laws and physical port typing; Studio may eventually compose validated bodies, but OG-4 does not introduce a graph editor, phonation, mouth/nose model or WAV. Acoustic `p,U` ports are not illustration edges. Keep `src/morphoacoustics/**`, OG-3 schema/digests, experiment references/oracles, existing Studio contracts and X2a frozen source untouched. OG-4 branch3 resides solely in `src/morphoacoustics_graph/branch3.py`. The acceptance boundaries and numerical thresholds are normative in [og4-branch3-api-v1.md](./og4-branch3-api-v1.md) and [og4-gate-a-protocol.md](./og4-gate-a-protocol.md), not redefined here.
+
+### Gate B implementation status (2026-10-16 JST)
+
+Versioned branch3 implementation and its bounded physical data flow are now present in [Draft PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108). The physical change is limited to three existing UniformTube primitives and the independently typed 3-Port junction, not a new vocal instrument. **Gate B automated numerical acceptance has passed on prior exact HEAD a5d0b4c**, as recorded in the experiment ledger; external critical code review and Gate C adoption are outstanding. No change to existing OG-3/X2a public/experimental behavior is intended.
+
+
+### OG-4 PR #108 critical review corrections — 2026-10-16 JST
+
+The corrected PR #108 is reviewed against the accepted API in two critical scopes: physics/numerics and code/API/evidence. The [Gate C review](./og4-gate-c-review.md) records findings, repairs and the exact limited decision boundary. Validation now gathers independent structural failures before capability; every snapshot envelope is validated before unknown-version refusal. The existing diagram above remains the physical architecture. Corrections add no physical degree of freedom, change no numerical threshold and preserve the legacy source tree. Final readiness requires the corrected-HEAD receipt on PR #108; no merge is performed by this entry.

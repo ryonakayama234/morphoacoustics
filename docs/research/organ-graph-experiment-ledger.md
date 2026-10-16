@@ -148,3 +148,48 @@ Main baseline `f82cff7e9e887b44ca3dfb26f9a41b36a5dbe3fa`. Parent [#106](https://
 Codex review at `4161e6d` found four issues: unspecified source/load/schema; incomplete digest bytes; unbounded repeated frequencies; incorrect all-288 Wolfram attribution. [Amendment A1](./og4-branch3-api-v1.md) and the [corrected protocol](./og4-gate-a-protocol.md) address these. The immutable Python reference is pinned separately from the 24-record Wolfram JSON. Wolfram separately recomputed baseline C impedance 1372000, rematched half/double-area impedances 2744000/686000 and case counts 288/24. This is arithmetic/design verification, not executed branch3 evidence. Encoding fixtures include an explicitly synthetic observation, never a physical result.
 
 State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
+
+
+## OG-4 Gate B implementation receipt — 2026-10-16 JST (provisional; evidence pending)
+
+| Field | Record |
+| --- | --- |
+| Gate A authority | Merged design-only [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107); approved design HEAD `37d15e2dac2fbfcc72d43efe681c3042a521ac4a`; main `572c115ea54084ea85acf13e2cf447e6a700d134` |
+| Gate B branch | `implementation/og4-gate-b-branch3-20261016`; separate Draft implementation |
+| Implemented source candidate | `src/morphoacoustics_graph/branch3.py`: typed preparation/snapshot/full-port solver and canonical identities |
+| Test source | `tests/test_branch3_public.py`: new Core responses vs 288 Python and **separately** 24 archived Wolfram full-port records plus ABI/refusal controls |
+| Evidence source | `checks/check_og4_gate_b.py`; strict HEAD/source hashes, 288+24 expected/actual endpoint payloads, 2 same-HEAD runs, stale/wrong HEAD negative controls, SHA sidecars |
+| CI source | `.github/workflows/og4-gate-b.yml`; frozen OG3/X2a and dedicated complete case evidence |
+| Wolfram analytic check | Separately executed rational ideal 3-port S weighted-energy and reciprocity residual matrices are exactly zero for arbitrary positive admittances; incoming-A splits for C area ratios 0.5/1/2 are (1/25,16/25,8/25), (1/9,4/9,4/9), (1/4,1/4,1/2). This is **local ideal law evidence**, not new Core finite-length acceptance. |
+| Current status | **CANDIDATE / GATE B MACHINE EVIDENCE PENDING / NOT ADOPTED**. No experimental evidence should be declared passed until exact branch HEAD CI and raw artifacts are inspected. |
+| Refusal/falsification | Wrong signed U / particle velocity, ill-conditioned singular test, malformed/unsupported input, forged snapshot, altered OG-3 source, stale artifact and wrong expected HEAD remain mandatory negative controls. |
+
+Original Exp038/Wolfram reference contents and OG3/X2a sources were not modified. Existing inherited thresholds remain openly non-blind controlled regression, not prospective unseen physical evidence.
+
+### OG-4 Gate B first full machine pass — exact code HEAD a5d0b4c242637bcd48430fc742cbd138e260e21a (2026-10-16 JST)
+
+| Metric | Measured, actual fresh Core outputs |
+| --- | --- |
+| General CI | [Success: Python 3.11/3.12/3.13 and mypy](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651423) |
+| OG-3 compatibility | [Success: adopted frozen Core, research and actual X2a](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651429) |
+| Dedicated OG-4 Gate B | [Success: full-port science, ABI, two fresh SHA evidence, X2a](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651462) |
+| Python 288 comparisons | All 288 new actual Core samples; maximum normalized complex endpoint error **9.425709178869422e-15** vs frozen independent `reference.py` |
+| Wolfram 24 comparisons | All 24 new actual Core samples; maximum normalized complex endpoint error **2.738160251773752e-15** and three outlet/input power errors **1.8521128584277705e-15** vs frozen `oracle.json` |
+| Mutation control deviations | Wrong particle velocity **0.4950242761670201**, wrong pressure sign **1.6642784627981486**, wrong signed volume flow **2.2947995211646948**; all falsifiers exceed 1e-3 |
+| Scattering check | Ratios 0.5/1/2, weighted-power/reciprocity/complex mixed incidence all ≤ **8.9e-16**, plus independently executed symbolic Wolfram exact zero matrices |
+| Determinism | Two fresh complete **1,206,981-byte** expected/actual ledgers were byte-identical; both SHA-256 **8c203c7feff21503c0a079a6427ac0d49115c297b411833e2ee197e8bca6371e**. Wrong expected HEAD and stale-output negative controls rejected. |
+| Downloaded raw artifact | [GitHub artifact #12021939977](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651462/artifacts/12021939977); independently unpacked ZIP SHA-256 **3132ac1c66ea9b94dfc879a4593414813297ad000bca98535e1dae045286b9d7**. Valid ZIP, 14 files. |
+| Live preservation | Both genuine 24,000-frame, 48 kHz X2a WAV Takes; stored hashes per manifest, both WAV/raw-pressure/physical traces byte identical; Exp028/029 original accepted decisions retained. |
+| Scope | Eight accepted frequencies, C ratios 0.5/1/2, B matched and four C loads, source scales 1/0.5/-1; **no physiological human voice or WAV from OG-4 graph**. |
+| Adoption | **MACHINE_NUMERICAL_PASS / CRITICAL_EXTERNAL_REVIEW_PENDING / NOT_ADOPTED**. Automated confirmation cannot replace Gate C. |
+
+Critical external review of [PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108) was requested via Codex; the service reported an **account review-usage limit**, so there is no completed independent code audit. This is not a numerical or code defect determination. The test provenance is `a5d0b4c`; any subsequent documentation-only HEAD requires fresh CI before being called the final exact-head evidence. Do not backdate this machine pass to the original Gate A proposal, or claim 288 directly frozen Wolfram records.
+
+
+### OG-4 PR #108 critical review corrections — 2026-10-16 JST
+
+Starting review SHA `43fb39bebaec7a818f64d1b5afc8f3d0ad4a4583`. Reproduced error-priority and JSON Pointer failures before fixing them; found snapshot envelope invalidity hidden by unsupported-version classification. Added regression coverage and a typed forged-JSON recursion failure. The original singular condition-only test was insufficient; new tests exercise actual numerical refusal after an earlier valid sample and prove that no observation digest is emitted. Scattering now compares separately solved incident bases against unchanged Wolfram matrices, including unequal-area wrong-law power control. Evidence v2 persists full input/output identity payloads and verifies their case bindings. New Wolfram execution gives exact zero weighted-energy/reciprocity defects and singular rank 11/nullity 1; finite ratio-2 closed-C 733 Hz ports also checked. These are analytic ideal-model checks. [Detailed findings and decision boundary](./og4-gate-c-review.md). Corrected-HEAD CI/raw artifact receipt is required on PR #108; old green runs remain historical evidence. No merge or human-review claim.
+
+Local verification note: the first full-suite run during editing returned 577 passed / 4 failed because frozen research runners correctly refused `DIRTY_TRACKED_CHECKOUT`; this is retained as a failed verification attempt. Re-run on the committed clean checkout and corrected-HEAD CI before deciding acceptance. No freeze guard was weakened.
+
+Corrected-HEAD trial `ac8c416`: dedicated OG-4/OG-3 CI passed, but general CI failed with 580 passed / 2 failed because two newly added tests imported non-package `checks` by namespace. `python -m pytest` adds the repository root while the workflow's `pytest` entry point does not. Fixed by explicit `importlib` file loading, matching existing reference-test practice; no production/numerical change. Both original red workflow attempts remain visible. Re-attest all gates at the new HEAD.
