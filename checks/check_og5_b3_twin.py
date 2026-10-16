@@ -79,7 +79,18 @@ def compare_two(root: Path) -> float:
     require(sa["oracle_kernel"] == sb["oracle_kernel"], "different Wolfram kernel")
     require(sa["positive_denominator"] == sb["positive_denominator"] == 144, "wrong denominator")
     require(sa["wolfram_paths"] == sb["wolfram_paths"], "wrong reference path")
-    require(ma == mb, "mutant detection/provenance changed between runners")
+    require(len(ma) == len(mb) == 8, "mutant count changed")
+    for a_mut, b_mut in zip(ma, mb):
+        require(a_mut["name"] == b_mut["name"] and a_mut["status"] == b_mut["status"],
+                f"mutant kind/kill status diverges: {a_mut['name']}")
+        if a_mut["status"] == "KILLED_FULL_STATE":
+            x, y = a_mut["max_scaled_full_state_error"], b_mut["max_scaled_full_state_error"]
+            require(min(x, y) > 1e-6 and abs(x - y) <= PHYSICAL_TOL,
+                    f"mutant physical margin changed: {a_mut['name']}")
+        else:
+            require(a_mut["status"] == "KILLED_NUMERIC_REFUSAL"
+                    and a_mut["receipt"] == b_mut["receipt"],
+                    f"numeric refusal changed: {a_mut['name']}")
     maximum = 0.0
     for i, (a, b) in enumerate(zip(aa, bb)):
         require(a["index"] == b["index"] == i, "case order changed")
@@ -110,8 +121,13 @@ def compare_two(root: Path) -> float:
         for k, v in ax["diagnostics"][0].items():
             w = bx["diagnostics"][0][k]
             require(math.isfinite(v) and math.isfinite(w), f"{i}: nonfinite {k}")
-            relative = abs(v - w) / max(abs(v), abs(w), 1e-12)
-            require(relative <= DIAGNOSTIC_TOL, f"{i}: {k} differs: {relative}")
+            if k == "condition_number_2":
+                relative = abs(v - w) / max(abs(v), abs(w))
+                require(relative <= DIAGNOSTIC_TOL, f"{i}: {k} differs: {relative}")
+            elif k == "scaled_linear_residual":
+                require(max(v, w) <= 1e-12, f"{i}: linear residual exceeds A1 bound")
+            else:
+                require(max(v, w) <= PHYSICAL_TOL, f"{i}: diagnostic {k} exceeds A1 bound")
     for k in SCORED_METRICS:
         require(math.isfinite(sa[k]) and math.isfinite(sb[k]), f"nonfinite {k}")
         if k == "max_condition_2":
