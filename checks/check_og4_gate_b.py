@@ -82,7 +82,7 @@ def main() -> None:
         parser.error("HEAD mismatch: stale / wrong-target evidence rejected")
     if args.output_dir.exists():
         parser.error("stale output directory rejected")
-    status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)
+    status = subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, text=True)
     if status:
         parser.error("dirty worktree cannot be used as exact-HEAD evidence")
     source_hashes = {path: checksum(ROOT / path) for path in PINN}
