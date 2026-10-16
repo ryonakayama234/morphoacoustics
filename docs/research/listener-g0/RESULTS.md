@@ -1,6 +1,6 @@
 ---
 id: EL-G0-RESULTS
-status: OPEN_EVIDENCE_LOG
+status: NUMERICAL_GATE_PASS_REVIEW_PENDING
 adoption: NOT_ADOPTED
 parent: "Issue #113 / PR #83"
 ---
@@ -26,15 +26,24 @@ parent: "Issue #113 / PR #83"
 
 Initial runner documentation described exp(-i omega t) while using outgoing exp(-ikr) and +i omega. Corrected the **convention label only** to exp(+i omega t) in the runner and schema. The physical pressure formula, output metrics, hypothesis and registered thresholds were not altered. No post hoc numeric threshold changes.
 
+## 2026-10-17 — GitHub Actions numerical execution
+
+- **Run:** [38928661444](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38928661444), status SUCCESS.
+- **Branch head at test:** `87f26e08e7e05448db13f6ed86189698b5e1ea44`.
+- **Python:** GitHub runner Python 3.11.17, `python -m pytest tests/test_experiment_040_listener_g0.py -q` — **9 tests passed** (nine dots, 100%; successful exit).
+- **Runner:** `python experiments/040_listener_g0/run.py --output .../RESULTS.json` — successful exit. Since its exit code requires all registered gates true, this run satisfied those programmed gates.
+- **Evidence:** artifact `EL-G0-analytic-null`, ID `12057019254`, zipped artifact SHA-256 `5630bd6a1f72af26cd612ce11bbd4de6c2cfc81892ff6c77a13eeec327ac4ed4`.
+- **Decision:** `PROVISIONAL_ANALYTIC_BASELINE`; **NOT_ADOPTED** pending independent model review. Success is a consistency check of an ideal free-field null, not an independent physical measurement.
+
 ## Execution and review gate
 
 - Preregistration: saved to the research branch before implementation.
 - Source and test fixture: added in a separate commit.
 - Independent mathematical oracle: **CHECKED** (Wolfram).
-- Python automated tests: **PENDING first authenticated CI evidence**. Do not call PASS before retrieving the CI log and artifact.
+- Python automated tests: **PASS** in run 38928661444 (nine tests, no failures).
 - Empirical ear/pinna/ASMR comparison: **NOT PERFORMED**.
-- Production adoption: **NOT_ADOPTED**.
-- Interpretation if future Python checks pass: `PROVISIONAL_ANALYTIC_BASELINE`, independent review still required.
+- Production adoption: **NOT_ADOPTED** (still requires independent critical review and empirical validation for later listener physics).
+- Recorded interpretation: `PROVISIONAL_ANALYTIC_BASELINE` (analytic/null numerical checks only); independent review still required.
 
 ## Claim limit
 
