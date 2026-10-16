@@ -76,3 +76,15 @@ def test_rehashing_wrong_states_does_not_forge_oracle_agreement(raw_record: dict
     raw_record["errors"] = {"global": 0., "recursive": 0.}
     with pytest.raises(AssertionError, match="raw Core/oracle mismatch"):
         AUDIT["audit_record"](raw_record)
+
+
+def test_raw_oracles_cannot_be_changed_together_with_states() -> None:
+    cases = []
+    for i in range(8):
+        shard = json.loads((ROOT / f"docs/research/og5-b3-oracle-{i:02}.json").read_text())
+        cases.extend({"case": value} for value in shard["cases"])
+    AUDIT["audit_pinned_oracle"](cases)
+    for method in ("global", "recursive"):
+        cases[0]["case"][method]["pressure_pa"][0][0] += .01
+    with pytest.raises(AssertionError, match="raw oracle values differ from pinned source"):
+        AUDIT["audit_pinned_oracle"](cases)

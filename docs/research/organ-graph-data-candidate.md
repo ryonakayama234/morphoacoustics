@@ -261,3 +261,19 @@ Blueprint → immutable PreparedTree5 → full-port Observation → separately a
 evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
 INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
 critical review are required before a LIMITED adoption decision.
+
+
+## OG-5 Gate C R3/R4 capability-order remediation
+
+The [R3/R4 repair record](./og5-gate-c-remediation.md#r3r4-follow-up-one-frozen-capability-selection-rule)
+records the 3eeab25 INCONCLUSIVE findings and correction. Data/architecture flow:
+complete structural validation -> normalized Blueprint -> applicable capability
+candidates -> frozen A1 code priority and ASCII pointer selection -> immutable
+Snapshot -> unchanged solver -> atomic full-port Observation -> independently
+source-pinned raw audit. Unsupported organ mappings never enter fixed geometry
+lookups. The 320 added contract cases first gave 54 FAIL / 266 PASS; old frozen
+fixtures and physical/oracle values remain immutable. B3 now watches its golden
+input, and raw oracle values are directly bound to the checkout's eight shards.
+Execution requires all CI plus two fresh raw evidence runs on the corrected
+committed HEAD and a separate Gate C adoption review. **Repair candidate only;
+Draft/unmerged/not adopted.** See the PR receipt for actual final counts and SHAs.

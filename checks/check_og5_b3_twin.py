@@ -90,6 +90,17 @@ def audit_record(record: dict[str, Any]) -> None:
             <= PHYSICAL_TOL * max(abs(powers[0]), floor), "raw energy imbalance")
 
 
+def audit_pinned_oracle(cases: list[dict[str, Any]]) -> None:
+    """Bind raw reference values to checkout sources, not only archive claims."""
+    pinned = []
+    for i in range(8):
+        shard = ROOT / f"docs/research/og5-b3-oracle-{i:02}.json"
+        pinned.extend(json.loads(shard.read_text())["cases"])
+    require(len(cases) == len(pinned) == 144, "pinned oracle coverage lost")
+    require([record["case"] for record in cases] == pinned,
+            "raw oracle values differ from pinned source")
+
+
 def load(folder: Path) -> tuple[list[dict[str, Any]], Any, dict[str, Any], dict[str, Any]]:
     for name in EXPECTED_NAMES:
         require((folder / name).is_file(), f"missing {folder}/{name}")
@@ -111,6 +122,7 @@ def load(folder: Path) -> tuple[list[dict[str, Any]], Any, dict[str, Any], dict[
                 for a in (.00015, .0003, .0006) for l in ("matched", "rigid_closed") for s in (1., .5, -1.)]
     require([(r["case"]["frequency_hz"], r["case"]["c_area_m2"], r["case"]["c_load"], r["case"]["scale"])
              for r in cases] == expected, "incomplete/duplicate physical coverage")
+    audit_pinned_oracle(cases)
     for record in cases:
         audit_record(record)
     require(len(summary["eight_mutants"]) == 8 and len(mutations) == 8, "mutation coverage lost")

@@ -1,7 +1,7 @@
 # OG-5 Gate C remediation — 2026-10-16 JST
 
-Current: implementation repair candidate; final exact-HEAD CI/evidence and Gate C
-re-review are pending. This file does not declare adoption or authorize merge.
+Current: R3/R4 capability-order repair candidate; final exact-HEAD CI/evidence
+and a separate Gate C adoption review are pending. This file does not declare adoption or authorize merge.
 The [review at ca07c974](https://github.com/ryonakayama234/morphoacoustics/pull/112#pullrequestreview-5549021528)
 remains an immutable INCONCLUSIVE receipt for that old implementation.
 
@@ -64,3 +64,45 @@ arbitrary-topology, moving-organ, speech/WAV or Studio integration is introduced
 
 Final local/CI counts, commit/run/artifact identities and the re-review disposition
 belong to the PR review receipt, avoiding a self-referential commit hash here.
+
+
+## R3/R4 follow-up: one frozen capability selection rule
+
+The [final review at 3eeab25](https://github.com/ryonakayama234/morphoacoustics/pull/112#pullrequestreview-5549383591)
+found that the D/E matched-only restriction ran after topology/geometry, and
+geometry's first field in implementation order won over the A1 ASCII pointer.
+Both are frozen A1.3 API violations, not altered physical solutions.
+
+After complete shape/relationship/graph validation and canonical collection
+normalization, capability validation collects applicable refusal candidates and
+selects by A1 code-table rank, then escaped ASCII pointer. Known D/E load
+restrictions join the other LOAD_NOT_SUPPORTED candidates. Fixed geometry is
+examined only when the exact organ/port/junction mapping is recognized; lawful
+unsupported names do not cause fixed-dictionary lookup errors. Restore retains
+its outer schema/digest-version/backend ordering before Blueprint capability,
+and hash checks still follow capability. No physical law, supported input,
+public schema, canonical byte encoding or frozen golden fixture changes.
+
+The new contract suite exercises every nonempty combination of six Blueprint
+capability categories, prepare/restore and reversed collection order, plus all
+pairs of geometry fields on all five organs, same-code pointer ties and unknown
+organ mapping. **320 assertions: 54 FAIL / 266 PASS before the fix**. The existing
+R3/R4 six reproductions are covered. The post-fix results belong to the PR receipt.
+Expectations derive from A1, without importing the production selection helper.
+
+The B3 workflow now watches its golden-input dependency on both push and PR.
+The standalone twin audit also compares every archived oracle case directly
+with the checkout's eight pinned shards, so matching rehashed states/references
+cannot replace the immutable reference values. This check imports no Core or
+NumPy; altered references are explicitly tested. Earlier source/hash/power audits
+remain in force. The two fresh raw runs must use this auditor's new source hash.
+
+Architecture and data flow remain:
+validated Blueprint -> normalized semantic mapping -> capability candidates ->
+A1 code/pointer selection -> immutable Snapshot -> unchanged physical solve ->
+atomic Observation -> source-pinned independent evidence audit.
+
+This is a repair receipt and execution handoff, not SUPPORTED_LIMITED adoption.
+Keep the PR Draft/unmerged until the corrected committed HEAD has all required
+CI and raw evidence and a separate critical Gate C disposition. The earlier
+3eeab25 INCONCLUSIVE review remains accurate for its historical version.

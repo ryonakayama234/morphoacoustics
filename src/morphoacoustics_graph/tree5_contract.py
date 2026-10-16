@@ -32,6 +32,9 @@ _CODES = ("EXPECTED_OBJECT", "EXPECTED_LIST", "MISSING_FIELD", "UNKNOWN_FIELD",
           "INVALID_CONNECTION", "GRAPH_CYCLE", "GRAPH_DISCONNECTED",
           "IDENTITY_MISMATCH", "PREPARED_BINDING_INVALID", "EMPTY_REQUEST")
 _CODE_RANK = {v: i for i, v in enumerate(_CODES)}
+_CAPABILITY_RANK = {code: i for i, code in enumerate((
+    "VERSION_NOT_SUPPORTED", "LAW_NOT_SUPPORTED", "SOURCE_NOT_SUPPORTED",
+    "LOAD_NOT_SUPPORTED", "TOPOLOGY_NOT_SUPPORTED", "GEOMETRY_NOT_SUPPORTED"))}
 _FIXED = {
     "A": (.08, .0003), "B": (.09, .0003), "C": (.06, None),
     "D": (.07, .0003), "E": (.05, .0006),
@@ -291,49 +294,55 @@ def _normalize_blueprint(value: object, prefix: str = "") -> dict[str, Any]:
 def _capability(bp: dict[str, Any], prefix: str = "") -> None:
     from . import tree5 as physics
 
+    candidates: list[tuple[str, str]] = []
     if bp["schema"] != SCHEMA:
-        _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED", prefix + "/schema")
+        candidates.append((prefix + "/schema", "VERSION_NOT_SUPPORTED"))
     source = bp["source"]
     if source["phasor_schema"] != "og5.peak.exp_plus_i.v1":
-        _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED", prefix + "/source/phasor_schema")
-    for j in bp["junctions"]:
+        candidates.append((prefix + "/source/phasor_schema", "VERSION_NOT_SUPPORTED"))
+    for index, j in enumerate(bp["junctions"]):
         if j["law"] != "ideal.branch3.p_u":
-            index = bp["junctions"].index(j)
-            _raise("UNSUPPORTED", "LAW_NOT_SUPPORTED", prefix + f"/junctions/{index}/law")
+            candidates.append((prefix + f"/junctions/{index}/law", "LAW_NOT_SUPPORTED"))
     if (source["kind"] != "prescribed_volume_flow" or
             source["port"] != "A.in" or
             source["amplitude_m3_s"] != {"real": 1e-6, "imag": 4e-7} or
             source["scale"] not in (1., .5, -1.)):
-        _raise("UNSUPPORTED", "SOURCE_NOT_SUPPORTED", prefix + "/source")
+        candidates.append((prefix + "/source", "SOURCE_NOT_SUPPORTED"))
     for i, load in enumerate(bp["loads"]):
-        if load["kind"] not in ("matched", "rigid_closed"):
-            _raise("UNSUPPORTED", "LOAD_NOT_SUPPORTED", prefix + f"/loads/{i}/kind")
-    if (set(o["id"] for o in bp["organs"]) != set("ABCDE")
-            or len(bp["organs"]) != 5 or len(bp["junctions"]) != 2
-            or bp["junctions"] != [
+        if (load["kind"] not in ("matched", "rigid_closed") or
+                (load["port"] in ("D.out", "E.out") and load["kind"] != "matched")):
+            candidates.append((prefix + f"/loads/{i}/kind", "LOAD_NOT_SUPPORTED"))
+    topology_supported = (
+            set(o["id"] for o in bp["organs"]) == set("ABCDE")
+            and len(bp["organs"]) == 5 and len(bp["junctions"]) == 2
+            and bp["junctions"] == [
                 {"id": "J1", "law": "ideal.branch3.p_u",
                  "ports": ["A.out", "B.in", "C.in"]},
                 {"id": "J2", "law": "ideal.branch3.p_u",
                  "ports": ["B.out", "D.in", "E.in"]},
-            ] or any(o["inlet"]["id"] != o["id"] + ".in" or
-                     o["outlet"]["id"] != o["id"] + ".out" for o in bp["organs"])
-            or set(x["port"] for x in bp["loads"]) != {"C.out", "D.out", "E.out"}):
-        _raise("UNSUPPORTED", "TOPOLOGY_NOT_SUPPORTED", prefix + "/organs")
-    for i, o in enumerate(bp["organs"]):
-        name = o["id"]
-        length, area = _FIXED[name]
-        for key, expected in (("length_m", length), ("area_m2", area),
-                              ("sound_speed_m_s", 343.), ("air_density_kg_m3", 1.2)):
-            if (key == "area_m2" and name == "C"
-                    and o[key] in physics.AREAS_C):
-                continue
-            if o[key] != expected:
-                _raise("UNSUPPORTED", "GEOMETRY_NOT_SUPPORTED",
-                       prefix + f"/organs/{i}/{key}")
-    for x in bp["loads"]:
-        if x["port"] != "C.out" and x["kind"] != "matched":
-            _raise("UNSUPPORTED", "LOAD_NOT_SUPPORTED",
-                   prefix + "/loads/" + str(bp["loads"].index(x)) + "/kind")
+            ] and all(o["inlet"]["id"] == o["id"] + ".in" and
+                      o["outlet"]["id"] == o["id"] + ".out" for o in bp["organs"])
+            and set(x["port"] for x in bp["loads"]) == {"C.out", "D.out", "E.out"})
+    if not topology_supported:
+        candidates.append((prefix + "/organs", "TOPOLOGY_NOT_SUPPORTED"))
+    else:
+        # Fixed geometry is meaningful only after the semantic mapping is known.
+        # A lawful unsupported topology must never cause a fixed-name lookup error.
+        for i, o in enumerate(bp["organs"]):
+            name = o["id"]
+            length, area = _FIXED[name]
+            for key, expected in (("length_m", length), ("area_m2", area),
+                                  ("sound_speed_m_s", 343.), ("air_density_kg_m3", 1.2)):
+                if (key == "area_m2" and name == "C"
+                        and o[key] in physics.AREAS_C):
+                    continue
+                if o[key] != expected:
+                    candidates.append((prefix + f"/organs/{i}/{key}", "GEOMETRY_NOT_SUPPORTED"))
+    if candidates:
+        # A1.3 capability order differs from shape/relationship pointer-first order.
+        path, code = min(candidates, key=lambda item: (
+            _CAPABILITY_RANK[item[1]], item[0].encode("ascii")))
+        _raise("UNSUPPORTED", code, path)
 
 
 def _encode(value: object) -> bytes:

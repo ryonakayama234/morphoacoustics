@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from itertools import combinations
 import json
 from pathlib import Path
 import subprocess
@@ -16,6 +17,100 @@ from morphoacoustics_graph.tree5_contract import _encode, _hash, _snapshot, _nor
 
 FIX = json.loads((Path(__file__).resolve().parents[1] / "docs/research/og5-contract-goldens.json").read_text())
 VARIANTS = FIX["blueprint_snapshot_variants"]
+
+
+# These expected codes/paths follow A1.3, independently of the validator's
+# implementation. Every nonempty combination exercises the same frozen order.
+CAPABILITY_FAULTS = (
+    ("version", ("schema",), "og5.future.v2", "VERSION_NOT_SUPPORTED", "/schema"),
+    ("law", ("junctions", 0, "law"), "unknown", "LAW_NOT_SUPPORTED", "/junctions/0/law"),
+    ("source", ("source", "kind"), "unknown", "SOURCE_NOT_SUPPORTED", "/source"),
+    ("load", ("loads", 1, "kind"), "rigid_closed", "LOAD_NOT_SUPPORTED", "/loads/1/kind"),
+    ("topology", ("junctions", 1, "ports"), ["B.out", "E.in", "D.in"],
+     "TOPOLOGY_NOT_SUPPORTED", "/organs"),
+    ("geometry", ("organs", 0, "length_m"), .081, "GEOMETRY_NOT_SUPPORTED", "/organs/0/length_m"),
+)
+CAPABILITY_COMBINATIONS = [
+    group for size in range(1, 7) for group in combinations(CAPABILITY_FAULTS, size)]
+
+
+def _assert_capability_receipt(bp: dict, operation: str, code: str, path: str) -> None:
+    if operation == "restore":
+        value = copy.deepcopy(VARIANTS["baseline"]["snapshot"])
+        value["blueprint"] = bp
+        fn = restore_tree5
+        path = "/blueprint" + path
+    else:
+        value, fn = bp, prepare_tree5
+    with pytest.raises(Tree5Error) as failure:
+        fn(value)
+    assert failure.value.receipt() == {"status": "UNSUPPORTED", "code": code, "path": path}
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+@pytest.mark.parametrize("reordered", [False, True])
+@pytest.mark.parametrize("faults", CAPABILITY_COMBINATIONS,
+                         ids=lambda faults: "+".join(fault[0] for fault in faults))
+def test_capability_table_order_for_all_compound_categories(operation, reordered, faults) -> None:
+    bp = copy.deepcopy(VARIANTS["baseline"]["input"])
+    for _, parts, value, _, _ in faults:
+        obj = bp
+        for part in parts[:-1]:
+            obj = obj[part]
+        obj[parts[-1]] = copy.deepcopy(value)
+    if reordered:
+        for name in ("organs", "junctions", "loads"):
+            bp[name].reverse()
+    # First category in the frozen specification table, not an implementation helper.
+    _assert_capability_receipt(bp, operation, faults[0][3], faults[0][4])
+
+
+GEOMETRY_FIELDS = (
+    ("air_density_kg_m3", 1.21), ("area_m2", .00031),
+    ("length_m", .081), ("sound_speed_m_s", 344.),
+)
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+@pytest.mark.parametrize("organ", range(5))
+@pytest.mark.parametrize("fields", list(combinations(GEOMETRY_FIELDS, 2)))
+def test_compound_geometry_uses_ascii_pointer_not_field_iteration(operation, organ, fields) -> None:
+    bp = copy.deepcopy(VARIANTS["baseline"]["input"])
+    for field, value in fields:
+        bp["organs"][organ][field] = value
+    _assert_capability_receipt(bp, operation, "GEOMETRY_NOT_SUPPORTED",
+                               f"/organs/{organ}/{fields[0][0]}")
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+@pytest.mark.parametrize("kind", ["version", "law", "load"])
+def test_same_capability_code_chooses_lowest_pointer(operation, kind) -> None:
+    bp = copy.deepcopy(VARIANTS["baseline"]["input"])
+    if kind == "version":
+        bp["schema"] = bp["source"]["phasor_schema"] = "future"
+        code, path = "VERSION_NOT_SUPPORTED", "/schema"
+    elif kind == "law":
+        for junction in bp["junctions"]:
+            junction["law"] = "unknown"
+        code, path = "LAW_NOT_SUPPORTED", "/junctions/0/law"
+    else:
+        # A known but unsupported D load must precede a later unknown E load.
+        bp["loads"][1]["kind"] = "rigid_closed"
+        bp["loads"][2]["kind"] = "unknown"
+        code, path = "LOAD_NOT_SUPPORTED", "/loads/1/kind"
+    _assert_capability_receipt(bp, operation, code, path)
+
+
+@pytest.mark.parametrize("operation", ["prepare", "restore"])
+def test_unrecognized_organ_does_not_generate_fixed_geometry_lookup(operation) -> None:
+    bp = copy.deepcopy(VARIANTS["baseline"]["input"])
+    bp["organs"][4]["id"] = "F"
+    for side, endpoint in (("inlet", "in"), ("outlet", "out")):
+        bp["organs"][4][side]["id"] = f"F.{endpoint}"
+    bp["junctions"][1]["ports"][2] = "F.in"
+    bp["loads"][2]["port"] = "F.out"
+    bp["organs"][4]["length_m"] = .081
+    _assert_capability_receipt(bp, operation, "TOPOLOGY_NOT_SUPPORTED", "/organs")
 
 
 @pytest.mark.parametrize("operation", ["prepare", "restore"])
