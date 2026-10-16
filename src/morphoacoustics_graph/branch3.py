@@ -232,6 +232,8 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
     load_ids = [x["port"] for x in loads]
     if any(pid not in port_owner or port_owner[pid][1] != "outlet" for pid in load_ids):
         _err("INVALID", "BLUEPRINT_STRUCTURE", "/loads")
+    if len(load_ids) != len(set(load_ids)):
+        _err("INVALID", "BLUEPRINT_STRUCTURE", "/loads")
     assignments.extend(load_ids)
     if len(assignments) != len(set(assignments)):
         _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
@@ -481,6 +483,8 @@ def restore_branch3(snapshot: dict[str, object]) -> PreparedBranch3:
         _err("UNSUPPORTED", "SCHEMA_NOT_BRANCH3", "/schema")
     expected = {"schema", "digest_version", "backend_id", "blueprint",
                 "blueprint_digest", "preparation_digest"}
+    if any(type(key) is not str for key in snapshot):
+        _err("INVALID", "SNAPSHOT_STRUCTURE", "")
     bad = sorted(expected ^ set(snapshot))
     if bad or type(snapshot.get("schema")) is not str:
         _err("INVALID", "SNAPSHOT_STRUCTURE", "/" + bad[0] if bad else "/schema")
