@@ -176,3 +176,34 @@ Versioned branch3 implementation and its bounded physical data flow are now pres
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 The corrected PR #108 is reviewed against the accepted API in two critical scopes: physics/numerics and code/API/evidence. The [Gate C review](./og4-gate-c-review.md) records findings, repairs and the exact limited decision boundary. Validation now gathers independent structural failures before capability; every snapshot envelope is validated before unknown-version refusal. The existing diagram above remains the physical architecture. Corrections add no physical degree of freedom, change no numerical threshold and preserve the legacy source tree. Final readiness requires the corrected-HEAD receipt on PR #108; no merge is performed by this entry.
+
+## OG-5 Gate A design started — 2026-10-16 JST (DRAFT, NOT ADOPTED)
+
+[Issue #109](https://github.com/ryonakayama234/morphoacoustics/issues/109), [physics/falsification protocol](./og5-gate-a-protocol.md) and [API candidate](./og5-tree5-api-v1.md) extend adopted OG-3 two-tube [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104) and adopted limited OG-4 three-tube [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108) **only as a NEW proposal**. Diagram, explicitly scoped:
+
+```mermaid
+flowchart LR
+ A["A: 1D tube"] --> J1(("J1: ideal 3-port"))
+ J1 --> B["B: 1D tube"]
+ J1 --> C["C: 1D tube"]
+ B --> J2(("J2: ideal 3-port"))
+ J2 --> D["D: 1D tube"]
+ J2 --> E["E: 1D tube"]
+```
+
+Typed organ endpoint ports are semantic nodes/port identities; each J is a **multiport physical constraint** connecting exactly three endpoints. The composed pressure/volume-flow state is solved together. Persistent Blueprint -> structural/capability validation -> immutable PreparedGraph -> harmonic coupled solve -> full-endpoint observation and immutable evidence. No inference from Creator canvas wires to physical validity. Wolfram scaled global 20x20 vs scalar impedance recursion produced 8 exploratory full-port records, not public backend support. Creator CC-A1→CC-A2 separate; no UI graph editor or WAV in OG5. Architecture, schema, execution and scientific evidence were changed together in this Gate A PR.
+
+
+
+## OG-5 Gate A Amendment A1 — 2026-10-16 JST, candidate review pending
+
+Addresses [PR #110 R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786). The [normative complete handoff](./og5-gate-a-amendment-a1.md) and [complete fixtures](./og5-contract-goldens.json) define Snapshot and N×10 Observation fields/identity bytes, stable refusal codes and escaped-pointer precedence, revisions scoped per organ, and lawful vs malformed topology. The split-only connected v1 language admits trees; cycles are INVALID and a complete 7-organ/3-junction tree is the UNSUPPORTED control.
+
+State/digest flow is Blueprint -> complete structural validation -> fixed capability -> recomputed immutable Snapshot -> rank-safe coupled solve -> atomic full Observation. Snapshot digests bind normalized anatomy/source/load; Observation digests bind exact ordered numeric outputs/diagnostics. Neither includes UI layout, timestamps or Git/CI metadata. Full SVD retains zeros; condition2<=1e4 and scaled equation residual<=1e-12 precede success. All 144 positive samples must succeed and pass independent full-state comparators; no refusal reduces the denominator. Child-slot permutation has a distinct bounded mapping identity but identical ideal junction physics; actual output identity swaps and signed/particle-velocity row mutants test numerical mistakes.
+
+Standalone Python regeneration and an independent JavaScript encoder confirm full golden bytes/hashes; they do not implement Core validation. [A1 Wolfram receipt](./og5-wolfram-gate-a-a1-result.json) contains 144-case supplementary design maxima, eight mutant margins and numerical rank/condition/nonfinite refusals. Original 8-case exploration is preserved. No new production module, Studio support, new Core run, scientific adoption or merge is implied. Exact amended HEAD review must precede a separate Gate B Draft.
+
+
+## OG-5 Gate A specification accepted — 2026-10-16 JST
+
+Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.

@@ -177,3 +177,24 @@ Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/1
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 Corrections from the two-scope review must pass on the new exact HEAD, including actual late-sample numerical refusal/atomicity, forged prepared JSON, deterministic multi-error precedence, malformed snapshot precedence, three-basis scattering coefficients versus frozen Wolfram, and evidence identity/tamper checks. Then inspect downloadable dual-run v2 artifacts, 288 Python / 24 Wolfram cases, general three-Python+mypy, OG-3 and X2a preservation. Record a separate explicit Gate C decision in the PR only after these pass; mark ready for review if no blocker remains. This work order does not execute a merge. Scope and AI-review independence are recorded in [Gate C review](./og4-gate-c-review.md).
+
+## OG-5 Gate A work order submitted — 2026-10-16 JST, review pending
+
+Track [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109). Deliverables in same Draft PR: [physical+falsification protocol](./og5-gate-a-protocol.md), [versioned candidate API/data](./og5-tree5-api-v1.md), [source-only independent Wolfram calculation](./og5-wolfram-gate-a.wl) and [8-case full-endpoint output](./og5-wolfram-gate-a-result.json), [preliminary digest vectors](./og5-blueprint-goldens.json), architecture update (program), data candidate (this work package), execution plan and ledger.
+
+Work division: Gate A1 physics + Wolfram two algorithms; Gate A2 exact data, version, refusal and ABI review; **hard Gate A acceptance before new solver**. Gate B1 isolated new `tree5` module with globally coupled dimensionless 20x20 complex solve, Gate B2 validate/prepare/snapshot/immutable results, Gate B3 144 candidate 5×2 branch-network tests, independent all-port Wolfram oracle, signed wrong-law kills, 3.11/3.12/3.13+mypy, OG3/OG4+genuine X2a regression, exact-head fresh dual SHA evidence. Gate C independent physics and code reviews, scoped decision only, then optional merge and postmerge verification. If reviewers find protocol/golden/version flaws amend Gate A visibly and **do not** silently fix during B. Current work is **docs-only, no scientific adoption or implementation**, and Studio CC-A1/CC-A2 runs separately.
+
+
+
+## OG-5 Gate A Amendment A1 — 2026-10-16 JST, candidate review pending
+
+Addresses [PR #110 R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786). The [normative complete handoff](./og5-gate-a-amendment-a1.md) and [complete fixtures](./og5-contract-goldens.json) define Snapshot and N×10 Observation fields/identity bytes, stable refusal codes and escaped-pointer precedence, revisions scoped per organ, and lawful vs malformed topology. The split-only connected v1 language admits trees; cycles are INVALID and a complete 7-organ/3-junction tree is the UNSUPPORTED control.
+
+State/digest flow is Blueprint -> complete structural validation -> fixed capability -> recomputed immutable Snapshot -> rank-safe coupled solve -> atomic full Observation. Snapshot digests bind normalized anatomy/source/load; Observation digests bind exact ordered numeric outputs/diagnostics. Neither includes UI layout, timestamps or Git/CI metadata. Full SVD retains zeros; condition2<=1e4 and scaled equation residual<=1e-12 precede success. All 144 positive samples must succeed and pass independent full-state comparators; no refusal reduces the denominator. Child-slot permutation has a distinct bounded mapping identity but identical ideal junction physics; actual output identity swaps and signed/particle-velocity row mutants test numerical mistakes.
+
+Standalone Python regeneration and an independent JavaScript encoder confirm full golden bytes/hashes; they do not implement Core validation. [A1 Wolfram receipt](./og5-wolfram-gate-a-a1-result.json) contains 144-case supplementary design maxima, eight mutant margins and numerical rank/condition/nonfinite refusals. Original 8-case exploration is preserved. No new production module, Studio support, new Core run, scientific adoption or merge is implied. Exact amended HEAD review must precede a separate Gate B Draft.
+
+
+## OG-5 Gate A specification accepted — 2026-10-16 JST
+
+Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.

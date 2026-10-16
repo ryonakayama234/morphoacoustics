@@ -193,3 +193,43 @@ Starting review SHA `43fb39bebaec7a818f64d1b5afc8f3d0ad4a4583`. Reproduced error
 Local verification note: the first full-suite run during editing returned 577 passed / 4 failed because frozen research runners correctly refused `DIRTY_TRACKED_CHECKOUT`; this is retained as a failed verification attempt. Re-run on the committed clean checkout and corrected-HEAD CI before deciding acceptance. No freeze guard was weakened.
 
 Corrected-HEAD trial `ac8c416`: dedicated OG-4/OG-3 CI passed, but general CI failed with 580 passed / 2 failed because two newly added tests imported non-package `checks` by namespace. `python -m pytest` adds the repository root while the workflow's `pytest` entry point does not. Fixed by explicit `importlib` file loading, matching existing reference-test practice; no production/numerical change. Both original red workflow attempts remain visible. Re-attest all gates at the new HEAD.
+
+## OG-5 Gate A preregistration candidate / Wolfram preliminary execution — 2026-10-16 JST
+
+**Decision:** `PROPOSED / NOT RATIFIED / NOT ADOPTED`. Parent [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109). Baseline main SHA `af10985f180f7b9a8f1dbca269c1133bc1a94c0a`, after adopted limited OG-4 [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108). New Gate A Draft is source-only and cannot itself validate any new Core backend. Related synchronized architecture [program](./organ-graph-program.md), [data](./organ-graph-data-candidate.md), [plan](./organ-graph-execution-plan.md), [protocol](./og5-gate-a-protocol.md).
+
+Wolfram Language evaluator executed fresh on 2026-10-16 JST. New [source](./og5-wolfram-gate-a.wl) and [machine records](./og5-wolfram-gate-a-result.json) have eight cases: f=733/997 Hz × C area=0.00015/0.0006 m² × C termination matched/rigid_closed, scale 1.0, 10 endpoints per case and p/U complex for each. Distinct algorithms: dimensionless global 20×20 LinearSolve and scalar impedance recursion + propagated full endpoints, with common physical transfer identity. **Exploratory nonblind results predate acceptance of the protocol**, not fresh blind confirmation or 144-case success.
+
+| Preliminary metric | Actual evaluated maximum |
+| --- | ---: |
+| Max dimensionless all-endpoint global-vs-recursive complex difference | 9.930136612989092e-16 |
+| Max dimensionless global equation residual | 2.2887833992611187e-16 |
+| Max dimensionless J1/J2 signed flow residual | 1.1102230246251565e-16 |
+| Max dimensionless J1/J2 pressure residual | 2.220446049250313e-16 |
+| Max relative source vs 3 terminals mean-power defect | 8.094900779320129e-16 |
+| Max dimensionless coefficient matrix condition2 | 24.344944491350603 |
+
+Initial non-normalized mixed-Pa/m³/s full-system Solve emitted **ill-conditioning warning**; corrected via p/(Z_ref*U_ref), U/U_ref. Do not discard this observed failed numerical attempt; Gate B condition handling remains a genuine test obligation. [Golden proposal](./og5-blueprint-goldens.json) gives four candidate digest checks (baseline/area/revision/reordered); independent cross-language confirmation and exact snapshot/output golden vectors pending ratification. No Gate A external reviewer signature, no new Core outputs, no CI and no merge receipt can be inferred from these numbers.
+
+**Future Gate B planned, NOT executed:** 144 scenarios, new backend *actual* 20 complex values per sample compared to independent reference, 8 archived Wolfram records separately, source/power/revisions/port map/invalid topologies and wrong-law kills, immutable SHA evidence with exact git HEAD. Review decision `SUPPORTED_LIMITED` / `INCONCLUSIVE` / `REJECT` cannot be declared from this author-authored design.
+
+
+
+## OG-5 Gate A Amendment A1 — 2026-10-16 JST, candidate review pending
+
+Addresses [PR #110 R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786). The [normative complete handoff](./og5-gate-a-amendment-a1.md) and [complete fixtures](./og5-contract-goldens.json) define Snapshot and N×10 Observation fields/identity bytes, stable refusal codes and escaped-pointer precedence, revisions scoped per organ, and lawful vs malformed topology. The split-only connected v1 language admits trees; cycles are INVALID and a complete 7-organ/3-junction tree is the UNSUPPORTED control.
+
+State/digest flow is Blueprint -> complete structural validation -> fixed capability -> recomputed immutable Snapshot -> rank-safe coupled solve -> atomic full Observation. Snapshot digests bind normalized anatomy/source/load; Observation digests bind exact ordered numeric outputs/diagnostics. Neither includes UI layout, timestamps or Git/CI metadata. Full SVD retains zeros; condition2<=1e4 and scaled equation residual<=1e-12 precede success. All 144 positive samples must succeed and pass independent full-state comparators; no refusal reduces the denominator. Child-slot permutation has a distinct bounded mapping identity but identical ideal junction physics; actual output identity swaps and signed/particle-velocity row mutants test numerical mistakes.
+
+Standalone Python regeneration and an independent JavaScript encoder confirm full golden bytes/hashes; they do not implement Core validation. [A1 Wolfram receipt](./og5-wolfram-gate-a-a1-result.json) contains 144-case supplementary design maxima, eight mutant margins and numerical rank/condition/nonfinite refusals. Original 8-case exploration is preserved. No new production module, Studio support, new Core run, scientific adoption or merge is implied. Exact amended HEAD review must precede a separate Gate B Draft.
+
+A1 reproducibility detail: Wolfram 15.0.1 Linux x86-64 reproduced all 8 archived summary values and evaluated all 144 positive design samples. Max comparator=1.320372144714677e-14, scaled residual=3.376611507232129e-16, condition2=223.7427248146297, power defect with floor=4.220610523881094e-16. Separately assembled six-node pressure-admittance vs 20-state equations gave max 3.356621199780979e-14 over 144; against archived eight records max 1.047382306668854e-15. See the archived standalone `og5-review-nodal.py`, requiring NumPy, with no Core imports.
+
+Retained failed A1 development attempt: the first supplementary mutant calculation incorrectly used AssociationMap on an Association, passing rules instead of row arrays and producing CoefficientArrays::poly / LinearSolve::matrix / AssociationMap::invrlf; JSON export failed. It was not a passed evidence run. Replaced it with value-preserving Map, reran the complete source, and only the corrected finite receipt is archived. The original mixed-unit ill-conditioning failure above remains historical too.
+
+The 27 error receipts and 6 numeric seam fixtures are preregistered expectations. This docs-only work does not claim the nonexistent Core validator or late-sample atomicity implementation passed them. A future exact-HEAD Gate B must execute each such path. The signed-zero Blueprint example is canonicalization-only: zero imaginary source is structurally lawful but outside fixed tree5 source capability, so neither prepare nor restore may treat its illustrative hash-bound envelope as an accepted prepared object.
+
+
+## OG-5 Gate A specification accepted — 2026-10-16 JST
+
+Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.

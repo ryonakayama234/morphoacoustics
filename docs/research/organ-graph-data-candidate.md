@@ -203,3 +203,33 @@ The provisional branch3 implementation matched all 11 approved canonical binary/
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 Evidence format `og4.gate-b.fresh-full-port.v2` adds `observations`: 60 records, each containing the complete prepared snapshot, full ordered request grid and complete hashed observation. Existing 288/24 case rows bind to those observations by digest; all three identities and per-case actual endpoint associations are recomputed before export. Source SHA coverage includes graph modules, runner, workflow, tests and frozen API/Wolfram fixtures, with CI run/attempt context outside physical digests. Blueprint/preparation/observation v1 ABI is unchanged. Unknown-key error paths escape JSON Pointer tokens; structural and snapshot-envelope invalidity precede capability/version decisions. See [review](./og4-gate-c-review.md).
+
+## OG-5 five-organ, two-junction candidate contract — 2026-10-16 Gate A DRAFT
+
+**Not a retroactive OG-3/OG-4 schema update.** [Exact candidate](./og5-tree5-api-v1.md), [four blueprint digest goldens](./og5-blueprint-goldens.json), [protocol](./og5-gate-a-protocol.md). Blueprint `og5.passive.tree5.v1` contains five named and revisioned passive Tube organisms, each with typed inlet/outlet `acoustic.p_u` (p Pa, U m³/s), two oriented three-port ideal junction constraints J1=(A.out,B.in,C.in) and J2=(B.out,D.in,E.in), one prescribed peak-phasor A.in source and loads C/D/E. Shared rho, c, fixed SI lengths/areas and explicit versioned law. The junction is not three unconstrained pairwise wires. Separate immutable PreparedTree5 with backend and source/geometry identities, physical instantaneous state (not persistent anatomy), full 10-endpoint complex Observation and future Studio Take (only reference to evidence).
+
+```mermaid
+flowchart TD
+ Canvas["Studio appearance / canvas positions: NON-PHYSICAL"] -.-> Blueprint["Blueprint: organs/revisions/typed ports/J1/J2/source/loads"]
+ Blueprint --> Prepare["strict structural validation + bounded capability"]
+ Prepare --> Prepared["PreparedTree5: verified identity + digest"]
+ Prepared --> State["complex p,U at all 10 ports"]
+ State --> Observation["run outputs, power, diagnostics, exact immutable evidence"]
+```
+
+Proposal digests domain separate from OG-4; normalized binary64, ASCII strict keys, stable ID ordering (but J ports order remains semantic); source amplitude/scale/revisions/load/geometry enter body digest; UI layout and physical running state do not. Hash goldens must be ratified and prepared/observation golden extensions supplied before Gate B can start. Finite SI, typed errors and deterministic whole-input validation before capability. `INVALID`/`UNSUPPORTED`/`NUMERICALLY_UNRESOLVED` separate; never fall back to fixed OG4/3, invent a morphology or serialize solver cache.
+
+
+
+## OG-5 Gate A Amendment A1 — 2026-10-16 JST, candidate review pending
+
+Addresses [PR #110 R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786). The [normative complete handoff](./og5-gate-a-amendment-a1.md) and [complete fixtures](./og5-contract-goldens.json) define Snapshot and N×10 Observation fields/identity bytes, stable refusal codes and escaped-pointer precedence, revisions scoped per organ, and lawful vs malformed topology. The split-only connected v1 language admits trees; cycles are INVALID and a complete 7-organ/3-junction tree is the UNSUPPORTED control.
+
+State/digest flow is Blueprint -> complete structural validation -> fixed capability -> recomputed immutable Snapshot -> rank-safe coupled solve -> atomic full Observation. Snapshot digests bind normalized anatomy/source/load; Observation digests bind exact ordered numeric outputs/diagnostics. Neither includes UI layout, timestamps or Git/CI metadata. Full SVD retains zeros; condition2<=1e4 and scaled equation residual<=1e-12 precede success. All 144 positive samples must succeed and pass independent full-state comparators; no refusal reduces the denominator. Child-slot permutation has a distinct bounded mapping identity but identical ideal junction physics; actual output identity swaps and signed/particle-velocity row mutants test numerical mistakes.
+
+Standalone Python regeneration and an independent JavaScript encoder confirm full golden bytes/hashes; they do not implement Core validation. [A1 Wolfram receipt](./og5-wolfram-gate-a-a1-result.json) contains 144-case supplementary design maxima, eight mutant margins and numerical rank/condition/nonfinite refusals. Original 8-case exploration is preserved. No new production module, Studio support, new Core run, scientific adoption or merge is implied. Exact amended HEAD review must precede a separate Gate B Draft.
+
+
+## OG-5 Gate A specification accepted — 2026-10-16 JST
+
+Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
