@@ -51,3 +51,12 @@ flowchart TD
 The gate does not support arbitrary graph topologies, 3D anatomy, FSI, active motor gestures, biological speaking, WAV, Studio body editing or release of generalized Character Creator. It reuses the **frozen** A1 Blueprint/Snapshot/Observation types, stable INVALID/UNSUPPORTED/NUMERICALLY_UNRESOLVED, and all existing B2 refusal fixtures; new B3 JSON records are *outer scientific evidence*, not an ABI extension. Prior OG-3/OG-4, Exp028/029 and original X2a physical smoke must be reaudited separately on final exact HEAD.
 
 **Gate C remains required:** examine actual CI logs, both raw archives and checksum identities, historic negative run evidence, numerical laws and API security/reproducibility; disclose shared assistant context; record LIMITED/INCONCLUSIVE/REJECT before merge. An unverified PR cannot claim a new supported Core feature.
+
+
+## First scientific CI discrepancy and corrected audit criterion (2026-10-16)
+
+Initial HEAD \`09dc943f83bc7a65f378c439bffe33fdf63ae5ca\`, push run [38910977477](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38910977477): both *independent* raw trial workers **passed** the real Core-versus-Wolfram 144-case scorer and all eight mutants and emitted separate SHA-bound artifacts. The downstream twin audit **FAILED** on \`case-results.jsonl\` byte equality. That failed acceptance attempt is retained.
+
+Requiring cross-run byte-identical floating-point responses was **not** a frozen Gate A physics criterion. Different BLAS workers can produce distinct last-bit complex outputs; A1 explicitly says different solvers may have different Observation digests while passing numerical tolerances. The corrected \`checks/check_og5_b3_twin.py\` tests each raw file against its own exact SHA256, requires the two archives' source/oracle SHA256 and semantic Blueprint/preparation identities to agree exactly, and compares all 144 × 20 complex Core outputs with A1's normalized ≤1e-10 tolerance. Mean powers and diagnostics are also compared with explicit bounds; mathematical Observation digests are preserved but not required to match across workers. No invalid/unsupported case or mutant exclusion is allowed.
+
+The fix changes **only the evidence audit**, not the production Core, frozen A1 acceptance, oracle numbers, or scientific scorer. New HEAD and two new actual CI runs are required; neither this explanation nor the earlier failed audit is a Gate B3 pass.

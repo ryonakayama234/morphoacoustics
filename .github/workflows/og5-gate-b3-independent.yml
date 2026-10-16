@@ -55,25 +55,8 @@ jobs:
         with:
           pattern: og5-b3-*
           path: twin
-      - name: Compare separate raw trial identities and reject missing evidence
-        run: |
-          python - <<'PY'
-          import hashlib, json, pathlib
-          root=pathlib.Path("twin")
-          a,b=root/"og5-b3-a",root/"og5-b3-b"
-          for folder in (a,b):
-              for fn in ("case-results.jsonl","mutations.json","summary.json","provenance.json","sha256sums.txt"):
-                  assert (folder/fn).is_file(),f"missing {folder}/{fn}"
-              sums={}
-              for line in (folder/"sha256sums.txt").read_text().splitlines():
-                  sha,name=line.split("  ",1)
-                  assert hashlib.sha256((folder/name).read_bytes()).hexdigest()==sha
-              summary=json.loads((folder/"summary.json").read_text())
-              assert summary["positive_success"]==144 and len(summary["eight_mutants"])==8
-          for fn in ("case-results.jsonl","mutations.json","summary.json"):
-              assert (a/fn).read_bytes()==(b/fn).read_bytes(),f"twin evidence differs: {fn}"
-          pa,pb=[json.loads((d/"provenance.json").read_text()) for d in (a,b)]
-          assert pa["run_slot"]=="a" and pb["run_slot"]=="b"
-          assert pa["git_head"]==pb["git_head"]
-          print("TWO RAW EXACT-HEAD ARCHIVES MATCH; scientific trial only, Gate C pending")
-          PY
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify independent raw hashes + compare physical states with frozen tolerances
+        run: python checks/check_og5_b3_twin.py twin
