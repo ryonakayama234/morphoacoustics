@@ -239,3 +239,6 @@ Each acoustic Port carries Pa pressure and m^3/s **volume flow**, explicit fixed
 
 
 **OG-5 post-filing mutation/data consequence:** A physically incorrect *positive* C terminal impedance preserved junction flow and global passive power even as all-port response differed by normalized 0.4185; hence body/load kind and value MUST bind to the proposed physical identity/provenance, and full complex state comparison is necessary. [Evidence](./og5-gate-a-wolfram-receipt.md). Candidate schema remains unratified.
+
+
+**OG-5 case format checkpoint:** [144 exploratory summary rows](./og5-gate-a-cases-144-exploratory.json) and [SHA-256](./og5-gate-a-cases-144-exploratory.json.sha256) preserve bounded input fixtures, p(A.in), power, 20-endpoint comparator maximum, and numeric condition. This case archive is **not** a PreparedTree5 or full Observation v1 serialized instance; no one may use its SHA as a graph/preparation/observation identity. Gate B must store actual all-port phasor arrays and independent digest bindings.

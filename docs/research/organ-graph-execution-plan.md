@@ -193,3 +193,6 @@ No broad support for cycles/multiple sources/time-varying morphology or Studio c
 
 
 **OG-5 post-filing Wolfram checkpoint (later 2026-10-16):** [x] All 144 candidate discovery cases were computed in Wolfram from original Draft commit 3f92f7506860346a89d83a8630c3b2cb8c276e4e, with max 20-state comparator error 5.682e-48 and max scaled cond2 223.74; [x] 3 wrong laws numerically distinguished. [ ] Actual case-by-case immutable raw archive, peer review/freeze, approved ABI+goldens, production Core backend and cross-language independent comparison. These positive Wolfram runs do NOT authorize skipping Gate A ratification; see [receipt](./og5-gate-a-wolfram-receipt.md).
+
+
+**OG-5 evidence-archive checkpoint (2026-10-16 JST):** [x] GitHub [144 distinct machine-readable summary cases](./og5-gate-a-cases-144-exploratory.json) plus independently calculated [SHA256 sidecar](./og5-gate-a-cases-144-exploratory.json.sha256), re-read and checked for duplicates/nonfinite values; [ ] Gate B full 20-complex-port payload archive and regenerated fresh exact-HEAD dual-run SHA evidence. The discovery record is not a Core implementation or an approved Gate A acceptance.

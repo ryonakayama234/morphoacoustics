@@ -197,3 +197,6 @@ This is a **Gate A docs-only Draft**: geometry/material not dynamic, no FSI/3D/s
 
 
 **OG-5 Gate A evidence update (later 2026-10-16):** The committed [Wolfram candidate oracle](./og5-gate-a-oracle.wl) was executed for all 144 proposed fixed-family conditions, and separate deliberately wrong J1/load controls were compared in [the dated receipt](./og5-gate-a-wolfram-receipt.md). This still changes **no Core solver or physical support claim**. Architecture above remains a proposed staged boundary until Gate A review.
+
+
+**OG-5 case evidence provenance:** the later [144-row archive](./og5-gate-a-cases-144-exploratory.json) and [checksum](./og5-gate-a-cases-144-exploratory.json.sha256) belong solely to **exploratory ideal passive tree physics**, not to main-supported arbitrary morphologies or Studio. Each stored row includes input response and conservation/comparator diagnostics, not complete full-port state vectors; physical authority and proposed architecture above are unchanged.
