@@ -233,3 +233,11 @@ The 27 error receipts and 6 numeric seam fixtures are preregistered expectations
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B1 numerical trial checkpoint — 2026-10-16
+
+**Decision: TRIAL_IMPLEMENTATION / MACHINE_GATE_PENDING / NOT_ADOPTED.** Canonical [Gate A acceptance](./og5-gate-a-acceptance.md), new [B1 trial report](./og5-gate-b1-trial.md). Draft physical kernel (20×20 globally coupled) uses unchanged public `UniformTube` by import but must pass exact-HEAD repo CI.
+
+Prior to this Draft, an equivalent local isolated physical kernel with a temporary mathematically matching UniformTube surrogate produced 144/144 no-exception positive cases, including p(A.in) = 1.9145547310352653 + 0.23147567288386767i Pa at 733Hz C=.00015 matched; independent Wolfram scalar recursion in this review yielded 1.914554731035266 + 0.23147567288386767i Pa. Local `pytest -k 'not eight_immutable'` equivalent checked 4 passes and left the frozen-eight fixture file unread: **not a Core integrated or complete Gate B pass**. The GitHub trial test now reads actual frozen Wolfram 8 records in Core source tree and requires exact CI.
+
+Unmet Gate B: 144 actual Core vs *independently assembled Wolfram full-port* records, public strict Blueprint/Snapshot/Observation and hash goldens, all 27 error fixtures, 6 numerics seams, 8 mutation controls, complete regression, exact SHA dual evidence, independent critical review. Do not promote this exploratory checkpoint to scientific approval.

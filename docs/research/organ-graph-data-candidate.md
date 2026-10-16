@@ -233,3 +233,7 @@ Standalone Python regeneration and an independent JavaScript encoder confirm ful
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B1 data boundary — 2026-10-16 (Draft)
+
+An internal frozen `Tree5PhysicalSample` carries 10 complex p/U endpoint pairs, per-port signed mean power and Gate A numeric diagnostics; **this is not** the accepted public `og5.tree5.observation.v1` JSON payload. The B1 helper accepts explicit frozen fixture scalars, **not** `og5.passive.tree5.v1` Blueprints. Frozen v1 canonical digests, binding checks and 27 stable error receipts remain B2 acceptance obligations. See [Gate A A1](./og5-gate-a-amendment-a1.md) and [B1 report](./og5-gate-b1-trial.md).

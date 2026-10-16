@@ -1,0 +1,33 @@
+name: og5-gate-b1-numerical-trial
+
+on:
+  pull_request:
+    paths:
+      - "src/morphoacoustics_graph/tree5.py"
+      - "tests/test_tree5_numeric_trial.py"
+      - "docs/research/og5-*"
+      - ".github/workflows/og5-gate-b1-trial.yml"
+  push:
+    paths:
+      - "src/morphoacoustics_graph/tree5.py"
+      - "tests/test_tree5_numeric_trial.py"
+      - "docs/research/og5-*"
+      - ".github/workflows/og5-gate-b1-trial.yml"
+
+jobs:
+  b1-internal-physics-only:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e '.[dev]'
+      - name: Internal numerical candidate vs 144 fixtures and frozen Wolfram 8
+        run: python -m pytest -q tests/test_tree5_numeric_trial.py
+      - name: Type check (non-normative B1 candidate)
+        run: python -m mypy src/morphoacoustics_graph/tree5.py
+

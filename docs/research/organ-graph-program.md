@@ -207,3 +207,7 @@ Standalone Python regeneration and an independent JavaScript encoder confirm ful
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B1 internal solver Draft — 2026-10-16 (NOT ADOPTED)
+
+The frozen [Gate A acceptance](./og5-gate-a-acceptance.md) authorized an isolated physical solver candidate, described in [B1 trial report](./og5-gate-b1-trial.md). Five fixed passive tube nodes are coupled through two three-port physical junction laws in a scaled global 20-state system. This is **internal Core numerics only**; it does not expose a new public or Studio graph/voice capability. Live architecture and future Blueprint-to-Prepared-to-Observation flow retain the Gate A A1 contract, separate from unchanged OG3/OG4.

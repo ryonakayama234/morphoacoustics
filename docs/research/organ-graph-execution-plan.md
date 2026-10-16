@@ -198,3 +198,14 @@ Standalone Python regeneration and an independent JavaScript encoder confirm ful
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B after accepted Gate A — 2026-10-16
+
+- [x] Gate A [PR #110](https://github.com/ryonakayama234/morphoacoustics/pull/110) merged; normative A1 accepted and frozen.
+- [x] B1 private scaled 20-state candidate and focused trial tests introduced in a separate Draft; record in [B1 trial](./og5-gate-b1-trial.md). No public ABI or merge.
+- [ ] B1 exact-HEAD GitHub CI 3 Python+mypy, frozen eight all-port checks, real `UniformTube` linked execution, remediate failures.
+- [ ] B2 strict Blueprint validation + exact snapshot/observation serialization, A1 27 error and 6 numerical seam assertions and canonical hash goldens.
+- [ ] B3 144 fresh independent Wolfram all-port comparator cases + negative controls, regression/immutable raw evidence and two exact-HEAD runs.
+- [ ] Gate C independent physics+API+reproducibility audit, explicit limited decision; never auto-merge before this decision.
+
+Architecture, candidate data, execution and experiment ledger are updated in this same B1 Draft. Core Creator CC-A1/Studio CC-A2 remains a separate path.
