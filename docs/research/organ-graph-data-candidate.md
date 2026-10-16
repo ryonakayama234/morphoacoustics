@@ -203,3 +203,36 @@ The provisional branch3 implementation matched all 11 approved canonical binary/
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 Evidence format `og4.gate-b.fresh-full-port.v2` adds `observations`: 60 records, each containing the complete prepared snapshot, full ordered request grid and complete hashed observation. Existing 288/24 case rows bind to those observations by digest; all three identities and per-case actual endpoint associations are recomputed before export. Source SHA coverage includes graph modules, runner, workflow, tests and frozen API/Wolfram fixtures, with CI run/attempt context outside physical digests. Blueprint/preparation/observation v1 ABI is unchanged. Unknown-key error paths escape JSON Pointer tokens; structural and snapshot-envelope invalidity precede capability/version decisions. See [review](./og4-gate-c-review.md).
+
+
+## OG-5 Gate A proposed 5-organ/2-junction data contract (2026-10-16 JST; experiment-local ONLY)
+
+Source of truth for review is [og5-gate-a-protocol.md](./og5-gate-a-protocol.md). In contrast to the frozen OG-3/OG-4 ABI, this **candidate** proposes separately versioned GraphBlueprint / PreparedTree5 / Tree5Observation, never automatic legacy conversion:
+
+~~~mermaid
+classDiagram
+  class GraphBlueprintVNext {
+    schema: og5.passive.tree5.v1 (candidate)
+    organ_modules: A,B,C,D,E with revisions
+    acoustic_ports: 10 typed p/U endpoints
+    junctions: J1,J2 ideal 3-port laws
+    prescribed_flow: A.in
+    loads: C,D,E
+  }
+  class PreparedTree5 {
+    backend_id
+    resolved_port_mapping
+    blueprint_digest
+    preparation_digest
+  }
+  class Tree5Observation {
+    frequency_sequence
+    full_complex_pU: 10 endpoints
+    port_powers_and_diagnostics
+    observation_digest
+  }
+  GraphBlueprintVNext --> PreparedTree5
+  PreparedTree5 --> Tree5Observation
+~~~
+
+Each acoustic Port carries Pa pressure and m^3/s **volume flow**, explicit fixed orientation, unique ID and lawful junction role. Two distinct multiports reference three ordered endpoints each. Prepared topology and revision/hash identity are immutable, while solver p/U values belong only to observation. Graph collection order is canonicalized but ordered physical ports remain meaningful; canvas coordinates excluded. Exact scalar/complex wire format, byte-canonical hashing, legacy-invalid-versus-unsupported precedence, negative controls, tamper defense and no partial artifacts must be frozen by design review. Neither Studio CharacterSpec nor original Core CreatureSpec/PreparedMorphology changes here. See [Gate A Wolfram receipt](./og5-gate-a-wolfram-receipt.md).

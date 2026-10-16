@@ -176,3 +176,21 @@ Versioned branch3 implementation and its bounded physical data flow are now pres
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 The corrected PR #108 is reviewed against the accepted API in two critical scopes: physics/numerics and code/API/evidence. The [Gate C review](./og4-gate-c-review.md) records findings, repairs and the exact limited decision boundary. Validation now gathers independent structural failures before capability; every snapshot envelope is validated before unknown-version refusal. The existing diagram above remains the physical architecture. Corrections add no physical degree of freedom, change no numerical threshold and preserve the legacy source tree. Final readiness requires the corrected-HEAD receipt on PR #108; no merge is performed by this entry.
+
+
+## OG-5 Gate A physical network — proposal (2026-10-16 JST; NOT ADOPTED)
+
+OG-4 [PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108) is now **merged** as a narrow fixed3 passive Core capability; historical pre-merge status statements above remain chronological evidence. The successor [OG-5 issue #109](https://github.com/ryonakayama234/morphoacoustics/issues/109) and [Gate A preregistration](./og5-gate-a-protocol.md) propose two typed zero-volume three-port laws connecting five fixed 1D organs, A→J1→(B,C), B→J2→(D,E), with 20 globally coupled complex states, not a general graph engine.
+
+~~~mermaid
+flowchart TD
+  Studio["Future Studio (unconnected)"] -.-> Candidate["OG-5 versioned semantic Blueprint (candidate)"]
+  Candidate --> Validation["strict typed port/law/SI/topology validation"]
+  Validation --> Preparation["immutable prepared tree5 / exact identities"]
+  Preparation --> Solver["scaled 20x20 global p/U solve (Gate B future)"]
+  Solver --> Observation["10 endpoints x (p,U), power, diagnostics"]
+  Observation --> Oracle["independent Wolfram full-port recursion + negative controls"]
+  Legacy["OG-3 fixed2 + OG-4 branch3 adopted limited (unchanged)"] -.-> Validation
+~~~
+
+This is a **Gate A docs-only Draft**: geometry/material not dynamic, no FSI/3D/source/WAV/nasal physiology, no Studio connection. The two 3-port junctions are multi-port physical relations, not arbitrary pairwise wires; causal direction is the model-to-observation flow, while acoustic waves can travel both ways. [Data candidate](./organ-graph-data-candidate.md), [execution](./organ-graph-execution-plan.md) and [ledger](./organ-graph-experiment-ledger.md) are updated in the same change; Core CC-A1 → Studio CC-A2 remains independent.

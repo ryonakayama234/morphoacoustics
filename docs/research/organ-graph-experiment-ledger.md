@@ -193,3 +193,19 @@ Starting review SHA `43fb39bebaec7a818f64d1b5afc8f3d0ad4a4583`. Reproduced error
 Local verification note: the first full-suite run during editing returned 577 passed / 4 failed because frozen research runners correctly refused `DIRTY_TRACKED_CHECKOUT`; this is retained as a failed verification attempt. Re-run on the committed clean checkout and corrected-HEAD CI before deciding acceptance. No freeze guard was weakened.
 
 Corrected-HEAD trial `ac8c416`: dedicated OG-4/OG-3 CI passed, but general CI failed with 580 passed / 2 failed because two newly added tests imported non-package `checks` by namespace. `python -m pytest` adds the repository root while the workflow's `pytest` entry point does not. Fixed by explicit `importlib` file loading, matching existing reference-test practice; no production/numerical change. Both original red workflow attempts remain visible. Re-attest all gates at the new HEAD.
+
+
+## OG-5 Gate A preregistration/proposal receipt — 2026-10-16 JST
+
+| Field | Evidence/state |
+| --- | --- |
+| Work and base | [OG-5 issue #109](https://github.com/ryonakayama234/morphoacoustics/issues/109), docs-only Gate A Draft, based on merged OG-4 main af10985f180f7b9a8f1dbca269c1133bc1a94c0a |
+| Decision | **DESIGN_PROPOSED / EXPLORATION_ONLY / NOT_ADOPTED**. No Core OG-5 runtime, no independent reviewer sign-off, no merge. |
+| Hypothesis | H0: two individually lawful junctions fail to compose or corrupt physical Port identity/conservation/independent 20-state prediction. H1: fixed 5-tube 2-junction network matches independent full-port recursive oracle and laws; refuses invalid/out-of-scope/numerically unresolved conditions. |
+| Preregister-to-be | [Gate A contract and 144 candidate fixtures](./og5-gate-a-protocol.md); proposed ≤1e-10 full-port/residual tolerances, <=1e10 scaled condition cap and ≤1e-12 backward residual **not yet frozen by reviewer**. |
+| Wolfram three-case exploration | [Runnable code](./og5-gate-a-oracle.wl) and [dated receipt](./og5-gate-a-wolfram-receipt.md). At 733 Hz, area C=0.00015/0.0006 matched gives C terminal power shares ~0.5712713238/0.8420198729, with global 20x20 vs recursion full-port match at 30-digit precision; closed C=0.00015 gives zero terminal C power. Source and terminal total mean power agree to displayed precision. |
+| Failures retained | Initial unscaled RowReduce conditioning warning; first all-port script produced Wolfram ReplaceAll::reps owing to malformed AssociationThread rule construction. Only corrected rerun is evidence; earlier invalid script output discarded as evidence but documented as a failure. |
+| Unverified | Full 144-case sweep not run in current three-case receipt; wrong-law kills, near-singular ceiling, exact-head Core backend & CI, third-party audit not yet done. |
+| Promotion | Gate A explicit approval then separate Gate B; Gate C decision after independent critical audits and artifact re-read. Historical OG3/OG4 fixtures, hashes and frozen experiment codes untouched. |
+
+An observed numerically consistent idealized Wolfram solution is not a physical validation of vocal anatomy and not proof that an unimplemented Core solver works. All subsequent results and amendments must link this original preregistration, exact HEAD and oracle SHA rather than silently replacing it.

@@ -177,3 +177,16 @@ Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/1
 ### OG-4 PR #108 critical review corrections — 2026-10-16 JST
 
 Corrections from the two-scope review must pass on the new exact HEAD, including actual late-sample numerical refusal/atomicity, forged prepared JSON, deterministic multi-error precedence, malformed snapshot precedence, three-basis scattering coefficients versus frozen Wolfram, and evidence identity/tamper checks. Then inspect downloadable dual-run v2 artifacts, 288 Python / 24 Wolfram cases, general three-Python+mypy, OG-3 and X2a preservation. Record a separate explicit Gate C decision in the PR only after these pass; mark ready for review if no blocker remains. This work order does not execute a merge. Scope and AI-review independence are recorded in [Gate C review](./og4-gate-c-review.md).
+
+
+## OG-5 execution dependency — initiated Gate A docs-only (2026-10-16 JST)
+
+Owner Core, tracking [issue #109](https://github.com/ryonakayama234/morphoacoustics/issues/109), [normative-to-be Gate A protocol](./og5-gate-a-protocol.md); OG-4 PR #108 has merged (historical pre-merge paragraphs above remain unchanged).
+
+- [x] Gate A research branch created at main base af10985f180f7b9a8f1dbca269c1133bc1a94c0a; architecture/data/execution/ledger coordinated in same docs-only proposal.
+- [x] Independent Wolfram exploratory global 20x20 vs impedance recursion compared **20 complex full-port values** for three 733 Hz cases; [receipt and failed attempts](./og5-gate-a-wolfram-receipt.md). No new Core implementation.
+- [ ] Gate A reviewer: review/rationalize numerical thresholds, schema, full 144-case discovery sweep, wrong-law controls, deterministic refusal/error precedence and frozen golden inputs/expected outputs. Dated amendment permitted before B; no silent goalpost motion.
+- [ ] Gate B only if explicit Gate A ratification: separate Draft PR in isolated src/morphoacoustics_graph/tree5.py, exact serialized contract, 144-case independent Wolfram full-port control, negative mutations, two exact-HEAD evidence runs, 3 Python/mypy and OG-3/OG-4/X2a preservation if affected.
+- [ ] Gate C: critical physics + code/security/ABI + reproducibility reviews, disclose correlated AI context, inspect actual artifacts and source SHA, decide SUPPORTED_LIMITED / INCONCLUSIVE / REJECT, only then review merge and verify post-merge.
+
+No broad support for cycles/multiple sources/time-varying morphology or Studio canvas. Creator body A/B path CC-A1 (Core PR #101) → CC-A2 (Studio #14) is parallel and not gated by OG-5.
