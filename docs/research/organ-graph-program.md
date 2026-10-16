@@ -192,3 +192,13 @@ flowchart LR
 ```
 
 Typed organ endpoint ports are semantic nodes/port identities; each J is a **multiport physical constraint** connecting exactly three endpoints. The composed pressure/volume-flow state is solved together. Persistent Blueprint -> structural/capability validation -> immutable PreparedGraph -> harmonic coupled solve -> full-endpoint observation and immutable evidence. No inference from Creator canvas wires to physical validity. Wolfram scaled global 20x20 vs scalar impedance recursion produced 8 exploratory full-port records, not public backend support. Creator CC-A1→CC-A2 separate; no UI graph editor or WAV in OG5. Architecture, schema, execution and scientific evidence were changed together in this Gate A PR.
+
+
+
+## OG-5 Gate A Amendment A1 — 2026-10-16 JST, candidate review pending
+
+Addresses [PR #110 R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786). The [normative complete handoff](./og5-gate-a-amendment-a1.md) and [complete fixtures](./og5-contract-goldens.json) define Snapshot and N×10 Observation fields/identity bytes, stable refusal codes and escaped-pointer precedence, revisions scoped per organ, and lawful vs malformed topology. The split-only connected v1 language admits trees; cycles are INVALID and a complete 7-organ/3-junction tree is the UNSUPPORTED control.
+
+State/digest flow is Blueprint -> complete structural validation -> fixed capability -> recomputed immutable Snapshot -> rank-safe coupled solve -> atomic full Observation. Snapshot digests bind normalized anatomy/source/load; Observation digests bind exact ordered numeric outputs/diagnostics. Neither includes UI layout, timestamps or Git/CI metadata. Full SVD retains zeros; condition2<=1e4 and scaled equation residual<=1e-12 precede success. All 144 positive samples must succeed and pass independent full-state comparators; no refusal reduces the denominator. Child-slot permutation has a distinct bounded mapping identity but identical ideal junction physics; actual output identity swaps and signed/particle-velocity row mutants test numerical mistakes.
+
+Standalone Python regeneration and an independent JavaScript encoder confirm full golden bytes/hashes; they do not implement Core validation. [A1 Wolfram receipt](./og5-wolfram-gate-a-a1-result.json) contains 144-case supplementary design maxima, eight mutant margins and numerical rank/condition/nonfinite refusals. Original 8-case exploration is preserved. No new production module, Studio support, new Core run, scientific adoption or merge is implied. Exact amended HEAD review must precede a separate Gate B Draft.

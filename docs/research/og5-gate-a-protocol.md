@@ -3,6 +3,8 @@
 **Status: AUTHOR-PROPOSED / GATE A DRAFT / NOT APPROVED / NOT ADOPTED. 2026-10-16 JST.**
 Parent [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109); inherited OG-3 fixed2 [#104](https://github.com/ryonakayama234/morphoacoustics/pull/104), OG-4 branch3 [#108](https://github.com/ryonakayama234/morphoacoustics/pull/108). All work here is DESIGN + Wolfram exploration, not runtime or public support. Existing OG-1/OG-3/OG-4 evidence immutable.
 
+**Amendment A1 is normative:** [complete handoff](./og5-gate-a-amendment-a1.md), [full fixtures](./og5-contract-goldens.json), [supplementary Wolfram receipt](./og5-wolfram-gate-a-a1-result.json). This is still a candidate pending exact-HEAD design review.
+
 ## Physical fixture and explicit claim boundary
 
 ```mermaid
@@ -40,13 +42,13 @@ The reference global system contains **20 complex unknowns** = p/U for 10 endpoi
 H0: two otherwise lawful junctions fail to compose into one pressure/flow-consistent network; some nondegenerate test reveals wrong port mapping, flow law, pressure continuity, energy gain, or disagreement with a separate scalar impedance recursion.
 H1: a bounded prepared five-tube/two-junction implementation returns **all 10 complex p/U endpoint pairs** with independent numerical agreement, signed junction conservation, passive terminal power balance, determinism, typed refusal and unchanged older APIs.
 
-**Proposed 144 Gate B evaluation cases**: 3 C areas × 2 C terminations × 3 source scales × 8 frequencies, exhaustively evaluated; do not silently drop near-singular instances. Two named comparison families:
+**Required 144/144 successful Gate B positive evaluation cases** (any refused/missing positive is not a passed case; see A1.4): 3 C areas × 2 C terminations × 3 source scales × 8 frequencies, exhaustively evaluated; do not silently drop near-singular instances. Two named comparison families:
 1. fresh Core backend vs separately evaluated independent Wolfram scalar recursion and global-system values on every supported case; the backend MUST produce actual states; and
 2. fresh Core backend vs **8 frozen exploratory full-port Wolfram records** in [Gate A result](./og5-wolfram-gate-a-result.json) at f=733,997, C area=.00015/.0006, C load matched/closed, scale=1. These are known **before** formal Gate A review (nonblind/controlled inheritance), NOT eight prospective blind confirmations.
 
-Target max normalized complex endpoint error ≤1e-10 across **20 complex numbers** per case, using fixed p_ref=(1.2*343/.0003)*1e-6 Pa and U_ref=1e-6 m³/s independent of scale. Max normalized J1/J2 pressure and signed-flow residual ≤1e-10; relative source/three-terminal mean power mismatch ≤1e-10 using floor 0.5*p_ref*U_ref*abs(scale)^2. Condition number assessed on the **dimensionless** coefficient matrix; propose cond2 ≤1e10 and scaled algebraic residual ≤1e-10, else **atomic** NUMERICALLY_UNRESOLVED (no pseudoinverse, clamp, hidden repair or partial observation). Gate A review must ratify these numbers **before** implementation; revise with an amendment if simulations show a pathological case.
+Target max normalized complex endpoint error ≤1e-10 across **20 complex numbers** per case, using fixed p_ref=(1.2*343/.0003)*1e-6 Pa and U_ref=1e-6 m³/s independent of scale. Max normalized J1/J2 pressure and signed-flow residual ≤1e-10; relative source/three-terminal mean power mismatch ≤1e-10 using denominator max(abs(P_source),0.5*p_ref*U_ref*abs(scale)^2). Condition number assessed on the **dimensionless** coefficient matrix; require all 20 singular values (including zeros), full numerical rank, cond2 ≤1e4 and scaled absolute infinity-norm algebraic residual ≤1e-12, else **atomic** NUMERICALLY_UNRESOLVED (no pseudoinverse, clamp, hidden repair or partial observation). Gate A review must ratify these numbers **before** implementation; revise with an amendment if simulations show a pathological case.
 
-Mutation/negative controls (deterministically visible failure): use signed U not summed particle velocities; inject wrong signed-J1 and wrong signed-J2 law independently; pressure sign inversion; reverse inlet/outlet; swap typed child ports while preserving nondegenerate area/length identity; impose wrong C impedance; mutate C area and source; tamper with prepared snapshot; duplicated/dangling/ill-typed ports, malformed numbers, unknown laws, well-formed out-of-domain cycles, extra junctions, and condition singularity. A conservation-only oracle is insufficient: wrong physically self-consistent equations can pass local residuals, so the independent full-state comparator is mandatory. Use unequal-area fixtures to kill a particle-velocity law.
+Mutation/negative controls (deterministically visible failure): use signed U not summed particle velocities; inject wrong signed-J1 and wrong signed-J2 law independently; pressure sign inversion; reverse inlet/outlet; swap reported D.out/E.out identities while retaining original port_ids (child-slot permutations alone are physically equivalent and are separate identity/capability controls); impose wrong C impedance; mutate C area and source; tamper with prepared snapshot; duplicated/dangling/ill-typed ports, malformed numbers, unknown laws, structurally invalid cycles, lawful larger binary trees, and actual rank/condition failure injected at the solver boundary after capability validation. A conservation-only oracle is insufficient: wrong physically self-consistent equations can pass local residuals, so the independent full-state comparator is mandatory. Use unequal-area fixtures to kill a particle-velocity law.
 
 ## Independent Wolfram exploration, 2026-10-16 (known, NOT blind)
 
@@ -67,3 +69,10 @@ Source [og5-wolfram-gate-a.wl](./og5-wolfram-gate-a.wl) (full 20x20 scaled coeff
 4. Updating the **architecture, candidate schema, execution plan and ledger** is mandatory in every capability-related PR. Historical decisions remain immutable.
 
 No Gate A approval, Gate B implementation, run of GitHub CI or merge is claimed by this protocol.
+
+
+## Amendment A1 review response — 2026-10-16 JST
+
+[Review R1–R4](https://github.com/ryonakayama234/morphoacoustics/pull/110#pullrequestreview-5546195786) led to the [normative supplement](./og5-gate-a-amendment-a1.md). Complete snapshot/output domains, exact field/shape/byte contracts and stable refusal receipts are now prospective fixtures. Cycle is INVALID in the split-only connected v1 language; a valid 7-organ tree is the unsupported control. Rank-safe full SVD supersedes the truncated-SVD diagnostic and the draft 1e10 cutoff. Eight explicit wrong-law/identity mutants, numerical seams and 144/144-positive scoring are fixed before implementation.
+
+The new [A1 Wolfram source](./og5-wolfram-gate-a-a1.wl) and [receipt](./og5-wolfram-gate-a-a1-result.json) evaluate 144/144 design-model cases, max full-state global-vs-recursive discrepancy 1.320372144714677e-14, maximum condition 223.7427248146297, maximum scaled linear residual 3.376611507232129e-16. All eight mutants exceed the predeclared 1e-6 detection floor (minimum 0.3681067345986977). Duplicate-row, full-rank ill-conditioned and nonfinite guards refuse as specified. The original 8-case JSON remains immutable historical exploration; these new results are supplementary nonblind design analysis, not Core Gate B execution or automatic Gate A approval.

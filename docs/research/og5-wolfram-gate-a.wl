@@ -1,7 +1,24 @@
 (* OG-5 Gate A independent 5-tube, two-3-port ideal lossless 1D acoustic oracle.
    Not a Core implementation or adoption. Peak exp(+i omega t). SI p/U,
    all unknowns scaled as P=p/(Zref Uref), Q=U/Uref. *)
-ClearAll[og5Case,og5P,og5Q,og5Pair];
+ClearAll[og5Case,og5P,og5Q,og5Pair,og5FiniteQ,og5MatrixDiagnostic];
+(* Amendment A1: do not discard zero singular values; never report a finite
+   condition number for a rank-deficient matrix. This guard is design-only. *)
+og5FiniteQ[v_]:=NumberQ[v] && FreeQ[v,Indeterminate|_DirectedInfinity];
+og5MatrixDiagnostic[a_]:=Module[{n=Length[a],sv},
+ If[Dimensions[a]=!={n,n} || !VectorQ[Flatten[a],og5FiniteQ],
+  Return[<|"status"->"NUMERICALLY_UNRESOLVED","code"->"NUMERIC_NONFINITE"|>]];
+ sv=SingularValueList[N[a],Tolerance->0];
+ If[Length[sv]=!=n || !VectorQ[sv,og5FiniteQ],
+  Return[<|"status"->"NUMERICALLY_UNRESOLVED","code"->"NUMERIC_NONFINITE"|>]];
+ If[Min[sv]<=n*$MachineEpsilon*Max[sv],
+  Return[<|"status"->"NUMERICALLY_UNRESOLVED","code"->"MATRIX_RANK_DEFICIENT",
+    "singular_value_count"->Length[sv]|>]];
+ If[Max[sv]/Min[sv]>1.*^4,
+  Return[<|"status"->"NUMERICALLY_UNRESOLVED","code"->"MATRIX_ILL_CONDITIONED"|>]];
+ <|"status"->"SUCCESS","singular_value_count"->Length[sv],
+   "condition_number_2"->N[Max[sv]/Min[sv],15]|>
+];
 uRef=1.*^-6; zRef=1.2*343./.0003; pRef=zRef*uRef;
 names={"A","B","C","D","E"};
 lengths=<|"A"->.08,"B"->.09,"C"->.06,"D"->.07,"E"->.05|>;
@@ -10,7 +27,7 @@ og5Q[s_,e_]:=Symbol["og5Q"<>s<>e];
 og5Pair[z_]:=N[{Re[z],Im[z]},16];
 og5Case[f_,cArea_,cLoad_,scale_]:=Module[
  {areas,z,m,vars,eqs,ca,mat,rhs,x,rules,zin,zd,ze,zc,zj2,zb,zj1,za,back,
-  rec,j,ports,diff,power,pIn,pOut,sv,resid,c1,c2,p1,p2,source},
+  rec,j,ports,diff,power,pIn,pOut,sv,resid,c1,c2,p1,p2,source,guard},
  areas=<|"A"->.0003,"B"->.0003,"C"->cArea,"D"->.0003,"E"->.0006|>;
  z[s_]:=(1.2*343./areas[s])/zRef;
  m[s_]:=With[{theta=2 Pi f lengths[s]/343.,r=z[s]},
@@ -31,6 +48,8 @@ og5Case[f_,cArea_,cLoad_,scale_]:=Module[
   og5P["E","o"]==z["E"] og5Q["E","o"]}];
  ca=CoefficientArrays[Subtract@@@eqs,vars];
  mat=N[Normal[ca[[2]]]]; rhs=-N[Normal[ca[[1]]]];
+ guard=og5MatrixDiagnostic[mat];
+ If[guard["status"]=!="SUCCESS",Return[guard]];
  x=LinearSolve[mat,rhs]; rules=Thread[vars->x];
  (* Separate recursion; no global matrix, source numerical solution or shared solver *)
  zin[s_,load_]:=With[{t=m[s]},
@@ -58,7 +77,7 @@ og5Case[f_,cArea_,cLoad_,scale_]:=Module[
    Abs[(og5Q[s,e]/.rules)-rec[key][[2]]]}],{s,names},{e,{"i","o"}}]]];
  power[s_,e_]:=.5 pRef uRef Re[(og5P[s,e] Conjugate[og5Q[s,e]])/.rules];
  pIn=power["A","i"];pOut=Total[power[#,"o"]&/@{"C","D","E"}];
- sv=SingularValueList[mat];
+ sv=SingularValueList[mat,Tolerance->0];
  resid=Max[Abs[mat.x-rhs]];
  c1=Abs[(og5Q["A","o"]-og5Q["B","i"]-og5Q["C","i"])/.rules];
  c2=Abs[(og5Q["B","o"]-og5Q["D","i"]-og5Q["E","i"])/.rules];
@@ -97,3 +116,4 @@ Print["OG5JSONSTART"];
 Print[ExportString[<|"summary"->summary,"records"->records|>,"RawJSON","Compact"->True]];
 Print["OG5JSONEND"];
 summary
+

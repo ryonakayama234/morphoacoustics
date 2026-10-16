@@ -1,0 +1,47 @@
+{
+  "status": "SUPPLEMENTARY_DESIGN_EXPLORATION_NOT_CORE_OR_ADOPTION",
+  "kernel_version": "15.0.1 for Linux x86 (64-bit) (July 2, 2026)",
+  "positive_cases": 144,
+  "successful_positive_cases": 144,
+  "max_condition_number_2": 223.7427248146297,
+  "max_scaled_comparator_error": 1.320372144714677e-14,
+  "max_scaled_linear_residual": 3.376611507232129e-16,
+  "max_relative_power_defect_with_floor": 4.220610523881094e-16,
+  "mutation_max_scaled_state_errors": {
+    "wrong_j1_sign": 1.7866175614737358,
+    "wrong_j2_sign": 2.7715136086925365,
+    "particle_velocity_j1": 0.6634160961715584,
+    "particle_velocity_j2": 0.3681067345986977,
+    "pressure_sign": 2.405383104576108,
+    "endpoint_reversal": 2.1576290760629853,
+    "wrong_c_load": 0.5882681949821906,
+    "output_identity_swap": 0.4889183378172546
+  },
+  "all_eight_mutants_exceed_1e_minus6": true,
+  "child_permutation_law_invariant": true,
+  "numerical_negative_controls": {
+    "duplicate_row": {
+      "status": "NUMERICALLY_UNRESOLVED",
+      "code": "MATRIX_RANK_DEFICIENT",
+      "singular_value_count": 20
+    },
+    "ill_conditioned_full_rank": {
+      "status": "NUMERICALLY_UNRESOLVED",
+      "code": "MATRIX_ILL_CONDITIONED"
+    },
+    "nonfinite_matrix": {
+      "status": "NUMERICALLY_UNRESOLVED",
+      "code": "NUMERIC_NONFINITE"
+    },
+    "legacy_svd_drops_zero": [
+      1
+    ],
+    "full_svd_retains_zero": [
+      1,
+      0
+    ]
+  },
+  "tube_determinant": 1,
+  "tube_power_identity": true
+}
+

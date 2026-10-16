@@ -1,0 +1,36 @@
+name: OG-5 Gate A design fixtures
+
+on:
+  push:
+    paths:
+      - 'docs/research/og5-*'
+      - '.github/workflows/og5-gate-a-design.yml'
+  pull_request:
+    paths:
+      - 'docs/research/og5-*'
+      - '.github/workflows/og5-gate-a-design.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  design-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install independent numerical review dependency
+        run: python -m pip install 'numpy>=2.0'
+      - name: Regenerate complete contract constants
+        run: python docs/research/og5-contract-fixtures.py --check
+      - name: Verify bytes with independent JavaScript encoder
+        run: node docs/research/og5-contract-fixtures.mjs
+      - name: Compare six-node and twenty-state design equations
+        run: python docs/research/og5-review-nodal.py
+      # Wolfram is executed separately; this workflow does not claim to rerun
+      # Wolfram, execute a production tree5 API, or pass Gate B.
