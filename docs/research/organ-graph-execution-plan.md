@@ -1,5 +1,8 @@
 # Organ Graph Foundation — execution work orders / acceptance plan (2026-10-14 JST)
 
+> **OG-5 Gate B3 active, not adopted (2026-10-16):** [B3 experiment+architecture/data diagrams](./og5-gate-b3-trial.md) | [separate Wolfram oracle](./og5-gate-b3-independent-oracle.wl) | [Core-vs-reference scorer](../../checks/check_og5_gate_b3.py) | [Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112). Eight case shards × 18, 144 full 10-port p/U records from independent global and recursive solvers archived. **Reference-only** check succeeded; Core exact-HEAD score/twin artifacts, eight mutants, regressions and separate Gate C still require completed receipts. Frozen Gate A/A1 remains controlling.
+
+
 **Current execution update (2026-10-16; corrected after Codex P2):** **WP-02 = OG-3 fixed2 Core graph preparation+observation, ADOPTED LIMITED and merged** via [PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104); see [Gate C decision](./og3-gate-c-limited-adoption.md). **WP-03 = creator-selected exact body preset contract v1** remains a **separate Core contract workstream** (its draft status is not changed or adopted by OG-3). **WP-04 = Studio validated A/B body preset selector** likewise remains separate and **not delivered by OG-3**. These WP identifiers follow the explicit graph and section headings below; the old 2026-10-15 status line is retained only as historical prerelease planning, not as the current authoritative status.
 
 **Status: WORK PLAN / 2026-10-15 UPDATE — WP-01 ADOPTED LIMITED RESEARCH AND MERGED; WP-03 DRAFT IMPLEMENTED, NOT ADOPTED; WP-02/04 UNIMPLEMENTED.**

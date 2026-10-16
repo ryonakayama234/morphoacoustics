@@ -1,5 +1,8 @@
 # Organ Graph Program — living architecture (proposal, 2026-10-14 JST)
 
+> **OG-5 Gate B3 active, not adopted (2026-10-16):** [B3 experiment+architecture/data diagrams](./og5-gate-b3-trial.md) | [separate Wolfram oracle](./og5-gate-b3-independent-oracle.wl) | [Core-vs-reference scorer](../../checks/check_og5_gate_b3.py) | [Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112). Eight case shards × 18, 144 full 10-port p/U records from independent global and recursive solvers archived. **Reference-only** check succeeded; Core exact-HEAD score/twin artifacts, eight mutants, regressions and separate Gate C still require completed receipts. Frozen Gate A/A1 remains controlling.
+
+
 **Current status (2026-10-16): OG-3 fixed2 passive Core API ADOPTED LIMITED**, [PR #104 merged](https://github.com/ryonakayama234/morphoacoustics/pull/104), [Gate C receipt](./og3-gate-c-limited-adoption.md). The original proposal/NOT ADOPTED status below is historical for broader organ graphs/Studio, which remain **unimplemented / NOT ADOPTED**. Keep Core physical authority, Studio creative workflow and research evidence separate.
 
 **Status: LIVING ARCHITECTURE PROPOSAL. OG-2 RESEARCH ADOPTED LIMITED; public graph and creator UI NOT ADOPTED.** This document does not promote any experiment-local type or authorize public API/Studio changes. Related: [Core OG-2 #96](https://github.com/ryonakayama234/morphoacoustics/issues/96), [OG-2 audit #98](https://github.com/ryonakayama234/morphoacoustics/issues/98), [Studio Character Creator #12](https://github.com/ryonakayama234/morphoacoustics-studio/issues/12).

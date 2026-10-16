@@ -1,5 +1,8 @@
 # Organ Graph data contracts — experiment-local candidate (2026-10-14)
 
+> **OG-5 Gate B3 active, not adopted (2026-10-16):** [B3 experiment+architecture/data diagrams](./og5-gate-b3-trial.md) | [separate Wolfram oracle](./og5-gate-b3-independent-oracle.wl) | [Core-vs-reference scorer](../../checks/check_og5_gate_b3.py) | [Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112). Eight case shards × 18, 144 full 10-port p/U records from independent global and recursive solvers archived. **Reference-only** check succeeded; Core exact-HEAD score/twin artifacts, eight mutants, regressions and separate Gate C still require completed receipts. Frozen Gate A/A1 remains controlling.
+
+
 **Current production-facing exception (2026-10-16):** the *specific* typed two-node passive serial graph schema in `src/morphoacoustics_graph/` is **adopted limited on Core main**, [Gate C decision](./og3-gate-c-limited-adoption.md). The older *general* graph schema and separate `CreatureSpec`/Studio body-binding contract described below remain candidate and **NOT adopted**. Two exact geometries, fixed common medium and full unloaded complex response only; no aliasing UI coordinates or physical time state.
 
 **NOT A PUBLISHED API.** This is a reviewable, minimal conceptual schema for [Core OG-2 #96](https://github.com/ryonakayama234/morphoacoustics/issues/96), not a replacement for `CreatureSpec`, `PreparedMorphology[T]`, `Tract1DGeometry` or the Studio Performance Contract v0. Exact field names and JSON serialization are unapproved.
