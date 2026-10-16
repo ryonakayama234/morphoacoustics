@@ -220,9 +220,10 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
     assignments.append(source_id)
     for j in junctions:
         jports = j["ports"]
-        owners = [port_owner.get(pid) for pid in jports]
-        if (any(a is None for a in owners) or
-                owners[0][1] != "outlet" or
+        if any(pid not in port_owner for pid in jports):
+            _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
+        owners = [port_owner[pid] for pid in jports]
+        if (owners[0][1] != "outlet" or
                 any(a[1] != "inlet" for a in owners[1:]) or
                 len({a[0] for a in owners}) != len(owners) or
                 len(set(jports)) != len(jports)):
