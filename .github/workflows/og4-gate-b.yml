@@ -1,0 +1,111 @@
+name: og4-gate-b
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "experiments/**"
+      - "tests/**"
+      - "checks/**"
+      - "docs/research/og4-*"
+      - "docs/research/organ-graph-*"
+      - "pyproject.toml"
+      - ".github/workflows/og4-gate-b.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "experiments/**"
+      - "tests/**"
+      - "checks/**"
+      - "docs/research/og4-*"
+      - "docs/research/organ-graph-*"
+      - "pyproject.toml"
+      - ".github/workflows/og4-gate-b.yml"
+
+jobs:
+  branch3-full-port-and-frozen-live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pinned numerical runtime and dev dependencies
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e '.[dev]'
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: OG-4 full-port Python 288, frozen Wolfram 24, negative controls
+        run: |
+          python -m pytest -q tests/test_branch3_public.py
+          python docs/research/og4-branch3-api-vectors.py
+          node docs/research/og4-branch3-api-vectors.cjs
+          python -m mypy
+      - name: Inherited OG-1/OG-3 and original limited-live guards
+        run: |
+          python -m pytest -q tests/test_prepared_graph_public.py tests/test_experiment_038_og1.py tests/test_experiment_039_og2.py tests/test_limited_live_policy.py checks/test_limited_live_smoke.py
+      - name: Frozen Experiment028/029 decisions
+        run: |
+          python experiments/028_task_field_morphology_transfer/run.py --output-dir og4-exp028
+          python experiments/029_task_field_embodied_infeasibility/run.py --output-dir og4-exp029
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          assert json.loads(Path("og4-exp028/decision.json").read_text())["decision"] == "SUPPORT_TASK_TRANSFER"
+          assert json.loads(Path("og4-exp029/decision.json").read_text())["decision"] == "SUPPORT_PHONETIC_EMBODIED_INFEASIBILITY"
+          PY
+      - name: Two genuine frozen X2a Takes
+        run: |
+          cat > og4-live-request.json <<'JSON'
+          {"schema_version":"morpho-live/v1","pronunciation_id":"v3a-a-to-i-like/v1","body_id":"v3c-M_plus/v1","segment_id":"s1","text":"あい","seed":0}
+          JSON
+          python -m morphoacoustics.integration.limited_live --request og4-live-request.json --output-dir og4-live-take-1
+          python -m morphoacoustics.integration.limited_live --request og4-live-request.json --output-dir og4-live-take-2
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib,wave
+          for index in (1,2):
+              p=Path(f"og4-live-take-{index}")
+              result=json.loads((p/"result.json").read_text())
+              assert result["job_status"] == "SUCCEEDED"
+              assert result["realization_outcome"] == "FEASIBLE"
+              assert result["execution"]["acoustic_transfer_calls"] == 102
+              for artifact in result["artifacts"]:
+                  assert hashlib.sha256((p/artifact["path"]).read_bytes()).hexdigest() == artifact["sha256"]
+              with wave.open(str(p/"audio.wav"),"rb") as audio:
+                  assert audio.getframerate() == 48000 and audio.getnframes() == 24000
+              assert (p/"raw_pressure_pa.npy").is_file()
+              assert (p/"physical_trace.csv").is_file()
+          for filename in ("audio.wav","raw_pressure_pa.npy"):
+              assert (Path("og4-live-take-1")/filename).read_bytes() == (Path("og4-live-take-2")/filename).read_bytes()
+          PY
+      - name: Two fresh exact-head new-Core evidence runs and refusal controls
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python checks/check_og4_gate_b.py --output-dir og4-evidence-1 --expected-head-sha "$HEAD_SHA"
+          python checks/check_og4_gate_b.py --output-dir og4-evidence-2 --expected-head-sha "$HEAD_SHA"
+          cmp og4-evidence-1/evidence.json og4-evidence-2/evidence.json
+          cmp og4-evidence-1/sha256.txt og4-evidence-2/sha256.txt
+          if python checks/check_og4_gate_b.py --output-dir og4-bad-head --expected-head-sha 0000000000000000000000000000000000000000; then
+            echo "WRONG_HEAD_ACCEPTED"; exit 1
+          fi
+          test ! -e og4-bad-head
+          if python checks/check_og4_gate_b.py --output-dir og4-evidence-1 --expected-head-sha "$HEAD_SHA"; then
+            echo "STALE_OUTPUT_ACCEPTED"; exit 1
+          fi
+      - name: Upload raw evidence and physical Takes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: og4-gate-b-evidence
+          path: |
+            og4-evidence-1/
+            og4-evidence-2/
+            og4-exp028/decision.json
+            og4-exp029/decision.json
+            og4-live-take-1/
+            og4-live-take-2/
+          if-no-files-found: warn
