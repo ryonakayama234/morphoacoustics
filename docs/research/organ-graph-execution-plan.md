@@ -149,3 +149,9 @@ Before marking PR #104 review-ready or merging: fix Codex P1 recursive-DFS large
 ### OG-4 proposed successor work order — after WP-02 fixed2 Core adoption (2026-10-16)
 
 [OG-4 Gate A issue #106](https://github.com/ryonakayama234/morphoacoustics/issues/106) and [Gate A RF C](./og4-three-port-public-preparation-rfc.md): review a new versioned ideal **3-port** branch3 proposal **without** editing adopted OG-3 fixed2 or frozen science. New capability is three fixed organs A→J→(B,C), signed pressure/volume-flow constraints, OG-1 inherited exact fixture and four terminal boundary families, all six endpoint complex p/U; **no general branching solver or oral/nasal anatomy**. Gate A is docs+Wolfram only and needs distinct physics/code critical design review. Gate B is a **separate future Draft code PR**; Gate C an explicit exact-head limited decision then possible SHA-guarded merge. **Do not call OG-4 a completion of WP-03 creator preset contract or WP-04 Studio A/B selection**, which remain separate. Every phase updates architecture/data/ledger/plan together.
+
+### OG-4 Gate A Amendment A1 — PR #107 review corrections (2026-10-16)
+
+Implementers must follow [API Amendment A1](./og4-branch3-api-v1.md), including full validity before capability, a nonempty 1-D 1..256-point request, immutable reconstructed snapshot binding and golden byte/hash vectors. The [protocol](./og4-gate-a-protocol.md) separately requires fresh new-backend-vs-Python 288 and new-backend-vs-Wolfram 24 comparisons. No resource/schema/digest boundary is deferred to Gate B; Gate A ratification is still pending.
+
+State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.

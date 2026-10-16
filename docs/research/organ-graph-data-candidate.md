@@ -155,3 +155,9 @@ Well-formed large graphs remain syntactically representable although only two fi
 ### OG-4 Gate A typed data candidate (2026-10-16; design only)
 
 [Versioned Branch3Blueprint schema candidate](./og4-three-port-public-preparation-rfc.md): 3 immutable named `PassiveTubeOrgan` values, each containing typed `acoustic.p_u` inlet/outlet, exactly 1 ordered `ideal.branch3.p_u` junction with ports `(A.out,B.in,C.in)`, explicit complex inlet source and two typed boundaries, revisioned medium/geometry (OG-1 density **1.2**, not OG-3 **1.21**), and independent blueprint/prep/observation digest domains. New branch schema/version required: **do not alias** `og3.passive.fixed2.v1` to imply branch support or change old digests. Source/boundary, graph choice and solver state remain distinct; outputs are **all six complex p/U endpoints** plus power diagnostic, not a single OG-3 unloaded two-port matrix. Separate Studio and morphological semantics are not in graph physical identity. No implementation or external ABI acceptance yet.
+
+### OG-4 Gate A Amendment A1 — PR #107 review corrections (2026-10-16)
+
+[Amendment A1](./og4-branch3-api-v1.md) freezes discriminated source/load objects, Complex `{real,imag}`, the blueprint/prepared-snapshot/observation schema IDs, exact backend and digest-version strings, typed framed binary64 canonical bytes and complete hashed fields. [Golden fixtures](./og4-branch3-api-golden.json) and their [encoding checker](./og4-branch3-api-vectors.py) specify identity behavior, including signed zero and fixed-vs-matched load identity.
+
+State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing physical sources, frozen experiments and adopted OG-3 behavior remain unchanged.
