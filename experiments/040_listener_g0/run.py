@@ -1,7 +1,7 @@
 """EL-G0: auditable free-field two-probe acoustic receiver null.
 
 Standalone research experiment. This does not implement ListenerSpec or HRTFs.
-SI units everywhere. Complex phasors use exp(-i omega t).
+SI units everywhere. Complex phasors use exp(+i omega t).
 """
 from __future__ import annotations
 
@@ -110,7 +110,7 @@ def generate_report() -> dict:
             "air_density_kg_m3": 1.2,
             "frequency_hz": 1000.0,
             "volume_velocity_m3_s": 1e-6,
-            "phasor_convention": "exp(-i omega t)",
+            "phasor_convention": "exp(+i omega t)",
             "environment": "unbounded linear 3D free field",
         },
         "receiver_type": "ideal_pressure_point_probe_NOT_anatomical_ear",
