@@ -247,3 +247,5 @@ Unmet Gate B: 144 actual Core vs *independently assembled Wolfram full-port* rec
 ## Gate B2 contract checkpoint (2026-10-16; DRAFT)
 
 OG-5 Gate B2 implementation candidate (2026-10-16 JST): Separate typed and domain-hashed Blueprint/Prepared/Observation API added to the B1 branch under Gate A frozen A1. Proposed assertions: 8 Blueprint/Snapshot variants, 6 canonical byte vectors, 27 error receipts, repeated frequency requests, immutable receiver and late-sample numeric refusal. Results remain **NOT VERIFIED on exact HEAD** until linked CI completes; no Core/Wolfram 144 independent full-port acceptance or Gate C. [Contract record](./og5-gate-b2-contract.md).
+
+**OG-5 B2 red CI checkpoint (2026-10-16):** first B2 commit `fd52b4b` returned Python3.13 619 passed/7 failed and 11 mypy type errors. Six errors from test wrapper not extracting frozen `frequencies_hz`, one primary duplicate ID error shadowed by downstream connection error. Patch is typed validation/test correction, not acoustic equation edit; preserve failed run `38895168890`, OG4 `38895168822`, ensure exact-head CI rerun. [Detailed receipt](./og5-gate-b2-contract.md).

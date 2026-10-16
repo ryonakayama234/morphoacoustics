@@ -11,7 +11,7 @@ import json
 import math
 import re
 import struct
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 from . import tree5 as physics
 
@@ -68,7 +68,7 @@ def _ptr(part: object) -> str:
     return str(part).replace("~", "~0").replace("/", "~1")
 
 
-def _raise(status: str, code: str, path: str) -> None:
+def _raise(status: str, code: str, path: str) -> NoReturn:
     raise Tree5Error(status, code, path)
 
 
@@ -100,7 +100,7 @@ def _number(v: object, path: str, errors: list[tuple[str, str]], positive: bool 
         errors.append((path, "INVALID_NUMBER"))
         return None
     try:
-        x = float(v)
+        x = float(cast(float, v))
     except (ValueError, OverflowError):
         errors.append((path, "INVALID_NUMBER"))
         return None
@@ -125,7 +125,7 @@ def _scan(v: object, spec: object, path: str, errors: list[tuple[str, str]]) -> 
         if len(seq) != 3:
             errors.append((path, "INVALID_CARDINALITY"))
         return [_string(x, path + "/" + str(i), errors, "id") for i, x in enumerate(seq)]
-    maps: dict[str, dict[str, object]] = {
+    maps: dict[str, dict[str, str]] = {
         "port": _PORT, "source": _SOURCE, "load": _LOAD,
         "junction": _JUNCTION, "organ": _ORGAN, "blueprint": _BP,
         "snapshot": _SNAPSHOT, "complex": {"real": "number", "imag": "number"},
@@ -225,6 +225,8 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
                 errors.append((f"{prefix}/junctions/{i}/ports/0", "INVALID_CONNECTION"))
             else:
                 edges.extend((parent, cast(str, x)) for x in children)
+    # Ambiguous duplicate identities must stop before deriving secondary connection errors.
+    _fail([e for e in errors if e[1] == "DUPLICATE_ID"])
     for ident, refs in bindings.items():
         if len(refs) > 1:
             errors.append((sorted(refs, key=lambda z: z.encode("ascii"))[-1], "DUPLICATE_BINDING"))
@@ -264,7 +266,7 @@ def _relations(bp: dict[str, Any], prefix: str) -> None:
         if cur in reached:
             continue
         reached.add(cur)
-        search.extend(undirected.get(cur, ()) - reached)
+        search.extend(undirected[cur] - reached)
     if len(reached) != len(graph):
         _raise("INVALID", "GRAPH_DISCONNECTED", prefix + "/organs")
 
@@ -328,7 +330,7 @@ def _capability(bp: dict[str, Any], prefix: str = "") -> None:
 
 def _encode(value: object) -> bytes:
     if type(value) in (int, float):
-        v = float(value)
+        v = float(cast(float, value))
         if not math.isfinite(v):
             raise ValueError("Nonfinite canonical number")
         return b"d" + struct.pack(">d", 0. if v == 0. else v)

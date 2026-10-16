@@ -215,3 +215,5 @@ Architecture, candidate data, execution and experiment ledger are updated in thi
 ## Gate B2 contract checkpoint (2026-10-16; DRAFT)
 
 OG-5 Gate B2: [x] code candidate for Blueprint→Prepared/Snapshot→Response and golden fixtures submitted to same Draft PR #112; [ ] exact HEAD CI and test failures addressed; [ ] B3 independent 144 full-port comparisons, 8 wrong laws, 6 true solver-boundary seams, two evidence archives and separate Gate C critical review. [B2 record](./og5-gate-b2-contract.md).
+
+**OG-5 B2 initial red CI:** first run 619 green / 7 failed (Python3.13), 11 mypy errors. Six harness-envelope mistakes and one duplicate-organ precedence issue are patched for a fresh HEAD. No goalposts changed and no claim of B2 completion before all corrections pass. [Receipt](./og5-gate-b2-contract.md).

@@ -43,7 +43,7 @@ def test_a1_error_receipts(case: dict) -> None:
         elif op == "restore":
             restore_tree5(copy.deepcopy(case["input"]))
         elif op == "response":
-            prepare_tree5(copy.deepcopy(VARIANTS["baseline"]["input"])).response(case["input"])
+            restore_tree5(copy.deepcopy(case["input"]["receiver_snapshot"])).response(case["input"]["frequencies_hz"])
         elif op == "response_corrupted_receiver_test_seam":
             prepared = prepare_tree5(copy.deepcopy(VARIANTS["baseline"]["input"]))
             object.__setattr__(prepared, "_snapshot_json", json.dumps(case["input"]))

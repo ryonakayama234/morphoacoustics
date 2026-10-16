@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
       - name: Internal numerical candidate vs 144 fixtures and frozen Wolfram 8
-        run: python -m pytest -q tests/test_tree5_numeric_trial.py
+        run: python -m pytest -q tests/test_tree5_numeric_trial.py tests/test_tree5_contract.py
       - name: Type check (non-normative B1 candidate)
-        run: python -m mypy src/morphoacoustics_graph/tree5.py
+        run: python -m mypy src/morphoacoustics_graph/tree5.py src/morphoacoustics_graph/tree5_contract.py
 
