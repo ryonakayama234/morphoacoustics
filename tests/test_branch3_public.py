@@ -415,16 +415,26 @@ def test_numerical_failure_after_valid_sample_is_atomic(monkeypatch, failure):
     assert observation_hashes == []
 
 
+def evidence_runner():
+    location = ROOT / "checks/check_og4_gate_b.py"
+    spec = importlib.util.spec_from_file_location("og4_evidence_runner", location)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_scattering_coefficients_vs_frozen_wolfram_and_unequal_area_falsifier():
-    from checks.check_og4_gate_b import scattering_controls
-    result = scattering_controls()
+    result = evidence_runner().scattering_controls()
     assert set(result) == {"0.5", "1.0", "2.0"}
     assert result["2.0"]["wrong_particle_velocity_power_defect"] == pytest.approx(8/9)
     assert result["1.0"]["wrong_particle_velocity_power_defect"] < 1e-12
 
 
 def test_evidence_full_input_output_hashes_can_be_rechecked_and_tampering_fails():
-    from checks.check_og4_gate_b import verify_observation_bindings, serial, complex_output
+    runner = evidence_runner()
+    verify_observation_bindings = runner.verify_observation_bindings
+    serial, complex_output = runner.serial, runner.complex_output
     p = prepare_branch3(blueprint())
     o = p.response([733, 997])
     evidence = {"observations": [{"snapshot": p.to_snapshot(), "request_frequencies_hz": [733, 997],
