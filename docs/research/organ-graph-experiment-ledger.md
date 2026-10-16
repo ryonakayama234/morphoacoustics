@@ -281,3 +281,19 @@ input, and raw oracle values are directly bound to the checkout's eight shards.
 Execution requires all CI plus two fresh raw evidence runs on the corrected
 committed HEAD and a separate Gate C adoption review. **Repair candidate only;
 Draft/unmerged/not adopted.** See the PR receipt for actual final counts and SHAs.
+
+
+## OG-5 Gate C R5 Snapshot-version remediation
+
+The [R5 repair and phase-boundary record](./og5-gate-c-remediation.md#r5-follow-up-outer-snapshot-version-group-and-phase-boundaries)
+closes the outer Snapshot version selection gap from the 532051c review.
+Validated Snapshot -> complete nested shape/relationship/graph checks -> outer
+version candidates selected by ASCII pointer -> backend -> nested Blueprint
+capability -> recomputed hashes -> immutable binding remains the data flow.
+The six new unittest methods cover 78 cases, including all 15 marker combinations
+and validation phase boundaries; the primary matrix first failed four cases,
+then all cases passed after repair. Wolfram independently encoded the API
+priority truth table, not new physical evidence. Physics/schemas/oracles/frozen
+bytes remain unchanged. CI and two source-pinned raw archives must attest the
+new committed HEAD before a separate final technical disposition. No merge or
+Studio/speech capability is authorized by this repair record.

@@ -1,7 +1,7 @@
 # OG-5 Gate C remediation — 2026-10-16 JST
 
-Current: R3/R4 capability-order repair candidate; final exact-HEAD CI/evidence
-and a separate Gate C adoption review are pending. This file does not declare adoption or authorize merge.
+Current: R5 outer-version-group repair candidate; final exact-HEAD CI/evidence
+and a separate Gate C technical disposition are pending. This file does not declare adoption or authorize merge.
 The [review at ca07c974](https://github.com/ryonakayama234/morphoacoustics/pull/112#pullrequestreview-5549021528)
 remains an immutable INCONCLUSIVE receipt for that old implementation.
 
@@ -106,3 +106,39 @@ This is a repair receipt and execution handoff, not SUPPORTED_LIMITED adoption.
 Keep the PR Draft/unmerged until the corrected committed HEAD has all required
 CI and raw evidence and a separate critical Gate C disposition. The earlier
 3eeab25 INCONCLUSIVE review remains accurate for its historical version.
+
+
+## R5 follow-up: outer Snapshot version group and phase boundaries
+
+The [R5 final review at 532051c](https://github.com/ryonakayama234/morphoacoustics/pull/112#pullrequestreview-5550086282)
+found a Snapshot-specific gap outside the earlier 320 Blueprint tests. When both
+outer schema and digest_version are unsupported, A1.3 requires /digest_version
+before /schema within the outer version group. Both candidates are now collected
+and the lowest escaped ASCII pointer is selected. The group order remains:
+shape/scalar -> relationships -> cycle/connectedness -> outer versions -> backend
+-> nested Blueprint capability -> blueprint hash -> preparation hash.
+The binding is still reconstructed before any response-request validation.
+
+New unittest tests run without a pytest dependency and are also collected by the
+normal pytest CI. Six test methods exercise 78 cases: all 15 nonempty combinations
+of the four outer/nested markers, shape/relationship/digest-syntax priority,
+capability-before-hash, hash order and receiver-before-request. Before the fix,
+the primary matrix had 4 failures and 11 passes; its copy with inconsistent hashes
+also had the same 4 failures. The remaining boundary cases passed. After the fix,
+all 78 cases pass. The fixtures and expectations do not import a production
+selection helper. Both dedicated workflows watch the new test file and B1/B2
+explicitly executes it on all three supported Python versions.
+
+Wolfram separately encoded the four-marker/group-order truth table and confirmed
+15 cases, four old-code mismatches, ASCII outer order /digest_version,/schema,
+and backend before nested Blueprint version. This checks a written API rule;
+it is not new physical or blind numerical evidence. Correct ASCII comparison uses
+an equal-length base-256 key of zero-padded ASCII+1 bytes, rather than Wolfram's
+canonical ordering of variable-length lists of character codes.
+
+Only the outer version group's choice changes. Unknown marker shapes still
+refuse before capability, outer groups still precede nested capability, and
+physical responses, hashes on valid values, frozen A1/goldens and Wolfram
+physical references are unchanged. Collect exact-HEAD CI and two fresh B3 raw
+archives, inspect inherited compatibility, and issue a separate scoped technical
+review. The earlier INCONCLUSIVE decisions remain historical for their old HEADs.

@@ -492,10 +492,13 @@ def _restore_impl(snapshot: object) -> PreparedTree5:
     # _scan validates the shape; relation normalization now sorts only unordered collections.
     for collection, key in (("organs", "id"), ("junctions", "id"), ("loads", "port")):
         bp[collection].sort(key=lambda x: x[key])
-    if snap["schema"] != SNAPSHOT_SCHEMA:
-        _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED", "/schema")
-    if snap["digest_version"] != DIGEST_VERSION:
-        _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED", "/digest_version")
+    # A1.3: choose within the outer-version group before backend/nested groups.
+    version_errors = ["/" + field for field, supported in (
+        ("schema", SNAPSHOT_SCHEMA), ("digest_version", DIGEST_VERSION))
+        if snap[field] != supported]
+    if version_errors:
+        _raise("UNSUPPORTED", "VERSION_NOT_SUPPORTED",
+               min(version_errors, key=lambda path: path.encode("ascii")))
     if snap["backend_id"] != BACKEND_ID:
         _raise("UNSUPPORTED", "BACKEND_NOT_SUPPORTED", "/backend_id")
     _capability(bp, "/blueprint")

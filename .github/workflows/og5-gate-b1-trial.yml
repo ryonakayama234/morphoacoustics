@@ -8,6 +8,7 @@ on:
       - "src/morphoacoustics_graph/__init__.py"
       - "src/morphoacoustics/acoustics/uniform_tube.py"
       - "tests/test_tree5_contract.py"
+      - "tests/test_tree5_snapshot_precedence.py"
       - "tests/test_tree5_numeric_trial.py"
       - "checks/check_og5_gate_b3.py"
       - "checks/check_og5_b3_twin.py"
@@ -22,6 +23,7 @@ on:
       - "src/morphoacoustics_graph/__init__.py"
       - "src/morphoacoustics/acoustics/uniform_tube.py"
       - "tests/test_tree5_contract.py"
+      - "tests/test_tree5_snapshot_precedence.py"
       - "tests/test_tree5_numeric_trial.py"
       - "checks/check_og5_gate_b3.py"
       - "checks/check_og5_b3_twin.py"
@@ -43,7 +45,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
       - name: Internal numerical candidate vs 144 fixtures and frozen Wolfram 8
-        run: python -m pytest -q tests/test_tree5_numeric_trial.py tests/test_tree5_contract.py
+        run: python -m pytest -q tests/test_tree5_numeric_trial.py tests/test_tree5_contract.py tests/test_tree5_snapshot_precedence.py
       - name: Type check (non-normative B1 candidate)
         run: python -m mypy src/morphoacoustics_graph/tree5.py src/morphoacoustics_graph/tree5_contract.py
 
