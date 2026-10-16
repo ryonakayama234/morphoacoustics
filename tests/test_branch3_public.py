@@ -308,3 +308,166 @@ def test_duplicate_load_and_nonstring_snapshot_key_are_typed_invalid():
     with pytest.raises(Branch3Error) as exc:
         restore_branch3(forged)
     assert (exc.value.status, exc.value.code) == ("INVALID", "SNAPSHOT_STRUCTURE")
+
+
+@pytest.mark.parametrize("case,expected", [
+    ("duplicate_ids", "/junctions"),
+    ("mixed_field_relation", "/loads"),
+    ("bad_numeric_and_relation", "/junctions"),
+    ("independent_missing_boundary", ""),
+    ("escaped_key", "/loads/0/a~1b~0c"),
+])
+def test_structural_scan_reports_smallest_independent_pointer(case, expected):
+    b = blueprint()
+    if case == "duplicate_ids":
+        b["organs"][1]["id"] = "A"
+        b["junctions"].append(deepcopy(b["junctions"][0]))
+    elif case == "mixed_field_relation":
+        b["loads"][1]["port"] = "B.out"
+        b["source"]["scale"] = True
+    elif case == "bad_numeric_and_relation":
+        b["organs"][2]["area_m2"] = False
+        b["junctions"][0]["ports"][2] = "A.in"
+    elif case == "independent_missing_boundary":
+        b["loads"].pop()
+        b["source"]["scale"] = True
+    else:
+        b["loads"][0]["a/b~c"] = 0
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(b)
+    assert (exc.value.status, exc.value.code, exc.value.path) == (
+        "INVALID", "BLUEPRINT_STRUCTURE", expected)
+
+
+@pytest.mark.parametrize("bad_part", [None, [], 42, "malformed"])
+def test_malformed_subtree_does_not_hide_valid_sibling_relation(bad_part):
+    b = blueprint()
+    b["source"] = bad_part
+    b["loads"][1]["port"] = "B.out"
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(b)
+    assert exc.value.path == "/loads"
+
+
+def test_forged_recursive_json_has_typed_binding_failure():
+    p = prepare_branch3(blueprint())
+    object.__setattr__(p, "_blueprint_json", "[" * 2000 + "0" + "]" * 2000)
+    with pytest.raises(Branch3Error) as exc:
+        p.to_snapshot()
+    assert (exc.value.status, exc.value.code, exc.value.path) == (
+        "INVALID", "PREPARED_BINDING_MISMATCH", "")
+
+
+@pytest.mark.parametrize("failure", ["singular", "solve", "nonfinite", "backward", "physical"])
+def test_numerical_failure_after_valid_sample_is_atomic(monkeypatch, failure):
+    import morphoacoustics_graph.branch3 as core
+    p = prepare_branch3(blueprint())
+    original_system, original_solve, original_digest = core._system, np.linalg.solve, core._digest
+    attempted = []
+    observation_hashes = []
+
+    def system(tubes, loads, source, f):
+        attempted.append(f)
+        if f == 997 and failure == "singular":
+            singular_tubes = tuple(UniformTube(.08, .0003, 343., 1.2) for _ in range(3))
+            release = {pid: {"kind": "pressure_release"} for pid in ("B.out", "C.out")}
+            return original_system(singular_tubes, release, source, 2143.75)
+        return original_system(tubes, loads, source, f)
+
+    def solve(m, rhs):
+        if attempted[-1] == 997:
+            if failure == "solve":
+                raise np.linalg.LinAlgError("injected solver breakdown")
+            if failure == "nonfinite":
+                return np.full(12, complex(float("nan"), 0))
+            if failure == "backward":
+                return np.zeros(12, dtype=complex)
+            if failure == "physical":
+                # Corrupt an endpoint while the separate residual estimator is
+                # faulted below: the junction/power audit must still catch it.
+                x = original_solve(m, rhs)
+                x[4] += .01
+                return x
+        return original_solve(m, rhs)
+
+    def digest(kind, payload):
+        if kind == "observation":
+            observation_hashes.append(payload)
+        return original_digest(kind, payload)
+
+    original_norm = np.linalg.norm
+    def norm(a, *args, **kwargs):
+        if failure == "physical" and attempted and attempted[-1] == 997 and np.ndim(a) == 1:
+            return 0.
+        return original_norm(a, *args, **kwargs)
+
+    monkeypatch.setattr(core, "_system", system)
+    monkeypatch.setattr(np.linalg, "solve", solve)
+    monkeypatch.setattr(np.linalg, "norm", norm)
+    monkeypatch.setattr(core, "_digest", digest)
+    with pytest.raises(Branch3Error) as exc:
+        p.response([733, 997])
+    expected = {"backward": "BACKWARD_RESIDUAL", "physical": "PHYSICAL_RESIDUAL"}.get(
+        failure, "CONDITION_OR_SOLVE")
+    assert (exc.value.status, exc.value.code, exc.value.path) == (
+        "NUMERICALLY_UNRESOLVED", expected, "/frequencies_hz/1")
+    assert attempted == [733, 997]
+    assert observation_hashes == []
+
+
+def test_scattering_coefficients_vs_frozen_wolfram_and_unequal_area_falsifier():
+    from checks.check_og4_gate_b import scattering_controls
+    result = scattering_controls()
+    assert set(result) == {"0.5", "1.0", "2.0"}
+    assert result["2.0"]["wrong_particle_velocity_power_defect"] == pytest.approx(8/9)
+    assert result["1.0"]["wrong_particle_velocity_power_defect"] < 1e-12
+
+
+def test_evidence_full_input_output_hashes_can_be_rechecked_and_tampering_fails():
+    from checks.check_og4_gate_b import verify_observation_bindings, serial, complex_output
+    p = prepare_branch3(blueprint())
+    o = p.response([733, 997])
+    evidence = {"observations": [{"snapshot": p.to_snapshot(), "request_frequencies_hz": [733, 997],
+                                  "observation": o}],
+                "comparison_families": {"test": {"cases": [{
+                    "frequency_hz": 997, "actual_ports": serial(complex_output(o, 1)),
+                    "observation_digest": o["observation_digest"],
+                    "blueprint_digest": p.blueprint_digest, "preparation_digest": p.preparation_digest}]}}}
+    verify_observation_bindings(evidence)
+    for target in ("request", "output", "input", "case"):
+        bad = deepcopy(evidence)
+        if target == "request":
+            bad["observations"][0]["request_frequencies_hz"].reverse()
+        elif target == "output":
+            bad["observations"][0]["observation"]["mean_power_w"][0][0] += 1
+        elif target == "input":
+            bad["observations"][0]["snapshot"]["blueprint"]["source"]["scale"] = .5
+        else:
+            bad["comparison_families"]["test"]["cases"][0]["actual_ports"]["A.in"][0][0] += 1
+        with pytest.raises(AssertionError):
+            verify_observation_bindings(bad)
+
+
+@pytest.mark.parametrize("mutations,path", [
+    ({"backend_id": "unknown", "blueprint": []}, "/blueprint"),
+    ({"schema": "unknown", "blueprint": None}, "/blueprint"),
+    ({"digest_version": 1, "backend_id": 2}, "/backend_id"),
+    ({"schema": None, "z": 1}, "/schema"),
+    ({"a/b~c": 1}, "/a~1b~0c"),
+])
+def test_snapshot_envelope_validity_precedes_unknown_version(mutations, path):
+    snapshot = prepare_branch3(blueprint()).to_snapshot()
+    snapshot.update(mutations)
+    with pytest.raises(Branch3Error) as exc:
+        restore_branch3(snapshot)
+    assert (exc.value.status, exc.value.code, exc.value.path) == (
+        "INVALID", "SNAPSHOT_STRUCTURE", path)
+
+
+def test_bad_load_subtree_preserves_sibling_indices_and_duplicate_detection():
+    b = blueprint()
+    b["loads"].insert(0, None)
+    b["loads"][2]["port"] = "B.out"
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(b)
+    assert exc.value.path == "/loads"

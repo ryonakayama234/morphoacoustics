@@ -154,12 +154,12 @@ State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing p
 
 | Field | Record |
 | --- | --- |
-| Gate A authority | Merged design-only [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107); approved design HEAD \`37d15e2dac2fbfcc72d43efe681c3042a521ac4a\`; main \`572c115ea54084ea85acf13e2cf447e6a700d134\` |
-| Gate B branch | \`implementation/og4-gate-b-branch3-20261016\`; separate Draft implementation |
-| Implemented source candidate | \`src/morphoacoustics_graph/branch3.py\`: typed preparation/snapshot/full-port solver and canonical identities |
-| Test source | \`tests/test_branch3_public.py\`: new Core responses vs 288 Python and **separately** 24 archived Wolfram full-port records plus ABI/refusal controls |
-| Evidence source | \`checks/check_og4_gate_b.py\`; strict HEAD/source hashes, 288+24 expected/actual endpoint payloads, 2 same-HEAD runs, stale/wrong HEAD negative controls, SHA sidecars |
-| CI source | \`.github/workflows/og4-gate-b.yml\`; frozen OG3/X2a and dedicated complete case evidence |
+| Gate A authority | Merged design-only [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107); approved design HEAD `37d15e2dac2fbfcc72d43efe681c3042a521ac4a`; main `572c115ea54084ea85acf13e2cf447e6a700d134` |
+| Gate B branch | `implementation/og4-gate-b-branch3-20261016`; separate Draft implementation |
+| Implemented source candidate | `src/morphoacoustics_graph/branch3.py`: typed preparation/snapshot/full-port solver and canonical identities |
+| Test source | `tests/test_branch3_public.py`: new Core responses vs 288 Python and **separately** 24 archived Wolfram full-port records plus ABI/refusal controls |
+| Evidence source | `checks/check_og4_gate_b.py`; strict HEAD/source hashes, 288+24 expected/actual endpoint payloads, 2 same-HEAD runs, stale/wrong HEAD negative controls, SHA sidecars |
+| CI source | `.github/workflows/og4-gate-b.yml`; frozen OG3/X2a and dedicated complete case evidence |
 | Wolfram analytic check | Separately executed rational ideal 3-port S weighted-energy and reciprocity residual matrices are exactly zero for arbitrary positive admittances; incoming-A splits for C area ratios 0.5/1/2 are (1/25,16/25,8/25), (1/9,4/9,4/9), (1/4,1/4,1/2). This is **local ideal law evidence**, not new Core finite-length acceptance. |
 | Current status | **CANDIDATE / GATE B MACHINE EVIDENCE PENDING / NOT ADOPTED**. No experimental evidence should be declared passed until exact branch HEAD CI and raw artifacts are inspected. |
 | Refusal/falsification | Wrong signed U / particle velocity, ill-conditioned singular test, malformed/unsupported input, forged snapshot, altered OG-3 source, stale artifact and wrong expected HEAD remain mandatory negative controls. |
@@ -184,3 +184,10 @@ Original Exp038/Wolfram reference contents and OG3/X2a sources were not modified
 | Adoption | **MACHINE_NUMERICAL_PASS / CRITICAL_EXTERNAL_REVIEW_PENDING / NOT_ADOPTED**. Automated confirmation cannot replace Gate C. |
 
 Critical external review of [PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108) was requested via Codex; the service reported an **account review-usage limit**, so there is no completed independent code audit. This is not a numerical or code defect determination. The test provenance is `a5d0b4c`; any subsequent documentation-only HEAD requires fresh CI before being called the final exact-head evidence. Do not backdate this machine pass to the original Gate A proposal, or claim 288 directly frozen Wolfram records.
+
+
+### OG-4 PR #108 critical review corrections — 2026-10-16 JST
+
+Starting review SHA `43fb39bebaec7a818f64d1b5afc8f3d0ad4a4583`. Reproduced error-priority and JSON Pointer failures before fixing them; found snapshot envelope invalidity hidden by unsupported-version classification. Added regression coverage and a typed forged-JSON recursion failure. The original singular condition-only test was insufficient; new tests exercise actual numerical refusal after an earlier valid sample and prove that no observation digest is emitted. Scattering now compares separately solved incident bases against unchanged Wolfram matrices, including unequal-area wrong-law power control. Evidence v2 persists full input/output identity payloads and verifies their case bindings. New Wolfram execution gives exact zero weighted-energy/reciprocity defects and singular rank 11/nullity 1; finite ratio-2 closed-C 733 Hz ports also checked. These are analytic ideal-model checks. [Detailed findings and decision boundary](./og4-gate-c-review.md). Corrected-HEAD CI/raw artifact receipt is required on PR #108; old green runs remain historical evidence. No merge or human-review claim.
+
+Local verification note: the first full-suite run during editing returned 577 passed / 4 failed because frozen research runners correctly refused `DIRTY_TRACKED_CHECKOUT`; this is retained as a failed verification attempt. Re-run on the committed clean checkout and corrected-HEAD CI before deciding acceptance. No freeze guard was weakened.

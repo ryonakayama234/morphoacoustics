@@ -9,16 +9,19 @@ from __future__ import annotations
 
 import argparse
 from copy import deepcopy
+from fractions import Fraction
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 
 import numpy as np
 
-from morphoacoustics_graph.branch3 import prepare_branch3, _system
+from morphoacoustics_graph import branch3
+from morphoacoustics_graph.branch3 import prepare_branch3, _system, _digest
 
 ROOT = Path(__file__).resolve().parents[1]
 PORTS = ["A.in", "A.out", "B.in", "B.out", "C.in", "C.out"]
@@ -71,6 +74,78 @@ def serial(states: dict) -> dict:
     return {pid: [[float(z.real), float(z.imag)] for z in states[pid]] for pid in PORTS}
 
 
+def scattering_controls() -> dict:
+    """Solve pressure continuity + outward flow for three incident bases.
+
+    This 4-unknown junction solve is distinct from the frozen Wolfram closed
+    formula. It checks every coefficient, then complex mixed-incident power.
+    """
+    frozen = json.loads((ROOT / "docs/research/og4-wolfram-gate-a-result.json").read_text())
+    results = {}
+    for record in frozen["area_ratio_rows"]:
+        ratio = float(Fraction(record["C_to_A_area_ratio"]))
+        y = np.asarray([1, 1, ratio], dtype=float)
+        matrix = np.zeros((4, 4))
+        matrix[:3, :3] = np.eye(3)
+        matrix[:3, 3] = -1
+        matrix[3, :3] = y
+        rhs = np.vstack((-np.eye(3), y))
+        actual = np.linalg.solve(matrix, rhs)[:3]
+        expected = np.asarray([float(Fraction(x)) for x in
+                               record["S_rowmajor_rationals"]]).reshape(3, 3)
+        coefficient_error = float(np.max(np.abs(actual - expected)))
+        diag = np.diag(y)
+        energy = float(np.max(np.abs(actual.T @ diag @ actual - diag)))
+        reciprocity = float(np.max(np.abs(diag @ actual - (diag @ actual).T)))
+        incident = np.array([1+.2j, -.3+.7j, .5-.8j])
+        outgoing = actual @ incident
+        power = float(abs(np.vdot(incident, diag @ incident) -
+                          np.vdot(outgoing, diag @ outgoing)))
+        wrong = 2 * np.ones((3, 3)) / 3 - np.eye(3)
+        wrong_defect = float(np.max(np.abs(wrong.T @ diag @ wrong - diag)))
+        expected_wrong = float(Fraction(record["wrong_particle_velocity_max_weighted_power_defect"]))
+        if max(coefficient_error, energy, reciprocity, power,
+               abs(wrong_defect - expected_wrong)) > 1e-12:
+            raise AssertionError(("local scattering", ratio))
+        results[str(ratio)] = {
+            "expected_matrix": expected.tolist(), "actual_matrix": actual.tolist(),
+            "max_coefficient_error": coefficient_error,
+            "weighted_energy_error": energy, "reciprocity_error": reciprocity,
+            "complex_mixed_incidence_power_error": power,
+            "wrong_particle_velocity_power_defect": wrong_defect,
+        }
+    if len(results) != 3:
+        raise AssertionError("scattering family incomplete")
+    return results
+
+
+def verify_observation_bindings(evidence: dict) -> None:
+    """Recompute all identities from archived full inputs/outputs, without solving."""
+    observations = evidence["observations"]
+    by_digest = {}
+    for record in observations:
+        snapshot, observation = record["snapshot"], record["observation"]
+        bd = _digest("blueprint", snapshot["blueprint"])
+        pd = _digest("preparation", {
+            "digest_version": snapshot["digest_version"], "backend_id": snapshot["backend_id"],
+            "blueprint_digest": bd, "port_mapping": branch3.PORT_MAPPING})
+        if (bd != snapshot["blueprint_digest"] or pd != snapshot["preparation_digest"] or
+                pd != observation["preparation_digest"] or
+                record["request_frequencies_hz"] != observation["frequencies_hz"] or
+                _digest("observation", observation) != observation["observation_digest"]):
+            raise AssertionError("archived request/observation identity mismatch")
+        by_digest[observation["observation_digest"]] = record
+    for family in evidence["comparison_families"].values():
+        for case in family["cases"]:
+            record = by_digest[case["observation_digest"]]
+            snapshot, obs = record["snapshot"], record["observation"]
+            index = obs["frequencies_hz"].index(case["frequency_hz"])
+            if (case["actual_ports"] != serial(complex_output(obs, index)) or
+                    case["blueprint_digest"] != snapshot["blueprint_digest"] or
+                    case["preparation_digest"] != snapshot["preparation_digest"]):
+                raise AssertionError("case detached from archived observation")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -85,6 +160,8 @@ def main() -> None:
     status = subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, text=True)
     if status:
         parser.error("dirty worktree cannot be used as exact-HEAD evidence")
+    if Path(branch3.__file__).resolve() != ROOT / "src/morphoacoustics_graph/branch3.py":
+        parser.error("imported backend is not the checked-out source")
     source_hashes = {path: checksum(ROOT / path) for path in PINNED}
     if source_hashes != PINNED:
         parser.error("frozen research comparator or oracle was modified")
@@ -92,10 +169,16 @@ def main() -> None:
         ROOT / "src/morphoacoustics_graph/branch3.py")
     source_hashes["src/morphoacoustics/acoustics/uniform_tube.py"] = checksum(
         ROOT / "src/morphoacoustics/acoustics/uniform_tube.py")
+    provenance_paths = subprocess.check_output([
+        "git", "ls-files", "src/morphoacoustics_graph", "docs/research/og4-*",
+        "checks/check_og4_gate_b.py", "tests/test_branch3_public.py",
+        ".github/workflows/og4-gate-b.yml", "pyproject.toml"], cwd=ROOT, text=True).splitlines()
+    source_hashes.update({path: checksum(ROOT / path) for path in provenance_paths})
     golden = json.loads((ROOT / "docs/research/og4-branch3-api-golden.json").read_text())
     base = golden["snapshot_example"]["blueprint"]
     frozen = json.loads((ROOT / "experiments/038_og1_passive_branch/wolfram/oracle.json").read_text())
     ref = source()
+    observations: list[dict] = []
     python_cases: list[dict] = []
     wolfram_cases: list[dict] = []
     max_python = 0.
@@ -106,6 +189,8 @@ def main() -> None:
             for scale in SCALES:
                 prepared = prepare_branch3(blueprint(base, ratio, load, scale))
                 result = prepared.response(FREQ)
+                observations.append({"snapshot": prepared.to_snapshot(),
+                                     "request_frequencies_hz": list(FREQ), "observation": result})
                 for index, f in enumerate(FREQ):
                     expected = ref.port_states(ratio, f, load, scale)
                     actual = complex_output(result, index)
@@ -126,6 +211,8 @@ def main() -> None:
         ratio, load, f = record["area_ratio"], record["load_c"], record["frequency_hz"]
         prepared = prepare_branch3(blueprint(base, ratio, load, 1))
         result = prepared.response([f])
+        observations.append({"snapshot": prepared.to_snapshot(),
+                             "request_frequencies_hz": [f], "observation": result})
         actual = complex_output(result, 0)
         expected = {pid: (complex(*record["ports"][pid][0]),
                           complex(*record["ports"][pid][1])) for pid in PORTS}
@@ -171,29 +258,18 @@ def main() -> None:
         if not discrepancy > 1e-3:
             raise AssertionError(("wrong-law falsifier not detected", name, discrepancy))
         negative[name] = discrepancy
-    scattering = {}
-    for ratio in RATIOS:
-        y = np.asarray([1, 1, ratio], dtype=float)
-        si = 2 * np.tile(y/y.sum(), (3, 1)) - np.eye(3)
-        diag = np.diag(y)
-        defect = float(np.max(np.abs(si.T @ diag @ si - diag)))
-        reciprocity = float(np.max(np.abs(diag @ si - (diag @ si).T)))
-        mixed = np.array([1+.2j, -.3+.7j, .5-.8j])
-        power_defect = float(abs(np.vdot(mixed, diag @ mixed) -
-                                 np.vdot(si @ mixed, diag @ (si @ mixed))))
-        if max(defect, reciprocity, power_defect) > 1e-12:
-            raise AssertionError(("local scattering", ratio, defect, reciprocity))
-        scattering[str(ratio)] = {"weighted_energy_error": defect,
-                                  "reciprocity_error": reciprocity,
-                                  "complex_mixed_incidence_power_error": power_defect}
+    scattering = scattering_controls()
     evidence = {
         "falsifying_mutation_normalized_errors": negative,
         "local_scattering_independent_controls": scattering,
-        "evidence_kind": "og4.gate-b.fresh-full-port.v1",
+        "evidence_kind": "og4.gate-b.fresh-full-port.v2",
         "decision": "GATE_B_REFERENCE_COMPARISONS_ONLY_NOT_ADOPTED",
         "git_head": actual_head,
         "python": sys.version.split()[0],
         "numpy": np.__version__,
+        "ci_context": {key: os.environ.get(key, "") for key in (
+            "GITHUB_REPOSITORY", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_JOB")},
+        "observations": observations,
         "source_sha256": source_hashes,
         "comparison_families": {
             "branch3_vs_inherited_python_288": {
@@ -205,6 +281,7 @@ def main() -> None:
                 "cases": wolfram_cases},
         },
     }
+    verify_observation_bindings(evidence)
     data = (json.dumps(evidence, indent=2, sort_keys=True, ensure_ascii=True,
                        allow_nan=False) + "\n").encode("utf-8")
     args.output_dir.mkdir(parents=True, exist_ok=False)

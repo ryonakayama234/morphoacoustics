@@ -159,9 +159,9 @@ State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing p
 
 ## OG-4 Gate B implementation work order initiated (2026-10-16)
 
-Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107) merged at \`572c115ea54084ea85acf13e2cf447e6a700d134\`. This separate Gate B Draft branch started at that exact main commit. Scope: new isolated \`morphoacoustics_graph.branch3\` prepare/restore/response; 12x12 lossless full finite-tube solve; immutable snapshot + hash; strict fail-closed capability; new independently scored 288 inherited Python / 24 Wolfram records; canonical Python/JS goldens; dedicated CI and exact-head dual output/negative replay controls. The branch adds no general graph, anatomy, voice or waveform claims.
+Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/107) merged at `572c115ea54084ea85acf13e2cf447e6a700d134`. This separate Gate B Draft branch started at that exact main commit. Scope: new isolated `morphoacoustics_graph.branch3` prepare/restore/response; 12x12 lossless full finite-tube solve; immutable snapshot + hash; strict fail-closed capability; new independently scored 288 inherited Python / 24 Wolfram records; canonical Python/JS goldens; dedicated CI and exact-head dual output/negative replay controls. The branch adds no general graph, anatomy, voice or waveform claims.
 
-**Remaining acceptance tasks:** run exact-head GitHub general CI (Python 3.11/3.12/3.13 + mypy); dedicated Gate B runner including OG-1/OG-3 preserved tests, Experiment028/029 frozen decisions, and two real X2a Takes; inspect downloadable raw SHA evidence and repeat reproducibility; execute separately critical physics/numerics and code/API/CI reviews, address all findings and re-test on fresh HEAD. Only Gate C decision \`GO_LIMITED_CORE_FIXED_3PORT\` / \`INCONCLUSIVE\` / \`REJECT\` after review. No auto-merge.
+**Remaining acceptance tasks:** run exact-head GitHub general CI (Python 3.11/3.12/3.13 + mypy); dedicated Gate B runner including OG-1/OG-3 preserved tests, Experiment028/029 frozen decisions, and two real X2a Takes; inspect downloadable raw SHA evidence and repeat reproducibility; execute separately critical physics/numerics and code/API/CI reviews, address all findings and re-test on fresh HEAD. Only Gate C decision `GO_LIMITED_CORE_FIXED_3PORT` / `INCONCLUSIVE` / `REJECT` after review. No auto-merge.
 
 ### OG-4 Gate B machine-verification checkpoint (2026-10-16 JST)
 
@@ -172,3 +172,8 @@ Gate A design [PR #107](https://github.com/ryonakayama234/morphoacoustics/pull/1
 - [x] Downloaded and re-opened GitHub artifact; checked both fresh case ledgers, SHA sidecars, each full-port case, WAV/pressure/trace manifests and baseline Experiment028/029 decisions.
 - [ ] **External critical code-review**: Codex requested at a5d0b4c but code review blocked by account usage limit, not a substantive pass or failure. Separate physics/numerics and code/API/CI sign-off still needed; author/same-context AI does not count as external independent reviewer.
 - [ ] Gate C scoped adoption/merge; new documentation receipt HEAD requires exact-head re-attestation if it is treated as the final candidate.
+
+
+### OG-4 PR #108 critical review corrections — 2026-10-16 JST
+
+Corrections from the two-scope review must pass on the new exact HEAD, including actual late-sample numerical refusal/atomicity, forged prepared JSON, deterministic multi-error precedence, malformed snapshot precedence, three-basis scattering coefficients versus frozen Wolfram, and evidence identity/tamper checks. Then inspect downloadable dual-run v2 artifacts, 288 Python / 24 Wolfram cases, general three-Python+mypy, OG-3 and X2a preservation. Record a separate explicit Gate C decision in the PR only after these pass; mark ready for review if no blocker remains. This work order does not execute a merge. Scope and AI-review independence are recorded in [Gate C review](./og4-gate-c-review.md).

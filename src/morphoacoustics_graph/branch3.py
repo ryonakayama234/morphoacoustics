@@ -92,7 +92,7 @@ class _Schema:
             if type(field) is not str:
                 self.problem(path)
             else:
-                self.problem(path + "/" + field)
+                self.problem(path + "/" + field.replace("~", "~0").replace("/", "~1"))
         return value
 
     def array(self, value: Any, path: str, nonempty: bool = True) -> list[Any]:
@@ -189,7 +189,7 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
         root = f"/loads/{i}"
         if type(entry) is not dict:
             s.problem(root)
-            continue
+            entry = {}
         kind = s.literal(entry.get("kind"), ("matched", "pressure_release",
                           "rigid_closed", "fixed_impedance"), root + "/kind")
         fields = {"port", "kind", "impedance_pa_s_m3"} if kind == "fixed_impedance" else {"port", "kind"}
@@ -201,62 +201,100 @@ def _normalize_blueprint(raw: Any) -> dict[str, Any]:
                 s.problem(root + "/impedance_pa_s_m3/real")
             load["impedance_pa_s_m3"] = z
         loads.append(load)
-    s.finish()
     clean_bp = {"schema": SCHEMA, "organs": organs, "junctions": junctions,
                 "source": src, "loads": loads}
-    # Validate graph relationships independently from narrow backend capability.
-    ids = [o["id"] for o in organs]
-    port_owner = {p["id"]: (o["id"], end) for o in organs
-             for end in ("inlet", "outlet") for p in (o[end],)}
-    raw_port_ids = [o[end]["id"] for o in organs for end in ("inlet", "outlet")]
-    if len(set(ids)) != len(ids) or len(set(raw_port_ids)) != len(raw_port_ids):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/organs")
-    if len({j["id"] for j in junctions}) != len(junctions):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
+    _validate_relationships(s, organs, junctions, src, loads)
+    s.finish()
+    return clean_bp
+
+
+def _validate_relationships(s: _Schema, organs: list[dict[str, Any]],
+                            junctions: list[dict[str, Any]], src: dict[str, Any],
+                            loads: list[dict[str, Any]]) -> None:
+    """Collect independent relation errors alongside field errors, without cascades.
+
+    Only relations whose identity/direction inputs passed field validation are
+    evaluated. Bad geometry does not conceal a duplicate load or junction ID.
+    Root coverage/connectivity checks require an unambiguous, valid topology.
+    """
+    field_errors = tuple(s.paths)
+
+    def valid(path: str) -> bool:
+        return not any(p == path or path.startswith(p + "/") or
+                       p.startswith(path + "/") for p in field_errors)
+
+    ids = [o["id"] for i, o in enumerate(organs) if valid(f"/organs/{i}/id")]
+    ports = [(o[end]["id"], o["id"], end)
+             for i, o in enumerate(organs) for end in ("inlet", "outlet")
+             if valid(f"/organs/{i}/{end}/id") and valid(f"/organs/{i}/id")
+             and valid(f"/organs/{i}/{end}/direction")]
+    port_ids = [o[end]["id"] for i, o in enumerate(organs)
+                for end in ("inlet", "outlet") if valid(f"/organs/{i}/{end}/id")]
+    relations: list[str] = []
+    if len(set(ids)) != len(ids) or len(set(port_ids)) != len(port_ids):
+        relations.append("/organs")
+    jids = [j["id"] for i, j in enumerate(junctions) if valid(f"/junctions/{i}/id")]
+    if len(set(jids)) != len(jids):
+        relations.append("/junctions")
+    load_ids = [x["port"] for i, x in enumerate(loads) if valid(f"/loads/{i}/port")]
+    if len(load_ids) != len(set(load_ids)):
+        relations.append("/loads")
+    # References require a complete, unique organ/port inventory. Independent
+    # duplicate junction/load checks above still run if that inventory is bad.
+    complete_ports = bool(organs) and len(ids) == len(organs) and len(ports) == 2 * len(organs)
+    if not complete_ports or "/organs" in relations:
+        s.paths.extend(relations)
+        return
+    port_owner = {pid: (owner, end) for pid, owner, end in ports}
     assignments: list[str] = []
     source_id = src["port"]
-    if source_id not in port_owner or port_owner[source_id][1] != "inlet":
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/source/port")
-    assignments.append(source_id)
-    for j in junctions:
+    source_valid = valid("/source/port")
+    if source_valid:
+        if source_id not in port_owner or port_owner[source_id][1] != "inlet":
+            relations.append("/source/port")
+        assignments.append(source_id)
+    junctions_valid = valid("/junctions")
+    for i, j in enumerate(junctions):
+        if not valid(f"/junctions/{i}/ports"):
+            continue
         jports = j["ports"]
         if any(pid not in port_owner for pid in jports):
-            _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
+            relations.append("/junctions")
+            continue
         owners = [port_owner[pid] for pid in jports]
         if (owners[0][1] != "outlet" or
                 any(a[1] != "inlet" for a in owners[1:]) or
-                len({a[0] for a in owners}) != len(owners) or
-                len(set(jports)) != len(jports)):
-            _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
+                len({a[0] for a in owners}) != len(owners)):
+            relations.append("/junctions")
         assignments.extend(jports)
-    load_ids = [x["port"] for x in loads]
-    if any(pid not in port_owner or port_owner[pid][1] != "outlet" for pid in load_ids):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/loads")
-    if len(load_ids) != len(set(load_ids)):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/loads")
-    assignments.extend(load_ids)
+    for pid in load_ids:
+        if pid not in port_owner or port_owner[pid][1] != "outlet":
+            relations.append("/loads")
+    assignments.extend(set(load_ids))
     if len(assignments) != len(set(assignments)):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "/junctions")
-    if len(assignments) != len(raw_port_ids):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "")
-    # Undirected, iterative connectivity; a well-formed larger graph is UNSUPPORTED.
-    adjacency: dict[str, set[str]] = {name: set() for name in ids}
-    for j in junctions:
-        upstream = port_owner[j["ports"][0]][0]
-        for pid in j["ports"][1:]:
-            down = port_owner[pid][0]
-            adjacency[upstream].add(down)
-            adjacency[down].add(upstream)
-    visited: set[str] = set()
-    stack = [port_owner[source_id][0]]
-    while stack:
-        node = stack.pop()
-        if node not in visited:
-            visited.add(node)
-            stack.extend(adjacency[node] - visited)
-    if len(visited) != len(organs):
-        _err("INVALID", "BLUEPRINT_STRUCTURE", "")
-    return clean_bp
+        relations.append("/junctions")
+    topology_valid = source_valid and junctions_valid and len(load_ids) == len(loads)
+    if not relations and topology_valid:
+        if len(assignments) != len(port_ids):
+            relations.append("")
+        else:
+            adjacency: dict[str, set[str]] = {name: set() for name in ids}
+            for j in junctions:
+                upstream = port_owner[j["ports"][0]][0]
+                for pid in j["ports"][1:]:
+                    down = port_owner[pid][0]
+                    adjacency[upstream].add(down)
+                    adjacency[down].add(upstream)
+            visited: set[str] = set()
+            stack = [port_owner[source_id][0]]
+            while stack:
+                node = stack.pop()
+                if node not in visited:
+                    visited.add(node)
+                    stack.extend(adjacency[node] - visited)
+            if len(visited) != len(organs):
+                relations.append("")
+    s.paths.extend(relations)
 
 
 def _check_capability(bp: dict[str, Any]) -> None:
@@ -319,7 +357,7 @@ class PreparedBranch3:
                     self.preparation_digest != fresh.preparation_digest):
                 raise ValueError("binding mismatch")
             return checked
-        except (ValueError, TypeError, KeyError, AttributeError, Branch3Error) as exc:
+        except (ValueError, TypeError, KeyError, AttributeError, RecursionError):
             _err("INVALID", "PREPARED_BINDING_MISMATCH", "")
 
     def to_snapshot(self) -> dict[str, Any]:
@@ -350,7 +388,6 @@ class PreparedBranch3:
         for i, f in enumerate(fs):
             if f not in FREQUENCIES:
                 _err("UNSUPPORTED", "FREQUENCY_NOT_YET_VERIFIED", f"/frequencies_hz/{i}")
-        organ = {o["id"]: o for o in bp["organs"]}
         loads = {x["port"]: x for x in bp["loads"]}
         pref = 1e-6 * self._tubes[0].characteristic_impedance_pa_s_m3
         uref = 1e-6
@@ -485,21 +522,22 @@ def restore_branch3(snapshot: dict[str, object]) -> PreparedBranch3:
                 "blueprint_digest", "preparation_digest"}
     if any(type(key) is not str for key in snapshot):
         _err("INVALID", "SNAPSHOT_STRUCTURE", "")
-    bad = sorted(expected ^ set(snapshot))
-    if bad or type(snapshot.get("schema")) is not str:
-        _err("INVALID", "SNAPSHOT_STRUCTURE", "/" + bad[0] if bad else "/schema")
-    for key in ("digest_version", "backend_id", "blueprint_digest", "preparation_digest"):
-        value = snapshot[key]
+    malformed = ["/" + key.replace("~", "~0").replace("/", "~1")
+                 for key in expected ^ set(snapshot)]
+    for key in ("schema", "digest_version", "backend_id", "blueprint_digest", "preparation_digest"):
+        value = snapshot.get(key)
         if type(value) is not str or (key.endswith("digest") and DIGEST.fullmatch(value) is None):
-            _err("INVALID", "SNAPSHOT_STRUCTURE", "/" + key)
+            malformed.append("/" + key)
+    if type(snapshot.get("blueprint")) is not dict:
+        malformed.append("/blueprint")
+    if malformed:
+        _err("INVALID", "SNAPSHOT_STRUCTURE", min(malformed))
     if snapshot["schema"] != SNAPSHOT_SCHEMA:
         _err("UNSUPPORTED", "SNAPSHOT_SCHEMA", "/schema")
     for key, expected_value in (("digest_version", DIGEST_VERSION),
                                 ("backend_id", BACKEND_ID)):
         if snapshot[key] != expected_value:
             _err("UNSUPPORTED", "SNAPSHOT_VERSION", "/" + key)
-    if type(snapshot["blueprint"]) is not dict:
-        _err("INVALID", "SNAPSHOT_STRUCTURE", "/blueprint")
     prepared = prepare_branch3(cast(dict[str, object], snapshot["blueprint"]))
     for field in ("blueprint_digest", "preparation_digest"):
         if snapshot[field] != getattr(prepared, field):
