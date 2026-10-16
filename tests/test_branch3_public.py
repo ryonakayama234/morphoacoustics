@@ -266,3 +266,45 @@ def test_revisions_and_source_identity_and_loaded_boundary_identity():
     fixed = prepare_branch3(blueprint(1, "fixed_impedance"))
     assert p.blueprint_digest != fixed.blueprint_digest
     assert p.response([733])["pressure_pa"] == fixed.response([733])["pressure_pa"]
+
+
+def test_old_og3_valid_blueprint_and_snapshot_refused_without_translation():
+    from morphoacoustics_graph.model import (
+        AcousticPort, PassiveTubeOrgan, AcousticJunction,
+        OrganGraphBlueprint, SERIES_LAW, SCHEMA, graph_to_dict)
+    from morphoacoustics_graph.preparation import prepare_graph
+    first = PassiveTubeOrgan("old-A", "v1", .08, 3e-4,
+                             AcousticPort("old-A.in", "inlet"),
+                             AcousticPort("old-A.out", "outlet"))
+    second = PassiveTubeOrgan("old-B", "v1", .09, 3e-4,
+                              AcousticPort("old-B.in", "inlet"),
+                              AcousticPort("old-B.out", "outlet"))
+    old = OrganGraphBlueprint(SCHEMA, (first, second),
+                              (AcousticJunction("J", SERIES_LAW,
+                                               ("old-A.out", "old-B.in")),),
+                              "old-A.in", ("old-B.out",), "matched")
+    for entry, callback in ((graph_to_dict(old), prepare_branch3),
+                            (prepare_graph(old).to_snapshot(), restore_branch3)):
+        with pytest.raises(Branch3Error) as exc:
+            callback(entry)
+        assert (exc.value.status, exc.value.code) == ("UNSUPPORTED", "SCHEMA_NOT_BRANCH3")
+    malformed = prepare_graph(old).to_snapshot()
+    malformed["blueprint"]["organs"][0]["area_m2"] = 0
+    with pytest.raises(Branch3Error) as exc:
+        restore_branch3(malformed)
+    assert (exc.value.status, exc.value.code) == ("INVALID", "LEGACY_INVALID")
+
+
+def test_duplicate_load_and_nonstring_snapshot_key_are_typed_invalid():
+    bp = blueprint()
+    bp["loads"][1]["port"] = "B.out"
+    with pytest.raises(Branch3Error) as exc:
+        prepare_branch3(bp)
+    assert (exc.value.status, exc.value.code, exc.value.path) == (
+        "INVALID", "BLUEPRINT_STRUCTURE", "/loads")
+    prepared = prepare_branch3(blueprint())
+    forged = prepared.to_snapshot()
+    forged[9] = "invalid JSON object key"
+    with pytest.raises(Branch3Error) as exc:
+        restore_branch3(forged)
+    assert (exc.value.status, exc.value.code) == ("INVALID", "SNAPSHOT_STRUCTURE")
