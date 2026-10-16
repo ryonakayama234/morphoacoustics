@@ -85,7 +85,7 @@ def main() -> None:
     status = subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, text=True)
     if status:
         parser.error("dirty worktree cannot be used as exact-HEAD evidence")
-    source_hashes = {path: checksum(ROOT / path) for path in PINN}
+    source_hashes = {path: checksum(ROOT / path) for path in PINNED}
     if source_hashes != PINNED:
         parser.error("frozen research comparator or oracle was modified")
     source_hashes["src/morphoacoustics_graph/branch3.py"] = checksum(
