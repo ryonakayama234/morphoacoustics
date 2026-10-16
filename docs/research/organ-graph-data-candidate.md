@@ -194,3 +194,7 @@ classDiagram
 \`\`\`
 
 Blueprint is JSON-compatible and exact-key typed with \`{real,imag}\` complex scalars. Port identities and ordered J-port connections are semantic; graph collection ordering is not. \`restore_branch3\` recomputes physical binding and both digests rather than trusting persisted state. Canonical \`og4.canonical.binary.v1\` is separate from adopted OG-3. Observation digest includes all ordered frequencies, six complex endpoint states, powers and diagnostics. External evidence ties these physical identities to a Git HEAD and comparator hashes without contaminating physical identity with timestamps or UI metadata. A supported OG-3 fixed2 shape is explicitly NOT converted to branch3. New code is provisional until Gate B critical checks and Gate C limited decision.
+
+### Gate B concrete serialization evidence (2026-10-16 JST)
+
+The provisional branch3 implementation matched all 11 approved canonical binary/hash golden vectors (Python and independent JavaScript) and 122 leaf mutation controls at tested HEAD a5d0b4c. Snapshot roundtrip and forged-prepared rejection tests passed, including explicit refusal for well-formed old OG-3 fixed2 snapshots. Observations hold N×6 complex p/U state and six powers with five numeric diagnostics per sample. Physically identical matched/fixed-impedance baseline cases retain separate Blueprint identities. This evidence supports the narrow API ABI only, not Studio integration or arbitrary anatomical graphs.

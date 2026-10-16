@@ -167,3 +167,7 @@ flowchart LR
 \`\`\`
 
 Core owns all conservation laws and physical port typing; Studio may eventually compose validated bodies, but OG-4 does not introduce a graph editor, phonation, mouth/nose model or WAV. Acoustic \`p,U\` ports are not illustration edges. Keep \`src/morphoacoustics/**\`, OG-3 schema/digests, experiment references/oracles, existing Studio contracts and X2a frozen source untouched. OG-4 branch3 resides solely in \`src/morphoacoustics_graph/branch3.py\`. The acceptance boundaries and numerical thresholds are normative in [og4-branch3-api-v1.md](./og4-branch3-api-v1.md) and [og4-gate-a-protocol.md](./og4-gate-a-protocol.md), not redefined here.
+
+### Gate B implementation status (2026-10-16 JST)
+
+Versioned branch3 implementation and its bounded physical data flow are now present in [Draft PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108). The physical change is limited to three existing UniformTube primitives and the independently typed 3-Port junction, not a new vocal instrument. **Gate B automated numerical acceptance has passed on prior exact HEAD a5d0b4c**, as recorded in the experiment ledger; external critical code review and Gate C adoption are outstanding. No change to existing OG-3/X2a public/experimental behavior is intended.

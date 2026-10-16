@@ -165,3 +165,22 @@ State remains **DESIGN PROPOSED / NOT ADOPTED / no branch3 runtime**. Existing p
 | Refusal/falsification | Wrong signed U / particle velocity, ill-conditioned singular test, malformed/unsupported input, forged snapshot, altered OG-3 source, stale artifact and wrong expected HEAD remain mandatory negative controls. |
 
 Original Exp038/Wolfram reference contents and OG3/X2a sources were not modified. Existing inherited thresholds remain openly non-blind controlled regression, not prospective unseen physical evidence.
+
+### OG-4 Gate B first full machine pass — exact code HEAD a5d0b4c242637bcd48430fc742cbd138e260e21a (2026-10-16 JST)
+
+| Metric | Measured, actual fresh Core outputs |
+| --- | --- |
+| General CI | [Success: Python 3.11/3.12/3.13 and mypy](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651423) |
+| OG-3 compatibility | [Success: adopted frozen Core, research and actual X2a](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651429) |
+| Dedicated OG-4 Gate B | [Success: full-port science, ABI, two fresh SHA evidence, X2a](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651462) |
+| Python 288 comparisons | All 288 new actual Core samples; maximum normalized complex endpoint error **9.425709178869422e-15** vs frozen independent `reference.py` |
+| Wolfram 24 comparisons | All 24 new actual Core samples; maximum normalized complex endpoint error **2.738160251773752e-15** and three outlet/input power errors **1.8521128584277705e-15** vs frozen `oracle.json` |
+| Mutation control deviations | Wrong particle velocity **0.4950242761670201**, wrong pressure sign **1.6642784627981486**, wrong signed volume flow **2.2947995211646948**; all falsifiers exceed 1e-3 |
+| Scattering check | Ratios 0.5/1/2, weighted-power/reciprocity/complex mixed incidence all ≤ **8.9e-16**, plus independently executed symbolic Wolfram exact zero matrices |
+| Determinism | Two fresh complete **1,206,777-byte** expected/actual ledgers were byte-identical; both SHA-256 **8c203c7feff21503c0a079a6427ac0d49115c297b411833e2ee197e8bca6371e**. Wrong expected HEAD and stale-output negative controls rejected. |
+| Downloaded raw artifact | [GitHub artifact #12021939977](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38844651462/artifacts/12021939977); independently unpacked ZIP SHA-256 **3132ac1c66ea9b94dfc879a4593414813297ad000bca98535e1dae045286b9d7**. Valid ZIP, 14 files. |
+| Live preservation | Both genuine 24,000-frame, 48 kHz X2a WAV Takes; stored hashes per manifest, both WAV/raw-pressure/physical traces byte identical; Exp028/029 original accepted decisions retained. |
+| Scope | Eight accepted frequencies, C ratios 0.5/1/2, B matched and four C loads, source scales 1/0.5/-1; **no physiological human voice or WAV from OG-4 graph**. |
+| Adoption | **MACHINE_NUMERICAL_PASS / CRITICAL_EXTERNAL_REVIEW_PENDING / NOT_ADOPTED**. Automated confirmation cannot replace Gate C. |
+
+Critical external review of [PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108) was requested via Codex; the service reported an **account review-usage limit**, so there is no completed independent code audit. This is not a numerical or code defect determination. The test provenance is `a5d0b4c`; any subsequent documentation-only HEAD requires fresh CI before being called the final exact-head evidence. Do not backdate this machine pass to the original Gate A proposal, or claim 288 directly frozen Wolfram records.
