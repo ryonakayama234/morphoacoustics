@@ -1,3 +1,5 @@
+**2026-10-17 NR-1a scope correction — unapproved schema.** Immediate cases: N=(mouth B matched, nose C distal rigid_closed); O=(B matched,C matched); M=(mouth B distal rigid_closed,C matched). N/O are OG-4-limited cases; M is not supported by OG-4 and needs a separately named research-only implementation. A distal terminal closure does NOT disconnect the nasal side cavity or implement the VP gate. The vp_parameter_ref field in the older candidate below is future NR-1b ONLY. Persistent anatomy, physical run p/U, and Studio canvas layout stay separate. Exact implementation work order is [WORK_ORDER](./WORK_ORDER.md). No ABI adopted.
+
 # NR-1 data structures and data flow — non-normative proposal
 
 **2026-10-17; DESIGN ONLY**. Parent [Core #115](https://github.com/ryonakayama234/morphoacoustics/issues/115). No published schema, serialization bytes, hashes, or compatibility claim is created here. Do not replace existing CreatureSpec, PreparedMorphology, published OG-3/OG-4/OG-5 schemas, or Performance Contract v0 / draft v1.
