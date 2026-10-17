@@ -110,7 +110,10 @@ def junction_diagnostics(state: np.ndarray):
     return {
         "pressure_continuity_pa": float(max(abs(p[1]-p[2]), abs(p[1]-p[4]))),
         "volume_flow_conservation_m3_s": float(abs(flow_error)),
+        "volume_flow_error_re_m3_s": float(np.real(flow_error)),
+        "volume_flow_error_im_m3_s": float(np.imag(flow_error)),
         "junction_mean_power_imbalance_w": float(np.real(complex_power_error)),
+        "junction_reactive_power_imbalance_var": float(np.imag(complex_power_error)),
         "junction_complex_power_imbalance_va": float(abs(complex_power_error)),
     }
 
