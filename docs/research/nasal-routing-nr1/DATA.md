@@ -1,3 +1,23 @@
+## 2026-10-17 — Exploratory Gate A diagnostic schema (no adopted ABI)
+
+[Experiment 042](../../../experiments/042_nr1a_gate_a_preflight/README.md) emits `nr1a.gate-a.exploratory-mutation-preflight.v0` with `status=EXPLORATORY_PRE_GATE_A_NOT_CONFIRMATORY`. This is disposable research instrumentation, **not** a new `GraphBlueprint`, immutable `PreparedMorphology`, approved Core observation or Studio Take schema.
+
+```mermaid
+flowchart TD
+ C["Case N/O/M + 8 fixed Hz"] --> M["12×12 scaled Mx=b"]
+ M --> S["x: 6 pressure / 6 volume-flow phasors"]
+ M --> X["5 mutant matrices per case×Hz"]
+ S --> R["Baseline p/U, power, condition, backward residual"]
+ X --> D["Max complex state deviation: max over all 12 scaled components"]
+ R --> E["EXPLORATORY-only JSON: 24 rows × 5 margins"]
+ D --> E
+ E -.-> G["Reviewer freezes future Gate A criteria; never copy as Gate B goldens"]
+```
+
+The state vector order is `(A.in.p,A.in.U,A.out.p,A.out.U,B.in.p,B.in.U,B.out.p,B.out.U,C.in.p,C.in.U,C.out.p,C.out.U)`, with `p_ref=1.372 Pa`, `U_ref=1e-6 m3/s`. `matrix_condition_2` is the 2-norm condition of this **scaled** matrix; `normalized_backward_error_inf` refers to the matrix residual and is not a forward-error certificate. `mutant_max_scaled_state_deviation` compares candidate mutant solutions against the candidate correct solution **not** against immutable independent Wolfram oracle data. No physical identifier or public ABI changes.
+
+---
+
 # Current next data contract — prospective NR-1a Gate A candidate (2026-10-17)
 
 **DESIGN DRAFT, NOT PUBLIC ABI.** [Issue #118](https://github.com/ryonakayama234/morphoacoustics/issues/118). Preserve OG-4 N/O canonical identities and the distinct research-only M identity; nothing here changes already-adopted Core types or Studio Performance Contract. The existing 24-case candidate observation records are not prospective evidence.
