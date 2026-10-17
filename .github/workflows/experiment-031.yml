@@ -1,0 +1,44 @@
+name: experiment-031-sfi1
+on:
+  push:
+    paths:
+      - "experiments/031_glottal_load_feedback/**"
+      - ".github/workflows/experiment-031.yml"
+  pull_request:
+    paths:
+      - "experiments/031_glottal_load_feedback/**"
+      - ".github/workflows/experiment-031.yml"
+jobs:
+  scientific-fixture:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run experiment-local independent-oracle tests
+        run: python -m unittest discover -s experiments/031_glottal_load_feedback -p 'test_*.py' -v
+      - name: Run frozen C0-C1 comparison and save all traces
+        run: python experiments/031_glottal_load_feedback/run.py --output-dir experiment-031-output
+      - name: Check machine gates
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("experiment-031-output/summary.json").read_text())
+          assert report["pass_all_eligible_gates"] is True
+          assert report["gates"]["G2_real_tract_geometry"] == "UNSUPPORTED"
+          assert report["gates"]["G3_listening_naturalness"] == "NOT_TESTED"
+          assert len(list(Path("experiment-031-output").glob("*.csv"))) == 4
+          print("Experiment 031: registered eligible gates pass")
+          PY
+      - name: Upload numeric traces and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-031-python-${{ matrix.python-version }}
+          path: experiment-031-output/
+          if-no-files-found: warn
