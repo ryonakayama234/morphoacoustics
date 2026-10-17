@@ -146,3 +146,51 @@ def test_repeated_runs_are_stable_without_silent_fallback():
     second, second_report = nr1a.execute()
     assert first_report == second_report
     assert nr1a.canonical_sha(first) == nr1a.canonical_sha(second)
+
+
+def test_m_bad_junction_particle_velocity_equation_is_falsified():
+    """Solve a genuinely wrong global LAW, rather than merely corrupting output.
+
+    This is a TEST-ONLY injected mutant in an existing diagnostic matrix.
+    It is not used as the experimental M solver or as the Wolfram oracle.
+    """
+    import numpy as np
+    from morphoacoustics.acoustics.uniform_tube import UniformTube
+    from morphoacoustics_graph.branch3 import _system
+
+    tubes = tuple(UniformTube(length, area, sound_speed_m_s=nr1a.SPEED,
+                              air_density_kg_m3=nr1a.RHO)
+                  for length, area in zip(nr1a.LENGTHS, nr1a.AREAS))
+    bp = nr1a.blueprint("M")
+    loads = {row["port"]: row for row in bp["loads"]}
+    physical, source = _system(tubes, loads, nr1a.SOURCE, 733)
+    wrong = physical.copy()
+    # WRONG: enforce velocity equality weighted by the mouth/nose area ratio,
+    # instead of the sum of signed VOLUME FLOWS at the junction.
+    wrong[8, 9] = -nr1a.AREAS[1] / nr1a.AREAS[2]
+    result = np.linalg.solve(wrong, source)
+    record = nr1a.load_oracle()["records"][19]  # M at 733Hz
+    err = max(
+        max(abs(result[2*j]*nr1a.P_REF - complex(*record["pressure_pa"][j]))
+            / nr1a.P_REF for j in range(6)),
+        max(abs(result[2*j+1]*nr1a.U_REF -
+                complex(*record["volume_flow_m3_s"][j])) / nr1a.U_REF
+            for j in range(6)),
+    )
+    assert err > 1e-3, "an actually wrong conservation law must be detected"
+    assert abs(result[3] - result[5] - result[9]) > 1e-3
+
+
+def test_all_research_derived_transfers_and_input_impedances_present():
+    data = nr1a.load_oracle()
+    for index, (case, f) in enumerate(
+            (case, hz) for case in "NOM" for hz in nr1a.FREQUENCIES):
+        obs = nr1a.observe(case)
+        derived = obs["derived_observables"][nr1a.FREQUENCIES.index(f)]
+        assert derived["frequency_hz"] == f
+        z = nr1a.unpack(derived["input_impedance_pa_s_m3"])
+        z_wl = complex(*data["records"][index]["input_impedance_pa_s_m3"])
+        assert abs(z - z_wl) / (nr1a.P_REF / nr1a.U_REF) <= 1e-10
+        for end in ("B", "C"):
+            assert all(math.isfinite(x) for x in
+                       derived[f"transfer_p_{end}_out_over_p_A_in"].values())
