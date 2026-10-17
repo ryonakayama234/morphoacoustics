@@ -1,3 +1,20 @@
+## NR-1a candidate implementation data flow (2026-10-17; not a public schema)
+
+```mermaid
+flowchart TD
+  BP["Frozen OG4-shaped GraphBlueprint: A,B,C; 6 typed Port IDs"] --> CASE["Case N/O/M: exact B/C distal load law"]
+  CASE --> SRC["Prescribed peak exp(+iwt) U_A.in; fixed geometry and units"]
+  SRC --> PREP["N/O: Core immutable prepared identity; M: research-only digest"]
+  PREP --> RUN["Frequency response at 8 exact anchors"]
+  RUN --> OBS["Ordered A.in,A.out,B.in,B.out,C.in,C.out: p [Pa], U [m3/s], P [W]"]
+  OBS --> E["Compare Wolfram 24 global12 records"]
+  E --> HASH["Exact HEAD + source/oracle SHA256 + raw evidence"]
+```
+
+File inventory: [Experiment 041 runner](../../../experiments/041_nr1_static_oral_nasal_route/run.py), [Wolfram generating source](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.wl), [independent output JSON](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.json), [tests](../../../tests/test_experiment_041_nr1a.py), [CI](../../../.github/workflows/nr1a-research.yml).
+
+The experiment's `canonical_sha` is research-evidence JSON identity and is **not** OG-4 binary canonicalization. N/O preserve actual authoritative `blueprint_digest`, `preparation_digest`, `observation_digest`; the M-only backend emits its own explicit research identifier. Mutable computed p/U and display position do not enter body identity. The evidence manifest distinguishes Git HEAD and content SHA; no WAV or physical body ID claims.
+
 **2026-10-17 NR-1a scope correction — unapproved schema.** Immediate cases: N=(mouth B matched, nose C distal rigid_closed); O=(B matched,C matched); M=(mouth B distal rigid_closed,C matched). N/O are OG-4-limited cases; M is not supported by OG-4 and needs a separately named research-only implementation. A distal terminal closure does NOT disconnect the nasal side cavity or implement the VP gate. The vp_parameter_ref field in the older candidate below is future NR-1b ONLY. Persistent anatomy, physical run p/U, and Studio canvas layout stay separate. Exact implementation work order is [WORK_ORDER](./WORK_ORDER.md). No ABI adopted.
 
 # NR-1 data structures and data flow — non-normative proposal
