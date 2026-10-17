@@ -1,3 +1,5 @@
+> **Integration amendment (2026-10-17):** The material below is still a non-normative **future schema proposal**. PR #117 contains an isolated candidate evidence format and adopted OG-4 N/O identities, not a released NR-1 ABI. PR #116 is design history; any Gate A “before implementation” wording is historical and was not fulfilled. The numeric 24-case exploratory run is not a prospectively frozen scientific result. See [WORK_ORDER](./WORK_ORDER.md) and [EXPERIMENT](./EXPERIMENT.md).
+
 ## NR-1a candidate implementation data flow (2026-10-17; not a public schema)
 
 ```mermaid
