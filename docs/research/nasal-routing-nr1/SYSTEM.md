@@ -1,3 +1,5 @@
+**2026-10-17 NR-1a scope correction — design proposal only.** The first implementation proves STATIC DISTAL TERMINATION contrasts in a three-tube OG-4 layout, not actual velopharyngeal (VP) port closure or time-varying velum. A nasal outlet rigid closure retains the coupled nasal tube as a reactive side branch. B mouth terminal rigid closure is not supported by existing OG-4 API and may be tested only in an isolated research candidate. Actual VP junction shutoff / finite movable coupling belong to a separate NR-1b gate. This amendment supersedes broader wording below. See [WORK_ORDER](./WORK_ORDER.md) and [executed exploratory Wolfram probe](./WOLFRAM-PROBE.wl). No runtime or Studio adoption.
+
 # NR-1 system architecture — oral/nasal routing research proposal
 
 **Status:** DESIGN CANDIDATE ONLY, 2026-10-17 JST. Tracking [Core #115](https://github.com/ryonakayama234/morphoacoustics/issues/115). No numerical Gate B run; no scientific or public API adoption. Gate A protocol is **not yet frozen**.
