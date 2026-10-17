@@ -1,3 +1,19 @@
+## 2026-10-17 NR-1a exploratory implementation ledger — PRE-GATE-A
+
+| Task | State | Explicit evidence |
+|---|---|---|
+| Scope correction: distal terminal ≠ VP closure | WRITTEN / proposed | [WORK_ORDER](./WORK_ORDER.md); N/O/M are terminal-only |
+| Independent 12-equation global Wolfram source | EXECUTED candidate | [Source](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.wl); 24 records, all 6 complex endpoint p/U states each in [JSON](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.json) |
+| Separate Core N/O and new research-only M | IMPLEMENTED CANDIDATE | [run.py](../../../experiments/041_nr1_static_oral_nasal_route/run.py); existing Core OG-4 production unmodified |
+| Negative controls and 24 full-state comparisons | TESTS AUTHORED; CI RESULT TO REVIEW | [pytest](../../../tests/test_experiment_041_nr1a.py) |
+| Exact HEAD, 2-run evidence + independent review | NOT YET VERIFIED | [CI workflow](../../../.github/workflows/nr1a-research.yml); inspect actual runs/artifacts before any pass claim |
+| Gate A preregistration freeze / independent acceptance | NOT ACCEPTED | Separate independent physics + API review and explicit decision required |
+| Gate C supported-limited adoption | NOT ACCEPTED | No production or physiological claim |
+
+Candidate units/normalizations: p_ref=1.372 Pa, U_ref=1e-6 m3/s, P_ref=0.5*p_ref*U_ref W; end-to-end complex full-state max error <=1e-10 (not approved), power error <=1e-10 (not approved), per-tube/junction and load-law physics <=1e-10 (not approved). Core N/O retains its own stricter normative checks and refusal types. New M recursion has only an explicit denominator/reconstruction guard and must not falsely claim having implemented a full independent condition-number monitor. Freeze missing singularity controls and analysis prior to approving Gate A.
+
+**Critical status separation:** The executed Wolfram global oracle is independent from candidate Python recursive logic, but Python production Core and research candidate have not yet been proven to agree unless an observed exact-HEAD CI run with all artifacts is inspected. Tests and source in a Draft PR are not numerical trial acceptance, and cannot independently approve their own model.
+
 **2026-10-17 NR-1a scope correction — research only, NOT PREREGISTERED.** Earlier rows that appear to equate nasal-path closure with velopharyngeal (VP) closure are future NR-1b proposals, NOT first-pass capabilities. Immediate candidate cases: N=(B matched, C distal rigid_closed), O=(B matched,C matched), M=(B distal rigid_closed,C matched). N/O should use actual approved OG-4, M requires separate experiment-only law and must remain UNSUPPORTED in published OG-4. A closed distal nasal tube remains acoustically coupled upstream; it does not model actual VP shutoff. [WORK_ORDER](./WORK_ORDER.md) sets the executable scope. The [exploratory 733-Hz Wolfram probe](./WOLFRAM-PROBE.wl) executed successfully, but does NOT constitute frozen/accepted Core-vs-Wolfram evidence or a scientific adoption. Gate A/B/C ledger remains unstarted.
 
 # NR-1 hypothesis protocol and experiment ledger — preregistration *draft*
