@@ -1,0 +1,69 @@
+**2026-10-17 NR-1a scope correction — research only, NOT PREREGISTERED.** Earlier rows that appear to equate nasal-path closure with velopharyngeal (VP) closure are future NR-1b proposals, NOT first-pass capabilities. Immediate candidate cases: N=(B matched, C distal rigid_closed), O=(B matched,C matched), M=(B distal rigid_closed,C matched). N/O should use actual approved OG-4, M requires separate experiment-only law and must remain UNSUPPORTED in published OG-4. A closed distal nasal tube remains acoustically coupled upstream; it does not model actual VP shutoff. [WORK_ORDER](./WORK_ORDER.md) sets the executable scope. The [exploratory 733-Hz Wolfram probe](./WOLFRAM-PROBE.wl) executed successfully, but does NOT constitute frozen/accepted Core-vs-Wolfram evidence or a scientific adoption. Gate A/B/C ledger remains unstarted.
+
+# NR-1 hypothesis protocol and experiment ledger — preregistration *draft*
+
+**STATUS: PROPOSED / NOT FROZEN / NOT RUN / NOT ADOPTED** as of 2026-10-17 JST.
+Parent: [Core #115](https://github.com/ryonakayama234/morphoacoustics/issues/115). Source architecture [SYSTEM](./SYSTEM.md), candidate data [DATA](./DATA.md).
+
+## Scientific question
+Does a precisely typed, passive linear oral–nasal branch circuit predict reproducible **different frequency-domain small-signal acoustic loading and routing** when VP coupling and terminal closures are changed, without falsely claiming that the model generates nasal breathing, biological velum motion, or a voice waveform?
+
+### H0 — falsification target
+Under intervention, network solution is indistinguishable where the law predicts change; or conservation/port-ID/orientation fails; or an independently assembled global-equation oracle disagrees; or invalid/unsupported inputs accidentally yield a plausible observation.
+
+### H1 — bounded positive claim
+For a separately fixed, supported passive 1D oral/nasal geometry, an explicitly lawful change in boundary/VP coupling yields the **predicted complex endpoint p/U, junction balance, conservation and changed input/output transfer**, consistent with *independently assembled* equations and mutation tests. A pass licenses only that specific linear network phenomenon.
+
+## Gate A: freeze BEFORE Gate B implementation
+- [ ] Cite adopted OG-4 and candidate OG-5 input models; select the **smallest exactly supported** topology or explicitly require a new separately versioned scope. Do NOT relabel a generic graph as OG-5 accepted.
+- [ ] Freeze geometry, materials (rigid wall), common medium, positive area, incidence/excitation phasors, output loads, VP representation/closed-limit semantics, exact frequency grid and reference data. Distinguish a VP area change from a terminal nasal closure.
+- [ ] State outward sign at every port; state frequency phasor convention, transfer ratio normalization, radiation *impedance* model and source normalization. Use full complex values, not magnitudes alone.
+- [ ] Derive independent global complex linear system in Wolfram; avoid relying solely on code under test, and preserve fixed oracle data + hashes.
+- [ ] Freeze absolute/relative/scaled tolerances with conditioning-aware rejection; define singular, nonfinite, invalid, unsupported, and execution failure boundaries; include exact-head evidence format and repeat-run hash.
+- [ ] Independent physics + ABI + safety review of Gate A BEFORE claiming preregistration freeze.
+
+## Minimum three interventions (not yet numerical fixtures)
+| ID | Hypothesis intervention | Expected primary observables | Prohibited inference |
+|---|---|---|---|
+| A | Mouth open, nasal path physically closed by a valid terminal/coupling law | Oral transfer and input impedance of the remaining circuit; no nasal radiated contribution under an ideal closure assumption | A literal zero-area tube is not automatically lawful |
+| B | Mouth open, nasal path connected through finite VP element and a validated nasal termination | Nonzero nasal endpoint acoustic contribution; load-/geometry-dependent peaks or notches; changed complex input impedance | Not proof of living nasal vowels |
+| C | Oral terminal sealed, valid nasal path open | Revised reflected/transmitted complex states and changed radiating endpoint; power balance with proper seal boundary | Not yet sound of breathing through a closed mouth |
+
+## Independent verification and deliberate wrong laws
+1. **Reference:** separately assembled Wolfram full global complex solution (all endpoints) and passive port energy audit.
+2. **Mutation A:** wrongly enforce particle velocity continuity across different areas instead of *volume flow*; compare against independent full state.
+3. **Mutation B:** reverse an oriented port sign; must be detected by endpoint/current/power evidence.
+4. **Mutation C:** swap nasal vs oral module identity while keeping geometry: canonical structural provenance changes, physics invariances distinguished from labeled output.
+5. **Mutation D:** change VP path while holding frozen source and oral tube: input/load and relevant transfer change where theory predicts, never post-hoc EQ.
+6. **Refusal:** invalid graph, duplicate/dangling port, nonexistent terminal law, nonfinite/negative parameters, out-of-scope valid topology, mathematically unresolved case; never return WAV/partial physical results as success.
+
+## Demonstrative arithmetic only — *not* a frozen experiment or a simulation of anatomy
+At an ideal common-pressure junction with **two matched purely real terminal admittances** and the same medium,
+Y_o=A_o/(rho*c), Y_n=A_n/(rho*c). The fraction of power *delivered to the two terminal paths* is Y_n/(Y_o+Y_n). For A_o=3 cm²: A_n=0.3 cm² gives about 9.09% nasal and 90.91% oral; A_n=1.5 cm² gives about 33.33% nasal and 66.67% oral. Verified by Wolfram Language 2026-10-17. This is an illustrative **algebraic limiting case only**, not source-power efficiency, generic nasal sound spectra, an accepted VP parameter, a reference fixture, or research pass.
+
+## Evidence ledger
+| Date | Gate / data | Outcome | Exact commit + linked artifacts | Meaning |
+|---|---|---|---|---|
+| 2026-10-17 JST | Gate A planning | DRAFT ONLY | [Issue #115](https://github.com/ryonakayama234/morphoacoustics/issues/115); proposal SYSTEM/DATA/EXPERIMENT | Unfrozen conceptual hypothesis and engineering guardrails |
+| — | Gate A protocol acceptance | NOT STARTED | — | Requires review/frozen values |
+| — | Gate B implementation & independent Wolfram comparison | NOT STARTED | — | No measured pass to report |
+| — | Gate C scientific decision / post-merge verification | NOT STARTED | — | No production or scientific adoption |
+
+## Future evidence record required per run
+- Case ID + changed **one** physical factor + unchanged controls.
+- Exact repository commit/branch, complete backend/module/law versions, schema versions, all asset/content digests.
+- Full inputs with SI units, body/module revisions, scenario boundary loads and excitation, frequency grid, port orientation.
+- Every complex p/U endpoint; input impedance and declared transfer; signed mean acoustic power, conservation and solver conditioning, failure result if any.
+- Independent Wolfram executable source/frozen goldens, test runner, repeat-run outputs, negative-control margins, CI links, SHA256 artifacts, known scientific limitations and post-hoc amendments.
+- Independent reviewer assessment and signed-off scoped decision; distinguish machine numerical conformance from biological/acoustic perceptual validation.
+
+## Related independent tracks
+- OG-5 review [#109](https://github.com/ryonakayama234/morphoacoustics/issues/109)
+- Materials EM-1 [#87](https://github.com/ryonakayama234/morphoacoustics/issues/87)
+- Nasal breath turbulence/nonvocal near-field [#53](https://github.com/ryonakayama234/morphoacoustics/issues/53)
+- Creator staged adoption [Studio #12](https://github.com/ryonakayama234/morphoacoustics-studio/issues/12)
+
+## Sources
+- Velopharyngeal opening, nasal antiresonances: https://pmc.ncbi.nlm.nih.gov/articles/PMC8492006/
+- Acoustic side-branch waveguide precedent: https://pmc.ncbi.nlm.nih.gov/articles/PMC2677336/
+- Nasal emission and aeroacoustic turbulence (distinct regime): https://pmc.ncbi.nlm.nih.gov/articles/PMC7043896/
