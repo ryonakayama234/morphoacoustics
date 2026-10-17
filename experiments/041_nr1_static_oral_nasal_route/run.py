@@ -145,8 +145,10 @@ def recursive_mouth_closed(case: str, fs: list[int]) -> dict[str, Any]:
         residual = max(jp, ju, pw, *tube,
                        abs(uu[3]) / U_REF,
                        abs(pp[5] - z[2] * uu[5]) / P_REF)
-        if not all(math.isfinite(x) for x in
-                   [*pp, *uu, *watts, residual]) or residual > MAX_RESIDUAL:
+        if not all(math.isfinite(v) for x in [*pp, *uu]
+                   for v in (x.real, x.imag)) or not all(
+                       math.isfinite(x) for x in [*watts, residual]
+                   ) or residual > MAX_RESIDUAL:
             raise ArithmeticError("NUMERICALLY_UNRESOLVED:PHYSICAL_RESIDUAL")
         state_p.append([pack(v) for v in pp])
         state_u.append([pack(v) for v in uu])
