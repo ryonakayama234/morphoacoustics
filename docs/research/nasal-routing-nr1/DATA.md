@@ -1,3 +1,30 @@
+# Current next data contract — prospective NR-1a Gate A candidate (2026-10-17)
+
+**DESIGN DRAFT, NOT PUBLIC ABI.** [Issue #118](https://github.com/ryonakayama234/morphoacoustics/issues/118). Preserve OG-4 N/O canonical identities and the distinct research-only M identity; nothing here changes already-adopted Core types or Studio Performance Contract. The existing 24-case candidate observation records are not prospective evidence.
+
+```mermaid
+flowchart LR
+ BP["Immutable 3-tube blueprint identity"] --> R["Case-specific B/C distal load + source Uin"]
+ R --> P["Prepared backend identity and capability"]
+ P --> O["Full complex p/U at A.in A.out B.in B.out C.in C.out"]
+ O --> D["Input impedance; terminal power; residuals; conditioning"]
+ D --> Q["Wolfram independent comparator + wrong-law mutants"]
+ Q --> A["Evidence receipt: case IDs, exact HEAD, SHA-256, environment, verdict"]
+```
+
+Minimum proposed *research-only* record (all fields/serialization/normalizations to be independently frozen at Gate A):
+- **CaseID**: N, O, M; exact 8-frequency anchors [80,250,400,733,997,1200,2000,4000] Hz; immutable units and exp(+i omega t) convention.
+- **Physical configuration**: A/B/C length, area, medium rho and c, B/C terminal law names, sign-oriented six endpoints, prescribed complex volume-flow excitation at A.in.
+- **Execution provenance**: exact Git commit, case/fixture revision and digest, backend/module/law revision, runtime/platform, source/oracle files and their SHA-256. Distinguish adopted OG-4 N/O preparation and observation digests from M's experiment-only identity.
+- **Observation**: all 12 complex p/U values (pressure Pa, volume flow m3/s), complex input impedance, declared complex transfers, signed phasor mean power W, junction/tube/load residuals, condition/rank diagnostic and explicit failure code.
+- **Evidence**: independent Wolfram source+raw output receipt, preregistered mutant detection per case/frequency including insensitive anchors, two independent exact-HEAD runs, scientific review and scoped decision; numeric equivalence across Python runtimes is distinct from byte equality of environment-dependent diagnostics.
+
+Do not include Studio canvas coordinates, fictitious acoustic WAV, respiratory mean flow or VP valve motion in the immutable physical identity. Distal C rigid closure requires **U_C.out = 0**, not **U_C.in = 0**. For unsupported M in published OG-4, preserve **UNSUPPORTED**; no silent fallback to a different law. Fail-closed **INVALID / UNSUPPORTED / NUMERICALLY_UNRESOLVED / FAILED** are distinct; **INFEASIBLE** is for realizable-task/body questions, not automatically a passive frequency-domain solve.
+
+The prior proposed schema and implementation data history follow unchanged.
+
+---
+
 > **Integration amendment (2026-10-17):** The material below is still a non-normative **future schema proposal**. PR #117 contains an isolated candidate evidence format and adopted OG-4 N/O identities, not a released NR-1 ABI. PR #116 is design history; any Gate A “before implementation” wording is historical and was not fulfilled. The numeric 24-case exploratory run is not a prospectively frozen scientific result. See [WORK_ORDER](./WORK_ORDER.md) and [EXPERIMENT](./EXPERIMENT.md).
 
 ## NR-1a candidate implementation data flow (2026-10-17; not a public schema)
