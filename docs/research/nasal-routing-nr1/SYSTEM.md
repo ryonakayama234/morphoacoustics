@@ -1,3 +1,22 @@
+## 2026-10-17 — Exploratory Gate A mutation preflight (stacked draft; **not science adoption**)
+
+[Experiment 042](../../../experiments/042_nr1a_gate_a_preflight/README.md) supplies a self-contained dimensionless **global 12-complex-state** acoustic matrix for the same frozen-candidate A/B/C tubes and five intentionally wrong **law-level** variants. It is **review instrumentation before prospective Gate A acceptance**, not a new full-state confirmation, Core backend, arbitrary organ graph, or dynamic VP junction. Original Experiment 041 historical evidence remains pre-Gate-A.
+
+```mermaid
+flowchart LR
+  F["Fixed A/J/(B,C), case N/O/M + 8 anchor frequencies"] --> G["NumPy 12×12 normal physical law (stand-alone exploratory)"]
+  F --> W["Wolfram independent 12×12 formulation"]
+  G --> M["Five wrong laws: A sign; phasor sign; junction particle velocity; B/C distal law"]
+  M --> Q["120 candidate state-deviation margins; rank/condition + power accounting"]
+  W --> Q
+  Q --> R["Independent reviewer: Gate A freeze?"]
+  R -.-> C["ONLY AFTER acceptance: separate confirmatory Gate B"]
+```
+
+No result from this preflight is a preregistered run, and success cannot mark Gate C SUPPORTED_LIMITED. Complete source, CI boundaries, output scales and Wolfram provenance are linked from the Experiment 042 README.
+
+---
+
 # Current next work package — prospective NR-1a confirmation (2026-10-17, GATE A DRAFT)
 
 **Decision: PLAN ONLY / NOT FROZEN / NOT ADOPTED.** Tracking [#118](https://github.com/ryonakayama234/morphoacoustics/issues/118). This section is a forward-looking work order, not a revision of past Experiment 041 results and not approval to publish new physics. Original research infrastructure and 24 N/O/M × 8 pre-Gate-A samples remain *exploratory/post-hoc*. Gate A needs critical review and explicit acceptance before a separate confirmatory Gate B.
