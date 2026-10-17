@@ -1,0 +1,127 @@
+name: experiment-030-lf-rd-physical-pilot
+
+on:
+  push:
+    paths:
+      - "experiments/030_lf_rd_timbre_pilot/**"
+      - ".github/workflows/experiment-030.yml"
+  pull_request:
+    paths:
+      - "experiments/030_lf_rd_timbre_pilot/**"
+      - ".github/workflows/experiment-030.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  independent-physical-rd-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install audited NumPy and Core
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e '.[dev]'
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Test blind packet builder without changing physics
+        run: |
+          python -m unittest discover -s experiments/030_lf_rd_timbre_pilot -p 'test_*.py' -v
+      - name: Execute two actual source/tract acoustic syntheses
+        run: |
+          python experiments/030_lf_rd_timbre_pilot/run.py --output-dir rd030-evidence
+      - name: Independently validate generated evidence
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, wave
+          import numpy as np
+          out = Path('rd030-evidence')
+          m = json.loads((out / 'metrics.json').read_text())
+          assert m['status'] == 'scientific-physics-output-valid; perceptual-gate-pending'
+          assert m['pressure_quantized_sha256']['s0'] == 'dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e'
+          assert m['feasible_transfer_calls_per_condition'] == 102
+          assert m['identical_prepared_endpoint']
+          assert m['source_params']['s0']['rd'] == 1.0
+          assert m['source_params']['p1']['rd'] == 1.4
+          assert m['same_f0_hz'] == 100.0
+          assert m['same_f0_cycle_timing'] and m['same_source_gain_envelope']
+          assert m['source_float64_sha256']['s0'] != m['source_float64_sha256']['p1']
+          assert m['pressure_quantized_sha256']['s0'] != m['pressure_quantized_sha256']['p1']
+          for filename, expected in m['artifacts_sha256'].items():
+              p = out / filename
+              assert p.is_file()
+              assert hashlib.sha256(p.read_bytes()).hexdigest() == expected
+          for name in ('s0_rd1p0.wav', 'p1_rd1p4.wav'):
+              with wave.open(str(out / name)) as f:
+                  assert f.getnchannels() == 1
+                  assert f.getframerate() == 48000
+                  assert f.getnframes() == 24000
+                  assert f.getsampwidth() == 2
+          for name in ('s0_raw_pressure_pa.npy', 'p1_raw_pressure_pa.npy'):
+              a = np.load(out / name, allow_pickle=False)
+              assert a.shape == (24000,) and np.isfinite(a).all()
+          d = abs(m['audition_level_matching']['conditions']['s0']['rms_dbfs'] -
+                  m['audition_level_matching']['conditions']['p1']['rms_dbfs'])
+          assert d < 0.005
+          print('PASS: independent physical runs, frozen S0, source change, matched playback RMS, artifacts; perceptual gate remains pending')
+          PY
+      - name: Create condition-masked A/B packet and separate answer key
+        run: |
+          python experiments/030_lf_rd_timbre_pilot/blind_listening.py \
+            --evidence-dir rd030-evidence \
+            --packet-dir rd030-blind-packet \
+            --answer-key-dir rd030-answer-key
+      - name: Independently validate blind artifacts without printing answer key
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          src = Path('rd030-evidence')
+          public_dir = Path('rd030-blind-packet')
+          key_dir = Path('rd030-answer-key')
+          source = json.loads((src/'metrics.json').read_text())
+          public = json.loads((public_dir/'trial.json').read_text())
+          private = json.loads((key_dir/'answer_key.json').read_text())
+          assert public['trial_id'] == private['trial_id']
+          assert public['status'] == 'listener-ratings-pending'
+          assert [s['slot'] for s in public['stimuli']] == ['A','B']
+          assert set(private['mapping'].values()) == {'s0','p1'}
+          assert not (public_dir/'answer_key.json').exists()
+          assert not any(p.suffix == '.npy' for p in public_dir.iterdir())
+          assert 'rd1p' not in (public_dir/'trial.json').read_text()
+          for stimulus in public['stimuli']:
+              slot = stimulus['slot']
+              condition = private['mapping'][slot]
+              source_name = {'s0':'s0_rd1p0.wav','p1':'p1_rd1p4.wav'}[condition]
+              orig = (src/source_name).read_bytes()
+              blind = (public_dir/(slot+'.wav')).read_bytes()
+              digest = hashlib.sha256(orig).hexdigest()
+              assert blind == orig
+              assert stimulus['sha256'] == digest
+              assert source['artifacts_sha256'][source_name] == digest
+          assert public['rms_difference_db'] < 0.005
+          print('PASS: masked A/B, untouched PCM, separate answer key, matching source evidence')
+          PY
+      - name: Publish original physical evidence and spectra
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-030-physical-rd-comparison
+          path: rd030-evidence/
+          if-no-files-found: warn
+      - name: Publish A/B listening packet without condition labels
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-030-blind-listening-A-B
+          path: rd030-blind-packet/
+          if-no-files-found: error
+      - name: Publish separate reveal key (do not download until ratings are locked)
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-030-ANSWER-KEY-DO-NOT-OPEN-FIRST
+          path: rd030-answer-key/
+          if-no-files-found: error
