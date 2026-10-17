@@ -1,3 +1,29 @@
+## Research-infrastructure integration ledger — 2026-10-17 (NOT ADOPTED)
+
+**Engineering decision:** The project owner permits the design-history PR #116 followed by the bounded Experiment 041 PR #117 to be integrated as research infrastructure *only* after exact-head verification and review. The original Gate A-before-Gate B chronology was not followed; existing 24 N/O/M × 8 frequency outputs are **exploratory/post-hoc**, not a prospective Gate A-confirmatory experiment. This note supersedes any unqualified "not run" statements in the historical proposal below. No scientific Gate A/C acceptance or OG-4/Studio API expansion is implied.
+
+**Reproduction and provenance contract.** The independent source is [global12_oracle.wl](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.wl) using Wolfram Language 12-complex-state global \`Solve\`; the checked-in [JSON](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.json) stores all 24 machine-precision records. The audited candidate bytes are pinned in [SHA256SUMS](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/SHA256SUMS). These pins are **candidate integrity receipts**, not a retrospective scientific freeze.
+
+For independent reproduction on a machine with licensed \`wolframscript\`:
+
+\`\`\`bash
+cd experiments/041_nr1_static_oral_nasal_route/wolfram
+sha256sum -c SHA256SUMS
+wolframscript -code '$Version'
+python verify_regeneration.py --wolframscript wolframscript
+# Alternative: compare an independently archived raw JSON string from the marked
+# NR1A_ORACLE_BEGIN / NR1A_ORACLE_END block, without rerunning Wolfram here:
+python verify_regeneration.py --regenerated /path/to/reproduced-rawjson.json
+\`\`\`
+
+The verifier **fails closed** on changed case order, metadata, nonfinite p/U/power/impedance or a normalized component difference >1e-12; this is a *numerical regeneration comparator*, not Gate A scientific acceptance. Store Wolfram runtime/version, captured independent raw JSON, verifier stdout (including regenerated SHA256), source/golden SHA256 and reviewing actor in the receipt. Re-run this when WL source/golden changes. Hosted GitHub Actions has no licensed Wolfram by default: its enforced checks are pinned candidate bytes, Python 3.11–3.13 full-state tests and exact-head evidence SHA. **CI does not execute Wolfram; do not claim it does.**
+
+**Prior independent audit receipts:** At candidate \`53df08f3d4c74baa91fad0def93a6286c64d9b37\`, [Actions run 39012240675](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39012240675) yielded three audited exact-head artifact ZIPs; manifest/CRC passed, 24 p/U and power states numerically matched across Python 3.11–3.13, and the Wolfram 15.0.1 independent re-evaluation numerically reproduced the full 24-record source. The 3.11 JSON bytes were *not* identical to 3.12/3.13: 13 small N/O condition-number diagnostic variations and four dependent OG-4 observation digests differed. Never demand or claim byte-identical **whole evidence** across runtimes; preserve numerical p/U/power equivalence and per-run self-hash instead. This prior review does **not** validate a future modified HEAD; fresh CI and receipt review remain required.
+
+**Post-integration scientific backlog:** prospective independent Gate A with physical-law mutant matrix across N/O/M × eight anchors, scale-defined whole-network conditioning/refusal criteria, separately scoped pole-safe frequency stress, predeclared thresholds and repeatability controls; new confirmation artifacts and independent Gate C (\`SUPPORTED_LIMITED\` / \`INCONCLUSIVE\` / \`REJECT\`) in later work. A closed distal nasal end leaves its upstream reactive nasal side branch coupled to J; this is not VP-junction closure.
+
+---
+
 ## NR-1a post-audit candidate hardening (2026-10-17; NOT ADOPTED)
 
 This branch adds *research-only* fail-closed comparison checks before scientific acceptance. The comparator now rejects nonfinite full-state, powers, transfers, impedance and diagnostics; verifies full case/blueprint/backend/observation provenance; and recomputes power/impedance/transfers from p/U. The M-only research observation receives an experimental digest; N/O continue to verify the adopted OG-4 canonical observation digest without changing Core. Negative tests inject nonfinite and stale identity/derived data.
