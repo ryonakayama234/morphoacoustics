@@ -108,7 +108,9 @@ def test_wrong_velocity_law_can_pass_mean_power_but_fail_complex_flow():
     checks = pre.junction_diagnostics(state)
     assert checks["pressure_continuity_pa"] < 1e-10
     assert checks["volume_flow_conservation_m3_s"] > 1e-9
+    assert abs(checks["volume_flow_error_im_m3_s"]) > 1e-9
     assert checks["junction_complex_power_imbalance_va"] > 1e-10
+    assert abs(checks["junction_reactive_power_imbalance_var"]) > 1e-10
     # A reactive conservation violation can be invisible to mean-power checks.
     assert abs(checks["junction_mean_power_imbalance_w"]) < 1e-15
 
