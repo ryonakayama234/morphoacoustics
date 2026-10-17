@@ -1,3 +1,18 @@
+## 2026-10-17 — Experiment 042 pre-freeze mutant detectability ledger (EXPLORATORY ONLY)
+
+**Added:** [Experiment 042 source and reproduction instructions](../../../experiments/042_nr1a_gate_a_preflight/README.md), a separate **research-instrumentation** slice whose machine-derived mutant margins must not become post-hoc scientific acceptance or an already-frozen Gate A. Source is physically independent of OG-4 code; its own normal physical-law solution is **not an independent immutable oracle**, so a future Gate B must still compare the public OG-4 N/O and research-only M to Wolfram's separate archived and hash-pinned full 12-state oracle.
+
+- Five deliberately wrong matrix law variants (not output-only corruption): `tube_sign_A`, `phasor_sign`, `junction_particle_velocity`, `wrong_B_terminal`, `wrong_C_terminal`. Injection loci are in source. 24 cases × five mutants = 120 candidate detection comparisons; each baseline has a 12-complex-dimensional state.
+- Distinct Python/NumPy matrix assembly, 8 local exploratory tests passed. Distinct Wolfram Language 12×12 equation assembly on 2026-10-17 matched every *minimum mutant margin* and the largest scaled system condition, to quoted precision. Hosted CI runs Python only, not licensed Wolfram.
+- **Exploratory extrema (dimensionless max absolute state component difference):** wrong A-tube sign 0.1692590094 (O 80); phasor sign 0.3008534468 (O 80); particle velocity instead of volume flow 0.04653672882 (N 80); wrong B termination 0.7881360092 (O 400); wrong C termination 0.3603832285 (N 80).
+- Worst scaled global condition 354.604480860; at M B-tube local quarter-wave pole `f*=343/(4×0.09)=952.7777777778 Hz`, Wolfram full-system condition ~74.839905915. **Do not** infer frequency-general robustness or silently change the experiment-only M recursive solver.
+- Normalization: 1.372 Pa and 1e-6 m3/s. The draft `<1e8` condition refusal and `<1e-11` normalized backward residual in the preflight instrument are **engineering guards on this exploratory test program**, not frozen Gate A criteria. A future science Gate B needs separately agreed physical forward-state acceptance tolerances and mutant detection margins.
+- **Still missing for Gate A:** external independent reviewers' sign-off, complete per-mutant × case × frequency prospective threshold table, explicitly separately mutated power convention and independent provenance attack matrix, raw immutable Wolfram regeneration with exact-head checks, two independent evidence runs, and signed science verdict.
+
+No purported 2026-10-17 post-Gate-A confirmatory result was produced by Experiment 042.
+
+---
+
 # Prospective scientific confirmation work package — 2026-10-17 (GATE A DRAFT)
 
 **NOT PREREGISTERED / NOT RUN AS A CONFIRMATORY TRIAL / NOT ADOPTED.** [Issue #118](https://github.com/ryonakayama234/morphoacoustics/issues/118) is authoritative for next work. Experiment 041's existing N/O/M × 8 anchor results were executed before a finalized Gate A, so remain *exploratory/post-hoc*, including prior independent Wolfram reconstruction and engineering CI. Historical integration records below are preserved, not retroactively relabeled.
