@@ -188,9 +188,22 @@ def observe(case: str) -> dict[str, Any]:
             "preparation_digest": prepared.preparation_digest,
             "observation_digest": response["observation_digest"],
         }
+    derived = []
+    for idx, f in enumerate(FREQUENCIES):
+        pp = [unpack(value) for value in response["pressure_pa"][idx]]
+        uu = [unpack(value) for value in response["volume_flow_m3_s"][idx]]
+        if abs(uu[0]) <= 1e-30 or abs(pp[0]) <= 1e-12:
+            raise ArithmeticError("NUMERICALLY_UNRESOLVED:TRANSFER_NORMALIZATION")
+        derived.append({
+            "frequency_hz": f,
+            "input_impedance_pa_s_m3": pack(pp[0] / uu[0]),
+            "transfer_p_B_out_over_p_A_in": pack(pp[3] / pp[0]),
+            "transfer_p_C_out_over_p_A_in": pack(pp[5] / pp[0]),
+        })
     return {"case": case, "physical_blueprint": bp,
             "physical_blueprint_research_digest": canonical_sha(bp),
-            "binding": binding, "response": response}
+            "binding": binding, "response": response,
+            "derived_observables": derived}
 
 
 def load_oracle() -> dict[str, Any]:
@@ -232,6 +245,17 @@ def compare(observed: dict[str, dict[str, Any]]) -> dict[str, Any]:
         for idx, f in enumerate(FREQUENCIES):
             row = data["records"][list("NOM").index(case) * 8 + idx]
             err = endpoint_error(obs, row, idx)
+            derived = obs["derived_observables"][idx]
+            z = unpack(derived["input_impedance_pa_s_m3"])
+            zref = complex(*row["input_impedance_pa_s_m3"])
+            if abs(z - zref) / (P_REF / U_REF) > MAX_STATE:
+                raise AssertionError(f"input impedance mismatch: {case}/{f}")
+            pref = complex(*row["pressure_pa"][0])
+            for idx_end, name in ((3, "B"), (5, "C")):
+                transfer = unpack(derived[f"transfer_p_{name}_out_over_p_A_in"])
+                transfer_ref = complex(*row["pressure_pa"][idx_end]) / pref
+                if abs(transfer - transfer_ref) > MAX_STATE:
+                    raise AssertionError(f"transfer mismatch: {case}/{f}/{name}")
             peak = max(peak, err)
             if not math.isfinite(err) or err > MAX_STATE:
                 raise AssertionError(f"complex mismatch: {case}/{f}/{err}")
