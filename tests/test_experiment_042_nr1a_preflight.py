@@ -20,8 +20,10 @@ def test_full_matrix_12_by_12_and_finite_solution_for_24_fixtures():
     for row in report["records"]:
         assert abs(row["power_residual_w"]) < 1e-12
         assert row["normalized_backward_error_inf"] < 1e-11
-        for mutant in pre.MUTANTS:
-            assert row["mutant_max_scaled_state_deviation"][mutant] >= 0
+        assert set(row["mutant_max_scaled_state_deviation"]) == set(pre.MUTANTS)
+        assert set(row["mutant_junction_diagnostics"]) == set(pre.MUTANTS)
+        assert row["junction_diagnostics"]["volume_flow_conservation_m3_s"] < 1e-15
+        assert row["junction_diagnostics"]["pressure_continuity_pa"] < 1e-10
 
 
 def test_closed_distal_branch_stays_coupled_upstream():
@@ -66,3 +68,81 @@ def test_local_quarter_wave_pole_is_not_global_singularity():
 def test_unknown_case_frequency_and_mutant_refuse(case, f, mutant):
     with pytest.raises(ValueError):
         pre.system(case, f, mutant)
+
+
+@pytest.mark.parametrize("case", list(pre.CASES))
+@pytest.mark.parametrize("frequency_hz", pre.FREQUENCIES)
+@pytest.mark.parametrize("mutant", pre.MUTANTS)
+def test_all_120_law_mutations_are_numerically_distinguishable(
+    case, frequency_hz, mutant
+):
+    """Exploratory roundoff-only guard, not Gate A preregistered kill margin."""
+    baseline, _, _ = pre.solve(case, frequency_hz)
+    corrupted, _, _ = pre.solve(case, frequency_hz, mutant)
+    assert pre.state_distinction_passes(baseline, corrupted), (
+        case, frequency_hz, mutant
+    )
+
+
+def test_smoke_check_rejects_an_identical_or_nonfinite_mutant():
+    baseline, _, _ = pre.solve("N", 80)
+    assert not pre.state_distinction_passes(baseline, baseline.copy())
+    altered = baseline.copy()
+    altered[0] = np.nan
+    assert not pre.state_distinction_passes(baseline, altered)
+
+
+@pytest.mark.parametrize("case", list(pre.CASES))
+@pytest.mark.parametrize("frequency_hz", pre.FREQUENCIES)
+def test_unmutated_junction_complex_flow_and_pressure(case, frequency_hz):
+    state, _, _ = pre.solve(case, frequency_hz)
+    checks = pre.junction_diagnostics(state)
+    assert checks["pressure_continuity_pa"] < 1e-10
+    assert checks["volume_flow_conservation_m3_s"] < 1e-15
+    assert abs(checks["junction_mean_power_imbalance_w"]) < 1e-12
+    assert checks["junction_complex_power_imbalance_va"] < 1e-12
+
+
+def test_wrong_velocity_law_can_pass_mean_power_but_fail_complex_flow():
+    state, _, _ = pre.solve("N", 80, "junction_particle_velocity")
+    checks = pre.junction_diagnostics(state)
+    assert checks["pressure_continuity_pa"] < 1e-10
+    assert checks["volume_flow_conservation_m3_s"] > 1e-9
+    assert abs(checks["volume_flow_error_im_m3_s"]) > 1e-9
+    assert checks["junction_complex_power_imbalance_va"] > 1e-10
+    assert abs(checks["junction_reactive_power_imbalance_var"]) > 1e-10
+    # A reactive conservation violation can be invisible to mean-power checks.
+    assert abs(checks["junction_mean_power_imbalance_w"]) < 1e-15
+
+
+def test_wrong_mean_power_factor_requires_absolute_oracle_not_balance_alone():
+    state, _, _ = pre.solve("O", 733)
+    correct = pre.powers(state)
+    wrong = [2 * value for value in correct]  # omitted 1/2 peak-phasor factor
+    assert abs(correct[0] - correct[3] - correct[5]) < 1e-12
+    assert abs(wrong[0] - wrong[3] - wrong[5]) < 1e-12
+    # Conservation alone cannot catch a uniformly wrong factor of two.
+    assert abs(wrong[3] - 6.1987007903649672e-7) > 1e-7
+
+
+def test_metadata_guard_rejects_stale_missing_or_malformed_headers():
+    expected = {
+        "git_head_sha": "a" * 40,
+        "source_sha256": "b" * 64,
+        "fixture_sha256": "c" * 64,
+        "oracle_sha256": "d" * 64,
+    }
+    pre.check_evidence_headers(dict(expected), expected)
+    for key in expected:
+        stale = dict(expected)
+        stale[key] = "f" * len(stale[key])
+        with pytest.raises(ValueError, match="MISMATCH"):
+            pre.check_evidence_headers(stale, expected)
+        missing = dict(expected)
+        del missing[key]
+        with pytest.raises(ValueError, match="MISSING"):
+            pre.check_evidence_headers(missing, expected)
+        invalid = dict(expected)
+        invalid[key] = "not-a-digest"
+        with pytest.raises(ValueError, match="FORMAT"):
+            pre.check_evidence_headers(invalid, expected)

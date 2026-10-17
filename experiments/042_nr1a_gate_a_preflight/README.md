@@ -50,3 +50,43 @@ Before Gate B:
 4. Conduct distinct physics/numerical and code/API reviews. Only a written Gate A acceptance permits a new confirmatory Gate B execution.
 
 No public OG-4 capability, real velopharyngeal port disconnection, voice, waveform or Studio API is created here.
+
+
+## Exploratory audit hardening (stacked Draft; not a Gate A freeze)
+
+This additional research-instrumentation slice strengthens engineering checks.
+It does not change the physical model, promote Experiment 041/042 to prospective
+evidence, or independently sign off the science.
+
+- The tests now exercise **all 120 individual** N/O/M × eight-frequency ×
+  five-equation-mutant cells. The test-only separation floor is 128 × float64
+  epsilon × max(1, the largest dimensionless complex-state component of both
+  solutions). This is a numerical **non-identity smoke check**, NOT a prospective
+  per-cell mutation kill threshold or forward-state oracle acceptance criterion.
+  Scientific tolerances and insensitive anchors must still be frozen at Gate A.
+- The exploratory JSON now uses schema
+  nr1a.gate-a.exploratory-mutation-preflight.v1. It records baseline and
+  per-equation-mutant junction diagnostics: pressure equality (Pa), signed
+  complex flow conservation magnitude (m³/s), real average-power imbalance
+  (W), and complex-power imbalance magnitude (VA); signed flow residual
+  real/imaginary parts (m³/s) and reactive power (var) are also preserved.
+  These are independent
+  *physical-law observations*, not merely linear-system solver residuals.
+- Wrong particle velocity conservation at **N / 80 Hz** violates complex volume
+  flow but can pass a **real mean-power** check, because the discrepancy is
+  reactive. Thus average-power conservation is insufficient to validate the
+  actual junction flow law.
+- A separate output-formula negative control multiplies all peak-phasor
+  powers by two (omitting 1/2): even the wrong output can pass a self-consistent
+  terminal power balance. A separately derived **absolute-power oracle**
+  is needed. This is *not* a sixth matrix-law mutant.
+- A separate metadata negative control rejects absent, malformed and stale
+  HEAD/source/fixture/oracle digest **claims**. The helper verifies header
+  shapes and equality, NOT SHA-256 recalculation from bytes, signed provenance,
+  immutable source binding or independently executed trial receipts. These
+  remain future Gate A/B obligations.
+
+Existing eight historic local tests and quoted Wolfram aggregate calculations
+refer to the **previous exact HEAD**. Changing the HEAD requires new GitHub
+CI evidence. Hosted CI still does not execute Wolfram, and this work does NOT
+run a new confirmatory Gate B, freeze Gate A, or adopt Gate C.

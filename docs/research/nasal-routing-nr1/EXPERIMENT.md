@@ -1,3 +1,30 @@
+## 2026-10-17 — Additional pre-Gate-A diagnostic controls (EXPLORATORY; NOT FROZEN)
+
+A stacked Draft review slice builds on Experiment 042 without making a Gate A
+acceptance or running Gate B. Each of the 120 five-equation-mutant/case/frequency
+comparisons now has an explicit double-precision *non-identity* smoke test,
+not merely the old nonnegative-deviation assertion. The smoke floor is a
+roundoff-order numerical engineering guard, **not** a reviewer-approved
+forward-error or mutant kill threshold. Per-cell prospective detection bounds
+and any insensitive anchors must still be declared and independently approved.
+
+Experiment 042 now records junction **complex** volume-flow residual and
+pressure continuity in dimensional units separately from mean-power balance.
+At N / 80 Hz, the wrong particle-velocity law can have nonzero complex
+volume-flow error and zero *real* mean-power junction residual; conservation
+of time-averaged power alone must NOT stand in for volume-flow conservation.
+Another negative control shows that missing the 1/2 peak-phasor power factor
+can preserve a power-balance equation while corrupting **absolute** watts.
+Only an independently computed absolute-power oracle can detect that case.
+
+Metadata-negative tests reject stale/malformed/missing *claimed* headers but
+do not validate underlying bytes, attest separate environments, or generate
+signed immutable receipts. Those must be specified and tested prospectively.
+The additional diagnostic schema is research-only v1; no Core ABI, no Studio
+feature, and no scientific Gate C change.
+
+---
+
 ## 2026-10-17 — Experiment 042 pre-freeze mutant detectability ledger (EXPLORATORY ONLY)
 
 **Added:** [Experiment 042 source and reproduction instructions](../../../experiments/042_nr1a_gate_a_preflight/README.md), a separate **research-instrumentation** slice whose machine-derived mutant margins must not become post-hoc scientific acceptance or an already-frozen Gate A. Source is physically independent of OG-4 code; its own normal physical-law solution is **not an independent immutable oracle**, so a future Gate B must still compare the public OG-4 N/O and research-only M to Wolfram's separate archived and hash-pinned full 12-state oracle.
