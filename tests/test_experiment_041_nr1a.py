@@ -194,3 +194,153 @@ def test_all_research_derived_transfers_and_input_impedances_present():
         for end in ("B", "C"):
             assert all(math.isfinite(x) for x in
                        derived[f"transfer_p_{end}_out_over_p_A_in"].values())
+
+@pytest.mark.parametrize("case", ["N", "O", "M"])
+@pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("field,port,component", [
+    ("pressure_pa", 3, "real"), ("pressure_pa", 0, "imag"),
+    ("volume_flow_m3_s", 4, "real"), ("volume_flow_m3_s", 2, "imag"),
+])
+def test_nonfinite_full_state_fails_closed(case, bad_value, field, port, component):
+    observations, _ = nr1a.execute()
+    observations[case]["response"][field][3][port][component] = bad_value
+    with pytest.raises(AssertionError):
+        nr1a.compare(observations)
+
+
+@pytest.mark.parametrize("case", ["N", "O", "M"])
+@pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("target", ["power", "zin", "transfer", "diagnostic"])
+def test_nonfinite_derived_power_and_diagnostics_fail_closed(case, bad_value, target):
+    observations, _ = nr1a.execute()
+    obs = observations[case]
+    if target == "power":
+        obs["response"]["mean_power_w"][3][3] = bad_value
+    elif target == "zin":
+        obs["derived_observables"][3]["input_impedance_pa_s_m3"]["imag"] = bad_value
+    elif target == "transfer":
+        obs["derived_observables"][3]["transfer_p_B_out_over_p_A_in"]["real"] = bad_value
+    else:
+        key = next(iter(obs["response"]["diagnostics"][3]))
+        obs["response"]["diagnostics"][3][key] = bad_value
+    with pytest.raises(AssertionError):
+        nr1a.compare(observations)
+
+
+@pytest.mark.parametrize("case", ["N", "O", "M"])
+@pytest.mark.parametrize("target", [
+    "case", "blueprint", "physical_digest", "backend",
+    "derived_frequency", "source_digest", "observation_digest",
+])
+def test_stale_identity_cannot_pass_with_unchanged_numeric_states(case, target):
+    observations, _ = nr1a.execute()
+    obs = observations[case]
+    if target == "case":
+        obs["case"] = "O" if case != "O" else "N"
+    elif target == "blueprint":
+        obs["physical_blueprint"]["organs"][0]["length_m"] += 0.001
+    elif target == "physical_digest":
+        obs["physical_blueprint_research_digest"] = "sha256:" + "0" * 64
+    elif target == "backend":
+        obs["response"]["backend_id"] = "wrong.backend"
+    elif target == "derived_frequency":
+        obs["derived_observables"][3]["frequency_hz"] = 734
+    elif target == "source_digest":
+        key = ("blueprint_research_digest" if case == "M" else "blueprint_digest")
+        obs["binding"][key] = "sha256:" + "0" * 64
+    else:
+        if case == "M":
+            obs["binding"]["observation_research_digest"] = "sha256:" + "0" * 64
+        else:
+            obs["response"]["observation_digest"] = "sha256:" + "0" * 64
+    with pytest.raises(AssertionError):
+        nr1a.compare(observations)
+
+
+@pytest.mark.parametrize("case", ["N", "O", "M"])
+@pytest.mark.parametrize("target", ["power", "zin", "transfer"])
+def test_finite_but_stale_derived_values_cannot_pass(case, target):
+    observations, _ = nr1a.execute()
+    obs = observations[case]
+    if target == "power":
+        obs["response"]["mean_power_w"][3][3] += 1e-7
+    elif target == "zin":
+        obs["derived_observables"][3]["input_impedance_pa_s_m3"]["real"] += 1e5
+    else:
+        obs["derived_observables"][3]["transfer_p_C_out_over_p_A_in"]["imag"] += 0.1
+    with pytest.raises(AssertionError):
+        nr1a.compare(observations)
+
+
+def test_m_oral_closed_local_admittance_pole_is_not_global_singularity():
+    """Research stress-only: frozen M API remains the original eight frequencies.
+
+    The independent Wolfram 12-equation solution at f*=c/(4 L_B) has
+    p_A.in=-3.112399462606199+7.780998656515497j Pa,
+    p_B.out=3.160413241149226-7.901033102873065j Pa and p_J=0.
+    """
+    import numpy as np
+    from morphoacoustics.acoustics.uniform_tube import UniformTube
+    from morphoacoustics_graph.branch3 import _system
+
+    tubes = tuple(UniformTube(length, area, sound_speed_m_s=nr1a.SPEED,
+                              air_density_kg_m3=nr1a.RHO)
+                  for length, area in zip(nr1a.LENGTHS, nr1a.AREAS))
+    loads = {row["port"]: row for row in nr1a.blueprint("M")["loads"]}
+    fstar = nr1a.SPEED / (4 * nr1a.LENGTHS[1])
+    baseline = None
+    for f in (fstar - 1e-6, fstar, fstar + 1e-6):
+        matrix, rhs = _system(tubes, loads, nr1a.SOURCE, f)
+        assert np.linalg.matrix_rank(matrix) == 12
+        condition = float(np.linalg.cond(matrix))
+        assert np.isfinite(condition) and condition < 1e4
+        x = np.linalg.solve(matrix, rhs)
+        backward = np.linalg.norm(matrix @ x - rhs, np.inf) / (
+            np.linalg.norm(matrix, np.inf)*np.linalg.norm(x, np.inf) +
+            np.linalg.norm(rhs, np.inf))
+        assert backward < 1e-12
+        p = x[0::2] * nr1a.P_REF
+        u = x[1::2] * nr1a.U_REF
+        assert abs(p[0] - complex(-3.112399462606199, 7.780998656515497)) < 1e-5
+        assert abs(p[3] - complex(3.160413241149226, -7.901033102873065)) < 1e-5
+        assert abs(p[1]) < 1e-6
+        assert abs(u[3]) < 1e-12
+        if f == fstar:
+            baseline = x
+        elif baseline is not None:
+            assert np.linalg.norm(x - baseline, np.inf) < 1e-5
+    assert baseline is not None
+    with pytest.raises(ValueError, match="UNSUPPORTED:RESEARCH_SCOPE"):
+        nr1a.recursive_mouth_closed("M", [fstar])
+
+
+@pytest.mark.parametrize("mutant", ["tube_sign", "wrong_mouth_load", "phasor_sign"])
+def test_m_733Hz_additional_law_level_mutants_are_detected(mutant):
+    """True matrix-law changes, checked against the independent Wolfram record."""
+    import numpy as np
+    from morphoacoustics.acoustics.uniform_tube import UniformTube
+    from morphoacoustics_graph.branch3 import _system
+
+    tubes = tuple(UniformTube(length, area, sound_speed_m_s=nr1a.SPEED,
+                              air_density_kg_m3=nr1a.RHO)
+                  for length, area in zip(nr1a.LENGTHS, nr1a.AREAS))
+    loads = {row["port"]: row for row in nr1a.blueprint("M")["loads"]}
+    matrix, rhs = _system(tubes, loads, nr1a.SOURCE, 733)
+    wrong = matrix.copy()
+    if mutant == "tube_sign":
+        wrong[0, 3] *= -1
+        wrong[1, 2] *= -1
+    elif mutant == "wrong_mouth_load":
+        wrong[9, :] = 0
+        wrong[9, 6], wrong[9, 7] = 1, -1
+    else:
+        wrong = np.conjugate(wrong)
+    candidate = np.linalg.solve(wrong, rhs)
+    record = nr1a.load_oracle()["records"][19]
+    err = max(
+        max(abs(candidate[2*j] * nr1a.P_REF -
+                complex(*record["pressure_pa"][j])) / nr1a.P_REF for j in range(6)),
+        max(abs(candidate[2*j+1] * nr1a.U_REF -
+                complex(*record["volume_flow_m3_s"][j])) / nr1a.U_REF for j in range(6)),
+    )
+    assert err > 1e-5, f"undetected law mutant {mutant}: {err}"

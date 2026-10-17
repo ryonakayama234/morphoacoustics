@@ -1,3 +1,11 @@
+## NR-1a post-audit candidate hardening (2026-10-17; NOT ADOPTED)
+
+This branch adds *research-only* fail-closed comparison checks before scientific acceptance. The comparator now rejects nonfinite full-state, powers, transfers, impedance and diagnostics; verifies full case/blueprint/backend/observation provenance; and recomputes power/impedance/transfers from p/U. The M-only research observation receives an experimental digest; N/O continue to verify the adopted OG-4 canonical observation digest without changing Core. Negative tests inject nonfinite and stale identity/derived data.
+
+The Wolfram global 12-equation solution at B's mouth-closed quarter-wave pole `f*=343/(4*0.09)=952.7777777778 Hz` is finite; a separate diagnostic-matrix stress test checks f* and f*±1e-6 Hz. The existing M recursive **8-frequency** contract is deliberately unchanged, and its local pole guard is not a global conditioning certificate. New law-level mutants at 733 Hz expand detection; a complete predeclared all-anchor mutant matrix and independent artifact audit are still outstanding.
+
+**No retrospective Gate A pass:** code/test updates are candidates pending exact-HEAD CI and independent review. Historical success at `a0912c2` remains valid for that earlier HEAD alone. Gate A and Gate C are not approved.
+
 ## 2026-10-17 NR-1a exploratory implementation ledger — PRE-GATE-A
 
 | Task | State | Explicit evidence |

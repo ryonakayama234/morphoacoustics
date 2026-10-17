@@ -16,7 +16,7 @@ from pathlib import Path
 import subprocess
 from typing import Any
 
-from morphoacoustics_graph.branch3 import Branch3Error, prepare_branch3
+from morphoacoustics_graph.branch3 import Branch3Error, prepare_branch3, _digest as core_og4_digest
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -178,6 +178,7 @@ def observe(case: str) -> dict[str, Any]:
         binding = {
             "source": "experiment-only", "backend_id": EXPERIMENT_BACKEND,
             "blueprint_research_digest": canonical_sha(bp),
+            "observation_research_digest": canonical_sha(response),
         }
     else:
         prepared = prepare_branch3(deepcopy(bp))
@@ -219,71 +220,156 @@ def load_oracle() -> dict[str, Any]:
     return data
 
 
+def finite_real(value: Any, label: str) -> float:
+    """Fail closed BEFORE comparisons, reductions or hashes (no NaN or ±Inf)."""
+    if type(value) not in (int, float):
+        raise AssertionError(f"non-numeric: {label}")
+    try:
+        numeric = float(value)
+    except (ValueError, OverflowError) as exc:
+        raise AssertionError(f"nonfinite/overflow: {label}") from exc
+    if not math.isfinite(numeric):
+        raise AssertionError(f"nonfinite: {label}")
+    return numeric
+
+
+def finite_complex(value: Any, label: str) -> complex:
+    if type(value) is not dict or set(value) != {"real", "imag"}:
+        raise AssertionError(f"malformed complex: {label}")
+    return complex(finite_real(value["real"], label + "/real"),
+                   finite_real(value["imag"], label + "/imag"))
+
+
 def endpoint_error(obs: dict[str, Any], oracle_record: dict[str, Any], idx: int) -> float:
     r = obs["response"]
     if r["port_ids"] != PORTS or r["frequencies_hz"][idx] != oracle_record["frequency_hz"]:
         raise AssertionError("port/frequency binding mismatch")
     if not (len(r["pressure_pa"][idx]) == len(r["volume_flow_m3_s"][idx]) == 6):
         raise AssertionError("missing endpoint")
-    errors = [
-        abs(unpack(r[field][idx][j]) - complex(*oracle_record[field][j])) / norm
-        for field, norm in (("pressure_pa", P_REF), ("volume_flow_m3_s", U_REF))
-        for j in range(6)
-    ]
+    errors = []
+    for field, norm in (("pressure_pa", P_REF), ("volume_flow_m3_s", U_REF)):
+        for j in range(6):
+            point = finite_complex(r[field][idx][j], f"{field}/{idx}/{j}")
+            reference = oracle_record[field][j]
+            if type(reference) is not list or len(reference) != 2:
+                raise AssertionError("bad oracle complex reference")
+            golden = complex(finite_real(reference[0], "oracle-real"),
+                             finite_real(reference[1], "oracle-imag"))
+            errors.append(abs(point - golden) / norm)
+    if not all(math.isfinite(err) for err in errors):
+        raise AssertionError("nonfinite normalized endpoint error")
     return max(errors)
 
 
 def compare(observed: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Research-only verifier; no candidate observation may silently pass on bad metadata."""
     data = load_oracle()
+    if type(observed) is not dict or set(observed) != set(CASES):
+        raise AssertionError("case inventory mismatch")
     report: dict[str, Any] = {"per_case": {}, "total": 0, "status": "CANDIDATE_ONLY"}
     for case in "NOM":
         obs = observed[case]
+        expected_bp = blueprint(case)
+        bp = obs["physical_blueprint"]
+        if obs["case"] != case or bp != expected_bp:
+            raise AssertionError(f"case/physical blueprint mismatch: {case}")
+        bp_digest = canonical_sha(bp)
+        if obs["physical_blueprint_research_digest"] != bp_digest:
+            raise AssertionError(f"research blueprint digest mismatch: {case}")
+        binding = obs["binding"]
         r = obs["response"]
-        if r["status"] != "OK" or r["frequencies_hz"] != FREQUENCIES:
-            raise AssertionError("invalid response envelope")
+        expected_backend = EXPERIMENT_BACKEND if case == "M" else "og4.fixed.passive.branch3.pu.v1"
+        expected_schema = ("nr1a.research.only.response.v0" if case == "M"
+                           else "og4.branch3.observation.v1")
+        if (r["status"] != "OK" or r["schema"] != expected_schema or
+                r["backend_id"] != expected_backend or
+                binding["backend_id"] != expected_backend or
+                r["frequencies_hz"] != FREQUENCIES or
+                r["port_ids"] != PORTS):
+            raise AssertionError(f"response envelope/identity mismatch: {case}")
+        if case == "M":
+            if (binding["source"] != "experiment-only" or
+                    binding["blueprint_research_digest"] != bp_digest):
+                raise AssertionError("M research binding mismatch")
+        else:
+            prepared = prepare_branch3(deepcopy(expected_bp))
+            if (binding["source"] != "adopted-core" or
+                    binding["blueprint_digest"] != prepared.blueprint_digest or
+                    binding["preparation_digest"] != prepared.preparation_digest or
+                    r["preparation_digest"] != prepared.preparation_digest or
+                    r["digest_version"] != "og4.canonical.binary.v1" or
+                    r["observation_digest"] != binding["observation_digest"]):
+                raise AssertionError(f"authoritative OG-4 binding mismatch: {case}")
+        if any(len(r[field]) != len(FREQUENCIES)
+               for field in ("pressure_pa", "volume_flow_m3_s", "mean_power_w", "diagnostics")
+               ) or len(obs["derived_observables"]) != len(FREQUENCIES):
+            raise AssertionError(f"response cardinality mismatch: {case}")
+
         peak = 0.0
         for idx, f in enumerate(FREQUENCIES):
             row = data["records"][list("NOM").index(case) * 8 + idx]
+            if (len(r["mean_power_w"][idx]) != 6 or
+                    type(r["diagnostics"][idx]) is not dict or
+                    not r["diagnostics"][idx]):
+                raise AssertionError(f"power/diagnostics shape mismatch: {case}/{f}")
+            for name, value in r["diagnostics"][idx].items():
+                finite_real(value, f"diagnostics/{case}/{f}/{name}")
+            p = [finite_complex(v, f"pressure/{case}/{f}/{j}")
+                 for j, v in enumerate(r["pressure_pa"][idx])]
+            u = [finite_complex(v, f"volume_flow/{case}/{f}/{j}")
+                 for j, v in enumerate(r["volume_flow_m3_s"][idx])]
+            w = [finite_real(v, f"power/{case}/{f}/{j}")
+                 for j, v in enumerate(r["mean_power_w"][idx])]
+            if len(p) != 6 or len(u) != 6:
+                raise AssertionError(f"endpoint count mismatch: {case}/{f}")
+            for j in range(6):
+                if abs(w[j] - power(p[j], u[j])) / (0.5 * P_REF * U_REF) > MAX_POWER:
+                    raise AssertionError(f"stored power not derived from state: {case}/{f}/{j}")
+                wref = finite_real(row["mean_power_w"][j], "oracle-power")
+                if abs(w[j] - wref) / (0.5 * P_REF * U_REF) > MAX_POWER:
+                    raise AssertionError(f"power mismatch: {case}/{f}/{j}")
             err = endpoint_error(obs, row, idx)
+            if not math.isfinite(err) or err > MAX_STATE:
+                raise AssertionError(f"complex mismatch: {case}/{f}/{err}")
+            peak = max(peak, err)
             derived = obs["derived_observables"][idx]
-            z = unpack(derived["input_impedance_pa_s_m3"])
-            zref = complex(*row["input_impedance_pa_s_m3"])
-            if abs(z - zref) / (P_REF / U_REF) > MAX_STATE:
+            if derived["frequency_hz"] != f or abs(u[0]) <= 1e-30 or abs(p[0]) <= 1e-12:
+                raise AssertionError(f"derived identity/normalization mismatch: {case}/{f}")
+            zin = finite_complex(derived["input_impedance_pa_s_m3"], "stored Zin")
+            zin_ref = complex(*row["input_impedance_pa_s_m3"])
+            if (abs(zin - zin_ref) / (P_REF / U_REF) > MAX_STATE or
+                    abs(zin - p[0] / u[0]) / (P_REF / U_REF) > MAX_STATE):
                 raise AssertionError(f"input impedance mismatch: {case}/{f}")
             pref = complex(*row["pressure_pa"][0])
             for idx_end, name in ((3, "B"), (5, "C")):
-                transfer = unpack(derived[f"transfer_p_{name}_out_over_p_A_in"])
+                transfer = finite_complex(
+                    derived[f"transfer_p_{name}_out_over_p_A_in"], f"transfer/{name}")
                 transfer_ref = complex(*row["pressure_pa"][idx_end]) / pref
-                if abs(transfer - transfer_ref) > MAX_STATE:
+                if (abs(transfer - transfer_ref) > MAX_STATE or
+                        abs(transfer - p[idx_end] / p[0]) > MAX_STATE):
                     raise AssertionError(f"transfer mismatch: {case}/{f}/{name}")
-            peak = max(peak, err)
-            if not math.isfinite(err) or err > MAX_STATE:
-                raise AssertionError(f"complex mismatch: {case}/{f}/{err}")
-            for j in range(6):
-                pw_error = abs(r["mean_power_w"][idx][j] - row["mean_power_w"][j])
-                if pw_error / (0.5 * P_REF * U_REF) > MAX_POWER:
-                    raise AssertionError(f"power mismatch: {case}/{f}/{j}")
-            p = [unpack(v) for v in r["pressure_pa"][idx]]
-            u = [unpack(v) for v in r["volume_flow_m3_s"][idx]]
             if (abs(p[1]-p[2])/P_REF > MAX_RESIDUAL or
-                abs(p[1]-p[4])/P_REF > MAX_RESIDUAL or
-                abs(u[1]-u[2]-u[4])/U_REF > MAX_RESIDUAL):
+                    abs(p[1]-p[4])/P_REF > MAX_RESIDUAL or
+                    abs(u[1]-u[2]-u[4])/U_REF > MAX_RESIDUAL):
                 raise AssertionError("junction law violated")
             closure = 5 if case == "N" else 3 if case == "M" else None
             if closure is not None and (abs(u[closure])/U_REF > MAX_RESIDUAL or
-                                        abs(r["mean_power_w"][idx][closure]) /
-                                            (0.5*P_REF*U_REF) > MAX_POWER):
+                                        abs(w[closure]) / (0.5*P_REF*U_REF) > MAX_POWER):
                 raise AssertionError("closed outlet leaks")
-            if case == "O" and not (r["mean_power_w"][idx][3] > 0 and
-                                    r["mean_power_w"][idx][5] > 0):
+            if case == "O" and not (w[3] > 0 and w[5] > 0):
                 raise AssertionError("matched outlet is non-passive")
-            pin = r["mean_power_w"][idx][0]
-            pout = r["mean_power_w"][idx][3] + r["mean_power_w"][idx][5]
-            if abs(pin - pout) / (0.5 * P_REF * U_REF) > MAX_POWER:
+            if abs(w[0] - w[3] - w[5]) / (0.5 * P_REF * U_REF) > MAX_POWER:
                 raise AssertionError("acoustic power balance mismatch")
             report["total"] += 1
+        # Bind the archived data to its authoritative Core or research digest
+        # AFTER checking every numeric component (digest code itself is not a verifier).
+        if case == "M":
+            if binding["observation_research_digest"] != canonical_sha(r):
+                raise AssertionError("M stale observation research digest")
+        elif core_og4_digest("observation", r) != r["observation_digest"]:
+            raise AssertionError(f"{case} stale OG-4 observation digest")
         report["per_case"][case] = {"max_scaled_endpoint_error": peak,
-                                    "backend_id": obs["binding"]["backend_id"]}
+                                    "backend_id": binding["backend_id"]}
     if report["total"] != 24:
         raise AssertionError("incomplete experiment")
     return report
