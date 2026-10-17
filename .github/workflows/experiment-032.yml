@@ -1,0 +1,62 @@
+name: experiment-032-sfi2
+
+on:
+  push:
+    paths:
+      - "experiments/032_passive_time_domain_tract/**"
+      - ".github/workflows/experiment-032.yml"
+  pull_request:
+    paths:
+      - "experiments/032_passive_time_domain_tract/**"
+      - ".github/workflows/experiment-032.yml"
+
+jobs:
+  wave-propagation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install audited numerical stack
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e .
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Run experiment-local fixed-tract scientific tests
+        run: |
+          python -m unittest discover -s experiments/032_passive_time_domain_tract -p 'test_*.py' -v
+      - name: Generate full time-domain pulse and energy traces
+        run: |
+          python experiments/032_passive_time_domain_tract/run.py --output-dir experiment-032-output
+      - name: Refuse stale-output reuse
+        run: |
+          if python experiments/032_passive_time_domain_tract/run.py --output-dir experiment-032-output > replay.log 2>&1; then
+            echo "ERROR: stale experiment outputs reused"
+            exit 1
+          fi
+          grep -q "requires a fresh empty output directory" replay.log
+      - name: Enforce preregistered scientific gates
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          folder = Path("experiment-032-output")
+          result = json.loads((folder / "summary.json").read_text(encoding="utf-8"))
+          assert result["all_eligible_gates_pass"] is True
+          assert result["gates"]["G3_glottal_feedback"] == "UNSUPPORTED"
+          assert result["gates"]["G4_voice_quality"] == "NOT_TESTED"
+          assert len(list(folder.glob("*.csv"))) == 3
+          assert max(value["relative_complex_error"] for value in result["matched_impedance"].values()) < 0.08
+          print("Experiment 032 fixed passive acoustic tract gates: PASS")
+          PY
+      - name: Upload reproducible pressure-flow-energy artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-032-python-${{ matrix.python-version }}
+          path: experiment-032-output/
+          if-no-files-found: warn
