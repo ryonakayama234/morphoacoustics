@@ -1,0 +1,31 @@
+{
+  "schema_version": "performance-contract/v1",
+  "performance_id": "performance_0142",
+  "request_id": "request_mio_0001",
+  "take_id": "take_003",
+  "job_status": "SUCCEEDED",
+  "realization_outcome": "UNSUPPORTED",
+  "artifacts": [],
+  "diagnostics": [
+    {
+      "code": "EXAMPLE_ONLY_NOT_EXECUTED",
+      "severity": "warning",
+      "message": "Illustrative contract-only fixture; no physical audio or execution is claimed."
+    }
+  ],
+  "provenance": {
+    "backend": "contract-example-no-execution",
+    "backend_version": "0.0.0-fixture",
+    "contract_version": "performance-contract/v1",
+    "seed": 42,
+    "input_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "input_digest_algorithm": "sha256-canonical-json-v1"
+  },
+  "embodiment": {
+    "status": "BOUND",
+    "preset_id": "human-wide",
+    "preset_revision": 1,
+    "backend_id": "fidelity0.tract1d",
+    "preparation_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}
