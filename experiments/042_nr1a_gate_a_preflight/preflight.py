@@ -97,6 +97,58 @@ def powers(state: np.ndarray):
     return (0.5*np.real(p*np.conjugate(u))).tolist()
 
 
+def junction_diagnostics(state: np.ndarray):
+    """Physical junction checks independent of the assembled equation residual.
+
+    Complex power detects reactive violations that averaged power can miss.
+    Orient flow A.out -> B.in + C.in. Quantities here are dimensional.
+    """
+    p = state[::2] * P_REF_PA
+    u = state[1::2] * U_REF_M3_S
+    flow_error = u[1] - u[2] - u[4]
+    complex_power_error = 0.5 * p[1] * np.conjugate(flow_error)
+    return {
+        "pressure_continuity_pa": float(max(abs(p[1]-p[2]), abs(p[1]-p[4]))),
+        "volume_flow_conservation_m3_s": float(abs(flow_error)),
+        "junction_mean_power_imbalance_w": float(np.real(complex_power_error)),
+        "junction_complex_power_imbalance_va": float(abs(complex_power_error)),
+    }
+
+
+def state_distinction_passes(good: np.ndarray, bad: np.ndarray) -> bool:
+    """Roundoff-only smoke check, NEVER a prospective kill threshold."""
+    if good.shape != (12,) or bad.shape != (12,):
+        raise ValueError("INVALID:STATE_SHAPE")
+    if not np.all(np.isfinite(good)) or not np.all(np.isfinite(bad)):
+        return False
+    scale = max(1.0, float(np.max(np.abs(good))), float(np.max(np.abs(bad))))
+    roundoff_floor = 128 * np.finfo(np.float64).eps * scale
+    return bool(np.max(np.abs(bad-good)) > roundoff_floor)
+
+
+def check_evidence_headers(observed: dict, expected: dict):
+    """Fail-closed header-binding illustration, NOT a signed evidence receipt.
+
+    Gate B must separately recompute digests from actual bytes. Checking
+    caller-provided claims is not cryptographic provenance verification.
+    """
+    import re
+
+    fields = {"git_head_sha": 40, "source_sha256": 64,
+              "fixture_sha256": 64, "oracle_sha256": 64}
+    if not isinstance(observed, dict) or not isinstance(expected, dict):
+        raise ValueError("INVALID:PROVENANCE_RECORD")
+    for key, digits in fields.items():
+        a, b = observed.get(key), expected.get(key)
+        pattern = rf"[0-9a-f]{{{digits}}}"
+        if not isinstance(a, str) or not isinstance(b, str):
+            raise ValueError(f"INVALID:PROVENANCE_MISSING:{key}")
+        if re.fullmatch(pattern, a) is None or re.fullmatch(pattern, b) is None:
+            raise ValueError(f"INVALID:PROVENANCE_FORMAT:{key}")
+        if a != b:
+            raise ValueError(f"INVALID:PROVENANCE_MISMATCH:{key}")
+
+
 def run_preflight():
     """Measure candidate kill margins, NOT prospective confirmation/acceptance."""
     rows = []
@@ -105,9 +157,11 @@ def run_preflight():
             good, cond, backward = solve(case, hz)
             watts = powers(good)
             margins = {}
+            mutant_junction_checks = {}
             for mutant in MUTANTS:
                 bad, _, _ = solve(case, hz, mutant)
                 margins[mutant] = float(np.max(np.abs(bad-good)))
+                mutant_junction_checks[mutant] = junction_diagnostics(bad)
             if not all(math.isfinite(x) for x in (*watts, *margins.values())):
                 raise ArithmeticError("NUMERICALLY_UNRESOLVED:NONFINITE")
             rows.append({"case": case, "frequency_hz": hz,
@@ -117,8 +171,10 @@ def run_preflight():
                          "mouth_terminal_power_w": watts[3],
                          "nose_terminal_power_w": watts[5],
                          "power_residual_w": watts[0]-watts[3]-watts[5],
+                         "junction_diagnostics": junction_diagnostics(good),
+                         "mutant_junction_diagnostics": mutant_junction_checks,
                          "mutant_max_scaled_state_deviation": margins})
-    return {"schema": "nr1a.gate-a.exploratory-mutation-preflight.v0",
+    return {"schema": "nr1a.gate-a.exploratory-mutation-preflight.v1",
             "status": "EXPLORATORY_PRE_GATE_A_NOT_CONFIRMATORY",
             "normalization": {"p_ref_pa": P_REF_PA, "u_ref_m3_s": U_REF_M3_S},
             "ports": list(PORTS), "frequencies_hz": list(FREQUENCIES),
