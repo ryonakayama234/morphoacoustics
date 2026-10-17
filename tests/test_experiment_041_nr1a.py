@@ -344,3 +344,44 @@ def test_m_733Hz_additional_law_level_mutants_are_detected(mutant):
                 complex(*record["volume_flow_m3_s"][j])) / nr1a.U_REF for j in range(6)),
     )
     assert err > 1e-5, f"undetected law mutant {mutant}: {err}"
+
+
+def test_wolfram_numeric_regeneration_verifier_is_fail_closed():
+    """Independent-source comparison tool must detect changes in all result types."""
+    from importlib import util
+
+    verifier_path = EXP / "wolfram" / "verify_regeneration.py"
+    spec = util.spec_from_file_location("nr1a_verify_regeneration", verifier_path)
+    assert spec and spec.loader
+    verifier = util.module_from_spec(spec)
+    spec.loader.exec_module(verifier)
+    golden = verifier.read_json(
+        (EXP / "wolfram" / "global12_oracle.json").read_text(encoding="utf-8"))
+    assert verifier.compare_candidate_oracles(golden, deepcopy(golden)) == 0
+    for field, index, magnitude in (
+        ("pressure_pa", (0, 0), 1e-4),
+        ("volume_flow_m3_s", (4, 1), 1e-10),
+        ("mean_power_w", (3,), 1e-10),
+        ("input_impedance_pa_s_m3", (0,), 1e3),
+    ):
+        bad = deepcopy(golden)
+        item = bad["records"][4][field]
+        if len(index) == 2:
+            item[index[0]][index[1]] += magnitude
+        else:
+            item[index[0]] += magnitude
+        with pytest.raises(AssertionError, match="differs"):
+            verifier.compare_candidate_oracles(golden, bad)
+    wrong_case = deepcopy(golden)
+    wrong_case["records"][0]["case"] = "O"
+    with pytest.raises(AssertionError, match="case/order"):
+        verifier.compare_candidate_oracles(golden, wrong_case)
+    for bad_value in (float("nan"), float("inf"), float("-inf")):
+        bad = deepcopy(golden)
+        bad["records"][0]["pressure_pa"][0][0] = bad_value
+        with pytest.raises(AssertionError, match="nonfinite"):
+            verifier.compare_candidate_oracles(golden, bad)
+    bad_metadata = deepcopy(golden)
+    bad_metadata["status"] = "ADOPTED"
+    with pytest.raises(AssertionError, match="metadata"):
+        verifier.compare_candidate_oracles(golden, bad_metadata)
