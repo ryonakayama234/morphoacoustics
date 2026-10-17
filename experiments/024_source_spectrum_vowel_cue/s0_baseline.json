@@ -1,0 +1,20 @@
+{
+  "provenance": {
+    "experiment": "023 (originally 015)",
+    "source_commit": "4b9eacee8076b9cf285d24f79b6d6daa26d71449",
+    "canonical_run_id": 37070023407,
+    "artifact_id": 11254830785,
+    "method": "Recomputed from the pinned canonical source commit, not current dependencies."
+  },
+  "ratio_tolerance_db": 1e-06,
+  "s0_source_p2_over_p1_db": {
+    "a": -15.245441210647721,
+    "i": -49.214731739011405,
+    "u": -31.62084988287622
+  },
+  "s0_rendered_p2_over_p1_db": {
+    "a": -10.546272812118522,
+    "i": -28.79889456704624,
+    "u": -23.555006121064586
+  }
+}

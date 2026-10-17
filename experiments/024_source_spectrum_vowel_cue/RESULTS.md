@@ -24,3 +24,23 @@ The useful result is that changing only the excitation spectrum changed the /i/ 
 Do not relax Experiment 024 thresholds. A separate revision should use a smoother periodic diagnostic source while retaining at least +10 dB predicted /i/ cue improvement and the same artifact limit.
 
 Provenance: GitHub Actions run 37549679294; full artifact 11452595232; public listening artifact 11452550430.
+
+## Post-merge reproducibility repair (PR #57 review)
+
+The Wolfram generator was repaired to use real newlines, export the consumer's
+`predicted_listening_pressure_p2_over_p1_db` key and all existing tolerance
+fields, and numerically evaluate exact logarithmic expressions before JSON export.
+A Wolfram kernel executed the repaired generator and re-imported its JSON;
+every value matches the committed oracle. No predicted value was changed.
+
+`s0_baseline.json` freezes the source and rendered harmonic ratios recomputed
+from the canonical Experiment 023 source commit `4b9eacee8076b9cf285d24f79b6d6daa26d71449`
+(originally experiment directory 015). The current S0 reproduces all six ratios
+with zero measured error. The new 1e-6 dB tolerance is a numerical reproduction
+check, not a perceptual or model-accuracy threshold. It was added after the
+original experiment and is not described as an original preregistered gate.
+
+Future runs require that control reproduction and finite S0/S1 /i/ ratios
+before the objective gate can pass. Non-finite ratios cannot count as infinite
+improvement. Re-running Experiment 024 preserves all existing measurements,
+including +31.5222 dB /i/ improvement, and the objective-gate failure.
