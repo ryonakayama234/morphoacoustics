@@ -68,7 +68,9 @@ evidence, or independently sign off the science.
   nr1a.gate-a.exploratory-mutation-preflight.v1. It records baseline and
   per-equation-mutant junction diagnostics: pressure equality (Pa), signed
   complex flow conservation magnitude (m³/s), real average-power imbalance
-  (W), and complex-power imbalance magnitude (VA). These are independent
+  (W), and complex-power imbalance magnitude (VA); signed flow residual
+  real/imaginary parts (m³/s) and reactive power (var) are also preserved.
+  These are independent
   *physical-law observations*, not merely linear-system solver residuals.
 - Wrong particle velocity conservation at **N / 80 Hz** violates complex volume
   flow but can pass a **real mean-power** check, because the discrepancy is
