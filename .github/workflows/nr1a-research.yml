@@ -1,9 +1,11 @@
-name: NR-1a experimental terminal route (pre-Gate-A candidate)
+name: NR-1a research + exploratory Gate A mutation preflight (not adoption)
 on:
   pull_request:
     paths:
       - 'experiments/041_nr1_static_oral_nasal_route/**'
       - 'tests/test_experiment_041_nr1a.py'
+      - 'experiments/042_nr1a_gate_a_preflight/**'
+      - 'tests/test_experiment_042_nr1a_preflight.py'
       - '.github/workflows/nr1a-research.yml'
       - 'docs/research/nasal-routing-nr1/**'
       # Re-run candidate evidence when the authoritative N/O Core dependency changes.
@@ -16,6 +18,8 @@ on:
     paths:
       - 'experiments/041_nr1_static_oral_nasal_route/**'
       - 'tests/test_experiment_041_nr1a.py'
+      - 'experiments/042_nr1a_gate_a_preflight/**'
+      - 'tests/test_experiment_042_nr1a_preflight.py'
       - 'tests/test_branch3_public.py'
       - '.github/workflows/nr1a-research.yml'
       - 'docs/research/nasal-routing-nr1/**'
@@ -48,7 +52,10 @@ jobs:
           cd experiments/041_nr1_static_oral_nasal_route/wolfram
           sha256sum -c SHA256SUMS
       - name: Compare Core and experimental recursive solver with independent Wolfram full states
-        run: python -m pytest tests/test_experiment_041_nr1a.py tests/test_branch3_public.py -q
+        run: python -m pytest tests/test_experiment_041_nr1a.py tests/test_experiment_042_nr1a_preflight.py tests/test_branch3_public.py -q
+      - name: Exploratory Gate A mutant-matrix preflight (not prospective evidence)
+        run: |
+          python experiments/042_nr1a_gate_a_preflight/preflight.py --output "$RUNNER_TEMP/nr1a-gate-a-exploratory.json"
       - name: Reproducible exact-head raw evidence
         run: |
           python experiments/041_nr1_static_oral_nasal_route/run.py \
