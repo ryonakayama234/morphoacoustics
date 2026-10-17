@@ -1,5 +1,8 @@
 # Organ Graph Foundation — execution work orders / acceptance plan (2026-10-14 JST)
 
+> **OG-5 Gate B3: MACHINE PASS at candidate `205484690250b366760c574f8621dc066710e5a0`, NOT ADOPTED (2026-10-16):** [B3 experiment/architecture/data/traceability](./og5-gate-b3-trial.md) | [Wolfram independent dual-path source](./og5-gate-b3-independent-oracle.wl) | [fail-closed Core scorer](../../checks/check_og5_gate_b3.py) | [full run 38911540920](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38911540920) | [Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112). 144/144 complete 20-complex outputs matched global+recursive independent Wolfram, 8/8 wrong-law/output mutants killed, twin SHA-bound raw artifacts audited; OG-3/OG-4 (including frozen Exp028/029 and genuine 2-Take X2a), original Gate A and 3.11–3.13/mypy all passed at candidate HEAD. **This is a historical pinned machine receipt, not Gate C adoption; every later HEAD requires fresh exact-SHA checks.**
+
+
 **Current execution update (2026-10-16; corrected after Codex P2):** **WP-02 = OG-3 fixed2 Core graph preparation+observation, ADOPTED LIMITED and merged** via [PR #104](https://github.com/ryonakayama234/morphoacoustics/pull/104); see [Gate C decision](./og3-gate-c-limited-adoption.md). **WP-03 = creator-selected exact body preset contract v1** remains a **separate Core contract workstream** (its draft status is not changed or adopted by OG-3). **WP-04 = Studio validated A/B body preset selector** likewise remains separate and **not delivered by OG-3**. These WP identifiers follow the explicit graph and section headings below; the old 2026-10-15 status line is retained only as historical prerelease planning, not as the current authoritative status.
 
 **Status: WORK PLAN / 2026-10-15 UPDATE — WP-01 ADOPTED LIMITED RESEARCH AND MERGED; WP-03 DRAFT IMPLEMENTED, NOT ADOPTED; WP-02/04 UNIMPLEMENTED.**
@@ -198,3 +201,67 @@ Standalone Python regeneration and an independent JavaScript encoder confirm ful
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B after accepted Gate A — 2026-10-16
+
+- [x] Gate A [PR #110](https://github.com/ryonakayama234/morphoacoustics/pull/110) merged; normative A1 accepted and frozen.
+- [x] B1 private scaled 20-state candidate and focused trial tests introduced in a separate Draft; record in [B1 trial](./og5-gate-b1-trial.md). No public ABI or merge.
+- [ ] B1 exact-HEAD GitHub CI 3 Python+mypy, frozen eight all-port checks, real `UniformTube` linked execution, remediate failures.
+- [ ] B2 strict Blueprint validation + exact snapshot/observation serialization, A1 27 error and 6 numerical seam assertions and canonical hash goldens.
+- [ ] B3 144 fresh independent Wolfram all-port comparator cases + negative controls, regression/immutable raw evidence and two exact-HEAD runs.
+- [ ] Gate C independent physics+API+reproducibility audit, explicit limited decision; never auto-merge before this decision.
+
+Architecture, candidate data, execution and experiment ledger are updated in this same B1 Draft. Core Creator CC-A1/Studio CC-A2 remains a separate path.
+
+**OG-5 B1 first CI correction:** At initial HEAD `82e1c69`, five B1 focused pytest tests passed on Python3.11 but mypy failed one incompatible `np.linalg.solve` return type; downstream OG3/OG4 suites also stopped at the same source type check. Typed no-op repair is proposed in subsequent HEAD; exact-head rerun required before a B1 machine-pass checkpoint. [Trial log summary](./og5-gate-b1-trial.md).
+
+## Gate B2 contract checkpoint (2026-10-16; DRAFT)
+
+OG-5 Gate B2: [x] code candidate for Blueprint→Prepared/Snapshot→Response and golden fixtures submitted to same Draft PR #112; [ ] exact HEAD CI and test failures addressed; [ ] B3 independent 144 full-port comparisons, 8 wrong laws, 6 true solver-boundary seams, two evidence archives and separate Gate C critical review. [B2 record](./og5-gate-b2-contract.md).
+
+**OG-5 B2 initial red CI:** first run 619 green / 7 failed (Python3.13), 11 mypy errors. Six harness-envelope mistakes and one duplicate-organ precedence issue are patched for a fresh HEAD. No goalposts changed and no claim of B2 completion before all corrections pass. [Receipt](./og5-gate-b2-contract.md).
+
+**B2 fixed A1 seams:** [x] Six solver-boundary numerical fault fixtures authored at actual 20×20 matrix/solve seam, including rank, condition, nonfinite, solver failure, algebraic residual and late-sample atomic failure. [ ] Exact-HEAD CI results for added controls. B3 requires 144 independent Wolfram full-state cases and all eight wrong-law controls; Gate C separate. [Trial](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.
+
+
+## OG-5 Gate C R3/R4 capability-order remediation
+
+The [R3/R4 repair record](./og5-gate-c-remediation.md#r3r4-follow-up-one-frozen-capability-selection-rule)
+records the 3eeab25 INCONCLUSIVE findings and correction. Data/architecture flow:
+complete structural validation -> normalized Blueprint -> applicable capability
+candidates -> frozen A1 code priority and ASCII pointer selection -> immutable
+Snapshot -> unchanged solver -> atomic full-port Observation -> independently
+source-pinned raw audit. Unsupported organ mappings never enter fixed geometry
+lookups. The 320 added contract cases first gave 54 FAIL / 266 PASS; old frozen
+fixtures and physical/oracle values remain immutable. B3 now watches its golden
+input, and raw oracle values are directly bound to the checkout's eight shards.
+Execution requires all CI plus two fresh raw evidence runs on the corrected
+committed HEAD and a separate Gate C adoption review. **Repair candidate only;
+Draft/unmerged/not adopted.** See the PR receipt for actual final counts and SHAs.
+
+
+## OG-5 Gate C R5 Snapshot-version remediation
+
+The [R5 repair and phase-boundary record](./og5-gate-c-remediation.md#r5-follow-up-outer-snapshot-version-group-and-phase-boundaries)
+closes the outer Snapshot version selection gap from the 532051c review.
+Validated Snapshot -> complete nested shape/relationship/graph checks -> outer
+version candidates selected by ASCII pointer -> backend -> nested Blueprint
+capability -> recomputed hashes -> immutable binding remains the data flow.
+The six new unittest methods cover 78 cases, including all 15 marker combinations
+and validation phase boundaries; the primary matrix first failed four cases,
+then all cases passed after repair. Wolfram independently encoded the API
+priority truth table, not new physical evidence. Physics/schemas/oracles/frozen
+bytes remain unchanged. CI and two source-pinned raw archives must attest the
+new committed HEAD before a separate final technical disposition. No merge or
+Studio/speech capability is authorized by this repair record.

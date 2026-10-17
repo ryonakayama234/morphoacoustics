@@ -1,5 +1,8 @@
 # Organ Graph data contracts — experiment-local candidate (2026-10-14)
 
+> **OG-5 Gate B3: MACHINE PASS at candidate `205484690250b366760c574f8621dc066710e5a0`, NOT ADOPTED (2026-10-16):** [B3 experiment/architecture/data/traceability](./og5-gate-b3-trial.md) | [Wolfram independent dual-path source](./og5-gate-b3-independent-oracle.wl) | [fail-closed Core scorer](../../checks/check_og5_gate_b3.py) | [full run 38911540920](https://github.com/ryonakayama234/morphoacoustics/actions/runs/38911540920) | [Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112). 144/144 complete 20-complex outputs matched global+recursive independent Wolfram, 8/8 wrong-law/output mutants killed, twin SHA-bound raw artifacts audited; OG-3/OG-4 (including frozen Exp028/029 and genuine 2-Take X2a), original Gate A and 3.11–3.13/mypy all passed at candidate HEAD. **This is a historical pinned machine receipt, not Gate C adoption; every later HEAD requires fresh exact-SHA checks.**
+
+
 **Current production-facing exception (2026-10-16):** the *specific* typed two-node passive serial graph schema in `src/morphoacoustics_graph/` is **adopted limited on Core main**, [Gate C decision](./og3-gate-c-limited-adoption.md). The older *general* graph schema and separate `CreatureSpec`/Studio body-binding contract described below remain candidate and **NOT adopted**. Two exact geometries, fixed common medium and full unloaded complex response only; no aliasing UI coordinates or physical time state.
 
 **NOT A PUBLISHED API.** This is a reviewable, minimal conceptual schema for [Core OG-2 #96](https://github.com/ryonakayama234/morphoacoustics/issues/96), not a replacement for `CreatureSpec`, `PreparedMorphology[T]`, `Tract1DGeometry` or the Studio Performance Contract v0. Exact field names and JSON serialization are unapproved.
@@ -233,3 +236,60 @@ Standalone Python regeneration and an independent JavaScript encoder confirm ful
 ## OG-5 Gate A specification accepted — 2026-10-16 JST
 
 Decision **ACCEPTED_FOR_GATE_B / SPECIFICATION_FROZEN**. [Acceptance and scope](./og5-gate-a-acceptance.md) supersedes the earlier pending status. Technical specification reviewed at `b7fb56c66236b0cbdb532fec8c75d46709c95bd0`; A1's schemas/bytes/refusal rules, fixed five-organ/two-junction fixture, 144/144 positive requirements and explicit numerical controls are frozen for a separate implementation trial. This accepts the design handoff only. Runtime tree5 support and scientific implementation adoption require Gate B execution and Gate C decision; #109 remains open. Original candidate receipts retain their historical status and hashes.
+
+## OG-5 Gate B1 data boundary — 2026-10-16 (Draft)
+
+An internal frozen `Tree5PhysicalSample` carries 10 complex p/U endpoint pairs, per-port signed mean power and Gate A numeric diagnostics; **this is not** the accepted public `og5.tree5.observation.v1` JSON payload. The B1 helper accepts explicit frozen fixture scalars, **not** `og5.passive.tree5.v1` Blueprints. Frozen v1 canonical digests, binding checks and 27 stable error receipts remain B2 acceptance obligations. See [Gate A A1](./og5-gate-a-amendment-a1.md) and [B1 report](./og5-gate-b1-trial.md).
+
+**OG-5 B1 typing receipt:** Internal complex128 solver state remains an ndarray rather than a public serialized p/U observation. A `typing.cast` repairs static library typing only, with no data-model field added or canonical hashes changed. [Trial evidence](./og5-gate-b1-trial.md).
+
+## Gate B2 contract checkpoint (2026-10-16; DRAFT)
+
+OG-5 B2 now proposes a real strict `og5.passive.tree5.v1` adapter, three independent canonical SHA-256 identities, byte-encoded snapshot and full complex p/U observation; A1 is authoritative. [B2 implementation record](./og5-gate-b2-contract.md). Numerical computed fields remain distinct from immutable physical organ/revision metadata.
+
+**OG-5 B2 contract fidelity checkpoint:** No API/schema/digest fixture change in the CI correction; response test passes the fixture's `frequencies_hz`, and duplicated organ ID rejects prior to deriving invalid connections. [Record](./og5-gate-b2-contract.md).
+
+**B2 error state/data separation:** A1's six numerical seams produce `Tree5Error(status,code,path)` without partial Observation or digest, using matrix/solver fault injection in tests rather than making malformation part of the public physical blueprint. [Trial record](./og5-gate-b2-contract.md).
+
+
+## OG-5 Gate C remediation — 2026-10-16 JST
+
+[Gate C remediation record](./og5-gate-c-remediation.md) restores A1 Unicode-key
+refusal and compound-error priority, removes import-order dependence, and hardens
+source-bound B3 raw evidence and CI triggers. Architecture remains validated
+Blueprint → immutable PreparedTree5 → full-port Observation → separately audited
+evidence. No physics/schema/oracle or Studio boundary changes. Old ca07c974
+INCONCLUSIVE review remains historical; new exact-HEAD trials and separate
+critical review are required before a LIMITED adoption decision.
+
+
+## OG-5 Gate C R3/R4 capability-order remediation
+
+The [R3/R4 repair record](./og5-gate-c-remediation.md#r3r4-follow-up-one-frozen-capability-selection-rule)
+records the 3eeab25 INCONCLUSIVE findings and correction. Data/architecture flow:
+complete structural validation -> normalized Blueprint -> applicable capability
+candidates -> frozen A1 code priority and ASCII pointer selection -> immutable
+Snapshot -> unchanged solver -> atomic full-port Observation -> independently
+source-pinned raw audit. Unsupported organ mappings never enter fixed geometry
+lookups. The 320 added contract cases first gave 54 FAIL / 266 PASS; old frozen
+fixtures and physical/oracle values remain immutable. B3 now watches its golden
+input, and raw oracle values are directly bound to the checkout's eight shards.
+Execution requires all CI plus two fresh raw evidence runs on the corrected
+committed HEAD and a separate Gate C adoption review. **Repair candidate only;
+Draft/unmerged/not adopted.** See the PR receipt for actual final counts and SHAs.
+
+
+## OG-5 Gate C R5 Snapshot-version remediation
+
+The [R5 repair and phase-boundary record](./og5-gate-c-remediation.md#r5-follow-up-outer-snapshot-version-group-and-phase-boundaries)
+closes the outer Snapshot version selection gap from the 532051c review.
+Validated Snapshot -> complete nested shape/relationship/graph checks -> outer
+version candidates selected by ASCII pointer -> backend -> nested Blueprint
+capability -> recomputed hashes -> immutable binding remains the data flow.
+The six new unittest methods cover 78 cases, including all 15 marker combinations
+and validation phase boundaries; the primary matrix first failed four cases,
+then all cases passed after repair. Wolfram independently encoded the API
+priority truth table, not new physical evidence. Physics/schemas/oracles/frozen
+bytes remain unchanged. CI and two source-pinned raw archives must attest the
+new committed HEAD before a separate final technical disposition. No merge or
+Studio/speech capability is authorized by this repair record.

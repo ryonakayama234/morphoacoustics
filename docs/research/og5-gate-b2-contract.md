@@ -1,0 +1,21 @@
+# OG-5 Gate B2 data contract integration — Draft, 2026-10-16 JST
+
+**Status: IMPLEMENTATION CANDIDATE / NOT ADOPTED.** Source of truth: [Gate A accepted Amendment A1](./og5-gate-a-amendment-a1.md) and [frozen API](./og5-tree5-api-v1.md). Integrated into [B1 Draft PR #112](https://github.com/ryonakayama234/morphoacoustics/pull/112); **no merge, no implementation adoption**.
+
+The separate \`src/morphoacoustics_graph/tree5_contract.py\` adapter provides:
+- \`prepare_tree5\`, \`restore_tree5\`, \`PreparedTree5.to_snapshot/response\`, \`Tree5Error\` and strict JSON duplicate-key adapter.
+- Validate entire supported common schema and structural references/IDs/kinds/orientation, cycle-before-disconnected graph check; capability checked after structural validity. Array-order independent physical identities but oriented junction port order remains semantic. The frozen 7-organ valid tree is a well-typed **UNSUPPORTED**, whereas the cycle is **INVALID**.
+- Exact binary64 ASCII canonical \`d,s,l,m\` byte encoder and three separate zero-delimited SHA256 domain hashes. All supplied Blueprint/Prepared/Observation golden-byte constants must match the independent design fixture generator; numeric response bytes need not bit-match reference runtime.
+- Frozen 20-state B1 solver produces \`SUCCESS\` observations with ten full p/U pairs and power/diagnostics. Atomicity on frequency request: no partial state/digest on late failure. All public results newly allocated; prepared object reconstructs binding from immutable JSON and recomputes identities.
+
+**Required evidence checks**: fixture snapshot variants, six binary golden payloads, 27 exact refusal receipts, observed full-port numerical states, repeated and reordered frequencies, mutable caller isolation, later numeric refusal. Python 3.11-3.13/mypy; OG3/OG4 complete regressions; validation under GitHub Actions at precise HEAD, not generic same-branch runs.
+
+**Remaining risks**: B2 unit tests are conformance claims ONLY when actual CI passes. Test seams currently inject \`_solve_fixture\` exceptions; the full Gate A six numerical test seams must in B3 inject the **actual 20x20 matrix/solution boundary**. Eight wrong-law mutants, fresh independent full-port 144-case Core/Wolfram comparison and SHA-bound twin evidence runs are B3 tasks. Response/serialization hash digests can vary across floating runtimes while physical error stays within normative tolerance. No biological vocalization/FSI/WAV.
+
+## First Gate B2 CI failure and correction (2026-10-16 JST)
+
+At first B2 HEAD `fd52b4b2c394d42af6f4b53f2f4ea11a86eccdeb`, general Python 3.13 suite was **619 passed / 7 failed** (before mypy), while mypy reported 11 new-code type errors. Six pytest failures arose from **test harness misuse of the frozen error-fixture envelope**: a response fixture has `{receiver_snapshot,frequencies_hz}`, not a bare list. The fixture and normative error expectations were not changed; test now calls restored receiver with `case.input.frequencies_hz`. Remaining duplicate-organ fixture produced a derived `INVALID_CONNECTION` due duplicated organ names; fix rejects duplicate semantic identities before deriving ambiguous relationships, yielding the frozen `DUPLICATE_ID:/organs/1/id`. Mypy repairs are annotations/casts/NoReturn and do not alter physics. This first red run is evidence, not a pass: general run `38895168890`, OG4 `38895168822`. Fresh exact-HEAD CI required.
+
+## B2 actual numeric failure boundary checkpoint
+
+Added parameterized full six A1 `numeric_refusal_test_seams` at the **actual B1 20×20 `_system` and `np.linalg.solve` boundary** (not at `_solve_fixture`). Rank-deficient last-row replacement, full-rank bad condition 1e5, nonfinite coefficient, explicit solver failure, altered returned solution with excessive residual and second-frequency rank defect after a valid sample all require exact `Tree5Error` code/path and atomic no-observation outcome. The earlier exception-mocking smoke test remains distinct. These are deterministic fault-injection controls, not arbitrary physically supported input. All six require fresh exact-HEAD CI; neither Wolfram cross-language 144/144 nor full Gate C is inferred.
