@@ -1,3 +1,5 @@
+**2026-10-17 NR-1a scope correction — research only, NOT PREREGISTERED.** Earlier rows that appear to equate nasal-path closure with velopharyngeal (VP) closure are future NR-1b proposals, NOT first-pass capabilities. Immediate candidate cases: N=(B matched, C distal rigid_closed), O=(B matched,C matched), M=(B distal rigid_closed,C matched). N/O should use actual approved OG-4, M requires separate experiment-only law and must remain UNSUPPORTED in published OG-4. A closed distal nasal tube remains acoustically coupled upstream; it does not model actual VP shutoff. [WORK_ORDER](./WORK_ORDER.md) sets the executable scope. The [exploratory 733-Hz Wolfram probe](./WOLFRAM-PROBE.wl) executed successfully, but does NOT constitute frozen/accepted Core-vs-Wolfram evidence or a scientific adoption. Gate A/B/C ledger remains unstarted.
+
 # NR-1 hypothesis protocol and experiment ledger — preregistration *draft*
 
 **STATUS: PROPOSED / NOT FROZEN / NOT RUN / NOT ADOPTED** as of 2026-10-17 JST.
