@@ -1,3 +1,25 @@
+> **Integration amendment (2026-10-17):** PR #117 is an implemented **research-only candidate**, and PR #116 is design history, not approved Gate A. The conceptual proposal sections below remain historical; any “not implemented / no numerical Gate B run” statement there does not override the 24 exploratory cases. Engineering merge does not adopt physiology, public Core/Studio capability or scientific evidence. See [WORK_ORDER](./WORK_ORDER.md) and [EXPERIMENT](./EXPERIMENT.md).
+
+## NR-1a implementation candidate — 2026-10-17 (PRE-GATE-A, NOT ADOPTED)
+
+The narrow research code now lives at [Experiment 041](../../../experiments/041_nr1_static_oral_nasal_route/run.py). **No production Core or Studio source changed.**
+
+```mermaid
+flowchart LR
+  I["One frozen 3-tube body + prescribed acoustic U"] --> C{"N / O / M distal load"}
+  C -->|"N / O published capability"| G["Adopted Core OG-4 response()"]
+  C -->|"M research only"| R["Research-only impedance recursion"]
+  G --> V["All six endpoint complex p/U + power"]
+  R --> V
+  W["Independent Wolfram 12-equation linear Solve"] --> Q["Strict full-state/energy comparator"]
+  V --> Q
+  Q --> D["SHA-bound exact-HEAD evidence; not an adopted API"]
+```
+
+Only the **distal mouth/nose terminals** change. The nose-side finite tube is still joined upstream when its outlet is rigid closed. No velopharyngeal (VP) valve closure is simulated. No spoken voice or breathing acoustics.
+
+Gate A values and numerical tolerances are research CANDIDATES until independent sign-off. N/O keep existing OG-4 identity and ABI; M uses its own experiment-only identity, not a Core API. The new comparison does not make the 5-tube OG-5 or any general graph accepted.
+
 **2026-10-17 NR-1a scope correction — design proposal only.** The first implementation proves STATIC DISTAL TERMINATION contrasts in a three-tube OG-4 layout, not actual velopharyngeal (VP) port closure or time-varying velum. A nasal outlet rigid closure retains the coupled nasal tube as a reactive side branch. B mouth terminal rigid closure is not supported by existing OG-4 API and may be tested only in an isolated research candidate. Actual VP junction shutoff / finite movable coupling belong to a separate NR-1b gate. This amendment supersedes broader wording below. See [WORK_ORDER](./WORK_ORDER.md) and [executed exploratory Wolfram probe](./WOLFRAM-PROBE.wl). No runtime or Studio adoption.
 
 # NR-1 system architecture — oral/nasal routing research proposal

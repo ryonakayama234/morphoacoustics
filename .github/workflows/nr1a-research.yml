@@ -1,0 +1,64 @@
+name: NR-1a experimental terminal route (pre-Gate-A candidate)
+on:
+  pull_request:
+    paths:
+      - 'experiments/041_nr1_static_oral_nasal_route/**'
+      - 'tests/test_experiment_041_nr1a.py'
+      - '.github/workflows/nr1a-research.yml'
+      - 'docs/research/nasal-routing-nr1/**'
+      # Re-run candidate evidence when the authoritative N/O Core dependency changes.
+      - 'src/morphoacoustics_graph/**'
+      - 'src/morphoacoustics/acoustics/**'
+      - 'tests/test_branch3_public.py'
+      - 'pyproject.toml'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/041_nr1_static_oral_nasal_route/**'
+      - 'tests/test_experiment_041_nr1a.py'
+      - 'tests/test_branch3_public.py'
+      - '.github/workflows/nr1a-research.yml'
+      - 'docs/research/nasal-routing-nr1/**'
+      - 'src/morphoacoustics_graph/**'
+      - 'src/morphoacoustics/acoustics/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
+
+jobs:
+  nr1a-full-state:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Run the actual PR head and bind the evidence to its exact SHA.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e '.[dev]'
+      - name: Verify reviewed candidate Wolfram source and archived oracle SHA256
+        run: |
+          cd experiments/041_nr1_static_oral_nasal_route/wolfram
+          sha256sum -c SHA256SUMS
+      - name: Compare Core and experimental recursive solver with independent Wolfram full states
+        run: python -m pytest tests/test_experiment_041_nr1a.py tests/test_branch3_public.py -q
+      - name: Reproducible exact-head raw evidence
+        run: |
+          python experiments/041_nr1_static_oral_nasal_route/run.py \
+            --expected-head "$(git rev-parse HEAD)" --output-dir "$RUNNER_TEMP/nr1a-evidence"
+          cd "$RUNNER_TEMP/nr1a-evidence"
+          sha256sum -c nr1a-evidence.sha256
+      - name: Archive exact-HEAD evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: nr1a-${{ matrix.python }}-exact-head
+          path: ${{ runner.temp }}/nr1a-evidence/
+          if-no-files-found: error
+          retention-days: 30

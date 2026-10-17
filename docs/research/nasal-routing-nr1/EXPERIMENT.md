@@ -1,3 +1,53 @@
+## Research-infrastructure integration ledger — 2026-10-17 (NOT ADOPTED)
+
+**Engineering decision:** The project owner permits the design-history PR #116 followed by the bounded Experiment 041 PR #117 to be integrated as research infrastructure *only* after exact-head verification and review. The original Gate A-before-Gate B chronology was not followed; existing 24 N/O/M × 8 frequency outputs are **exploratory/post-hoc**, not a prospective Gate A-confirmatory experiment. This note supersedes any unqualified "not run" statements in the historical proposal below. No scientific Gate A/C acceptance or OG-4/Studio API expansion is implied.
+
+**Reproduction and provenance contract.** The independent source is [global12_oracle.wl](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.wl) using Wolfram Language 12-complex-state global `Solve`; the checked-in [JSON](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.json) stores all 24 machine-precision records. The audited candidate bytes are pinned in [SHA256SUMS](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/SHA256SUMS). These pins are **candidate integrity receipts**, not a retrospective scientific freeze.
+
+For independent reproduction on a machine with licensed `wolframscript`:
+
+```bash
+cd experiments/041_nr1_static_oral_nasal_route/wolfram
+sha256sum -c SHA256SUMS
+wolframscript -code '$Version'
+python verify_regeneration.py --wolframscript wolframscript
+# Alternative: compare an independently archived raw JSON string from the marked
+# NR1A_ORACLE_BEGIN / NR1A_ORACLE_END block, without rerunning Wolfram here:
+python verify_regeneration.py --regenerated /path/to/reproduced-rawjson.json
+```
+
+The verifier **fails closed** on changed case order, metadata, nonfinite p/U/power/impedance or a normalized component difference >1e-12; this is a *numerical regeneration comparator*, not Gate A scientific acceptance. Store Wolfram runtime/version, captured independent raw JSON, verifier stdout (including regenerated SHA256), source/golden SHA256 and reviewing actor in the receipt. Re-run this when WL source/golden changes. Hosted GitHub Actions has no licensed Wolfram by default: its enforced checks are pinned candidate bytes, Python 3.11–3.13 full-state tests and exact-head evidence SHA. **CI does not execute Wolfram; do not claim it does.**
+
+**Prior independent audit receipts:** At candidate `53df08f3d4c74baa91fad0def93a6286c64d9b37`, [Actions run 39012240675](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39012240675) yielded three audited exact-head artifact ZIPs; manifest/CRC passed, 24 p/U and power states numerically matched across Python 3.11–3.13, and the Wolfram 15.0.1 independent re-evaluation numerically reproduced the full 24-record source. The 3.11 JSON bytes were *not* identical to 3.12/3.13: 13 small N/O condition-number diagnostic variations and four dependent OG-4 observation digests differed. Never demand or claim byte-identical **whole evidence** across runtimes; preserve numerical p/U/power equivalence and per-run self-hash instead. This prior review does **not** validate a future modified HEAD; fresh CI and receipt review remain required.
+
+**Post-integration scientific backlog:** prospective independent Gate A with physical-law mutant matrix across N/O/M × eight anchors, scale-defined whole-network conditioning/refusal criteria, separately scoped pole-safe frequency stress, predeclared thresholds and repeatability controls; new confirmation artifacts and independent Gate C (`SUPPORTED_LIMITED` / `INCONCLUSIVE` / `REJECT`) in later work. A closed distal nasal end leaves its upstream reactive nasal side branch coupled to J; this is not VP-junction closure.
+
+---
+
+## NR-1a post-audit candidate hardening (2026-10-17; NOT ADOPTED)
+
+This branch adds *research-only* fail-closed comparison checks before scientific acceptance. The comparator now rejects nonfinite full-state, powers, transfers, impedance and diagnostics; verifies full case/blueprint/backend/observation provenance; and recomputes power/impedance/transfers from p/U. The M-only research observation receives an experimental digest; N/O continue to verify the adopted OG-4 canonical observation digest without changing Core. Negative tests inject nonfinite and stale identity/derived data.
+
+The Wolfram global 12-equation solution at B's mouth-closed quarter-wave pole `f*=343/(4*0.09)=952.7777777778 Hz` is finite; a separate diagnostic-matrix stress test checks f* and f*±1e-6 Hz. The existing M recursive **8-frequency** contract is deliberately unchanged, and its local pole guard is not a global conditioning certificate. New law-level mutants at 733 Hz expand detection; a complete predeclared all-anchor mutant matrix and independent artifact audit are still outstanding.
+
+**No retrospective Gate A pass:** code/test updates are candidates pending exact-HEAD CI and independent review. Historical success at `a0912c2` remains valid for that earlier HEAD alone. Gate A and Gate C are not approved.
+
+## 2026-10-17 NR-1a exploratory implementation ledger — PRE-GATE-A
+
+| Task | State | Explicit evidence |
+|---|---|---|
+| Scope correction: distal terminal ≠ VP closure | WRITTEN / proposed | [WORK_ORDER](./WORK_ORDER.md); N/O/M are terminal-only |
+| Independent 12-equation global Wolfram source | EXECUTED candidate | [Source](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.wl); 24 records, all 6 complex endpoint p/U states each in [JSON](../../../experiments/041_nr1_static_oral_nasal_route/wolfram/global12_oracle.json) |
+| Separate Core N/O and new research-only M | IMPLEMENTED CANDIDATE | [run.py](../../../experiments/041_nr1_static_oral_nasal_route/run.py); existing Core OG-4 production unmodified |
+| Negative controls and 24 full-state comparisons | TESTS AUTHORED; CI RESULT TO REVIEW | [pytest](../../../tests/test_experiment_041_nr1a.py) |
+| Exact HEAD, 2-run evidence + independent review | NOT YET VERIFIED | [CI workflow](../../../.github/workflows/nr1a-research.yml); inspect actual runs/artifacts before any pass claim |
+| Gate A preregistration freeze / independent acceptance | NOT ACCEPTED | Separate independent physics + API review and explicit decision required |
+| Gate C supported-limited adoption | NOT ACCEPTED | No production or physiological claim |
+
+Candidate units/normalizations: p_ref=1.372 Pa, U_ref=1e-6 m3/s, P_ref=0.5*p_ref*U_ref W; end-to-end complex full-state max error <=1e-10 (not approved), power error <=1e-10 (not approved), per-tube/junction and load-law physics <=1e-10 (not approved). Core N/O retains its own stricter normative checks and refusal types. New M recursion has only an explicit denominator/reconstruction guard and must not falsely claim having implemented a full independent condition-number monitor. Freeze missing singularity controls and analysis prior to approving Gate A.
+
+**Critical status separation:** The executed Wolfram global oracle is independent from candidate Python recursive logic, but Python production Core and research candidate have not yet been proven to agree unless an observed exact-HEAD CI run with all artifacts is inspected. Tests and source in a Draft PR are not numerical trial acceptance, and cannot independently approve their own model.
+
 **2026-10-17 NR-1a scope correction — research only, NOT PREREGISTERED.** Earlier rows that appear to equate nasal-path closure with velopharyngeal (VP) closure are future NR-1b proposals, NOT first-pass capabilities. Immediate candidate cases: N=(B matched, C distal rigid_closed), O=(B matched,C matched), M=(B distal rigid_closed,C matched). N/O should use actual approved OG-4, M requires separate experiment-only law and must remain UNSUPPORTED in published OG-4. A closed distal nasal tube remains acoustically coupled upstream; it does not model actual VP shutoff. [WORK_ORDER](./WORK_ORDER.md) sets the executable scope. The [exploratory 733-Hz Wolfram probe](./WOLFRAM-PROBE.wl) executed successfully, but does NOT constitute frozen/accepted Core-vs-Wolfram evidence or a scientific adoption. Gate A/B/C ledger remains unstarted.
 
 # NR-1 hypothesis protocol and experiment ledger — preregistration *draft*
