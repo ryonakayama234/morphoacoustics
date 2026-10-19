@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 import platform
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -128,6 +129,41 @@ def sha_f64(arr: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(arr, dtype="<f8").tobytes()).hexdigest()
 
 
+def source_provenance() -> dict[str, object]:
+    """Record the actual read sources, not just an inherited task/oracle ID."""
+    root = HERE.parents[1]
+    source_paths = [
+        "experiments/009_fixed_tract_waveform/run.py",
+        "experiments/012_source_renderer_artifacts/run.py",
+        "experiments/013_parametric_source_prosody/run.py",
+        "experiments/023_static_vowel_calibration/run.py",
+        "experiments/026_moving_vowel_transition/run.py",
+        "experiments/027_task_field_vowel_transition/run.py",
+        "experiments/029_task_field_embodied_infeasibility/run.py",
+        "experiments/036_v4a_one_run_roundtrip/run.py",
+        "experiments/036_v4a_one_run_roundtrip/wolfram/schedule_oracle.json",
+    ]
+    hashes = {p: hashlib.sha256((root / p).read_bytes()).hexdigest()
+              for p in source_paths}
+    git = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                         capture_output=True, text=True, check=True)
+    return {"git_head": git.stdout.strip(), "source_sha256": hashes}
+
+
+def publish_listening_wav(output_dir: Path, pressure: np.ndarray,
+                          checks: dict[str, bool]) -> tuple[str | None, float | None]:
+    """Only passing research gates may produce a normally named preview WAV.
+
+    Failed numeric experiments keep diagnostic arrays, never a playable artifact
+    that a downstream creator could accidentally mistake for accepted physics.
+    """
+    if not checks or not all(checks.values()):
+        return None, None
+    wav_path = output_dir / "R1_listen.wav"
+    gain = EXP26.EXP9.write_listening_wav(wav_path, pressure)
+    return hashlib.sha256(wav_path.read_bytes()).hexdigest(), gain
+
+
 def write_rows(path: Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         raise ValueError("no CSV rows")
@@ -161,10 +197,9 @@ def source_cycle_jump(source: np.ndarray) -> float:
 
 
 def run(output_dir: Path) -> dict[str, object]:
-    # An old success cannot survive a failed repeat in the same output dir.
-    if output_dir.exists() and any(output_dir.iterdir()):
-        raise FileExistsError(f"Refuse nonempty output: {output_dir}")
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Exclusive new output: refuse even an empty directory or a dangling symlink.
+    # No existing Take/evidence path may be reused or overwritten.
+    output_dir.mkdir(parents=True, exist_ok=False)
     if np.__version__ != EXP29.AUDITED_NUMPY_VERSION:
         raise RuntimeError("V4-A must run NumPy==2.4.6 for the frozen baseline")
     oracle = json.loads(ORACLE.read_text(encoding="utf-8"))
@@ -211,8 +246,6 @@ def run(output_dir: Path) -> dict[str, object]:
         start, 1.0, cavity_id=start.cavity_id
     )
     endpoint = EXP26.EXP23.primary_geometry("i")
-    expected_i_error = EXP26.rms(np.array([1.0]))  # not used as an acoustic proxy
-    del expected_i_error
     trace: list[dict[str, object]] = []
     trajectory = []
     all_geometry_valid = True
@@ -277,8 +310,7 @@ def run(output_dir: Path) -> dict[str, object]:
     np.save(output_dir/"R1_ref_raw_pressure_pa.npy",reference)
     np.save(output_dir/"C0_naive_concat_DIAGNOSTIC_ONLY.npy",concat_control)
     np.save(output_dir/"source_volume_flow_m3_s.npy",source)
-    pcm_gain = EXP26.EXP9.write_listening_wav(output_dir/"R1_listen.wav",pressure)
-    wav_bytes = (output_dir/"R1_listen.wav").read_bytes()
+    wav_sha, pcm_gain = publish_listening_wav(output_dir, pressure, checks)
     manifest = {
         "experiment":"V4-A-experiment-036",
         "decision": "SUPPORT_ONE_RUN_ROUNDTRIP" if all(checks.values())
@@ -298,7 +330,7 @@ def run(output_dir: Path) -> dict[str, object]:
             "baseline_quantized_sha256":frozen_hash,
             "pressure_sha256":sha_f64(pressure),
             "source_sha256":sha_f64(source),
-            "wav_sha256":hashlib.sha256(wav_bytes).hexdigest(),
+            "wav_sha256":wav_sha,
             "playback_gain_fullscale_per_pa":pcm_gain,
             "resonance_grid_peak_errors_hz":peak_errors,
         },
@@ -310,8 +342,11 @@ def run(output_dir: Path) -> dict[str, object]:
             "task_plan":EXP27.task_plan_payload(),
             "task_sha256":EXP29.sha256_json(EXP27.task_plan_payload()),
             "renderer":"Experiment012 frame_render preroll_edge",
-            "oracle_sha256":hashlib.sha256(ORACLE.read_bytes()).hexdigest()
-        }
+            "oracle_sha256":hashlib.sha256(ORACLE.read_bytes()).hexdigest(),
+            "executed_sources":source_provenance(),
+        },
+        "adoption_status":"NOT_ADOPTED_REVIEW_AND_HUMAN_GATE_PENDING",
+        "preview_available":wav_sha is not None,
     }
     (output_dir/"summary.json").write_text(
         json.dumps(manifest,indent=2,ensure_ascii=False,sort_keys=True)+"\n",
