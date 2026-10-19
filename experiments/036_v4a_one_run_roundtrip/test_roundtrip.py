@@ -2,7 +2,9 @@
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +33,60 @@ class RoundtripTests(unittest.TestCase):
             M.analytic_activation(float("nan"))
         with self.assertRaises(ValueError):
             M.activation_at(.25,.123)
+
+    def test_exclusive_output_rejects_empty_directory_and_symlink(self):
+        # Must reject stale destinations before expensive physics/import checks.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            existing = root / "existing"
+            existing.mkdir()
+            with self.assertRaises(FileExistsError):
+                M.run(existing)
+            symlink = root / "link"
+            symlink.symlink_to(existing, target_is_directory=True)
+            with self.assertRaises(FileExistsError):
+                M.run(symlink)
+            dangling = root / "dangling"
+            dangling.symlink_to(root / "not-there", target_is_directory=True)
+            with self.assertRaises(FileExistsError):
+                M.run(dangling)
+            self.assertEqual(list(existing.iterdir()), [])
+            self.assertFalse((root / "not-there").exists())
+
+    def test_failed_numeric_gate_cannot_emit_playable_preview(self):
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.object(M.EXP26.EXP9, "write_listening_wav") as writer:
+                for checks in ({}, {"frozen_B0": False},
+                               {"frozen_B0": True, "trajectory_step": False}):
+                    digest, gain = M.publish_listening_wav(
+                        Path(d), np.zeros(16), checks)
+                    self.assertIsNone(digest)
+                    self.assertIsNone(gain)
+                writer.assert_not_called()
+                self.assertFalse((Path(d) / "R1_listen.wav").exists())
+
+    def test_passing_gate_preview_is_byte_hashed(self):
+        with tempfile.TemporaryDirectory() as d:
+            def fake_writer(path, _pressure):
+                path.write_bytes(b"diagnostic-test-only")
+                return 1.5
+            with mock.patch.object(M.EXP26.EXP9, "write_listening_wav",
+                                   side_effect=fake_writer) as writer:
+                digest, gain = M.publish_listening_wav(
+                    Path(d), np.ones(16), {"frozen_B0": True})
+                self.assertEqual(gain, 1.5)
+                self.assertEqual(digest, __import__("hashlib").sha256(
+                    b"diagnostic-test-only").hexdigest())
+                writer.assert_called_once()
+
+    def test_execution_provenance_binds_actual_sources(self):
+        receipt = M.source_provenance()
+        self.assertRegex(receipt["git_head"], r"^[0-9a-f]{40}$")
+        files = receipt["source_sha256"]
+        self.assertIn("experiments/036_v4a_one_run_roundtrip/run.py", files)
+        self.assertIn("experiments/029_task_field_embodied_infeasibility/run.py", files)
+        for digest in files.values():
+            self.assertRegex(digest, r"^[0-9a-f]{64}$")
 
     def test_prepared_body_uses_shared_geometry(self):
         prepared=M.body()
