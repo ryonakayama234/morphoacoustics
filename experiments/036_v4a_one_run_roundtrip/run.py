@@ -139,7 +139,13 @@ def source_provenance() -> dict[str, object]:
         "experiments/023_static_vowel_calibration/run.py",
         "experiments/026_moving_vowel_transition/run.py",
         "experiments/027_task_field_vowel_transition/run.py",
+        "experiments/028_task_field_morphology_transfer/run.py",
+        "experiments/028_task_field_morphology_transfer/wolfram/v3b_oracle.json",
+        "experiments/028_task_field_morphology_transfer/frozen_reference.json",
         "experiments/029_task_field_embodied_infeasibility/run.py",
+        "experiments/029_task_field_embodied_infeasibility/wolfram/v3c_oracle.json",
+        "experiments/029_task_field_embodied_infeasibility/wolfram/v3c_oracle.wl",
+        "experiments/027_task_field_vowel_transition/wolfram/v3a_oracle.json",
         "experiments/036_v4a_one_run_roundtrip/run.py",
         "experiments/036_v4a_one_run_roundtrip/wolfram/schedule_oracle.json",
     ]
@@ -148,6 +154,43 @@ def source_provenance() -> dict[str, object]:
     git = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
                          capture_output=True, text=True, check=True)
     return {"git_head": git.stdout.strip(), "source_sha256": hashes}
+
+
+def upstream_scientific_preflight() -> dict[str, object]:
+    """Run *adopted* independent V3b/V3c reference checks before V4-A.
+
+    The frozen 0.5s waveform digest alone cannot detect a replaced oracle or
+    policy: verify the upstream provenance and task representation as well.
+    """
+    e28 = EXP29.EXP28
+    expected_blobs = {
+        e28.FROZEN_REFERENCE_PATH: EXP29.EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA,
+        e28.ORACLE_PATH: EXP29.EXP28_ORACLE_GIT_BLOB_SHA,
+        EXP29.ORACLE_PATH: EXP29.ORACLE_GIT_BLOB_SHA,
+        EXP29.HERE / "wolfram" / "v3c_oracle.wl":
+            EXP29.V3C_ORACLE_WOLFRAM_SOURCE_GIT_BLOB_SHA,
+    }
+    blob_checks = {
+        str(path.relative_to(HERE.parents[1])): EXP29.git_blob_sha1(path) == sha
+        for path, sha in expected_blobs.items()
+    }
+    frozen = json.loads(e28.FROZEN_REFERENCE_PATH.read_text(encoding="utf-8"))
+    e28_oracle = json.loads(e28.ORACLE_PATH.read_text(encoding="utf-8"))
+    e29_oracle = json.loads(EXP29.ORACLE_PATH.read_text(encoding="utf-8"))
+    a = EXP26.EXP23.primary_geometry("a")
+    i = EXP26.EXP23.primary_geometry("i")
+    upstream = e28.frozen_preflight(e28_oracle, frozen, a, i)
+    local = EXP29.local_oracle_preflight(e29_oracle)
+    e27_oracle = json.loads(EXP27.ORACLE_PATH.read_text(encoding="utf-8"))
+    task_match = EXP27.task_plan_payload() == e27_oracle["task_plan"]
+    return {
+        "pass": all(blob_checks.values()) and upstream["pass"] and
+                local["pass"] and task_match,
+        "frozen_blob_checks": blob_checks,
+        "v3b_frozen_preflight_checks": upstream["checks"],
+        "v3c_frozen_preflight_checks": local["checks"],
+        "v3a_task_oracle_match": task_match,
+    }
 
 
 def publish_listening_wav(output_dir: Path, pressure: np.ndarray,
@@ -203,9 +246,24 @@ def run(output_dir: Path) -> dict[str, object]:
     if np.__version__ != EXP29.AUDITED_NUMPY_VERSION:
         raise RuntimeError("V4-A must run NumPy==2.4.6 for the frozen baseline")
     oracle = json.loads(ORACLE.read_text(encoding="utf-8"))
+    upstream_preflight = upstream_scientific_preflight()
+    if not upstream_preflight["pass"]:
+        raise RuntimeError("V4-A upstream frozen-science preflight failed; no acoustic render")
     prep = body()
     start = prep.rest_state
     source0 = EXP13.build_sources()[0]["lf_fixed"].source
+    # An unreachable task must never silently become a synthesized success.
+    unreachable = EXP29.creature_for(cavity_id=start.cavity_id,
+                                    oral_reachable_end=0.70)
+    infeasible_prep = EXP29.prepared_for(
+        creature=unreachable, geometry=start, condition="M_minus")
+    invalid = EXP29.evaluate_condition(infeasible_prep, source0,
+                                       label="v4a-no-fallback-negative")
+    no_fallback = bool(
+        invalid.feasibility.status is EXP29.FeasibilityStatus.INFEASIBLE and
+        invalid.acoustic_call_count == 0 and
+        invalid.waveform is None and invalid.endpoint is None
+    )
     baseline = EXP29.evaluate_condition(prep, source0, label="v4a-baseline")
     frozen_hash = (EXP29.quantized_waveform_sha256(baseline.waveform)
                    if baseline.waveform is not None else "MISSING")
@@ -224,7 +282,8 @@ def run(output_dir: Path) -> dict[str, object]:
     checks["frozen_B0"] = bool(
         frozen_hash == REFERENCE_SIGNATURE and
         baseline.acoustic_call_count == 102 and
-        baseline.feasibility.status is EXP29.FeasibilityStatus.FEASIBLE
+        baseline.feasibility.status is EXP29.FeasibilityStatus.FEASIBLE and
+        upstream_preflight["pass"] and no_fallback
     )
     checks["source_identity"] = bool(
         len(source)==SAMPLES and len(cycles)==SAMPLES and
@@ -344,6 +403,8 @@ def run(output_dir: Path) -> dict[str, object]:
             "renderer":"Experiment012 frame_render preroll_edge",
             "oracle_sha256":hashlib.sha256(ORACLE.read_bytes()).hexdigest(),
             "executed_sources":source_provenance(),
+            "upstream_scientific_preflight":upstream_preflight,
+            "unreachable_body_no_fallback":no_fallback,
         },
         "adoption_status":"NOT_ADOPTED_REVIEW_AND_HUMAN_GATE_PENDING",
         "preview_available":wav_sha is not None,
