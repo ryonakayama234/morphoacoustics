@@ -285,3 +285,42 @@ def test_v1_feasible_bound_result_permits_audio_reference() -> None:
     result["realization_outcome"] = "FEASIBLE"
     result["artifacts"] = [{"kind": "audio", "ref": "sha256://fixture", "media_type": "audio/wav"}]
     validate("performance-result", result)  # Structural only; not a real synthesis receipt.
+
+
+def test_pair_refuses_resolution_borrowed_from_different_selected_body() -> None:
+    """Both forged sides can agree but still refer to the wrong requested body."""
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    registry = _registry()
+    other = deepcopy(original)
+    other["embodiment"]["preset_id"] = "human-narrow"
+    borrowed, _ = resolve_v1_binding(
+        other, registry, required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    original_digest = v1_input_digest(
+        original, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result = document("v1", "examples/result.fixture.json")
+    result["request_id"] = original["request_id"]
+    result["provenance"].update(
+        backend="fidelity0.tract1d", backend_version="v1", input_digest=original_digest,
+    )
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+    # Character identity is independently part of the authoritative binding.
+    different_character = deepcopy(original)
+    different_character["character"]["character_id"] = "another_character"
+    borrowed_character, _ = resolve_v1_binding(
+        different_character, registry, required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result["embodiment"] = v1_resolved_embodiment(borrowed_character)
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed_character, backend_id="fidelity0.tract1d", backend_version="v1"
+        )

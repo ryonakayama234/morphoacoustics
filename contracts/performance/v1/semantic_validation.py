@@ -112,7 +112,16 @@ def verify_v1_result_pair(
     Schemas. For historical Takes, pass the archived resolution snapshot;
     do not rebind it against a newer mutable preset catalog.
     """
-    selected_body_binding(request)
+    selected = selected_body_binding(request)
+    if resolution.status is BindingStatus.BOUND:
+        snapshot = resolution.snapshot
+        if snapshot is None or (
+            snapshot.character_id != selected.character_id
+            or snapshot.preset_id != selected.preset_id
+            or snapshot.preset_revision != selected.preset_revision
+            or snapshot.backend_id != backend_id
+        ):
+            raise ValueError("INVALID:result.embodiment:binding does not match selected body")
     if result.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("INVALID:result.schema_version")
     if result.get("request_id") != _nonblank(request.get("request_id"), "request_id"):
