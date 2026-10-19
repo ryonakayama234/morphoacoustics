@@ -45,7 +45,7 @@ FROZEN_LIMITED_LIVE_BLOB_SHA1 = "aa729fb644043b80056a000f9ed5d302fe39125a"
 def _load_frozen_adapter() -> Any:
     source = ROOT / "src" / "morphoacoustics" / "integration" / "limited_live.py"
     raw = source.read_bytes()
-    observed = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw).hexdigest()
+    observed = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw).hexdigest()
     if observed != FROZEN_LIMITED_LIVE_BLOB_SHA1:
         raise RuntimeError("CC-A2 frozen limited_live dependency changed; no synthesis permitted")
     # Import only *after* exact source bytes match; this is a trusted checkout,
