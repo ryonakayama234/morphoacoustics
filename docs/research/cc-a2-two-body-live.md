@@ -1,6 +1,6 @@
-# CC-A2 — bounded two-body live integration (review candidate)
+# CC-A2 — bounded two-body live integration (GO_LIMITED adopted)
 
-**Status: IN DEVELOPMENT / NOT ADOPTED / Core physics and Studio product gates pending.**
+**Status: GO_LIMITED ADOPTED / MERGED on 2026-10-19.** [Core PR #122](https://github.com/ryonakayama234/morphoacoustics/pull/122) merged as `2855aa75534be95c95133daf079c957823c82040`; [Studio PR #19](https://github.com/ryonakayama234/morphoacoustics-studio/pull/19) merged as `5c787ff0a7e6ddd9826681d7dda6d081a5ce76e0`. Exact physical reviewed Core code `b569f044bfda309dff1a00cccf8365754e6b1355` remains explicitly pinned by Studio. See [closed Stage A Issue #14](https://github.com/ryonakayama234/morphoacoustics-studio/issues/14) for the final acceptance record.
 
 Parent: [Studio #14](https://github.com/ryonakayama234/morphoacoustics-studio/issues/14). Reuse adopted Core [Experiment 027](../../experiments/027_task_field_vowel_transition/RESULTS.md), [Experiment 028](../../experiments/028_task_field_morphology_transfer/RESULTS.md), [Experiment 029](../../experiments/029_task_field_embodied_infeasibility/RESULTS.md). Core [PR #101](https://github.com/ryonakayama234/morphoacoustics/pull/101) / Issue #72 was **LIMITED contract adopted and merged** on 2026-10-19 (main commit 5ee26470). Existing README and contract v1 documentation's historical DRAFT text must not be read as the current git release state.
 
@@ -39,7 +39,7 @@ Request and result must pass the upstream v1 JSON Schemas. The Python Core-side 
 
 A malformed v1 request is INVALID and produces no Take. Schema-valid unknown/revision-mismatched preset is an explicit binding refusal and UNSUPPORTED realization. Unsupported script/Direction/seed is UNSUPPORTED, not INFEASIBLE. Realization INFEASIBLE is reserved for a **bound** body failing capability. Process failure remains FAILED. No silent replacement body, pre-rendered audio or neural voice conversion.
 
-## Current validation and adoption prerequisites
+## Original planned validation and adoption prerequisites (historical checklist; see accepted evidence below)
 
 - [ ] Dedicated `.github/workflows/cc-a2-two-body.yml` on exact PR HEAD: NumPy==2.4.6, both fresh real 24,000-sample voices, 102 acoustic calls each, Wolfram endpoint peak gate, frozen M0 pressure SHA, distinct M1 pressure, exact v1 binding, no-fallback and repeatable Take hashes.
 - [ ] Source inventory compatibility: existing X2a regression and full Core test suite.
@@ -50,13 +50,13 @@ A malformed v1 request is INVALID and produces no Take. Schema-valid unknown/rev
 
 This integration uses already studied physical laws; it does not establish new FSI, real tissue dynamics, natural Japanese, or generalized body editing.
 
-## 2026-10-19 critical Codex review finding disposition — pending re-review
+## 2026-10-19 critical Codex review finding disposition — resolved
 
-Initial Draft PR #122 reviewed HEAD `588c52c` returned P1 (inherited `limited_live.py` module itself was outside its own frozen transitive inventory), P2 (malformed CLI failures pretended to be incomplete `PerformanceResult v1`), and P2 (a requested `gesture_trace` falsely advertised as satisfied). The following corrections are **code candidate, not approved**:
+Initial Draft PR #122 reviewed HEAD `588c52c` returned P1 (inherited `limited_live.py` module itself was outside its own frozen transitive inventory), P2 (malformed CLI failures pretended to be incomplete `PerformanceResult v1`), and P2 (a requested `gesture_trace` falsely advertised as satisfied). The following corrections were **subsequently reviewed and accepted for GO_LIMITED**:
 
 - CC-A2 verifies the exact adopted Git blob of `src/morphoacoustics/integration/limited_live.py` **before importing** it; rejects checksum drift without synthesizing. Existing Experiment028/029 pinned source and oracle preflight remains intact.
 - Unhandled execution failures return nonzero process exit and an explicitly separate `cc-a2-transport-error/v1` JSON envelope `{schema_version,error:{code,message}}`; **not** a valid PerformanceResult v1. Studio treats failed CLI execution as an error, with no Take. Valid schema requests with binding/feasibility refusals still produce valid v1 outcomes with no audio.
 - `gesture_trace` is rejected `UNSUPPORTED` because this slice only emits physical geometry trace and source/task receipt, not a separately contracted gesture-trace artifact.
 - New reproducible tests cover borrowed/changed inherited source pin, unsupported `gesture_trace`, and malformed request transport error without audio.
 
-**No Gate C signoff before exact repaired HEAD CI and independent re-review.**
+**Final gate disposition: GO_LIMITED.** Independent Codex [exact-HEAD re-review](https://github.com/ryonakayama234/morphoacoustics/pull/122#issuecomment-6265381760) found no major issues at `b569f044`; 3/3 Core P1/P2 threads resolved. Original Core physical/negative checks [7/7 PASS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39239174461), full/contract/OG3/OG4 PASS. **Postmerge main** `2855aa75`: [dedicated physical](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39249852574), [full tests](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39249852577), [contract v1](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39249852552), [OG3](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39249852532), [OG4](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39249852618) **ALL SUCCESS**. Creator perceptually distinguished lower/darker B; subjective listening PASS only for two-body contrast, not femininity, pitch F0 change or biological truth. Separate full security certification and natural phonetic perception are **not claimed**. Historical unmarked checkboxes above are the original plan, not the current GO/HOLD state.
