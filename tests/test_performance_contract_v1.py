@@ -226,7 +226,8 @@ def test_result_pair_rejects_forged_body_provenance_and_request_id() -> None:
         )
     altered = deepcopy(q)
     altered["embodiment"]["preset_revision"] = 2
-    with pytest.raises(ValueError, match="provenance"):
+    # The stronger request↔resolved-body gate rejects before the digest comparison.
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
         verify_v1_result_pair(
             altered, result, resolution,
             backend_id="fidelity0.tract1d", backend_version="v1"
