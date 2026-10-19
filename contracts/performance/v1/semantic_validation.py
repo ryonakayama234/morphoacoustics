@@ -9,16 +9,40 @@ from __future__ import annotations
 from collections.abc import Mapping
 from hashlib import sha256
 import json
+from typing import NamedTuple
 
 from morphoacoustics.integration.body_presets import (
     BindingStatus,
     BodyBindingResolution,
+    BodyBindingSnapshot,
     BodyPresetRegistry,
     CharacterBodyBinding,
 )
 
 SCHEMA_VERSION = "performance-contract/v1"
 DIGEST_ALGORITHM = "sha256-canonical-json-v1"
+
+
+class V1BindingResolution(NamedTuple):
+    """Immutable reference receipt binding even a refusal to its exact request.
+
+    The public Core BodyBindingResolution deliberately does not carry attempted
+    identity on failure. Do not infer its identity from human-readable issues.
+    """
+
+    selection: CharacterBodyBinding
+    requested_backend_id: str
+    backend_version: str
+    physical: BodyBindingResolution
+
+    @property
+    def status(self) -> BindingStatus:
+        return self.physical.status
+
+    @property
+    def snapshot(self) -> BodyBindingSnapshot | None:
+        return self.physical.snapshot
+
 
 
 def _nonblank(value: object, field: str) -> str:
@@ -74,16 +98,22 @@ def resolve_v1_binding(
     *,
     required_backend_id: str,
     backend_version: str,
-) -> tuple[BodyBindingResolution, str]:
+) -> tuple[V1BindingResolution, str]:
     """Resolve only an exact prevalidated preset. This executes no audio or physics."""
     binding = selected_body_binding(request)
     digest = v1_input_digest(
         request, backend_id=required_backend_id, backend_version=backend_version
     )
-    return registry.resolve(binding, required_backend_id=required_backend_id), digest
+    physical = registry.resolve(binding, required_backend_id=required_backend_id)
+    return V1BindingResolution(
+        selection=binding,
+        requested_backend_id=required_backend_id,
+        backend_version=backend_version,
+        physical=physical,
+    ), digest
 
 
-def v1_resolved_embodiment(resolution: BodyBindingResolution) -> dict[str, object]:
+def v1_resolved_embodiment(resolution: V1BindingResolution) -> dict[str, object]:
     """Make the result's structured resolution record; no silent fallback."""
     record: dict[str, object] = {"status": resolution.status.value}
     if resolution.status is BindingStatus.BOUND:
@@ -101,7 +131,7 @@ def v1_resolved_embodiment(resolution: BodyBindingResolution) -> dict[str, objec
 def verify_v1_result_pair(
     request: Mapping[str, object],
     result: Mapping[str, object],
-    resolution: BodyBindingResolution,
+    resolution: V1BindingResolution,
     *,
     backend_id: str,
     backend_version: str,
@@ -113,6 +143,12 @@ def verify_v1_result_pair(
     do not rebind it against a newer mutable preset catalog.
     """
     selected = selected_body_binding(request)
+    if not isinstance(resolution, V1BindingResolution) or (
+        resolution.selection != selected
+        or resolution.requested_backend_id != backend_id
+        or resolution.backend_version != backend_version
+    ):
+        raise ValueError("INVALID:result.embodiment:binding does not match selected body")
     if resolution.status is BindingStatus.BOUND:
         snapshot = resolution.snapshot
         if snapshot is None or (

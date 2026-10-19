@@ -202,7 +202,7 @@
                   {
                     "properties": {
                       "kind": {
-                        "const": "audio"
+                        "pattern": "^[aA][uU][dD][iI][oO]$"
                       }
                     },
                     "required": [
@@ -212,7 +212,7 @@
                   {
                     "properties": {
                       "media_type": {
-                        "pattern": "^audio/"
+                        "pattern": "^[aA][uU][dD][iI][oO]/"
                       }
                     },
                     "required": [

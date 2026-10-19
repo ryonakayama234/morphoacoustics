@@ -272,6 +272,9 @@ def test_v1_no_audio_artifact_on_nonfeasible_or_incomplete_run(
     for fake_audio in (
         {"kind": "audio", "ref": "fake://wav"},
         {"kind": "misc", "ref": "fake://wav", "media_type": "audio/wav"},
+        {"kind": "misc", "ref": "fake://wav", "media_type": "Audio/WAV"},
+        {"kind": "AUDIO", "ref": "fake://wav"},
+        {"kind": "AuDiO", "ref": "fake://wav", "media_type": "aUdIo/x-wav"},
     ):
         bad = deepcopy(result)
         bad["artifacts"] = [fake_audio]
@@ -324,4 +327,75 @@ def test_pair_refuses_resolution_borrowed_from_different_selected_body() -> None
     with pytest.raises(ValueError, match="embodiment:binding does not match"):
         verify_v1_result_pair(
             original, result, borrowed_character, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+
+@pytest.mark.parametrize("refusal", [
+    "MISSING_PRESET", "REVISION_MISMATCH", "UNSUPPORTED_BACKEND",
+])
+def test_pair_refuses_borrowed_refusal_receipt(refusal: str) -> None:
+    """A refusal is not proof of failure for a different preset or backend."""
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    other = deepcopy(original)
+    required_backend = "fidelity0.tract1d"
+    if refusal == "MISSING_PRESET":
+        other["embodiment"]["preset_id"] = "unregistered-preset"
+    elif refusal == "REVISION_MISMATCH":
+        other["embodiment"]["preset_revision"] = 999
+    else:
+        required_backend = "another.backend"
+    borrowed, _ = resolve_v1_binding(
+        other, _registry(), required_backend_id=required_backend, backend_version="v1"
+    )
+    assert borrowed.status.value == refusal
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    result["provenance"]["backend"] = "fidelity0.tract1d"
+    result["provenance"]["backend_version"] = "v1"
+    result["provenance"]["input_digest"] = v1_input_digest(
+        original, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+
+def test_pair_refuses_borrowed_refusal_from_other_character_or_backend_version() -> None:
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    other = deepcopy(original)
+    other["character"]["character_id"] = "borrowed-character"
+    other["embodiment"]["preset_id"] = "missing"
+    borrowed, _ = resolve_v1_binding(
+        other, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    assert borrowed.status is BindingStatus.MISSING_PRESET
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    result["provenance"].update(
+        backend="fidelity0.tract1d", backend_version="v1",
+        input_digest=v1_input_digest(
+            original, backend_id="fidelity0.tract1d", backend_version="v1"
+        ),
+    )
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    # Even when ID/revision/character are identical, backend version is part
+    # of the receipt and must not be substituted from a different resolution.
+    same = deepcopy(original)
+    same["embodiment"]["preset_id"] = "missing"
+    wrong_version, _ = resolve_v1_binding(
+        same, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v2"
+    )
+    assert wrong_version.status is BindingStatus.MISSING_PRESET
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            same, result, wrong_version, backend_id="fidelity0.tract1d", backend_version="v1"
         )
