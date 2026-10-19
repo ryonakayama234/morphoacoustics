@@ -1,0 +1,74 @@
+name: V4-A one-run roundtrip science (research only)
+on:
+  pull_request:
+    paths:
+      - 'experiments/036_v4a_one_run_roundtrip/**'
+      - '.github/workflows/experiment-036-v4a.yml'
+      - 'docs/research/v4a-one-run-roundtrip-prereg-v0.md'
+      - 'docs/research/v4a-20261019-execution-review-handoff.md'
+  workflow_dispatch:
+
+jobs:
+  science:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install scientific environment
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e .
+      - name: Frozen Wolfram schedule / analytical unit tests
+        run: python -m unittest discover -s experiments/036_v4a_one_run_roundtrip -p 'test_*.py' -v
+      - name: Run actual physical V4-A (no premade WAV)
+        run: python experiments/036_v4a_one_run_roundtrip/run.py --output-dir /tmp/v4a-run1
+      - name: Reproducible repeated run and strict numeric gate
+        run: |
+          python experiments/036_v4a_one_run_roundtrip/run.py --output-dir /tmp/v4a-run2
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('/tmp/v4a-run1/summary.json').read_text())
+          y=json.loads(Path('/tmp/v4a-run2/summary.json').read_text())
+          assert x==y, 'same fixture/environment must have identical provenance and hashes'
+          assert x['decision']=='SUPPORT_ONE_RUN_ROUNDTRIP'
+          assert all(x['checks'].values())
+          assert x['metrics']['pressure_sha256']==y['metrics']['pressure_sha256']
+          assert x['metrics']['wav_sha256']==y['metrics']['wav_sha256']
+          print('PASS: physical 1s roundtrip generated twice with identical source/pressure/WAV')
+          PY
+      - name: Independently verify actual artifact/source bytes and no-adoption flag
+        run: |
+          python - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          import numpy as np
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          for dirname in ('v4a-run1','v4a-run2'):
+              root = Path('/tmp') / dirname
+              receipt = json.loads((root / 'summary.json').read_text())
+              assert receipt['adoption_status'] == 'NOT_ADOPTED_REVIEW_AND_HUMAN_GATE_PENDING'
+              assert receipt['preview_available'] is True
+              assert receipt['provenance']['executed_sources']['git_head'] == head
+              for path, expected in receipt['provenance']['executed_sources']['source_sha256'].items():
+                  assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == expected, path
+              assert hashlib.sha256((root/'R1_listen.wav').read_bytes()).hexdigest() == receipt['metrics']['wav_sha256']
+              for filename, key in (('R1_raw_pressure_pa.npy','pressure_sha256'),
+                                    ('source_volume_flow_m3_s.npy','source_sha256')):
+                  arr = np.load(root/filename, allow_pickle=False)
+                  digest = hashlib.sha256(arr.astype('<f8', copy=False).tobytes()).hexdigest()
+                  assert digest == receipt['metrics'][key], filename
+          print('PASS: source files, raw physical arrays, WAV, status and exact checkout verified')
+          PY
+      - name: Upload provisional audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v4a-036-research-audit
+          path: |
+            /tmp/v4a-run1/
+            /tmp/v4a-run2/
+          retention-days: 90
