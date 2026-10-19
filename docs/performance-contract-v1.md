@@ -1,6 +1,6 @@
 # Performance Contract v1 — exact selectable embodiment (CC-A1)
 
-**Status: DRAFT, not published/adopted; not an audio or physics capability.**
+**Status (2026-10-19): GO_LIMITED_CONTRACT, merged on Core main in PR #101 (5ee26470); schemas and contract-local reference verifier only. Not a deployed Studio v1 adapter, audio or physics capability.**
 
 Studio X2a is separately adopted on main (Studio PR #15, 2026-10-19). This v1 contract is NOT consumed by the existing fixed-body X2a backend. Implementation PR and tests are independently gated under [Core #72](https://github.com/ryonakayama234/morphoacoustics/issues/72). Upstream Body Binding v0 and Performance Contract v0 remain unchanged.
 
