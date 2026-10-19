@@ -1,0 +1,61 @@
+name: cc-a2-two-body-physical
+
+on:
+  push:
+    paths:
+      - "tools/cc_a2_live.py"
+      - "tests/test_cc_a2_live.py"
+      - "contracts/performance/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/cc-a2-two-body.yml"
+  pull_request:
+    paths:
+      - "tools/cc_a2_live.py"
+      - "tests/test_cc_a2_live.py"
+      - "contracts/performance/**"
+      - "experiments/008_event_trajectory/**"
+      - "experiments/009_fixed_tract_waveform/**"
+      - "experiments/011_gesture_coordination_overlap/**"
+      - "experiments/012_source_renderer_artifacts/**"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "experiments/028_task_field_morphology_transfer/**"
+      - "experiments/029_task_field_embodied_infeasibility/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+      - ".github/workflows/cc-a2-two-body.yml"
+  workflow_dispatch:
+
+jobs:
+  bounded-physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned numerical research environment
+        run: |
+          python -m pip install 'numpy==2.4.6'
+          python -m pip install -e '.[dev]'
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Run fresh two-body physical and refusal tests
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -v tests/test_cc_a2_live.py
+      - name: Verify frozen X2a source inventory
+        run: python -m pytest -q checks/test_limited_live_smoke.py tests/test_limited_live_policy.py
