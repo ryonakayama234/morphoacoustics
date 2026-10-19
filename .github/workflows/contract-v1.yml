@@ -5,11 +5,13 @@ on:
     paths:
       - "contracts/performance/v1/**"
       - "tests/test_performance_contract_v1.py"
+      - "docs/performance-contract-v1.md"
       - ".github/workflows/contract-v1.yml"
   pull_request:
     paths:
       - "contracts/performance/v1/**"
       - "tests/test_performance_contract_v1.py"
+      - "docs/performance-contract-v1.md"
       - ".github/workflows/contract-v1.yml"
 
 jobs:

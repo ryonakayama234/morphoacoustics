@@ -231,3 +231,57 @@ def test_result_pair_rejects_forged_body_provenance_and_request_id() -> None:
             altered, result, resolution,
             backend_id="fidelity0.tract1d", backend_version="v1"
         )
+
+def test_python_digest_not_implicitly_compatible_with_js_json_stringify() -> None:
+    """Python encodes 1.0 and 1 differently; JavaScript usually does not.
+
+    Studio therefore consumes the authoritative Core-generated digest instead
+    of recomputing it from a JavaScript object without a dedicated conformance gate.
+    """
+    first = request()
+    first["direction"]["controls"]["pace"] = 1.0
+    second = deepcopy(first)
+    second["direction"]["controls"]["pace"] = 1
+    validate("performance-request", first)
+    validate("performance-request", second)
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") != v1_input_digest(
+        second, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+
+
+@pytest.mark.parametrize("status,outcome", [
+    ("SUCCEEDED", "INFEASIBLE"),
+    ("SUCCEEDED", "UNSUPPORTED"),
+    ("SUCCEEDED", "INVALID"),
+    ("FAILED", None),
+    ("CANCELLED", None),
+    ("RUNNING", None),
+])
+def test_v1_no_audio_artifact_on_nonfeasible_or_incomplete_run(
+    status: str, outcome: str | None
+) -> None:
+    result = document("v1", "examples/result.fixture.json")
+    result["job_status"] = status
+    if outcome is None:
+        result.pop("realization_outcome", None)
+    else:
+        result["realization_outcome"] = outcome
+    if outcome == "INFEASIBLE":
+        assert result["embodiment"]["status"] == "BOUND"
+    for fake_audio in (
+        {"kind": "audio", "ref": "fake://wav"},
+        {"kind": "misc", "ref": "fake://wav", "media_type": "audio/wav"},
+    ):
+        bad = deepcopy(result)
+        bad["artifacts"] = [fake_audio]
+        with pytest.raises(Exception):
+            validate("performance-result", bad)
+    result["artifacts"] = [{"kind": "physical-trace", "ref": "trace://diagnostic"}]
+    validate("performance-result", result)
+
+
+def test_v1_feasible_bound_result_permits_audio_reference() -> None:
+    result = document("v1", "examples/result.fixture.json")
+    result["realization_outcome"] = "FEASIBLE"
+    result["artifacts"] = [{"kind": "audio", "ref": "sha256://fixture", "media_type": "audio/wav"}]
+    validate("performance-result", result)  # Structural only; not a real synthesis receipt.

@@ -1,6 +1,8 @@
 # Performance Contract v1 — exact selectable embodiment (CC-A1)
 
-**Status: DRAFT, not published/adopted; not an audio or physics capability.** Implementation PR and tests are independently gated under [Core #72](https://github.com/ryonakayama234/morphoacoustics/issues/72). Upstream Body Binding v0 and Performance Contract v0 remain unchanged.
+**Status: DRAFT, not published/adopted; not an audio or physics capability.**
+
+Studio X2a is separately adopted on main (Studio PR #15, 2026-10-19). This v1 contract is NOT consumed by the existing fixed-body X2a backend. Implementation PR and tests are independently gated under [Core #72](https://github.com/ryonakayama234/morphoacoustics/issues/72). Upstream Body Binding v0 and Performance Contract v0 remain unchanged.
 
 ## Formal composition and ownership
 
@@ -22,7 +24,17 @@ flowchart LR
 
 `input_digest_algorithm=sha256-canonical-json-v1`: SHA-256 over `json.dumps({request: <full validated v1 request>, backend_id: <exact backend>, backend_version: <exact version>}, sort_keys=True, ensure_ascii=False, separators=(',', ':'), allow_nan=False)`, UTF-8 encoding. All input snapshots, seed, exact body revision and adapter identity are included. Canonicalization handles JSON types as encoded (it does not normalize 1 vs 1.0); request serialization is included in the contract. This digest describes request+adapter input, **not** prepared physical state.
 
+### Cross-language digest authority
+
+**The trusted Core-side Python adapter is the sole issuer of `input_digest` for `sha256-canonical-json-v1`.** Studio must consume that version-tagged value as opaque evidence, not calculate it from the browser request and assert equality. Python `json.dumps` distinguishes numerical spellings such as `1.0` from `1`, while JavaScript `JSON.stringify` may collapse both to `1`; floating-point exponents and signed zero introduce further divergence. The current contract does not adopt broad Python/JavaScript byte-for-byte canonicalization. If a future JavaScript producer is required, cross-language conformance vectors over the supported numeric/Unicode domain must be independently frozen and passed before it can issue the same algorithm identifier.
+
+On new Take creation, the trusted Core adapter schema-validates the request, resolves the exact preset, authors the digest and verifies ID/seed/backend/version/resolved-body equality before persistence. Studio stores and displays the backend-authored value and verifies independent artifact byte hashes as appropriate. This does not assert cryptographic authenticity against a malicious backend or filesystem. Historical requests/results and their frozen binding receipts must be read without re-resolving against a newer mutable registry. The reference helper's `verify_v1_result_pair` accepts a `BodyBindingResolution` object; it is **not** a historical Take rehydration API.
+
 `preparation_digest` is separately created by the authoritative `BodyPresetRegistry` / Core `PreparedMorphology` binding, not calculated from user free-form character text. Saved Takes retain both request and result snapshots. Replacing/upgrading the catalog later must not mutate a historical Take or retarget it to a newer preset revision. Missing/mismatched preset returns a typed status; no implicit substitute.
+
+## Failure cannot produce apparent successful audio
+
+The v1 result schema forbids an `audio` artifact or `audio/*` media type unless `job_status=SUCCEEDED` and `realization_outcome=FEASIBLE`. This covers physical `INFEASIBLE`, unsupported/invalid cases, failed/cancelled/incomplete jobs. Diagnostic non-audio artifacts remain permitted. A schema-valid feasible audio reference alone is NOT evidence of a genuine waveform calculation. This restriction is additive v1-only; existing v0 files remain unchanged.
 
 ## Rejection/status taxonomy
 
@@ -47,7 +59,7 @@ contracts/performance/v1/
   examples/request.json
   examples/result.fixture.json
   examples/result.revision-mismatch.json
-src/morphoacoustics/contracts/performance/v1/semantic_validation.py
+contracts/performance/v1/semantic_validation.py
 tests/test_performance_contract_v1.py
 docs/performance-contract-v1.md
 ```
@@ -56,7 +68,7 @@ Existing [architecture/data proposal](./research/organ-graph-program.md) and [ex
 
 ## Frozen source inventory compatibility
 
-The deployed limited-live experiment deliberately audits the complete existing \`src/morphoacoustics\` source inventory. Adding a new production module there would invalidate its independently frozen hash manifest. Therefore the v1 binding helper is scoped to \`contracts/performance/v1/semantic_validation.py\` in this design-and-contract test gate, outside the published Core package; it is *not* an installed runtime API. The production integration boundary must undergo a separate explicit frozen-manifest migration before any promotion to \`src/\`. Neither the audited manifest nor an old verification baseline has been modified.
+The deployed limited-live experiment deliberately audits the complete existing `src/morphoacoustics` source inventory. Adding a new production module there would invalidate its independently frozen hash manifest. Therefore the v1 binding helper is scoped to `contracts/performance/v1/semantic_validation.py` in this design-and-contract test gate, outside the published Core package; it is *not* an installed runtime API. The production integration boundary must undergo a separate explicit frozen-manifest migration before any promotion to `src/`. Neither the audited manifest nor an old verification baseline has been modified.
 
 ## Request-result semantic pair gate
 

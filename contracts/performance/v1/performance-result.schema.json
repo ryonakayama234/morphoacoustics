@@ -175,6 +175,56 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "job_status": {
+              "const": "SUCCEEDED"
+            },
+            "realization_outcome": {
+              "const": "FEASIBLE"
+            }
+          },
+          "required": [
+            "job_status",
+            "realization_outcome"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "not": {
+              "contains": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "audio"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "media_type": {
+                        "pattern": "^audio/"
+                      }
+                    },
+                    "required": [
+                      "media_type"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
