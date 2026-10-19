@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 import runpy
 
@@ -12,6 +13,11 @@ import pytest
 BASE = Path(__file__).resolve().parents[1]
 RUNNER = runpy.run_path(str(BASE / "tools" / "cc_a2_live.py"))
 perform = RUNNER["perform"]
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("CC_A2_REAL_PHYSICS") != "1",
+    reason="real physics needs pinned NumPy 2.4.6 and dedicated CC-A2 CI",
+)
 
 
 def request(body: str = "v3b-axial-M0") -> dict:
