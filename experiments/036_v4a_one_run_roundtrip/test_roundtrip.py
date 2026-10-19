@@ -88,6 +88,30 @@ class RoundtripTests(unittest.TestCase):
         for digest in files.values():
             self.assertRegex(digest, r"^[0-9a-f]{64}$")
 
+    def test_frozen_upstream_gate_rechecks_reference_blobs_and_task(self):
+        receipt = M.upstream_scientific_preflight()
+        self.assertTrue(receipt["pass"], receipt)
+        self.assertTrue(all(receipt["frozen_blob_checks"].values()))
+        self.assertTrue(all(receipt["v3b_frozen_preflight_checks"].values()))
+        self.assertTrue(all(receipt["v3c_frozen_preflight_checks"].values()))
+        self.assertTrue(receipt["v3a_task_oracle_match"])
+
+    def test_no_fallback_for_unreachable_task(self):
+        start = M.body().rest_state
+        creature = M.EXP29.creature_for(
+            cavity_id=start.cavity_id, oral_reachable_end=0.70)
+        invalid_body = M.EXP29.prepared_for(
+            creature=creature, geometry=start, condition="M_minus")
+        with mock.patch.object(M.EXP29, "render_with_counter") as render:
+            result = M.EXP29.evaluate_condition(invalid_body,
+                np.zeros(M.EXP29.AUDITED_WAVEFORM_SAMPLES), label="negative")
+            render.assert_not_called()
+            self.assertIs(result.feasibility.status,
+                          M.EXP29.FeasibilityStatus.INFEASIBLE)
+            self.assertEqual(result.acoustic_call_count, 0)
+            self.assertIsNone(result.waveform)
+            self.assertIsNone(result.endpoint)
+
     def test_prepared_body_uses_shared_geometry(self):
         prepared=M.body()
         rest=prepared.rest_state
