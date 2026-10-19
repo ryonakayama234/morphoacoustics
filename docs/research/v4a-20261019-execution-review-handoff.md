@@ -95,3 +95,12 @@ Use only the unambiguous accepted-experimental-run `v4a-run1/R1_listen.wav` unde
 - Creator machine listening and expressive feedback: **PENDING**.
 - Formal adoption, Core main merge, Studio integration: **NOT DONE**, and must not be stated otherwise.
 - Blocking vs future-only: outstanding review, creator pilot and main-base reconciliation **block formal completion**; physical articulator inertia, new phonemes, Studio editing and broader aesthetic quality improvements are future scope and **do not block this narrow research pilot's scientific validity**.
+
+
+### Independent reviewer blocker confirmed after requesting review (2026-10-20)
+
+The documented `@codex review` requests **did reach** the GitHub Codex integration, but both PRs reported **FAILED: Codex code-review usage limit exceeded**. Codex did **not** submit an actual code review, a line-specific scientific finding, or an approval. GitHub's bot summary internally sets `has_any_findings=true` in the failed state; this is **not** evidence of a verified P1/P2 software defect because the reviewer did not execute. Treat both as `INDEPENDENT_REVIEW_BLOCKED_BY_USAGE_LIMIT` and do not merge. Exact source records: [PR #77 review request](https://github.com/ryonakayama234/morphoacoustics/pull/77#issuecomment-6270502723), [PR #88 review request](https://github.com/ryonakayama234/morphoacoustics/pull/88#issuecomment-6270503765) and the subsequent bot comments on each PR. A normal reviewer request to `chatgpt-codex-connector` was rejected by GitHub because this automation identity is not a regular repository collaborator. Any new independent review must be acquired through an authorized reviewer or a future available Codex review slot; it is a **separate actor**, not the implementer marking their own code APPROVED.
+
+**No user action required for technical review administration.** A creator audition can independently proceed from artifact 12197027447 and be recorded as creator evidence, without pretending to settle the blocked scientific review.
+
+Latest code/physics CI: `c69c08816a9c28ea28595c6c01afa440c473cd7c`, science run [39275191454](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39275191454) **SUCCESS**, 9 dedicated unit tests and physical+evidence checks. Later documentation-only commits change Git HEAD recorded in a fresh run; use a matching artifact and manifest when citing exact code+data hashes.
