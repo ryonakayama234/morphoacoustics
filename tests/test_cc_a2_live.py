@@ -4,6 +4,8 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 import runpy
 
@@ -104,3 +106,50 @@ def test_invalid_body_and_creative_physics_injection_refused(tmp_path: Path) -> 
     with pytest.raises(Exception):
         perform(y, tmp_path / "inject")
     assert not (tmp_path / "inject").exists()
+
+
+def test_false_gesture_trace_request_never_returns_feasible(tmp_path: Path) -> None:
+    item = request()
+    item["requested_capabilities"].append("gesture_trace")
+    result = perform(item, tmp_path / "unsupported-gesture")
+    assert result["job_status"] == "SUCCEEDED"
+    assert result["realization_outcome"] == "UNSUPPORTED"
+    assert result["artifacts"] == []
+    assert not (tmp_path / "unsupported-gesture").exists()
+
+
+def test_unchanged_version_cannot_synthesize_after_frozen_dependency_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Negative control: a different imported limited_live file (including
+    # source/WAV/receipt helpers) is NOT covered by Experiment028 pin alone.
+    import hashlib
+    from morphoacoustics.integration import limited_live
+    raw = Path(limited_live.__file__).read_bytes()
+    expected = hashlib.sha1(
+        b"blob " + str(len(raw)).encode("ascii") + b"\0" + raw
+    ).hexdigest()
+    assert expected == perform.__globals__["FROZEN_LIMITED_LIVE_BLOB_SHA1"]
+    monkeypatch.setitem(
+        perform.__globals__, "FROZEN_LIMITED_LIVE_BLOB_SHA1", "0" * 40
+    )
+    with pytest.raises(RuntimeError, match="frozen limited_live dependency changed"):
+        perform(request(), tmp_path / "no-false-audio")
+    assert not (tmp_path / "no-false-audio").exists()
+
+
+def test_cli_errors_are_transport_not_forged_performance_result(tmp_path: Path) -> None:
+    invalid = tmp_path / "malformed.json"
+    invalid.write_text("{", encoding="utf-8")
+    outcome = subprocess.run(
+        [sys.executable, str(BASE / "tools" / "cc_a2_live.py"),
+         "--request", str(invalid), "--output-dir", str(tmp_path / "never")],
+        cwd=BASE, capture_output=True, text=True, check=False,
+    )
+    assert outcome.returncode != 0
+    payload = json.loads(outcome.stdout)
+    assert payload["schema_version"] == "cc-a2-transport-error/v1"
+    assert payload["error"]["code"] == "CC_A2_EXECUTION_FAILED"
+    assert "realization_outcome" not in payload
+    assert "artifacts" not in payload
+    assert not (tmp_path / "never").exists()
