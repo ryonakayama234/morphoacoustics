@@ -1,0 +1,58 @@
+{
+  "schema": "og5.gate-a.a1.design-verification.v1",
+  "status": "DESIGN_CHECKS_PASS_REVIEW_PENDING_NOT_CORE_OR_ADOPTION",
+  "parent_git_sha": "046d78ccf5b2f8f7222dfc3149f971c06c48dbb5",
+  "local_runtime": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "node": "v24.19.0"
+  },
+  "design_byte_checks": {
+    "python": "PASS",
+    "independent_javascript": "PASS",
+    "snapshot_variants": 8,
+    "byte_vectors": 6
+  },
+  "contract_fixture_counts": {
+    "error_receipts_not_yet_executed_against_core": 27,
+    "numeric_seams_not_yet_executed_against_core": 6
+  },
+  "independent_nodal_checks": {
+    "archived_8_max_scaled_error": 1.047382306668854e-15,
+    "all_144_max_scaled_error": 3.356621199780979e-14,
+    "threshold": 1e-10,
+    "finite_outputs": "PASS"
+  },
+  "structural_controls": {
+    "valid_7_organ_tree": {
+      "cycles": 0,
+      "components": 1,
+      "every_endpoint_bound_once": true
+    },
+    "cycle_fixture": {
+      "cycles": 1,
+      "components": 2,
+      "every_endpoint_bound_once": true
+    }
+  },
+  "wolfram_receipt": "og5-wolfram-gate-a-a1-result.json",
+  "relative_markdown_links": "PASS against parent repository tree plus candidate files",
+  "candidate_content_sha256": {
+    ".github/workflows/og5-gate-a-design.yml": "7aa06fb42df2c403dff0f3425df29a9b28c6d71ed27df497b1f0accc74605934",
+    "docs/research/og5-contract-fixtures.mjs": "0497c0058f02a31e15548aeb520bc2872974cc95d8ba11d57ad35eba180df000",
+    "docs/research/og5-contract-fixtures.py": "3ee188e9c75fc2da75ecd00db7672d4f166c47eb0294920176b6fd568334d48c",
+    "docs/research/og5-contract-goldens.json": "6a02fc2c8b3f513497f8aba335edecf81dac715b862a514e3ac1196beac17d4d",
+    "docs/research/og5-gate-a-amendment-a1.md": "8a7ab956ff678ad202b99b13ba288550e3fa4addaf36e4decaf08f21a668b93f",
+    "docs/research/og5-gate-a-protocol.md": "0862662d12ea3931ebdcd01377259d3553addbd518db5b1995c87009d6b1f8dd",
+    "docs/research/og5-review-nodal.py": "7b95e4f2a768f2f5eb19805ff67d2f4d6e720a9f9bf2ba00a912cba52a5f97e1",
+    "docs/research/og5-tree5-api-v1.md": "3ecfff2efcc93295dcd5282a571bac94a155290e36539ded3e8d8924422bd2d7",
+    "docs/research/og5-wolfram-gate-a-a1-result.json": "4b0a2675be219f4d1db8a787b9ff7e816e9227c184b5f0e015aa74b9c4b88466",
+    "docs/research/og5-wolfram-gate-a-a1.wl": "2b81e3d55ac0d4ac965648cba79e60e71d607fc682401f32dd52742212457c25",
+    "docs/research/og5-wolfram-gate-a.wl": "c5af7745ae9c0baa8753e6c4abcb671b47cf5168e4a33e89b752a6d3e7ea44e9",
+    "docs/research/organ-graph-data-candidate.md": "6ebe53817e95806b5d3be22dd6c4a81ffdecaa0bd41d79e3200f1c9e605fbf67",
+    "docs/research/organ-graph-execution-plan.md": "2a6a0ae717070c087b3551b2d6a75ce8cb37c0ef4ca301ce5c251254a3108787",
+    "docs/research/organ-graph-experiment-ledger.md": "68c5ef500e5cb0f7482e85b621bb6bbeb43d1fa3257bbe528e1373fce2daab73",
+    "docs/research/organ-graph-program.md": "25018e6e7646f25e7158ceab1c9cbd700d8f19229d1a812c2c4ed6f2b632e375"
+  },
+  "self_hash_policy": "this receipt excludes its own bytes; final commit identity belongs to the PR receipt"
+}
