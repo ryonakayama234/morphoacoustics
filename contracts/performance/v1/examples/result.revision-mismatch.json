@@ -1,0 +1,27 @@
+{
+  "schema_version": "performance-contract/v1",
+  "performance_id": "performance_0142",
+  "request_id": "request_mio_0001",
+  "take_id": "take_003",
+  "job_status": "SUCCEEDED",
+  "realization_outcome": "UNSUPPORTED",
+  "artifacts": [],
+  "diagnostics": [
+    {
+      "code": "BODY_PRESET_REVISION_MISMATCH",
+      "severity": "error",
+      "message": "Example: requested preset revision unavailable; no fallback."
+    }
+  ],
+  "provenance": {
+    "backend": "contract-example-no-execution",
+    "backend_version": "0.0.0-fixture",
+    "contract_version": "performance-contract/v1",
+    "seed": 42,
+    "input_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "input_digest_algorithm": "sha256-canonical-json-v1"
+  },
+  "embodiment": {
+    "status": "REVISION_MISMATCH"
+  }
+}

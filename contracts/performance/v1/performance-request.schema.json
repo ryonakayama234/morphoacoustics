@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morphoacoustics.local/contracts/performance/v1/performance-request.schema.json",
+  "title": "PerformanceRequest v1 — exact creator-selected body preset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "character",
+    "script",
+    "direction",
+    "seed",
+    "embodiment"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "performance-contract/v1"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "character": {
+      "$ref": "../v0/character.schema.json"
+    },
+    "script": {
+      "$ref": "../v0/script.schema.json"
+    },
+    "direction": {
+      "$ref": "../v0/direction.schema.json"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "requested_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "audio",
+          "timeline",
+          "diagnostics",
+          "gesture_trace",
+          "physical_trace"
+        ]
+      }
+    },
+    "embodiment": {
+      "$ref": "common.schema.json#/$defs/embodimentSelection"
+    }
+  }
+}

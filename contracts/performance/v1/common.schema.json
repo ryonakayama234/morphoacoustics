@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morphoacoustics.local/contracts/performance/v1/common.schema.json",
+  "title": "Performance Contract v1 Embodiment Types",
+  "type": "object",
+  "$defs": {
+    "embodimentSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preset_id",
+        "preset_revision"
+      ],
+      "properties": {
+        "preset_id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "preset_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "resolvedEmbodiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "BOUND",
+            "MISSING_PRESET",
+            "REVISION_MISMATCH",
+            "UNSUPPORTED_BACKEND"
+          ]
+        },
+        "preset_id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "preset_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "backend_id": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "preparation_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "BOUND"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "preset_id",
+              "preset_revision",
+              "backend_id",
+              "preparation_digest"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "preset_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "preset_revision"
+                  ]
+                },
+                {
+                  "required": [
+                    "backend_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "preparation_digest"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

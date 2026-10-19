@@ -1,0 +1,401 @@
+"""CC-A1 v1 schema, negative controls and immutable creator↔body binding."""
+from __future__ import annotations
+
+from copy import deepcopy
+import json
+import runpy
+from pathlib import Path
+
+import pytest
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
+
+from morphoacoustics import CavityKind, CavitySpec, CreatureSpec
+from morphoacoustics.integration.body_presets import BindingStatus, BodyPresetRegistry, make_body_preset
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
+from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
+
+ROOT = Path(__file__).resolve().parents[1] / "contracts" / "performance"
+
+# External draft contract helper is deliberately not an installed Core module.
+# Load it from the checked-out contract path without mutating sys.path or the
+# adopted limited-live package source-inventory attestation.
+_semantics = runpy.run_path(str(ROOT / "v1" / "semantic_validation.py"))
+resolve_v1_binding = _semantics["resolve_v1_binding"]
+selected_body_binding = _semantics["selected_body_binding"]
+v1_input_digest = _semantics["v1_input_digest"]
+v1_resolved_embodiment = _semantics["v1_resolved_embodiment"]
+
+
+def document(version: str, name: str) -> dict:
+    return json.loads((ROOT / version / name).read_text(encoding="utf-8"))
+
+
+def registry_schemas() -> Registry:
+    entries = []
+    for version, names in [
+        ("v0", ("common", "character", "script", "direction", "performance-request", "performance-result")),
+        ("v1", ("common", "performance-request", "performance-result")),
+    ]:
+        for name in names:
+            schema = document(version, name + ".schema.json")
+            Draft202012Validator.check_schema(schema)
+            entries.append((schema["$id"], Resource.from_contents(schema)))
+    return Registry().with_resources(entries)
+
+
+def validate(name: str, payload: dict) -> None:
+    Draft202012Validator(document("v1", name + ".schema.json"), registry=registry_schemas()).validate(payload)
+
+
+def request() -> dict:
+    return document("v1", "examples/request.json")
+
+
+def _body(name: str, area: float):
+    creature = CreatureSpec(name=name, cavities=(CavitySpec(id="oral", kind=CavityKind.ORAL),))
+    geom = Tract1DGeometry(
+        cavity_id="oral",
+        sections=(TubeSection(length_m=0.017, area_m2=area),),
+    )
+    return prepare_tract1d(
+        creature, geom,
+        provenance=PreparationProvenance(source="fixture", model="fixed-1d"),
+    )
+
+
+def _registry() -> BodyPresetRegistry:
+    return BodyPresetRegistry((
+        make_body_preset(preset_id="human-wide", revision=1, prepared=_body("wide", 3e-4)),
+        make_body_preset(preset_id="human-narrow", revision=1, prepared=_body("narrow", 2e-4)),
+        make_body_preset(preset_id="human-wide", revision=2, prepared=_body("wide-v2", 3.5e-4)),
+    ))
+
+
+def test_v1_positive_examples_compile_with_v0_creative_snapshots() -> None:
+    validate("performance-request", request())
+    validate("performance-result", document("v1", "examples/result.fixture.json"))
+    validate("performance-result", document("v1", "examples/result.revision-mismatch.json"))
+    assert request()["character"]["schema_version"] == "performance-contract/v0"
+    assert request()["direction"]["schema_version"] == "performance-contract/v0"
+
+
+@pytest.mark.parametrize("bad_choice", [
+    {"preset_id": "human-wide", "preset_revision": "latest"},
+    {"preset_id": "human-wide", "preset_revision": 0},
+    {"preset_id": "human-wide", "preset_revision": True},
+    {"preset_id": " ", "preset_revision": 1},
+    {"preset_id": "human-wide"},
+    {"preset_id": "human-wide", "preset_revision": 1, "tract_area": 0.5},
+])
+def test_invalid_choice_rejected_by_schema_and_semantic_gate(bad_choice: dict) -> None:
+    item = request()
+    item["embodiment"] = bad_choice
+    with pytest.raises(Exception):
+        validate("performance-request", item)
+    with pytest.raises(ValueError, match="INVALID"):
+        selected_body_binding(item)
+
+
+def test_v1_cannot_pass_as_v0_or_inject_physics_into_character() -> None:
+    q = request()
+    with pytest.raises(Exception):
+        Draft202012Validator(
+            document("v0", "performance-request.schema.json"),
+            registry=registry_schemas(),
+        ).validate(q)
+    q["character"]["tract_geometry"] = {"area_m2": 0.0003}
+    with pytest.raises(Exception):
+        validate("performance-request", q)
+
+
+def test_request_digest_includes_body_revision_and_backend_version() -> None:
+    first = request()
+    clone = deepcopy(first)
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") == v1_input_digest(
+        clone, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    clone["embodiment"]["preset_id"] = "human-narrow"
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") != v1_input_digest(
+        clone, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    clone = deepcopy(first)
+    clone["embodiment"]["preset_revision"] = 2
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") != v1_input_digest(
+        clone, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") != v1_input_digest(
+        first, backend_id="fidelity0.tract1d", backend_version="v2"
+    )
+
+
+def test_exact_binding_and_old_take_meaning_survive_catalog_update() -> None:
+    q = request()
+    registry = _registry()
+    old, old_digest = resolve_v1_binding(q, registry, required_backend_id="fidelity0.tract1d", backend_version="v1")
+    assert old.status is BindingStatus.BOUND
+    old_record = v1_resolved_embodiment(old)
+    assert old_record["preset_revision"] == 1
+    q2 = deepcopy(q)
+    q2["embodiment"]["preset_revision"] = 2
+    new, new_digest = resolve_v1_binding(q2, registry, required_backend_id="fidelity0.tract1d", backend_version="v1")
+    assert new.status is BindingStatus.BOUND
+    assert old_record["preparation_digest"] != v1_resolved_embodiment(new)["preparation_digest"]
+    assert old_digest != new_digest
+    assert v1_resolved_embodiment(old) == old_record
+    # Replacing catalog with an r2-only registry does not alter recorded r1 evidence.
+    later = BodyPresetRegistry((make_body_preset(preset_id="human-wide", revision=2, prepared=_body("later", 4e-4)),))
+    prior, _ = resolve_v1_binding(q, later, required_backend_id="fidelity0.tract1d", backend_version="v1")
+    assert prior.status is BindingStatus.REVISION_MISMATCH
+    assert v1_resolved_embodiment(old) == old_record
+
+
+def test_missing_revision_and_unsupported_backend_have_distinct_records() -> None:
+    registry = _registry()
+    q = request()
+    q["embodiment"]["preset_id"] = "missing"
+    absent, _ = resolve_v1_binding(q, registry, required_backend_id="fidelity0.tract1d", backend_version="v1")
+    assert v1_resolved_embodiment(absent) == {"status": "MISSING_PRESET"}
+    q["embodiment"] = {"preset_id": "human-wide", "preset_revision": 9}
+    mismatch, _ = resolve_v1_binding(q, registry, required_backend_id="fidelity0.tract1d", backend_version="v1")
+    assert v1_resolved_embodiment(mismatch) == {"status": "REVISION_MISMATCH"}
+    q["embodiment"]["preset_revision"] = 1
+    incompatible, _ = resolve_v1_binding(q, registry, required_backend_id="nonexistent.backend", backend_version="v1")
+    assert v1_resolved_embodiment(incompatible) == {"status": "UNSUPPORTED_BACKEND"}
+
+
+def test_result_requires_complete_bound_provenance_but_not_for_refusal() -> None:
+    result = document("v1", "examples/result.fixture.json")
+    result["realization_outcome"] = "FEASIBLE"
+    validate("performance-result", result)
+    del result["embodiment"]["preparation_digest"]
+    with pytest.raises(Exception):
+        validate("performance-result", result)
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["realization_outcome"] = "INFEASIBLE"
+    with pytest.raises(Exception):
+        validate("performance-result", result)  # physical infeasibility requires bound body
+    result["realization_outcome"] = "UNSUPPORTED"
+    validate("performance-result", result)
+
+
+def test_refusal_cannot_falsely_claim_resolved_digest() -> None:
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["embodiment"]["preparation_digest"] = "sha256:" + "a" * 64
+    with pytest.raises(Exception):
+        validate("performance-result", result)
+
+
+def test_result_pair_rejects_forged_body_provenance_and_request_id() -> None:
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    q = request()
+    resolution, digest = resolve_v1_binding(
+        q, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result = document("v1", "examples/result.fixture.json")
+    result["provenance"]["backend"] = "fidelity0.tract1d"
+    result["provenance"]["backend_version"] = "v1"
+    result["provenance"]["input_digest"] = digest
+    result["embodiment"] = v1_resolved_embodiment(resolution)
+    result["request_id"] = q["request_id"]
+    validate("performance-result", result)
+    verify_v1_result_pair(
+        q, result, resolution,
+        backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    bad = deepcopy(result)
+    bad["provenance"]["input_digest"] = "sha256:" + "0" * 64
+    with pytest.raises(ValueError, match="provenance"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    bad = deepcopy(result)
+    bad["embodiment"]["preset_revision"] = 2
+    with pytest.raises(ValueError, match="embodiment"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    bad = deepcopy(result)
+    bad["request_id"] = "another_take_request"
+    with pytest.raises(ValueError, match="request_id"):
+        verify_v1_result_pair(
+            q, bad, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    altered = deepcopy(q)
+    altered["embodiment"]["preset_revision"] = 2
+    # The stronger request↔resolved-body gate rejects before the digest comparison.
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            altered, result, resolution,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+def test_python_digest_not_implicitly_compatible_with_js_json_stringify() -> None:
+    """Python encodes 1.0 and 1 differently; JavaScript usually does not.
+
+    Studio therefore consumes the authoritative Core-generated digest instead
+    of recomputing it from a JavaScript object without a dedicated conformance gate.
+    """
+    first = request()
+    first["direction"]["controls"]["pace"] = 1.0
+    second = deepcopy(first)
+    second["direction"]["controls"]["pace"] = 1
+    validate("performance-request", first)
+    validate("performance-request", second)
+    assert v1_input_digest(first, backend_id="fidelity0.tract1d", backend_version="v1") != v1_input_digest(
+        second, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+
+
+@pytest.mark.parametrize("status,outcome", [
+    ("SUCCEEDED", "INFEASIBLE"),
+    ("SUCCEEDED", "UNSUPPORTED"),
+    ("SUCCEEDED", "INVALID"),
+    ("FAILED", None),
+    ("CANCELLED", None),
+    ("RUNNING", None),
+])
+def test_v1_no_audio_artifact_on_nonfeasible_or_incomplete_run(
+    status: str, outcome: str | None
+) -> None:
+    result = document("v1", "examples/result.fixture.json")
+    result["job_status"] = status
+    if outcome is None:
+        result.pop("realization_outcome", None)
+    else:
+        result["realization_outcome"] = outcome
+    if outcome == "INFEASIBLE":
+        assert result["embodiment"]["status"] == "BOUND"
+    for fake_audio in (
+        {"kind": "audio", "ref": "fake://wav"},
+        {"kind": "misc", "ref": "fake://wav", "media_type": "audio/wav"},
+        {"kind": "misc", "ref": "fake://wav", "media_type": "Audio/WAV"},
+        {"kind": "AUDIO", "ref": "fake://wav"},
+        {"kind": "AuDiO", "ref": "fake://wav", "media_type": "aUdIo/x-wav"},
+    ):
+        bad = deepcopy(result)
+        bad["artifacts"] = [fake_audio]
+        with pytest.raises(Exception):
+            validate("performance-result", bad)
+    result["artifacts"] = [{"kind": "physical-trace", "ref": "trace://diagnostic"}]
+    validate("performance-result", result)
+
+
+def test_v1_feasible_bound_result_permits_audio_reference() -> None:
+    result = document("v1", "examples/result.fixture.json")
+    result["realization_outcome"] = "FEASIBLE"
+    result["artifacts"] = [{"kind": "audio", "ref": "sha256://fixture", "media_type": "audio/wav"}]
+    validate("performance-result", result)  # Structural only; not a real synthesis receipt.
+
+
+def test_pair_refuses_resolution_borrowed_from_different_selected_body() -> None:
+    """Both forged sides can agree but still refer to the wrong requested body."""
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    registry = _registry()
+    other = deepcopy(original)
+    other["embodiment"]["preset_id"] = "human-narrow"
+    borrowed, _ = resolve_v1_binding(
+        other, registry, required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    original_digest = v1_input_digest(
+        original, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result = document("v1", "examples/result.fixture.json")
+    result["request_id"] = original["request_id"]
+    result["provenance"].update(
+        backend="fidelity0.tract1d", backend_version="v1", input_digest=original_digest,
+    )
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+    # Character identity is independently part of the authoritative binding.
+    different_character = deepcopy(original)
+    different_character["character"]["character_id"] = "another_character"
+    borrowed_character, _ = resolve_v1_binding(
+        different_character, registry, required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    result["embodiment"] = v1_resolved_embodiment(borrowed_character)
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed_character, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+
+@pytest.mark.parametrize("refusal", [
+    "MISSING_PRESET", "REVISION_MISMATCH", "UNSUPPORTED_BACKEND",
+])
+def test_pair_refuses_borrowed_refusal_receipt(refusal: str) -> None:
+    """A refusal is not proof of failure for a different preset or backend."""
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    other = deepcopy(original)
+    required_backend = "fidelity0.tract1d"
+    if refusal == "MISSING_PRESET":
+        other["embodiment"]["preset_id"] = "unregistered-preset"
+    elif refusal == "REVISION_MISMATCH":
+        other["embodiment"]["preset_revision"] = 999
+    else:
+        required_backend = "another.backend"
+    borrowed, _ = resolve_v1_binding(
+        other, _registry(), required_backend_id=required_backend, backend_version="v1"
+    )
+    assert borrowed.status.value == refusal
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    result["provenance"]["backend"] = "fidelity0.tract1d"
+    result["provenance"]["backend_version"] = "v1"
+    result["provenance"]["input_digest"] = v1_input_digest(
+        original, backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed,
+            backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+
+
+def test_pair_refuses_borrowed_refusal_from_other_character_or_backend_version() -> None:
+    verify_v1_result_pair = _semantics["verify_v1_result_pair"]
+    original = request()
+    other = deepcopy(original)
+    other["character"]["character_id"] = "borrowed-character"
+    other["embodiment"]["preset_id"] = "missing"
+    borrowed, _ = resolve_v1_binding(
+        other, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v1"
+    )
+    assert borrowed.status is BindingStatus.MISSING_PRESET
+    result = document("v1", "examples/result.revision-mismatch.json")
+    result["embodiment"] = v1_resolved_embodiment(borrowed)
+    result["provenance"].update(
+        backend="fidelity0.tract1d", backend_version="v1",
+        input_digest=v1_input_digest(
+            original, backend_id="fidelity0.tract1d", backend_version="v1"
+        ),
+    )
+    validate("performance-result", result)
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            original, result, borrowed, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
+    # Even when ID/revision/character are identical, backend version is part
+    # of the receipt and must not be substituted from a different resolution.
+    same = deepcopy(original)
+    same["embodiment"]["preset_id"] = "missing"
+    wrong_version, _ = resolve_v1_binding(
+        same, _registry(), required_backend_id="fidelity0.tract1d", backend_version="v2"
+    )
+    assert wrong_version.status is BindingStatus.MISSING_PRESET
+    with pytest.raises(ValueError, match="embodiment:binding does not match"):
+        verify_v1_result_pair(
+            same, result, wrong_version, backend_id="fidelity0.tract1d", backend_version="v1"
+        )
