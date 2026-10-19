@@ -6,6 +6,8 @@ This is a candidate integration, not a new phonetic or biomechanical validation.
 """
 from __future__ import annotations
 
+import hashlib
+import importlib
 import argparse
 import csv
 import io
@@ -19,7 +21,6 @@ from typing import Any
 import numpy as np
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
-from morphoacoustics.integration import limited_live as frozen
 from morphoacoustics.integration.body_presets import BodyPresetRegistry, make_body_preset
 from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 
@@ -34,6 +35,23 @@ EXPECTED_PEAKS_HZ = {
 }
 SAMPLE_RATE = 48000
 SAMPLES = 24000
+
+# Git blob of adopted source at Core a7541877; the X2a module deliberately
+# excludes its own bytes from its frozen transitive source inventory. CC-A2
+# cannot trust source/WAV/receipt/publication helpers unless separately pinned.
+FROZEN_LIMITED_LIVE_BLOB_SHA1 = "aa729fb644043b80056a000f9ed5d302fe39125a"
+
+
+def _load_frozen_adapter() -> Any:
+    source = ROOT / "src" / "morphoacoustics" / "integration" / "limited_live.py"
+    raw = source.read_bytes()
+    observed = hashlib.sha1(b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw).hexdigest()
+    if observed != FROZEN_LIMITED_LIVE_BLOB_SHA1:
+        raise RuntimeError("CC-A2 frozen limited_live dependency changed; no synthesis permitted")
+    # Import only *after* exact source bytes match; this is a trusted checkout,
+    # not a malicious-import sandbox. Existing Experiment028/029 transitive
+    # source pin/oracles will be checked separately by the imported adapter.
+    return importlib.import_module("morphoacoustics.integration.limited_live")
 
 
 def schema_validator(name: str) -> Draft202012Validator:
@@ -148,6 +166,7 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
         raise FileExistsError("Take output directory must not exist")
     schema_validator("performance-request").validate(request)
     assert isinstance(request, dict)
+    frozen = _load_frozen_adapter()
     exp = frozen._load_audited_experiment()  # frozen source hashes + both Wolfram preflights
     if np.__version__ != exp.AUDITED_NUMPY_VERSION:
         raise RuntimeError("audited NumPy version changed")
@@ -169,7 +188,7 @@ def perform(request: object, output_dir: Path) -> dict[str, Any]:
         or direction.get("controls")
         or direction.get("segment_overrides")
         or direction.get("note", "").strip()
-        or any(c not in {"audio", "timeline", "diagnostics", "gesture_trace", "physical_trace"}
+        or any(c not in {"audio", "timeline", "diagnostics", "physical_trace"}
                for c in request.get("requested_capabilities", []))):
         return make_result(request, resolution, input_digest, backend_id,
                            outcome="UNSUPPORTED",
@@ -254,10 +273,12 @@ def main() -> None:
         raw = json.loads(args.request.read_text(encoding="utf-8"))
         result = perform(raw, args.output_dir)
     except Exception as exc:
-        result = {"job_status": "FAILED", "realization_outcome": None,
-                  "artifacts": [], "diagnostics": diagnostics("CC_A2_EXECUTION_FAILED", str(exc))}
+        # Nonzero process exit carries a *separate* versioned transport error;
+        # never pretend that missing request identity is a v1 PerformanceResult.
+        result = {"schema_version": "cc-a2-transport-error/v1",
+                  "error": {"code": "CC_A2_EXECUTION_FAILED", "message": str(exc)}}
     print(json.dumps(result, ensure_ascii=False))
-    if result["job_status"] == "FAILED":
+    if result.get("schema_version") == "cc-a2-transport-error/v1":
         raise SystemExit(1)
 
 
