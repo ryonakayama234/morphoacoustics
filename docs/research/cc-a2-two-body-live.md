@@ -49,3 +49,14 @@ A malformed v1 request is INVALID and produces no Take. Schema-valid unknown/rev
 - [ ] Explicit GO_LIMITED/HOLD/REJECT after all gates. No merge without review.
 
 This integration uses already studied physical laws; it does not establish new FSI, real tissue dynamics, natural Japanese, or generalized body editing.
+
+## 2026-10-19 critical Codex review finding disposition — pending re-review
+
+Initial Draft PR #122 reviewed HEAD `588c52c` returned P1 (inherited `limited_live.py` module itself was outside its own frozen transitive inventory), P2 (malformed CLI failures pretended to be incomplete `PerformanceResult v1`), and P2 (a requested `gesture_trace` falsely advertised as satisfied). The following corrections are **code candidate, not approved**:
+
+- CC-A2 verifies the exact adopted Git blob of `src/morphoacoustics/integration/limited_live.py` **before importing** it; rejects checksum drift without synthesizing. Existing Experiment028/029 pinned source and oracle preflight remains intact.
+- Unhandled execution failures return nonzero process exit and an explicitly separate `cc-a2-transport-error/v1` JSON envelope `{schema_version,error:{code,message}}`; **not** a valid PerformanceResult v1. Studio treats failed CLI execution as an error, with no Take. Valid schema requests with binding/feasibility refusals still produce valid v1 outcomes with no audio.
+- `gesture_trace` is rejected `UNSUPPORTED` because this slice only emits physical geometry trace and source/task receipt, not a separately contracted gesture-trace artifact.
+- New reproducible tests cover borrowed/changed inherited source pin, unsupported `gesture_trace`, and malformed request transport error without audio.
+
+**No Gate C signoff before exact repaired HEAD CI and independent re-review.**
