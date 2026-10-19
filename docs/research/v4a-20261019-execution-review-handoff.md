@@ -104,3 +104,25 @@ The documented `@codex review` requests **did reach** the GitHub Codex integrati
 **No user action required for technical review administration.** A creator audition can independently proceed from artifact 12197027447 and be recorded as creator evidence, without pretending to settle the blocked scientific review.
 
 Latest code/physics CI: `c69c08816a9c28ea28595c6c01afa440c473cd7c`, science run [39275191454](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39275191454) **SUCCESS**, 9 dedicated unit tests and physical+evidence checks. Later documentation-only commits change Git HEAD recorded in a fresh run; use a matching artifact and manifest when citing exact code+data hashes.
+
+
+## Creator actual hearing / perceptual evidence (2026-10-20 JST)
+
+**One user, first hearing, target already disclosed (NON-BLIND); do not make claims of population intelligibility or verified Japanese phonemes.** The creator played the run-1 WAV and reported:
+
+> 「ああいーあ」みたいな感じかな？  
+> 最初の「あ」音に関しては一音が滑らかに、ではなく「あ」(この間にちょっと詰まった感じアリ)「あ」と2音並んで、「いー」(こっちはまぁ良さそう)って感じ  
+> 連続発声というより、音を3つ並べておいた感
+
+**Assessment (creator experience, not a scientific physics rejection):** transition is perceptible, middle `いー` comparatively promising, but the initial `あ` has a reported catch/re-articulation and the total feels like three separated sounds, not one continuous utterance. Therefore *perceptual smoothness as creative experience is NOT ACCEPTED in this pilot*. This does **not** erase numeric G0–G4 success; nor does numeric PASS override the creator's report. No user claims about usability, enjoyment or performance authoring have been received.
+
+The implementer independently downloaded the [2026-10-19 exact-PR-head workflow artifact 12196309449](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39275807586/artifacts/12196309449) and inspected the waveform and actual receipt:
+- `R1_listen.wav`: mono 16-bit PCM, 48kHz × exactly 48,000 samples; `<f8` SHA-256 of full raw pressure/source and byte SHA-256 of WAV agree with `summary.json`; two runs regenerate matching values.
+- In the opening `0.01–0.15s`, ratios of minimum to maximum 10ms RMS pressure windows `0.98335`; during the `0.15–0.35s` ramp `0.83666`. No 10ms-scale silent interruption observed. This **cannot rule out perceptual articulation or spectral segmentation**.
+- R1 generated using one full `frame_render` call; C0 is a separately labeled two-render diagnostic, not accepted audio. R1 and C0 pressure differ (normalized whole-file RMS `0.03349`). The creator's "three sounds side by side" is perceptual evidence **not proof that the implementation concatenated WAVs**.
+- GitHub PR SHA `8a74855e89ee6ccb8f0fb3e8eec9a4aab071ec8b` and `summary.json` **executed Git checkout** `51d652538966f717f6ad28dece316bbfc87019a6` are distinct (pull_request checkout's merge SHA). Record both; only file SHA and physical output digest bind exact execution. This distinction should be verified for subsequent acceptance receipts.
+- Existing gesture command has a stable `/a/-like` plateau through 0.15s before a smooth 0.15–0.35s ramp; this is a possible perceptual separation cue but **not established as the cause**. Do not alter protocol after hearing evidence or claim a material/solver bug based on a single pilot.
+
+Full verbatim testimony, wave checks, and gate classification were posted to [PR #88 creator-evidence receipt](https://github.com/ryonakayama234/morphoacoustics/pull/88#issuecomment-6279797641).
+
+**Adoption status remains HOLD.** Existing independent code/science review is blocked by Codex usage quota. Any scoped adoption/merge needs the accepted independent review and integration check. Natural uninterrupted vocal performance and Studio editing are NOT claims for Experiment036 and need a separate development/creator integration gate; do not quietly expand this pilot. Record this limitation for later work, without selecting or implementing another task here.
