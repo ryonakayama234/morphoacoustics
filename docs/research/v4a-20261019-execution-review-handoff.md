@@ -60,3 +60,38 @@ Evidence `summary.json` is produced after calculated arrays and (only when numer
 From [experiment run 39272465612](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39272465612), open the `v4a-036-research-audit` artifact, listen to `v4a-run1/R1_listen.wav` as a **provisional research preview**, then inspect `activation_and_resonance_trace.csv` and `summary.json`. To compare against a 0.5-second adopted baseline, create/obtain the independently pinned Core X2a WAV; *do not confuse the diagnostic C0 concatenation with a supported output*. Normalized listening WAV is not a sound-pressure measurement.
 
 This is a research-preview artifact, not an executable Studio feature.
+
+
+## Acceptance pass — 2026-10-20 (latest evidence, supersedes earlier HEAD-only pointers)
+
+**Scope and completion definition fixed, no new task selection.** Core Issue #74 / Draft #77 and stacked Draft #88 are the only task. Completion requires (i) this one-source one-timeline one-render limited science pilot with frozen numeric G0-G4 and faithful claim G5, (ii) current exact-HEAD CI/reproducibility with no reference drift, (iii) independent scientific and code review and resolution of material P1/P2 defects, (iv) separately recorded creator listening/exploratory transcription, and (v) a recorded scoped adoption decision and non-destructive main integration after review authorization. Studio integration, general vocal persona editing, authentic inertia/FSI and natural Japanese speech are **not** added acceptance requirements.
+
+### Additional implementation repair discovered during acceptance audit
+
+The earlier Experiment036 G0 only verified B0 output hash, FEASIBLE and acoustic-call count; the preregistered G0 additionally required preserving inherited Experiment027/029 frozen checks and negative no-fallback semantics. The acceptance pass now:
+- verifies the exact Git blob contents of Experiment028 frozen reference, its oracle, Experiment029 oracle and V3c Wolfram generator, and calls the **existing adopted** V3b `frozen_preflight` and V3c `local_oracle_preflight`, plus exact Experiment027 task/oracle equality. Abort *before rendering* on preflight failure.
+- independently calls Experiment029 negative `M_minus` body with oral reach 0.70 and checks `INFEASIBLE`, zero transfer calls, no waveform, no endpoint; this is incorporated into the existing `frozen_B0` G0 check without changing original numerical thresholds.
+- tracks the upstream scientific oracle/reference files via SHA-256 in the execution receipt; adds two regression tests validating the inherited preflight and zero-render negative.
+
+Latest tested scientific/code HEAD **`c69c08816a9c28ea28595c6c01afa440c473cd7c`**:
+- [Real 1s physics twice, tests and independent byte integrity action 39275191454 — SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39275191454), including new inherited preflight and no-fallback negative.
+- [Research evidence including `R1_listen.wav`, run-1/run-2 raw pressure, source, CSV and summary — artifact 12197027447](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39275191454/artifacts/12197027447); retention until **2027-01-17 15:07 UTC** according to GitHub. This artifact supersedes the older examples above.
+- Original exact B0 waveform quantized hash and R1 scientifically emitted waveform/PCM hashes remained as before. New `summary.json` also includes `upstream_scientific_preflight` and `unreachable_body_no_fallback`. WAV normalization is 0.90 full-scale by inherited Experiment009, not real-world loudness.
+- The original independent-ish byte-verification CI step is a **separate script in the same PR**; it checks honest byte and source equivalence but is not an external peer review.
+
+### Independent review requests and disclosure
+- [Codex review request on protocol PR #77](https://github.com/ryonakayama234/morphoacoustics/pull/77#issuecomment-6270502723) (explicitly **post hoc**, cannot erase lack of pre-execution protocol approval).
+- [Codex code/science/security review request on implementation PR #88](https://github.com/ryonakayama234/morphoacoustics/pull/88#issuecomment-6270503765), pinned to HEAD `c69c08816a9c28ea28595c6c01afa440c473cd7c`.
+- Existing Codex automated reviewer was demonstrably used in adopted CC-A2 PR #122; a formal GitHub review-request attempt targeting its bot identity was rejected (not a collaborator). The `@codex review` PR comment is the repository's established trigger. **Request sent does not equal review completed or accepted.** Check exact-HEAD review state before any further action.
+- Merge compatibility is NOT established. [GitHub main-versus-PR comparison](https://github.com/ryonakayama234/morphoacoustics/compare/main...research/v4a-roundtrip-execution-20261012) shows the stacked research branch currently **103 main commits behind**, with 11 branch commits ahead. Resolve the integration gap after required scientific/creator gates, without force-updating original evidence.
+
+### Creator listening protocol — first action only
+Use only the unambiguous accepted-experimental-run `v4a-run1/R1_listen.wav` under the above exact-HEAD artifact. Creator opens it via Windows media player (or browser audio app), preferably at a comfortable volume; do not listen to the `C0_naive_concat_DIAGNOSTIC_ONLY.npy` research negative as an accepted recording. **First unprompted response:** freely write what the sound seems to say (kana/vowel sequence, or `聞き取れない`), without comparing against target text. **Second-stage questions, after free response:** perceivable direction/order of change; discontinuity/buzz/roughness; voice-likeness; creative potential / interest in replaying; whether listening and saving were straightforward. Record their literal feedback with context, not invent impressions. The creator already saw the task name /a/-like → /i/-like → /a/-like, so this single hearing **is not blinded** and should be marked expectation-biased exploratory evidence. No subjective aesthetic dislike alone invalidates a passing physics gate.
+
+### Gate status for next session
+- Implementation: **DONE, Draft research branch only**.
+- Frozen automatic engineering/science G0–G4: **PASS at c69c088**; accepted physical scope is only quasi-static one-run waveform, not time-domain PDE.
+- Independent peer code/science review: **REQUESTED / PENDING** at time of this record.
+- Creator machine listening and expressive feedback: **PENDING**.
+- Formal adoption, Core main merge, Studio integration: **NOT DONE**, and must not be stated otherwise.
+- Blocking vs future-only: outstanding review, creator pilot and main-base reconciliation **block formal completion**; physical articulator inertia, new phonemes, Studio editing and broader aesthetic quality improvements are future scope and **do not block this narrow research pilot's scientific validity**.
