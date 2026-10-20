@@ -84,3 +84,14 @@ A [parameter-prospectively-recorded but not independently ratified protocol](../
 | Date | Event | Status |
 | --- | --- | --- |
 | 2026-10-20 | Experimental 044 prospective candidate parameters → analytic-bin Python prototype → two byte-identical local outputs + 5 tests + off-anchor Wolfram | `EXPLORATORY_ENGINEERING_PASS; GATE_A_UNRATIFIED; GATE_B_UNCONFIRMED; STUDIO_NOT_IMPLEMENTED` |
+
+
+## 2026-10-20 follow-on Experiment 045 — causal-echo falsification (EXPLORATORY)
+
+Previous [Experiment 044](../../../experiments/044_og_aud1_monitor/RESULTS.md) is physically explicit but its >4kHz FFT brick-wall monitor projection is formally acausal. The new [Experiment 045](../../../experiments/045_og_aud1_causal_monitor/README.md) implements causal finite reflection delays under exactly the **same frozen matched-load 3-duct hypotheses**; report this as a *post hoc research improvement*, **not** an independently approved preregistered confirmatory Gate B.
+
+H0: the matched-load source-port A/B audible difference would disappear, or the time-domain response would violate source-onset causality, p-continuity/flow or energy under a causal realization. H1: prescribed identical U(t), only C area changed, gives distinct p(A.in) with exact pre-onset zeros, junction conservation and positive passive exit energy, converges as echo count increases; its Fourier response is consistent with Wolfram's closed-form ideal input impedance.
+
+Scientific falsification controls: wrong reflection omission and particle/volume law, illegal C area, source mismatch, finite/nonfinite rejection, insufficient echo count, reversed J flow, nonmatching outlet energy, output overwrite, per-Take normalization confound, corrupted file hash, source-plane misidentification. Current runner tests the declared bounded subset; **do not infer all listed controls passed**. Port traces and matching law are tested for the exact 48k-source record. Independent full-grid Wolfram and formally prospective acceptance Gate A/B review still open.
+
+Observed local exploratory evidence: causal A/B RMS pressure relative difference ~0.744, reflections r=-0.2/-0.5, round-trip tau≈0.0004664723s; six local test categories passed in analogous Python implementation. Wolfram's analytic finite-series/closed-form 733Hz relative errors ~1.53e-16 and ~3.83e-16 for the two C areas; no human scientific audit. The **PCM16 audio samples match Experiment 044 hashes**, a strong candidate cross-method consistency check but not a full waveform-validity proof. See [Experiment 045 RESULTS](../../../experiments/045_og_aud1_causal_monitor/RESULTS.md). Exact committed code must pass CI; do not assert CI before it reports. Decision: **EXPLORATORY / HOLD_ADOPTION**, Studio Gate C and creator audition remain pending.
