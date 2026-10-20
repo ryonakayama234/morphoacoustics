@@ -18,3 +18,10 @@
 - [Neural causal boundary](./neural-causal-boundary.md) — physical causality not bypassed by a voice model.
 
 Every implemented work package must update physical SYSTEM, exact DATA contract and EXPERIMENT/evidence record together. Separate exploratory results from frozen tests, numeric gates from listening gates, and public adopted APIs from draft research.
+
+### OG-AUD1 / physical graph → audible source-port monitor (2026-10-20, draft)
+
+- [Core SYSTEM](./og-aud1/SYSTEM.md) · [DATA](./og-aud1/DATA.md) · [EXPERIMENT](./og-aud1/EXPERIMENT.md) — all **Gate A candidate**, unadopted.
+- [Focused physical audit](./og-aud1/GATE_A_REVIEW.md) — matched-branch length null, 3-port law, shared A/B gain, no radiated-mouth claim.
+- [Experiment 043 executable Wolfram global 12-state preflight](../../experiments/043_og_aud1_preflight/README.md) · [results](../../experiments/043_og_aud1_preflight/RESULTS.md) — **exploratory executed**; no broadband solver, audio or preregistered science pass.
+- [Studio creator handoff](https://github.com/ryonakayama234/morphoacoustics-studio/blob/docs/og-aud1-creator-handoff-20261020/docs/og-aud1-creator-handoff.md) — read-only 3-organ visualization and future immutable A/B Takes; no implemented Studio bridge yet.
