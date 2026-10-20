@@ -217,7 +217,7 @@ def publish_listening_wav(output_dir: Path, pressure: np.ndarray,
     Failed numeric experiments keep diagnostic arrays, never a playable artifact
     that a downstream creator could accidentally mistake for accepted physics.
     """
-    if not checks or not all(checks.values()):
+    if research_decision(checks) != "SUPPORT_ONE_RUN_ROUNDTRIP":
         return None, None
     wav_path = output_dir / "R1_listen.wav"
     gain = EXP26.EXP9.write_listening_wav(wav_path, pressure)
