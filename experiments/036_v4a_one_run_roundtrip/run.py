@@ -181,6 +181,7 @@ def upstream_scientific_preflight() -> dict[str, object]:
     """
     e28 = EXP29.EXP28
     expected_blobs = {
+        EXP27.ORACLE_PATH: "5d52cfc1c5df395d92e207a645e2229f1f68d0ed",
         e28.FROZEN_REFERENCE_PATH: EXP29.EXP28_FROZEN_REFERENCE_GIT_BLOB_SHA,
         e28.ORACLE_PATH: EXP29.EXP28_ORACLE_GIT_BLOB_SHA,
         EXP29.ORACLE_PATH: EXP29.ORACLE_GIT_BLOB_SHA,
@@ -191,6 +192,17 @@ def upstream_scientific_preflight() -> dict[str, object]:
         str(path.relative_to(HERE.parents[1])): EXP29.git_blob_sha1(path) == sha
         for path, sha in expected_blobs.items()
     }
+    # A modified/malformed frozen oracle must be refused BEFORE JSON parsing;
+    # otherwise invalid JSON could prevent the required G0 drift receipt.
+    if not all(blob_checks.values()):
+        return {
+            "pass": False,
+            "frozen_blob_checks": blob_checks,
+            "v3b_frozen_preflight_checks": {},
+            "v3c_frozen_preflight_checks": {},
+            "v3a_task_oracle_match": False,
+            "preflight_phase": "FROZEN_BLOB_MISMATCH_BEFORE_PARSE",
+        }
     frozen = json.loads(e28.FROZEN_REFERENCE_PATH.read_text(encoding="utf-8"))
     e28_oracle = json.loads(e28.ORACLE_PATH.read_text(encoding="utf-8"))
     e29_oracle = json.loads(EXP29.ORACLE_PATH.read_text(encoding="utf-8"))
