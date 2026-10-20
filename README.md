@@ -79,3 +79,13 @@ tests/                   software and scientific tests
 ## Status
 
 Early research scaffold. Domain and causal contracts come first; higher-fidelity numerical solvers follow.
+
+## Current bounded capability index (2026-10-20)
+
+The **Initial vertical slice** above remains historical architecture background, not a claim that every currently adopted solver is source-free or waveform-free. Present Core has progressed in distinct, scope-limited steps:
+
+- **Adopted limited:** fixed passive OG-4 three-organ ideal junction **frequency-domain p/U**, on exactly eight isolated verified frequencies ([normative contract](docs/research/og4-branch3-api-v1.md), [PR #108](https://github.com/ryonakayama234/morphoacoustics/pull/108)); this **does not render a 48kHz waveform** and cannot be interpolated as an accepted continuous-band response.
+- **Adopted limited:** CC-A2 fixed two *serial*-body physical audio/trace trusted request–Take path ([Core PR #122](https://github.com/ryonakayama234/morphoacoustics/pull/122), [Studio CC-A2](https://github.com/ryonakayama234/morphoacoustics-studio/blob/main/docs/cc-a2-two-body-studio.md)); this **does not synthesize a branching-organ body**.
+- **Research candidate / not adopted:** OG-AUD1 joins those two capacities only after a *new*, independently validated broadband acoustic response and finite-time physical pressure source/monitor. See [synchronized SYSTEM/DATA/EXPERIMENT](docs/research/og-aud1/SYSTEM.md), [review note](docs/research/og-aud1/GATE_A_REVIEW.md), [executed Wolfram 12-state exploratory preflight](experiments/043_og_aud1_preflight/RESULTS.md) and [Studio handoff](https://github.com/ryonakayama234/morphoacoustics-studio/pull/21). No graph-to-audio production solver, waveforms, or new Studio integration is claimed by these Draft files.
+
+For current scientific decisions, maturity status, and cross-repo handoffs, follow [research index](docs/research/README.md) rather than treating the first introductory example as the latest capability boundary.
