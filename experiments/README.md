@@ -45,3 +45,5 @@ An experiment that becomes a stable invariant should be promoted into `tests/sci
 
 28. `028_task_field_morphology_transfer` — reuse the frozen Experiment-027 three-task plan and realizer unchanged on a 1.10x axial-length prepared morphology, with body-specific metric coordinates, independent Wolfram acoustics, and body-relative /i/-intent retention gates.
 29. `029_task_field_embodied_infeasibility` — keep the audited three-task phonetic plan fixed while an experiment-local PreparedMorphology reach boundary changes one body from FEASIBLE to explicit INFEASIBLE with no physical/acoustic fallback.
+
+42. `042_sv1_sustained_vowel` — SV-1 experiment-local fresh 0.25s vs 0.50s sustained /a/-like physical acoustic rendering on the exact adopted CC-A2 M0 static body, with a strictly diagnostic A+A WAV concatenation negative control, exact pinned source/body/oracle, and separate blind creator listening Gate. Parent: Core #124; numeric and human success must not be conflated.
