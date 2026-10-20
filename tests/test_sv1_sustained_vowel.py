@@ -101,9 +101,24 @@ def test_real_physics_duration_body_oracle_and_listening_trials(tmp_path: Path) 
     assert np.array_equal(a[2400:7200], b[2400:7200])
     with wave.open(str(dest / "A_listen.wav"), "rb") as f:
         original = f.readframes(f.getnframes())
+    # The C second component must exist as a separately rendered PHYSICAL
+    # 0.25s source / raw-pressure pair, not just a duplicated A byte buffer.
+    second_source = np.load(dest / "C_second_source_flow.npy", allow_pickle=False)
+    second_pressure = np.load(dest / "C_second_raw_pressure_pa.npy", allow_pickle=False)
+    assert second_source.shape == second_pressure.shape == (12_000,)
+    assert np.array_equal(second_source, a)
+    assert np.array_equal(second_pressure, np.load(
+        dest / "A_raw_pressure_pa.npy", allow_pickle=False))
+    assert report["C"]["separate_acoustic_run_count"] == 2
+    assert report["C"]["component_first_pressure_sha256_f64"] == (
+        report["C"]["component_second_pressure_sha256_f64"]
+    )
+    with wave.open(str(dest / "C_second_listen.wav"), "rb") as f:
+        assert f.getnframes() == 12_000
+        second = f.readframes(f.getnframes())
     with wave.open(str(dest / "C_concat_DIAGNOSTIC.wav"), "rb") as f:
         assert f.getnframes() == 24_000
-        assert f.readframes(f.getnframes()) == original + original
+        assert f.readframes(f.getnframes()) == original + second
     assert (dest / "listening/blind/trial_01.wav").read_bytes() == (
         dest / "B_listen.wav").read_bytes()
     assert (dest / "listening/blind/trial_03.wav").read_bytes() == (
