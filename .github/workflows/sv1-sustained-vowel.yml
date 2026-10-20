@@ -2,27 +2,7 @@ name: sv1-sustained-vowel-physical
 
 on:
   push:
-    paths:
-      - "experiments/042_sv1_sustained_vowel/**"
-      - "tests/test_sv1_sustained_vowel.py"
-      - ".github/workflows/sv1-sustained-vowel.yml"
-      - "tools/cc_a2_live.py"
-      - "experiments/013_parametric_source_prosody/**"
-      - "experiments/023_static_vowel_calibration/**"
-      - "experiments/028_task_field_morphology_transfer/**"
-      - "experiments/029_task_field_embodied_infeasibility/**"
-      - "src/morphoacoustics/**"
   pull_request:
-    paths:
-      - "experiments/042_sv1_sustained_vowel/**"
-      - "tests/test_sv1_sustained_vowel.py"
-      - ".github/workflows/sv1-sustained-vowel.yml"
-      - "tools/cc_a2_live.py"
-      - "experiments/013_parametric_source_prosody/**"
-      - "experiments/023_static_vowel_calibration/**"
-      - "experiments/028_task_field_morphology_transfer/**"
-      - "experiments/029_task_field_embodied_infeasibility/**"
-      - "src/morphoacoustics/**"
   workflow_dispatch:
 
 permissions:
