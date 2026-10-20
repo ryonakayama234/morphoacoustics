@@ -47,7 +47,7 @@ Core owns body, source, physical acoustics and provenance. Studio remains unchan
 
 **Static /a/ M0 resonance oracle is P1=720.25, P2=1288.50 Hz** from the accepted Experiment028 Wolfram reference, with absolute 0.25Hz tolerance. The older draft Issue initially confused these with 275/2101.75 Hz (/i/-like task endpoint); this was transparently corrected on Issue #124 **before SV-1 execution**.
 
-The inherited 10ms source-amplitude envelope denotes imposed file fade-in/out, not physically solved phonation onset/offset or Experiment027 task activation. A/B share byte-identical source float64 inside the 0.05s-to-0.15s steady common region. Their raw pressure and playback WAV are computed separately; listening WAV is normalized, NOT calibrated sound pressure.
+The inherited 10ms source-amplitude envelope denotes imposed file fade-in/out, not physically solved phonation onset/offset or Experiment027 task activation. A/B share byte-identical source float64 inside the 0.05s-to-0.15s steady common region. To prevent per-file peak normalization from introducing a second experimental variable, both use a common scale derived from the frozen 0.50s LF source reference. This was an explicitly recorded repair after initial failed CI; see RESULTS.md and Issue #124. Their raw pressure and playback WAV are computed separately; listening WAV is normalized, NOT calibrated sound pressure.
 
 ## Acceptance gates
 
