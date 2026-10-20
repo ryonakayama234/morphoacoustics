@@ -172,7 +172,9 @@ def compute_pair() -> tuple[dict, dict[str, bytes]]:
         'fft_policy':'exact analytic Zin evaluated at every <=4000Hz RFFT bin, >4000Hz zero; zero-padded spectral projection with possible acausal pre-ringing',
         'playback_normalization':'common pair peak 0.8, PCM16 rint',
         'experiment_gate':'EXPLORATORY_UNREVIEWED',
-        'code_identity':'experiment/044_og_aud1_monitor/monitor.py',
+        'code_identity':'experiments/044_og_aud1_monitor/monitor.py',
+        'code_sha256':sha256(Path(__file__).read_bytes()),
+        'numpy_version':np.__version__, 'python_version':sys.version.split()[0],
         'records':records,
     }
     return manifest, files
