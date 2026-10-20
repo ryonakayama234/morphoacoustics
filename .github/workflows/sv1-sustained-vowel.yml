@@ -24,7 +24,7 @@ jobs:
           python -c "import numpy; assert numpy.__version__ == '2.4.6'"
       - name: TEMP bootstrap reviewable PyPI hash lock (remove after committing lock)
         run: |
-          python -m pip install 'pip-tools==7.5.2'
+          python -m pip install uv
           cat > /tmp/sv1-lock.in <<'EOF'
           numpy==2.4.6
           pytest==9.1.1
@@ -32,7 +32,7 @@ jobs:
           setuptools==80.9.0
           wheel==0.45.1
           EOF
-          pip-compile -q --generate-hashes --allow-unsafe --output-file=/tmp/sv1-lock.txt /tmp/sv1-lock.in
+          uv pip compile --generate-hashes --python-version 3.11 /tmp/sv1-lock.in > /tmp/sv1-lock.txt
           echo '===SV1_LOCK_START==='
           cat /tmp/sv1-lock.txt
           echo '===SV1_LOCK_END==='
