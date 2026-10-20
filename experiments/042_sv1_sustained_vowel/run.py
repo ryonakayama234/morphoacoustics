@@ -87,7 +87,20 @@ def _source_for_duration(exp: object, duration_s: float) -> tuple[np.ndarray, np
     phase, lf_flow = e13.lf_flow_shape(e13.lf_parameters())
     envelope = e13.common_file_envelope(count)
     opening = np.interp(np.mod(cycles, 1.0), phase, lf_flow)
-    source = e13.normalize_peak(opening * envelope)
+    # Fixed normalization reference for BOTH durations. Per-file peak normalization
+    # is a nuisance intervention: distinct finite-length samples have tiny
+    # peak differences even during acoustically identical steady intervals.
+    # Keep the inherited 0.50s LF source EXACT, and apply its scale to fresh
+    # 0.25s source excitation. No completed WAV is cut, looped or stretched.
+    ref_count = round(DURATIONS[1] * SAMPLE_RATE)
+    ref_cycles = e13.cycles_from_f0(np.full(ref_count, F0_HZ, dtype=np.float64))
+    ref_opening = np.interp(np.mod(ref_cycles, 1.0), phase, lf_flow)
+    ref_unscaled = ref_opening * e13.common_file_envelope(ref_count)
+    ref_peak = float(np.max(np.abs(ref_unscaled)))
+    if not math.isfinite(ref_peak) or ref_peak <= 0:
+        raise RuntimeError("SV-1 fixed LF reference normalization failed")
+    source = np.asarray(opening * envelope * (e13.SOURCE_PEAK_M3_S / ref_peak),
+                        dtype=np.float64)
     # Exact initial phase, monotonic control, single envelope, no interior restart.
     ramp = round(0.01 * SAMPLE_RATE)
     if (source.shape != (count,) or not np.isfinite(source).all()
