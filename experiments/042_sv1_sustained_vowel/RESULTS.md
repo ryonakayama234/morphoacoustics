@@ -74,3 +74,24 @@ After the new two-render diagnostic correction, independent Codex reviews were r
 6. **P2 receipt authentication**, [review thread](https://github.com/ryonakayama234/morphoacoustics/pull/125#discussion_r4321198506): Manifest self-hashes cannot cryptographically authenticate a maliciously repacked offline bundle. All authoritative artifacts should be retrieved from the exact GitHub-hosted run; externally recorded GitHub artifact ZIP digest, Git commit and job receipt are the public verification authority. Offline signature/attestation **not implemented and explicitly out of current limited-scope trust boundary**. This is a residual finding requiring reviewer acceptance or a separately bounded attestation task before unrestricted artifact distribution.
 
 Hash-locked [physical run 39365984818](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365984818) succeeded with three fresh acoustic calculations per evidence bundle and all dedicated tests. Any subsequent documentation/head updates must still pass the same exact-HEAD CI. Keep the PR Draft, request final review at that exact HEAD, do not adopt or merge from past-success evidence. Human creator hearing remains NOT RUN.
+
+
+## Creator blind listening: post-stimulus pilot report (2026-10-20)
+
+User's *unprompted response before key disclosure* preserved verbatim in [Core #124 comment](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6287125130). The [subsequent key-checked adjudication](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6287167862) does NOT assert population naturalness, and this new written finding cannot retroactively change the earlier source/physics test thresholds.
+
+| Blinded file | Frozen experimental condition | Creator's own perception | Gate |
+| --- | --- | --- | --- |
+| trial_01.wav | B; **fresh one-excitation one-render** static /a/-like 0.50s | "一番自然な『一度の長い『あーー』』" and close to what was imagined | **SUPPORTED: B single prolonged sound in this N=1 creator pilot** |
+| trial_02.wav | C; separate short 0.25s physical renders A and C_second, then diagnostic-only *PCM concatenation* | "あー(ぁ)ー", bumpy / strange | **Distinct from B but NOT cleanly recognized as exactly two syllables** |
+| trial_03.wav | A; **fresh one-excitation one-render** static /a/-like 0.25s | "あ,あ,あ" and three perceived restarted events, albeit artistically not bad | **NOT CONFIRMED: A perceptual single onset; no evidence of physical LF phase restarts** |
+
+**Decision semantics:** Core duration generation can meet a scoped \`SUPPORT_DURATION_CONTROL\` while perceptual \`SINGLE_SUSTAIN_PERCEPT_CONFIRMED_PILOT\` is true **only for B (0.50s)**, **not for all conditions**. The diagnostic C splice is not a physical single-run result, and its audible roughness does not establish two distinct natural vocal onsets. A physical single run is not necessarily perceived as one voiced event. The two phenomena must be stored as separate observations; neither a length-dependent normalization hack nor an unreviewed vowel/voice perturbation may erase the discrepancy.
+
+**Creative milestone:** the 0.50s material delivers a usable "one held /a/-like sound" to this creator. **Research limit:** the present 0.25s condition is not established to be one clean short vowel. This is future research into time-domain perceptual onset, source/renderer windowing, amplitude envelope and phonation-event model. The new work must use a separate frozen hypothesis and control, not silently rewrite SV-1's accepted G1 evidence.
+
+## Current final review repair before any merge
+
+Independent Codex review of [commit 557f43f](https://github.com/ryonakayama234/morphoacoustics/commit/557f43f3511769fd837483acbfd32149fb1da6b7) yielded a new **P2 incomplete crash-durability** concern: fsyncing raw files and the top-level output folder does not fsync nested listening directory entries; a completed marker could survive a power loss without all nested files. [Review thread](https://github.com/ryonakayama234/morphoacoustics/pull/125#discussion_r4321288549). Code fix [221eeb0](https://github.com/ryonakayama234/morphoacoustics/commit/221eeb0b6f58aecefdc68a5ec9fb49a4398fa5f3) flushes nested evidence directories in deepest-first order before the fsynced atomic manifest; test [6dba76d](https://github.com/ryonakayama234/morphoacoustics/commit/6dba76d602679689272ad979fbd10e459b9ae539) explicitly checks fsync-before-marker ordering. New exact-HEAD CI and independent review are release gates. Offline copies remain unauthenticated without external GitHub run/artifact evidence; do not claim general adversarial provenance.
+
+**No modification to existing acoustic computations, source scale, static vowel geometry, sample duration or trial mapping was made by these provenance/crash-integrity repairs.** Source paths are still tracked via GitHub run HEAD.
