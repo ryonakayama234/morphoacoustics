@@ -39,7 +39,7 @@ assuming all positive finite real `Z_A,Z_J`. This is a **scalar cross-check**, n
 
 Wolfram Language evaluated the scalar equations above for `rho=1.2 kg/m³`, `c=343 m/s`, `L_A=0.08 m`, `S_A=S_B=0.0003 m²`, `U0=(1+0.4 i)*10^-6 m³/s`, and both matched outlets. B and C lengths remain `0.09 m` / `0.06 m`, respectively. The following newly checked examples are from **existing OG-4 anchor frequencies only** (unit of Z: Pa s/m³).
 
-| Hz | C area [m²] | Re Z_in | Im Z_in | peak |p_A.in| [Pa] |
+| Hz | C area [m²] | Re Z_in | Im Z_in | peak source-port pressure [Pa] |
 | ---: | ---: | ---: | ---: | ---: |
 | 80 | .00015 | 921672.26 | 89222.46 | 0.997312 |
 | 80 | .00060 | 462963.68 | 143415.01 | 0.522004 |
