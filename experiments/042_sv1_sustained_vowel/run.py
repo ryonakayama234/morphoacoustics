@@ -212,6 +212,31 @@ def _write_at(root_fd: int, relative_name: str, data: bytes) -> None:
             os.close(fd)
 
 
+def _fsync_evidence_directories(root_fd: int, relative_names: tuple[str, ...]) -> None:
+    """Persist nested file directory entries before manifest publication.
+
+    fsync(file) alone guarantees content, not persistence of the directory
+    entry naming the file. Every nested parent is fsynced deepest-first,
+    followed by the root in _publish_new_bundle. No path follows symlinks.
+    """
+    parents = {
+        tuple(name.split("/")[:depth])
+        for name in relative_names
+        for depth in range(1, len(name.split("/")))
+    }
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    for parts in sorted(parents, key=lambda p: (-len(p), p)):
+        directory_fd = os.dup(root_fd)
+        try:
+            for component in parts:
+                next_fd = os.open(component, flags, dir_fd=directory_fd)
+                os.close(directory_fd)
+                directory_fd = next_fd
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+
+
 def _publish_new_bundle(output_dir: Path, files: dict[str, bytes],
                         manifest: dict) -> None:
     """Reserve new output, anchor ALL writes to fd, publish complete marker last."""
@@ -224,6 +249,10 @@ def _publish_new_bundle(output_dir: Path, files: dict[str, bytes],
     try:
         for name, contents in sorted(files.items()):
             _write_at(root_fd, name, contents)
+        # Before exposing a completed bundle, all nested directory entries
+        # must be durable too (review P2; file fsync cannot do this).
+        _fsync_evidence_directories(root_fd, tuple(sorted(files)))
+        os.fsync(root_fd)
         # Refuse a swapped output directory even if its replacement is another
         # real directory (a symlink replacement was refused by O_NOFOLLOW).
         actual = os.stat(output_dir, follow_symlinks=False)
