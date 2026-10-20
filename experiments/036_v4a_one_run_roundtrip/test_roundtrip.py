@@ -186,6 +186,43 @@ class RoundtripTests(unittest.TestCase):
             body.assert_not_called()
             renderer.assert_not_called()
 
+    def test_v3a_frozen_oracle_change_rejected_before_parsing(self):
+        adopted_blob = M.EXP29.git_blob_sha1
+        def modified_blob(path):
+            if path == M.EXP27.ORACLE_PATH:
+                return "0" * 40
+            return adopted_blob(path)
+        with (mock.patch.object(M.EXP29, "git_blob_sha1", side_effect=modified_blob),
+              mock.patch.object(M.json, "loads",
+                                side_effect=AssertionError("parsed before checking blob")) as loads):
+            preflight = M.upstream_scientific_preflight()
+            self.assertFalse(preflight["pass"])
+            self.assertEqual(preflight["preflight_phase"],
+                             "FROZEN_BLOB_MISMATCH_BEFORE_PARSE")
+            self.assertFalse(preflight["frozen_blob_checks"][
+                "experiments/027_task_field_vowel_transition/wolfram/v3a_oracle.json"])
+            loads.assert_not_called()
+
+    def test_mutated_frozen_blob_writes_drift_receipt_without_audio(self):
+        adopted_blob = M.EXP29.git_blob_sha1
+        def modified_blob(path):
+            if path == M.EXP27.ORACLE_PATH:
+                return "0" * 40
+            return adopted_blob(path)
+        with (tempfile.TemporaryDirectory() as d,
+              mock.patch.object(M.EXP29, "git_blob_sha1", side_effect=modified_blob),
+              mock.patch.object(M.np, "__version__", M.EXP29.AUDITED_NUMPY_VERSION),
+              mock.patch.object(M, "body") as body,
+              mock.patch.object(M, "render") as renderer):
+            output_dir = Path(d) / "mutated-reference"
+            decision = M.run(output_dir)
+            self.assertEqual(decision["decision"], "REFERENCE_DRIFT")
+            self.assertFalse(decision["preview_available"])
+            self.assertFalse((output_dir / "R1_listen.wav").exists())
+            self.assertEqual(json.loads((output_dir / "summary.json").read_text()), decision)
+            body.assert_not_called()
+            renderer.assert_not_called()
+
     def test_final_dirty_checkout_never_publishes_playable_wav(self):
         with tempfile.TemporaryDirectory() as d:
             with (mock.patch.object(M, "source_provenance",
