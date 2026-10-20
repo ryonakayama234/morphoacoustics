@@ -129,6 +129,24 @@ def sha_f64(arr: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(arr, dtype="<f8").tobytes()).hexdigest()
 
 
+def verified_git_checkout() -> str:
+    """For reproducible physics, all tracked input code must match Git HEAD."""
+    root = HERE.parents[1]
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"],
+        capture_output=True, text=True, check=True,
+    )
+    if status.stdout.strip():
+        raise RuntimeError("V4-A rejects modified tracked files; use a clean Git checkout")
+    head = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    if len(head) != 40 or any(c not in "0123456789abcdef" for c in head):
+        raise RuntimeError("V4-A requires a valid Git checkout commit")
+    return head
+
+
 def source_provenance() -> dict[str, object]:
     """Record the actual read sources, not just an inherited task/oracle ID."""
     root = HERE.parents[1]
@@ -151,9 +169,8 @@ def source_provenance() -> dict[str, object]:
     ]
     hashes = {p: hashlib.sha256((root / p).read_bytes()).hexdigest()
               for p in source_paths}
-    git = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
-                         capture_output=True, text=True, check=True)
-    return {"git_head": git.stdout.strip(), "source_sha256": hashes}
+    return {"git_head": verified_git_checkout(),
+            "tracked_worktree_clean": True, "source_sha256": hashes}
 
 
 def upstream_scientific_preflight() -> dict[str, object]:
@@ -239,10 +256,33 @@ def source_cycle_jump(source: np.ndarray) -> float:
     return float(np.max(np.abs(source[boundaries]-source[boundaries-1]))/rms)
 
 
+def research_decision(checks: dict[str, bool]) -> str:
+    """Preserve the failure classes declared before executing Experiment036."""
+    groups = (
+        ("REFERENCE_DRIFT", ("frozen_B0",)),
+        ("REPRESENTATION_OR_SCHEDULE_MISMATCH",
+         ("analytic_schedule", "same_three_tasks")),
+        ("PHYSICAL_ENDPOINT_FAILURE", ("realized_geometry",)),
+        ("NUMERICALLY_UNSTABLE",
+         ("trajectory_step", "pressure_and_hop_stability")),
+        ("SOURCE_OR_PROVENANCE_FAILURE",
+         ("source_identity", "single_phase_source", "single_run_counts")),
+    )
+    expected = {k for _, keys in groups for k in keys}
+    if set(checks) != expected:
+        return "SOURCE_OR_PROVENANCE_FAILURE"
+    for status, keys in groups:
+        if not all(checks[k] for k in keys):
+            return status
+    return "SUPPORT_ONE_RUN_ROUNDTRIP"
+
+
 def run(output_dir: Path) -> dict[str, object]:
     # Exclusive new output: refuse even an empty directory or a dangling symlink.
     # No existing Take/evidence path may be reused or overwritten.
     output_dir.mkdir(parents=True, exist_ok=False)
+    # Git HEAD must identify all tracked transitive Python/physics dependencies.
+    verified_git_checkout()
     if np.__version__ != EXP29.AUDITED_NUMPY_VERSION:
         raise RuntimeError("V4-A must run NumPy==2.4.6 for the frozen baseline")
     oracle = json.loads(ORACLE.read_text(encoding="utf-8"))
@@ -346,7 +386,9 @@ def run(output_dir: Path) -> dict[str, object]:
     checks["realized_geometry"] = bool(all_geometry_valid and endpoints_valid
          and task_i_error<=.20 and max(peak_errors)<=.5)
     checks["trajectory_step"] = bool(step_ratio<.20)
-    stability_ratio = EXP12.normalized_rms_difference(pressure,reference)
+    # Experiment026's inherited numerical Gate normalizes by the fine reference.
+    # EXP12's similarly named helper reverses argument order (reference first).
+    stability_ratio = EXP26.normalized_rms_difference(pressure, reference)
     jumps = jump_diagnostics(pressure)
     checks["pressure_and_hop_stability"] = bool(
         len(pressure)==SAMPLES and np.all(np.isfinite(pressure)) and
@@ -372,8 +414,8 @@ def run(output_dir: Path) -> dict[str, object]:
     wav_sha, pcm_gain = publish_listening_wav(output_dir, pressure, checks)
     manifest = {
         "experiment":"V4-A-experiment-036",
-        "decision": "SUPPORT_ONE_RUN_ROUNDTRIP" if all(checks.values())
-                    else "RESEARCH_GATE_FAILED",
+        "decision": research_decision(checks),
+        "failed_checks": sorted(k for k, passed in checks.items() if not passed),
         "claim_limit":"one continuous quasi-static geometry timeline and one "
                       "windowed renderer; no inertial articulator, traveling-wave "
                       "acoustic state, coarticulation or natural Japanese proof",
