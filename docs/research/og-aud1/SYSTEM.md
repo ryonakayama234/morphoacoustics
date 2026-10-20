@@ -69,3 +69,9 @@ For each tube and e^(+i omega t) phasors, characteristic **volume-flow** impedan
 - **Gate D:** exact-HEAD numerical/contract/security review, no-fallback regression and creator listening. Explicit `GO_LIMITED`/`HOLD`/`REJECT` with audibility and voice-naturalness distinguished.
 
 Core owns all sound-making physical truth; Studio owns intention, diagram, selection and take archive. Each implementing PR must update **system diagram + data flow/schema + experiment ledger** together, with review at the exact revision.
+
+## Gate A audit addendum — matched-branch identifiability (2026-10-20, proposed)
+
+[Gate A focused physics/UX audit](./GATE_A_REVIEW.md) is an exploratory supplement, **not adopted**. With both distal outlets perfectly matched, the branch input impedances are independent of B/C lengths; a length-only perturbation is therefore an essential **null-control** for this exact ideal lossless model. C area does change the junction impedance and source-port pressure. The observed signal remains **p(A.in)**, not emitted/received radiation. Gate B must validate a new broadband solver independently and cannot reuse eight OG-4 samples as an interpolated filter.
+
+For the proposed *paired causal A/B audition*, investigate **one common playback gain across the two raw Pa clips**, preserving physical amplitude ratios. The raw SI pressure and the shared gain belong to the recorded derivation, not to the organ graph identity. Freeze paired timing/commit semantics and gain rule at Gate A before implementation.
