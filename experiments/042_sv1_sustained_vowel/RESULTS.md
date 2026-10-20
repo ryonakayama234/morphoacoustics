@@ -1,7 +1,7 @@
 # SV-1 results — 2026-10-20
 
 **Current engineering verdict: SUPPORT_DURATION_CONTROL (limited numerical/causal), NOT ADOPTED.**
-**Creator perceptual Gate: NOT RUN. Independent reviewer Gate: NOT YET APPROVED.**
+**Creator pilot Gate (N=1): 0.50s B perceived as one desired long あーー; 0.25s A heard as あ,あ,あ (single-onset perception NOT confirmed); C diagnostic splice heard as bumpy, not clearly two natural syllables. Independent exact-HEAD review Gate: NOT YET APPROVED.**
 Issue: [#124](https://github.com/ryonakayama234/morphoacoustics/issues/124); Draft PR: [#125](https://github.com/ryonakayama234/morphoacoustics/pull/125). Claim applies ONLY to frozen CC-A2 M0@1 rest /a/-like, LF 100Hz / Rd1.0, 48kHz, with a prescribed periodic glottal-flow source, not self-sustaining biological vocal-fold vibrations.
 
 ## Preregistration provenance
@@ -43,8 +43,8 @@ Created 2026-10-20, artifact expiry recorded by GitHub as 2027-01-18. Do not cla
 
 - Get independent review of exact final diff: numerical causality (fixed source scaling vs end-envelope), static vs dynamic claim separation, source/output checksum proof, negative controls, code and output-path integrity, and CI evidence identity.
 - Run standard GitHub tests and verify full exact final HEAD (not just the initially passing code SHA). If docs are edited, scientific source/digest remains pinned to exact code; CI must report final HEAD.
-- No Studio UX integration or local Windows/WSL2 manual playback was carried out in SV-1. Anonymized WAV files can be downloaded and played by the user, but the human perception evaluation has not yet occurred.
-- Keep Draft PR #125 open and **do not merge before independent review and explicit GO_LIMITED adoption**.
+- No Studio UX integration or local Windows/WSL2 manual end-to-end Studio playback was carried out. Creator listened to the generated WAV files in Windows and provided the qualitative N=1 report below; no formal multiple-listener hearing validation occurred.
+- Keep Draft PR #125 open and **do not merge before independent review and explicit GO_LIMITED adoption**. The creator delegated the adoption decision provided blockers are fixed and perception limits are recorded; the independent current-HEAD reviewer must still finish.
 
 Scientific limits: static prescribed tract source/filter model, quasi-stationary overlapping FFT time windows; no self-oscillation, respiration/lung dynamics, articulator inertia, connected /a/-to-/i/ coarticulation, arbitrary vowel duration or universal text-to-speech. Duration is bounded to two exact values.
 
