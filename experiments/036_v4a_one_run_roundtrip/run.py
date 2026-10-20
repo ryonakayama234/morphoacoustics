@@ -274,6 +274,10 @@ def research_decision(checks: dict[str, bool]) -> str:
          ("source_identity", "single_phase_source", "single_run_counts")),
     )
     expected = {k for _, keys in groups for k in keys}
+    # A failed upstream frozen preflight is an early G0 result: downstream
+    # checks were never executed and must not be fabricated as passing.
+    if checks.get("frozen_B0") is False:
+        return "REFERENCE_DRIFT"
     if set(checks) != expected:
         return "SOURCE_OR_PROVENANCE_FAILURE"
     for status, keys in groups:
@@ -293,7 +297,34 @@ def run(output_dir: Path) -> dict[str, object]:
     oracle = json.loads(ORACLE.read_text(encoding="utf-8"))
     upstream_preflight = upstream_scientific_preflight()
     if not upstream_preflight["pass"]:
-        raise RuntimeError("V4-A upstream frozen-science preflight failed; no acoustic render")
+        # No source, physics callback, raw pressure, or playable WAV may be built.
+        # Still publish a rejection receipt with the preregistered G0 status.
+        failed_checks = {"frozen_B0": False}
+        rejected = {
+            "experiment": "V4-A-experiment-036",
+            "decision": research_decision(failed_checks),
+            "checks": failed_checks,
+            "failed_checks": ["frozen_B0"],
+            "skipped_checks": [
+                "source_identity", "analytic_schedule", "same_three_tasks",
+                "realized_geometry", "trajectory_step",
+                "pressure_and_hop_stability", "single_phase_source",
+                "single_run_counts",
+            ],
+            "metrics": {},
+            "provenance": {
+                "upstream_scientific_preflight": upstream_preflight,
+                "executed_sources": source_provenance(),
+            },
+            "claim_limit": "No new physical claim: inherited frozen G0 failed",
+            "adoption_status": "NOT_ADOPTED_REVIEW_AND_HUMAN_GATE_PENDING",
+            "preview_available": False,
+        }
+        (output_dir / "summary.json").write_text(
+            json.dumps(rejected, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return rejected
     prep = body()
     start = prep.rest_state
     source0 = EXP13.build_sources()[0]["lf_fixed"].source
@@ -416,6 +447,9 @@ def run(output_dir: Path) -> dict[str, object]:
     np.save(output_dir/"R1_ref_raw_pressure_pa.npy",reference)
     np.save(output_dir/"C0_naive_concat_DIAGNOSTIC_ONLY.npy",concat_control)
     np.save(output_dir/"source_volume_flow_m3_s.npy",source)
+    # Do not expose even a provisional listening WAV until the *final* clean
+    # checkout/provenance preflight succeeds, after the full physical run.
+    audited_sources = source_provenance()
     wav_sha, pcm_gain = publish_listening_wav(output_dir, pressure, checks)
     manifest = {
         "experiment":"V4-A-experiment-036",
@@ -449,7 +483,7 @@ def run(output_dir: Path) -> dict[str, object]:
             "task_sha256":EXP29.sha256_json(EXP27.task_plan_payload()),
             "renderer":"Experiment012 frame_render preroll_edge",
             "oracle_sha256":hashlib.sha256(ORACLE.read_bytes()).hexdigest(),
-            "executed_sources":source_provenance(),
+            "executed_sources":audited_sources,
             "upstream_scientific_preflight":upstream_preflight,
             "unreachable_body_no_fallback":no_fallback,
         },
