@@ -64,13 +64,13 @@ The inherited 10ms source-amplitude envelope denotes imposed file fade-in/out, n
 ~~~bash
 python3.11 -m venv .venv
 source .venv/bin/activate
-python -m pip install 'numpy==2.4.6'
-python -m pip install -e '.[dev]'
+python -m pip install --only-binary=:all: --require-hashes -r requirements/sv1-physical-py311.lock.txt
+python -m pip install --no-deps --no-build-isolation -e .
 SV1_REAL_PHYSICS=1 python -m pytest -v tests/test_sv1_sustained_vowel.py
 python experiments/042_sv1_sustained_vowel/run.py --output-dir sv1-output
 ~~~
 
-The parent output directory must exist and the output path must be new. Presence of the final 'manifest.json' is the completion marker. A crash without it is not evidence of success.
+The parent output directory must exist and the output path must be new. Presence of the final 'manifest.json' is the completion marker. Publication uses O_NOFOLLOW + exclusive file creation under an open output-directory file descriptor, with a fsynced staged manifest made visible atomically via an exclusive hard link; a directory-path symlink swap cannot redirect writes to overwrite another file. The parent directory should still be trusted (this is not a multi-tenant sandbox). A crash without it is not evidence of success.
 
 GitHub Actions artifacts:
 - sv1-blind-listening-trials: only three anonymized WAV files; use before viewing the key.
@@ -79,3 +79,9 @@ GitHub Actions artifacts:
 Sources: [Core Issue #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), [static /a/ fixture Experiment023](../023_static_vowel_calibration/RESULTS.md), [Wolfram frozen M0 Experiment028](../028_task_field_morphology_transfer/RESULTS.md), [adopted CC-A2](../../docs/research/cc-a2-two-body-live.md), [V4-A Draft #123](https://github.com/ryonakayama234/morphoacoustics/pull/123), [speech evaluation Core #37](https://github.com/ryonakayama234/morphoacoustics/issues/37).
 
 Future Studio duration selector and immutable physical Take are subsequent distinct tasks. Human listening and independent review must not be waived by successful CI.
+
+### Evidence chain and trust boundary
+
+The dedicated CI runs on every push/PR even when a transitive Experiment009/012/013/026/027/028/029/CC-A2 source changes. Its actions/checkout, setup-python, upload-artifact are pinned to official immutable commit SHA values (see workflow). For Python3.11, the hash-locked requirements file verifies all installed wheel archives; the local editable Core install uses no dependency resolution or build isolation. Standard test CI is independent and not replaced.
+
+The manifest's local SHA inventory checks *internal* byte consistency, **not authenticity** against a hostile re-packager. To verify provenance of a distributed copy, cross-check the expected git commit, exact GH Actions run URL, GitHub-hosted artifact archive SHA-256 (recorded in Issue #124) and the archive's manifest/payload hash inventory against the authoritative GitHub run. Independent cryptographic attestation/signature for offline copies is **not implemented**; do not claim this form of authentication. The human listening and external code/security review gates are still required.
