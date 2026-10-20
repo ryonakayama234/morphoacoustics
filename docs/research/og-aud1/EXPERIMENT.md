@@ -56,3 +56,13 @@ At this analytic anchor `P_in - P_B - P_C` was zero to approximately 3.2e-22 W i
 ## Artifact plan (no generated artifacts yet)
 
 Expected immutable future layout: `experiments/<new_id>_og_aud1/` with `PREREGISTRATION.md`, `run.py`, `RESULTS.md`, `oracle.wl`, `manifest.json`, `raw_U_m3_s.npy`, `raw_p_Ain_Pa.npy`, `monitor_48k_pcm16.wav`, full-port diagnostics and separate blind key. Publish exact blob hashes, commit SHA, code/env versions, two-run hashes, G2 human results and change/amendment timestamps in this ledger. **No file in this proposed list is asserted to exist.**
+
+## 2026-10-20 supplementary exploratory preflight — NOT preregistered
+
+The [Gate A audit](./GATE_A_REVIEW.md) records Wolfram scalar cross-checks at **80/733/997/4000 Hz** for two already OG-4-supported C areas, with fixed complex peak source-flow phasor. The source-port **|p|** phasor peaks at 997 Hz are approximately **2.192765 Pa** (C=.00015m²) and **4.211969 Pa** (C=.0006m²). These are isolated frequency-domain results, **not broadband or time-domain evidence**, and arise from the same reduced analytic model as the design. The independent global 12-state matrix, scientific thresholds and source/FFT convention remain to be settled *before* Gate B.
+
+New falsification requirement candidate: with both distal loads matched, perturb `L_B` or `L_C` alone and require identical `Z_in(f)` (within preregistered roundoff) at the source plane; any predicted branch-length-induced resonance under those specific ideal boundary conditions falsifies the implementation. Add paired playback shared-gain vs separately normalized comparison as an explicit confound control. This addition **does not modify or freeze** the historical experimental results above.
+
+| Date | Addition | Evidence class | Status |
+| --- | --- | --- | --- |
+| 2026-10-20 | Matched-load branch-length null, analytic Z positivity and 80/733/997/4000 Hz cross-check; proposed shared A/B gain | Wolfram **scalar exploratory**, no waveform nor independent 12-state solve | `GATE_A_CANDIDATE` |
