@@ -2,6 +2,21 @@ name: V4-A one-run roundtrip science (research only)
 on:
   pull_request:
     paths:
+      - 'experiments/008_event_trajectory/**'
+      - 'experiments/009_fixed_tract_waveform/**'
+      - 'experiments/011_gesture_coordination_overlap/**'
+      - 'experiments/012_source_renderer_artifacts/**'
+      - 'experiments/013_parametric_source_prosody/**'
+      - 'experiments/023_static_vowel_calibration/**'
+      - 'experiments/026_moving_vowel_transition/**'
+      - 'experiments/027_task_field_vowel_transition/**'
+      - 'experiments/028_task_field_morphology_transfer/**'
+      - 'experiments/029_task_field_embodied_infeasibility/**'
+      - 'src/morphoacoustics/acoustics/**'
+      - 'src/morphoacoustics/domain/**'
+      - 'src/morphoacoustics/physical/**'
+      - 'src/morphoacoustics/preparation/**'
+      - 'pyproject.toml'
       - 'experiments/036_v4a_one_run_roundtrip/**'
       - '.github/workflows/experiment-036-v4a.yml'
       - 'docs/research/v4a-one-run-roundtrip-prereg-v0.md'
