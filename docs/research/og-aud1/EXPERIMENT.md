@@ -66,3 +66,11 @@ New falsification requirement candidate: with both distal loads matched, perturb
 | Date | Addition | Evidence class | Status |
 | --- | --- | --- | --- |
 | 2026-10-20 | Matched-load branch-length null, analytic Z positivity and 80/733/997/4000 Hz cross-check; proposed shared A/B gain | Wolfram **scalar exploratory**, no waveform nor independent 12-state solve | `GATE_A_CANDIDATE` |
+
+## 2026-10-20 executed global-system preflight (Experiment 043; exploratory)
+
+[Full source, method and result](../../../experiments/043_og_aud1_preflight/README.md) · [executed numeric evidence](../../../experiments/043_og_aud1_preflight/RESULTS.md). Wolfram evaluated an explicit pressure-scaled **12×12 global port-state system** and independently compared it with scalar source-port impedance at 80/733/997/4000 Hz and both C areas. Observed **maximum relative Zin discrepancy 4.34e-16**, **scaled matrix condition at most 24.92**, **maximum signed mean-power residual 3.18e-22 W**, **maximum signed junction flow residual 9.05e-23 m³/s**. Deliberate wrong particle-velocity law deviated by relative **0.24–0.48**; changing B/C lengths with both outlets matched changed the source-port impedance only at numerical roundoff. This is a genuine evaluated exploratory artifact, **NOT a preregistered acceptance**, **NOT a 0–4k grid solver**, **NOT a 48 kHz WAV**, and **NOT an independently audited Gate B**.
+
+| Date | Event | Evidence | Status |
+| --- | --- | --- | --- |
+| 2026-10-20 | Experiment 043 12-state Wolfram execution, wrong-law mutant and matched-length null | [Wolfram oracle file](../../../experiments/043_og_aud1_preflight/global_oracle.wl), [RESULTS](../../../experiments/043_og_aud1_preflight/RESULTS.md) | `PREFLIGHT_EXECUTED_EXPLORATORY`, Gate A still candidate |
