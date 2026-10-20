@@ -1,6 +1,6 @@
 # SV-1 — Sustained Vowel Performance (Core only)
 
-**Scope: bounded experimental capability; GO_LIMITED adoption decision is tracked in [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124) and [PR #125](https://github.com/ryonakayama234/morphoacoustics/pull/125). NOT a general TTS or Studio feature.** Task: [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), parent [Studio Voice Atelier #16](https://github.com/ryonakayama234/morphoacoustics-studio/issues/16). The earlier Studio Scene Composer proposal SC-1 remains a downstream idea, not the task here.
+**Status: ADOPTED / GO_LIMITED on Core main in [PR #125](https://github.com/ryonakayama234/morphoacoustics/pull/125), merge commit [a499290](https://github.com/ryonakayama234/morphoacoustics/commit/a499290b549214223cfa3cb616fc288d64f51cbb). [Issue #124 final adoption receipt](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6288450396) is authoritative.** Bounded experiment, NOT a general TTS or Studio feature. Task: [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), parent [Studio Voice Atelier #16](https://github.com/ryonakayama234/morphoacoustics-studio/issues/16). The earlier Studio Scene Composer proposal SC-1 remains a downstream idea, not the task here.
 
 ## Creative outcome
 
