@@ -57,6 +57,35 @@ def test_existing_and_symlink_output_never_overwritten(tmp_path: Path) -> None:
         perform(link)
 
 
+def test_directory_swap_cannot_overwrite_external_files(tmp_path: Path) -> None:
+    """P2 reviewer regression: after opening dirfd, pathname is no longer trust."""
+    root = tmp_path / "owned"
+    moved = tmp_path / "moved"
+    target = tmp_path / "target"
+    root.mkdir()
+    target.mkdir()
+    (target / "sentinel.wav").write_bytes(b"do not alter")
+    descriptor = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        root.rename(moved)
+        root.symlink_to(target, target_is_directory=True)
+        # A later pathname-based Path.write_bytes would follow the target
+        # symlink; the fd-anchored writer still writes under moved/.
+        MOD["_write_at"](descriptor, "sentinel.wav", b"new-bundle-bytes")
+        MOD["_write_at"](descriptor, "listening/blind/trial_01.wav", b"audio")
+        assert (moved / "sentinel.wav").read_bytes() == b"new-bundle-bytes"
+        assert (target / "sentinel.wav").read_bytes() == b"do not alter"
+        assert not (target / "listening").exists()
+        with pytest.raises(FileExistsError):
+            MOD["_write_at"](descriptor, "sentinel.wav", b"overwrite")
+        (moved / "poison").symlink_to(target, target_is_directory=True)
+        with pytest.raises(OSError):
+            MOD["_write_at"](descriptor, "poison/evil.wav", b"evil")
+        assert not (target / "evil.wav").exists()
+    finally:
+        os.close(descriptor)
+
+
 @pytest.mark.skipif(
     os.environ.get("SV1_REAL_PHYSICS") != "1",
     reason="Requires adopted CC-A2 transitive source gate and NumPy==2.4.6",
