@@ -1,0 +1,52 @@
+name: OG-AUD1 pinned research preview
+on:
+  pull_request:
+    paths:
+      - 'tools/og_aud1_preview.py'
+      - 'experiments/045_og_aud1_causal_monitor/**'
+      - 'experiments/046_og_aud1_pinned_preview/**'
+      - '.github/workflows/og-aud1-pinned-preview.yml'
+  workflow_dispatch:
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e .
+      - name: Scientific and preview tests
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest discover -s experiments/045_og_aud1_causal_monitor -p test_causal_monitor.py -v
+          python -m unittest discover -s experiments/046_og_aud1_pinned_preview -p 'test_*.py' -v
+      - name: Generate and archive a new preview pair
+        env:
+          PYTHONPATH: src
+        run: |
+          python tools/og_aud1_preview.py "$RUNNER_TEMP/og-aud1-pair" > "$RUNNER_TEMP/receipt.json"
+          python - <<'PY'
+          import os,json
+          from pathlib import Path
+          m=json.loads((Path(os.environ["RUNNER_TEMP"])/"receipt.json").read_text())
+          assert len(m["records"])==2 and m["status"]=="PREVIEW_UNADOPTED"
+          print("PREVIEW_GATE_INTERNAL_PASS",m["core_commit"])
+          PY
+      - name: Archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: og-aud1-preview-py${{ matrix.python }}
+          path: |
+            ${{ runner.temp }}/og-aud1-pair/**
+            ${{ runner.temp }}/receipt.json
+          if-no-files-found: warn

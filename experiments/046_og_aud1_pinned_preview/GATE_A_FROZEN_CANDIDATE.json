@@ -1,0 +1,37 @@
+{
+  "status": "GATE_A_PROPOSED_NOT_INDEPENDENTLY_RATIFIED",
+  "created_at": "2026-10-20",
+  "intended_role": "newly_resolved_independent_12_port_holdout_not_formal_confirmatory_without_external_Gate_A",
+  "holdout_freq_hz": [
+    137,
+    431,
+    619,
+    1129,
+    1607,
+    2459,
+    3571,
+    3989
+  ],
+  "areas_C_m2": [
+    0.00015,
+    0.0006
+  ],
+  "fixed_source_reference": "complex 1e-6+4e-7*i m3/s for 12-port frequency comparison; analytic time signal separate",
+  "error_thresholds": {
+    "max_complex_rel_z": 1e-10,
+    "max_relative_all_port": 1e-10,
+    "max_normalized_junction": 1e-10,
+    "max_relative_complex_power": 1e-8,
+    "max_echo_tail_pa": 1e-10
+  },
+  "negative_controls": [
+    "wrong_particle_velocity",
+    "signed_junction_flow",
+    "matched_distal_length_invisibility",
+    "swapped_pressure_body",
+    "modified_source_bytes",
+    "bad_revision_or_commit",
+    "invalid_graph"
+  ],
+  "release_status": "PROSPECTIVE_PLAN_NOT_YET_EXECUTED"
+}
