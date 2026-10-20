@@ -137,14 +137,16 @@ def _assert_wav(blob: bytes, frames: int) -> bytes:
     return pcm
 
 
-def _diagnostic_concat(pcm: bytes) -> bytes:
-    """Two independent finished 0.25s renders; NEVER a physics Take."""
+def _diagnostic_concat(first_pcm: bytes, second_pcm: bytes) -> bytes:
+    """Splice two separately rendered 0.25s WAV payloads; NOT one physical run."""
+    if len(first_pcm) != 24_000 or len(second_pcm) != 24_000:
+        raise ValueError("two separately computed 12k-sample PCM payloads required")
     out = io.BytesIO()
     with wave.open(out, "wb") as handle:
         handle.setnchannels(1)
         handle.setsampwidth(2)
         handle.setframerate(SAMPLE_RATE)
-        handle.writeframes(pcm + pcm)
+        handle.writeframes(first_pcm + second_pcm)
     _assert_wav(out.getvalue(), 24_000)
     return out.getvalue()
 
@@ -229,9 +231,24 @@ def perform(
     if not np.array_equal(a_source[2400:7200], b_source[2400:7200]):
         raise RuntimeError("SV-1 equal-time, equal-phase source ablation failed")
 
-    # Diagnostic C is intentionally a WAV splice; it is NOT a physical renderer run.
+    # Diagnostic C splices two INDEPENDENT 0.25s physical executions, never
+    # a single continuous physical run. Each component is retained for audit.
+    # Determinism means component bytes should be identical; check rather than
+    # quietly substituting a reused A buffer.
     a_pcm = _assert_wav(payloads["A_listen.wav"], 12_000)
-    diagnostic = _diagnostic_concat(a_pcm)
+    c2_source, c2_cycles, c2_envelope = _source_for_duration(exp, DURATIONS[0])
+    c2_pressure = _render(exp, geometry, c2_source)  # actual second fresh render
+    c2_wav = frozen._wav_bytes(c2_pressure)
+    c2_pcm = _assert_wav(c2_wav, 12_000)
+    if (c2_pcm != a_pcm
+            or digest(c2_source.astype("<f8").tobytes()) != entries["A"]["source_sha256_f64"]
+            or digest(c2_pressure.astype("<f8").tobytes()) != entries["A"]["pressure_sha256_f64"]):
+        raise RuntimeError("SV-1 C component fresh-repeat determinism failed")
+    payloads["C_second_source_flow.npy"] = _npy(c2_source)
+    payloads["C_second_raw_pressure_pa.npy"] = _npy(c2_pressure)
+    payloads["C_second_listen.wav"] = c2_wav
+    payloads["C_second_trace.csv"] = _trace(c2_cycles, c2_envelope, geometry)
+    diagnostic = _diagnostic_concat(a_pcm, c2_pcm)
     payloads["C_concat_DIAGNOSTIC.wav"] = diagnostic
     payloads["listening/blind/trial_01.wav"] = payloads["B_listen.wav"]
     payloads["listening/blind/trial_02.wav"] = diagnostic
@@ -273,7 +290,10 @@ def perform(
         "C": {
             "kind": "DIAGNOSTIC_NOT_SINGLE_PHYSICAL_RUN",
             "frames": 24_000,
-            "construction": "exact 0.25s A playback PCM samples repeated twice",
+            "construction": "PCM concatenation of two independently generated 0.25s physical A-like files (A and C_second), never a joined physical trajectory",
+            "component_first_pressure_sha256_f64": entries["A"]["pressure_sha256_f64"],
+            "component_second_pressure_sha256_f64": digest(c2_pressure.astype("<f8").tobytes()),
+            "separate_acoustic_run_count": 2,
             "is_accepted_physical_take": False,
         },
         "listening_gate": "NOT_RUN_CREATOR_LISTENING_PENDING",
