@@ -25,3 +25,9 @@ Every implemented work package must update physical SYSTEM, exact DATA contract 
 - [Focused physical audit](./og-aud1/GATE_A_REVIEW.md) — matched-branch length null, 3-port law, shared A/B gain, no radiated-mouth claim.
 - [Experiment 043 executable Wolfram global 12-state preflight](../../experiments/043_og_aud1_preflight/README.md) · [results](../../experiments/043_og_aud1_preflight/RESULTS.md) — **exploratory executed**; no broadband solver, audio or preregistered science pass.
 - [Studio creator handoff](https://github.com/ryonakayama234/morphoacoustics-studio/blob/docs/og-aud1-creator-handoff-20261020/docs/og-aud1-creator-handoff.md) — read-only 3-organ visualization and future immutable A/B Takes; no implemented Studio bridge yet.
+
+### OG-AUD1 Experiment 044 (2026-10-20, runnable research, not adopted)
+
+- [Prospective but **unreviewed** numerical/source candidate](../../experiments/044_og_aud1_monitor/PROTOCOL_CANDIDATE.md).
+- [Runnable experiment-local Core code and data flow](../../experiments/044_og_aud1_monitor/README.md), [local results and sample hashes](../../experiments/044_og_aud1_monitor/RESULTS.md), [off-anchor full-matrix Wolfram script](../../experiments/044_og_aud1_monitor/oracle_fft_bins.wl). **Two 48kHz preview pressure-monitor WAVs were computed, not speech or adopted Core broadband output.**
+- Parent [SYSTEM](./og-aud1/SYSTEM.md) / [DATA](./og-aud1/DATA.md) / [EXPERIMENT](./og-aud1/EXPERIMENT.md) updated together. Gate A acceptance/reviewer, confirmatory Gate B, Studio adapter and creator audition still outstanding.
