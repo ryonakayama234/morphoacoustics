@@ -169,12 +169,12 @@ class RoundtripTests(unittest.TestCase):
                 M.verified_git_checkout()
 
     def test_frozen_preflight_failure_writes_gate_receipt_without_audio(self):
-        with tempfile.TemporaryDirectory() as d, \\
-             mock.patch.object(M, "upstream_scientific_preflight",
-                               return_value={"pass": False, "checks": {"oracle": False}}), \\
-             mock.patch.object(M, "body") as body, \\
-             mock.patch.object(M, "render") as renderer, \\
-             mock.patch.object(M.np, "__version__", M.EXP29.AUDITED_NUMPY_VERSION):
+        with (tempfile.TemporaryDirectory() as d,
+              mock.patch.object(M, "upstream_scientific_preflight",
+                                return_value={"pass": False, "checks": {"oracle": False}}),
+              mock.patch.object(M, "body") as body,
+              mock.patch.object(M, "render") as renderer,
+              mock.patch.object(M.np, "__version__", M.EXP29.AUDITED_NUMPY_VERSION)):
             out = Path(d) / "new"
             result = M.run(out)
             self.assertEqual(result["decision"], "REFERENCE_DRIFT")
@@ -188,9 +188,9 @@ class RoundtripTests(unittest.TestCase):
 
     def test_final_dirty_checkout_never_publishes_playable_wav(self):
         with tempfile.TemporaryDirectory() as d:
-            with mock.patch.object(M, "source_provenance",
-                side_effect=RuntimeError("dirty tracked checkout")), \\
-                 mock.patch.object(M.EXP26.EXP9, "write_listening_wav") as writer:
+            with (mock.patch.object(M, "source_provenance",
+                                    side_effect=RuntimeError("dirty tracked checkout")),
+                  mock.patch.object(M.EXP26.EXP9, "write_listening_wav") as writer):
                 with self.assertRaisesRegex(RuntimeError, "dirty tracked checkout"):
                     M.verified_preview(Path(d), np.ones(16), self.passing_checks())
                 writer.assert_not_called()
