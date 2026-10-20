@@ -68,7 +68,7 @@ Correction: [commit ca3e92b](https://github.com/ryonakayama234/morphoacoustics/c
 - [Corrected blind listening ZIP artifact 12239062649](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365052298/artifacts/12239062649), sha256:55a6bd4cf8d8fd2eed11820bbc3754fd75d4bb40a4ca594479444cd1c8ccd668.
 - [Corrected raw research ZIP artifact 12239420270](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365052298/artifacts/12239420270), sha256:66dbb3fe4dd055d51f1148286ac775305b67f4f33d5eb78173854153000469c8; includes C_second physical arrays and receipt.
 
-**Source and output physical claims remain frozen**, no retuning of resonance thresholds, source family, body, geometry, F0, Rd, duration or strict common-source center inequality gate. All changes here are repair of implementation/evidence fidelity before adoption; independent reviewer and human listener still pending. Any newer exact-final-HEAD CI status belongs in the Issue #124 acceptance receipts and must be examined before accepting this Draft PR.
+**Historical pre-adoption checkpoint (at commit 1918ef4, not the current status):** source and output physical claims remained frozen, with no retuning of resonance thresholds, source family, body, geometry, F0, Rd, duration or strict common-source-center equality gate. At **this earlier checkpoint**, independent final reviewer and creator hearing were still pending. Those gates **later completed** and PR #125 was merged as GO_LIMITED at a499290; the authoritative final evidence and approval are linked in the adopted-status section at the top and Issue #124. Preserve this interim result as historical, not as a current blocker.
 
 
 ## Independent review disposition and hardened research infrastructure (2026-10-20)
