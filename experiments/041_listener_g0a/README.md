@@ -37,7 +37,7 @@ python -m http.server 8765
 
 - A: each ideal probe `p(t)=rho/(4πr)·dQ(t-r/c)/dt`; units Pa before playback. Analytic `r/c` travel-time and geometric R/L ratio use matching measured source coordinates. PR #114's old fixture/frozen oracle remains untouched.
 - B: SOFA HRIR, or inverse FFT of SOFA uniformly sampled `SimpleFreeFieldHRTF` transfer data, convolved with the *same source derivative*; no extra `1/r` or ear-canal correction. **B's absolute Pa scale, reference-plane calibration, and agreement of A vs B physical SPL are UNVERIFIED.** It is an objective HRTF reference response, not a fully calibrated common physical source-to-ear experiment.
-- Position selection: actual SOFA measurements near 30 cm, azimuth about `0°`, `-30°`, `+30°`, elevation <=10°. Fails rather than invents an unmeasured direction.
+- Position selection: actual SOFA measurements near 30 cm, azimuth about `0°`, `-30°`, `+30°`, elevation <=10° (actual chosen measured positions: `0°`, `-27.69°`, `+27.69°`). Fails rather than invents an unmeasured direction.
 - SOFA axes: +X front, +Y left, +Z up. Receiver array order MUST be L then R. Reads `ReceiverPosition` when usable; otherwise ideal L/R probes at y±0.09 m and discloses the fallback.
 - SOFA delay is distinct from `Data.IR`/TF; never double-apply a pre-existing acoustic propagation delay. HRIR sample time origin and calibration remain a data audit item.
 - Playback uses one global gain per scene; additionally applies a **single B-wide RMS matching gain** for listenability. Neither channel is normalized independently. `evidence.json` saves both raw peaks and gains. **No calibrated SPL or relative A/B loudness inference.**
@@ -46,3 +46,9 @@ python -m http.server 8765
 ## Review and decision
 
 See [PREREGISTRATION](../../docs/research/listener-g0a/PREREGISTRATION.md), [SYSTEM](../../docs/research/listener-g0a/SYSTEM.md), [DATA](../../docs/research/listener-g0a/DATA.md), [RESULTS](../../docs/research/listener-g0a/RESULTS.md). Numeric checks and actual real-SOFA CI must be distinguished from the user's blinded listening evaluation and independent physics/data audit. Passing code checks never automatically promotes PR #83 EL-G1/G2 or production APIs.
+
+## Verified current GitHub execution (2026-10-20)
+
+- [Real measured-SOFA gate: SUCCESS, 21 tests, 6 WAV artifact](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39406560531). Artifact **EL-G0a-measured-HRTF-listening**, ID `12256912249`, expires 2026-11-19.
+- [Project-wide CI: SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39406565506), 3 Python versions and typecheck.
+- [RESULTS](../../docs/research/listener-g0a/RESULTS.md) has measured directions, numeric L/R differences and known SOFA receiver-coordinate fallback. **Browser playback and human listening are not yet user-verified.**
