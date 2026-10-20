@@ -117,23 +117,34 @@ def load_sofa(path: Path) -> SofaData:
         if not np.isfinite(delays).all() or np.max(np.abs(delays)) > 20 * rate or np.min(delays) < 0:
             raise ValueError('UNSUPPORTED: unsafe/negative Data.Delay')
         receivers = None
+        receiver_reason = 'ReceiverPosition absent'
         if 'ReceiverPosition' in f:
             ds = f['ReceiverPosition']
             rr = np.asarray(ds, dtype=float)
             if rr.shape == (2, 3, 1):
                 rr=rr[:,:,0]
             if rr.shape == (2, 3):
-                rr = _coords(rr, _attr(ds,'Type'), _attr(ds,'Units'))
-                # SOFA order R0 left (positive y), R1 right (negative y).
-                if (rr[0,1] > rr[1,1] and abs(rr[0,1]-rr[1,1]) > .05
-                        and np.max(np.linalg.norm(rr, axis=1)) < .2):
-                    receivers = rr
+                try:
+                    rr = _coords(rr, _attr(ds,'Type'), _attr(ds,'Units'))
+                except ValueError as exc:
+                    receiver_reason = f'UNSUPPORTED receiver geometry: {exc}'
+                else:
+                    # SOFA R0 left (+y), R1 right (-y); reject wrong-side or placeholder coordinates.
+                    if (rr[0,1] > rr[1,1] and abs(rr[0,1]-rr[1,1]) > .05
+                            and np.max(np.linalg.norm(rr, axis=1)) < .2):
+                        receivers = rr
+                        receiver_reason = 'SOFA ReceiverPosition used'
+                    else:
+                        receiver_reason = 'receiver geometry ambiguous; ideal +/-0.09m probes used'
+            else:
+                receiver_reason = f'unsupported ReceiverPosition shape {rr.shape}'
         if not np.isfinite(xyz).all() or np.any(np.linalg.norm(xyz, axis=1) <= .09):
             raise ValueError('INVALID: impossible/too-close source position')
         meta = dict(convention=convention, convention_version=_attr(f,'SOFAConventionsVersion'),
                     data_type=_attr(f,'DataType'), title=_attr(f,'GLOBAL_Title'),
                     source_type=_attr(pos,'Type'), source_units=_attr(pos,'Units'),
                     receiver_geometry_used=receivers is not None,
+                    receiver_geometry_reason=receiver_reason,
                     ir_length=int(ir.shape[2]), measurements=int(ir.shape[0]),
                     ir_origin='Data.IR original' if convention.endswith('HRIR') else 'irfft of SOFA uniform HRTF frequencies',
                     data_delay_handling='additional nonnegative FIR sample delays',

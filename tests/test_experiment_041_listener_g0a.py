@@ -5,9 +5,11 @@ import json
 import math
 from pathlib import Path
 
-import h5py
-import numpy as np
 import pytest
+h5py=pytest.importorskip('h5py', reason='optional EL-G0a research dependencies')
+pytest.importorskip('scipy', reason='optional EL-G0a research dependencies')
+pytest.importorskip('soundfile', reason='optional EL-G0a research dependencies')
+import numpy as np
 import soundfile as sf
 from scipy.signal import fftconvolve
 
@@ -32,7 +34,7 @@ def make_fixture(path:Path, mode='valid'):
         h[1,1,5]=.9;h[2,0,5]=.9
         f.create_dataset('Data.IR',data=h)
         f.create_dataset('Data.Delay',data=np.zeros((5,2)))
-        if mode=='badposition':ds.attrs['Units']='furlong,furlong,furlong'
+        if mode=='badposition':f['SourcePosition'].attrs['Units']='furlong,furlong,furlong'
 
 
 def test_coordinate_convention():
@@ -144,3 +146,13 @@ def test_delay_samples_preserves_channel_order():
     b=module.render_b(q,h,48000,np.array([0.,8.]))
     assert np.argmax(abs(b[:,1]))-np.argmax(abs(b[:,0]))==8
     assert np.argmax(abs(a[:,1]))==np.argmax(abs(a[:,0]))
+
+
+def test_unsupported_receiver_position_falls_back_transparently(tmp_path):
+    p=tmp_path/'sofa.sofa';make_fixture(p)
+    with h5py.File(p,'r+') as f:
+        f['ReceiverPosition'].attrs['Type']='spherical'
+        f['ReceiverPosition'].attrs['Units']='metre'
+    d=module.load_sofa(p)
+    assert d.receivers is None
+    assert 'UNSUPPORTED' in d.meta['receiver_geometry_reason']
