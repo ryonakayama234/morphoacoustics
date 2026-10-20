@@ -149,6 +149,8 @@ class RoundtripTests(unittest.TestCase):
                 checks = passing.copy()
                 checks[key] = False
                 self.assertEqual(M.research_decision(checks), expected)
+        self.assertEqual(M.research_decision({"frozen_B0": False}),
+                         "REFERENCE_DRIFT")
         self.assertEqual(M.research_decision({}), "SOURCE_OR_PROVENANCE_FAILURE")
         self.assertEqual(M.research_decision({"frozen_B0": True}),
                          "SOURCE_OR_PROVENANCE_FAILURE")
@@ -165,6 +167,34 @@ class RoundtripTests(unittest.TestCase):
                                return_value=mock.Mock(stdout=" M src/morphoacoustics/physical/fake.py\\n")):
             with self.assertRaisesRegex(RuntimeError, "clean Git checkout"):
                 M.verified_git_checkout()
+
+    def test_frozen_preflight_failure_writes_gate_receipt_without_audio(self):
+        with tempfile.TemporaryDirectory() as d, \\
+             mock.patch.object(M, "upstream_scientific_preflight",
+                               return_value={"pass": False, "checks": {"oracle": False}}), \\
+             mock.patch.object(M, "body") as body, \\
+             mock.patch.object(M, "render") as renderer, \\
+             mock.patch.object(M.np, "__version__", M.EXP29.AUDITED_NUMPY_VERSION):
+            out = Path(d) / "new"
+            result = M.run(out)
+            self.assertEqual(result["decision"], "REFERENCE_DRIFT")
+            self.assertEqual(result["failed_checks"], ["frozen_B0"])
+            self.assertFalse(result["preview_available"])
+            self.assertEqual(json.loads((out / "summary.json").read_text()), result)
+            self.assertFalse((out / "R1_listen.wav").exists())
+            self.assertFalse((out / "R1_raw_pressure_pa.npy").exists())
+            body.assert_not_called()
+            renderer.assert_not_called()
+
+    def test_final_dirty_checkout_never_publishes_playable_wav(self):
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.object(M, "source_provenance",
+                side_effect=RuntimeError("dirty tracked checkout")), \\
+                 mock.patch.object(M.EXP26.EXP9, "write_listening_wav") as writer:
+                with self.assertRaisesRegex(RuntimeError, "dirty tracked checkout"):
+                    M.verified_preview(Path(d), np.ones(16), self.passing_checks())
+                writer.assert_not_called()
+                self.assertFalse((Path(d) / "R1_listen.wav").exists())
 
     def test_prepared_body_uses_shared_geometry(self):
         prepared=M.body()
