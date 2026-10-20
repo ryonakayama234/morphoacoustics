@@ -74,3 +74,13 @@ New falsification requirement candidate: with both distal loads matched, perturb
 | Date | Event | Evidence | Status |
 | --- | --- | --- | --- |
 | 2026-10-20 | Experiment 043 12-state Wolfram execution, wrong-law mutant and matched-length null | [Wolfram oracle file](../../../experiments/043_og_aud1_preflight/global_oracle.wl), [RESULTS](../../../experiments/043_og_aud1_preflight/RESULTS.md) | `PREFLIGHT_EXECUTED_EXPLORATORY`, Gate A still candidate |
+
+## 2026-10-20 Experimental 044 (new full-grid monitor prototype; exploratory)
+
+A [parameter-prospectively-recorded but not independently ratified protocol](../../../experiments/044_og_aud1_monitor/PROTOCOL_CANDIDATE.md) preceded new code. [Experiment 044 runnable source, oracle and evidence](../../../experiments/044_og_aud1_monitor/README.md) now produce actual **1-second / 48kHz candidate pressure monitor WAVs** and raw physically dimensioned p/U. Two independent local executions matched byte for byte, **5 unittest cases passed**, source bytes identical, and the paired pressure RMS difference was ~0.744 relative to small-C RMS; common gain 0.3848611156 reciprocal Pa. Wolfram's separately assembled 12-state matrix was evaluated at **12 new case/frequency points** including non-OG-4 off-anchor FFT bins and included as frozen values in tests. Full result [RESULTS.md](../../../experiments/044_og_aud1_monitor/RESULTS.md), new companion CI [workflow](../../../.github/workflows/og-aud1-exploratory.yml).
+
+**Boundary:** this is real execution evidence but **NOT** a confirmatory newly validated broadband Core backend, nor source–tract feedback, radiation, Studio Take or creator-reviewed perceptual outcome. Never write `GO_LIMITED` from these checks alone.
+
+| Date | Event | Status |
+| --- | --- | --- |
+| 2026-10-20 | Experimental 044 prospective candidate parameters → analytic-bin Python prototype → two byte-identical local outputs + 5 tests + off-anchor Wolfram | `EXPLORATORY_ENGINEERING_PASS; GATE_A_UNRATIFIED; GATE_B_UNCONFIRMED; STUDIO_NOT_IMPLEMENTED` |
