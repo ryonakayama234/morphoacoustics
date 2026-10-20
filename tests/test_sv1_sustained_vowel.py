@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import io
+import csv
 import json
 import os
 from pathlib import Path
@@ -157,6 +158,16 @@ def test_real_physics_duration_body_oracle_and_listening_trials(tmp_path: Path) 
         assert not np.array_equal(source, pressure)
         assert np.std(pressure) > 0
         assert report["stimuli"][letter]["nominal_source_cycles"] == count // 480
+        # Physical provenance cannot claim file-off evidence when the final
+        # fade-out samples are absent from its public observational trace.
+        with (dest / f"{letter}_trace.csv").open(newline="") as stream:
+            trace = list(csv.DictReader(stream))
+        assert trace[0]["sample_index"] == "0"
+        assert int(trace[-1]["sample_index"]) == count - 1
+        assert abs(float(trace[-1]["time_s"]) - (count - 1) / 48_000) < 6e-6
+        assert 0 <= float(trace[-1]["source_gain"]) < 0.01
+        assert int(trace[-2]["sample_index"]) == count - 480
+        assert float(trace[-2]["source_gain"]) > float(trace[-1]["source_gain"])
         assert report["stimuli"][letter]["source_sha256_f64"] == sha256(
             source.astype("<f8").tobytes()
         ).hexdigest()
