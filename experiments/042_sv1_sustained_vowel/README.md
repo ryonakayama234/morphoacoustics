@@ -4,7 +4,7 @@
 
 ## Creative outcome
 
-Compare independently rendered **0.25-second single /a/-like sustain (A)**, **0.50-second single /a/-like sustain (B)** and **two completed A clips concatenated into 0.50s (C; diagnosis only)**. Creator's percept of "one held あー" versus "two あ, あ" is an independent human Gate.
+Compare independently rendered **0.25-second single /a/-like sustain (A)**, **0.50-second single /a/-like sustain (B)** and **two separately computed 0.25s short-voice WAVs (A and C_second) concatenated into 0.50s (C; diagnosis only)**. Creator's percept of "one held あー" versus "two あ, あ" is an independent human Gate.
 
 A/B have independent prescribed LF source flow and fresh computed physical pressure through the *same* vocal tract, not stretched, looped or concatenated old WAVs. This is NOT breathing, glottal contact, tissue dynamics or actual self-oscillating vocal folds.
 
@@ -18,7 +18,7 @@ flowchart TD
     G["Experiment023 /a/ static rest geometry"]
     R["Fresh Experiment023 render_static / Experiment012 frame_render"]
     O["Raw pressure Pa.npy + WAV + source NPY + trace + SHA"]
-    C["C: DIAGNOSTIC A+A PCM splice, never one physical run"]
+    C["C: DIAGNOSTIC PCM splice of two independent renders, never one continuous physical run"]
     L["Blind trials 01, 02, 03"]
     X["Creator listening, separate Gate"]
     P --> G
@@ -38,11 +38,11 @@ Core owns body, source, physical acoustics and provenance. Studio remains unchan
 
 | Property | A | B | C (diagnostic) |
 | --- | --- | --- | --- |
-| Physics | one fresh source + render | one fresh source + render | none: completed A WAV PCM repeated |
+| Physics | one fresh source + render | one fresh source + render | 2 separate short-voice physical renders then PCM concatenation; NO continuous combined physical run |
 | Duration | 0.25s | 0.50s | 0.50s |
 | Frames | 12,000 | 24,000 | 24,000 |
 | Source | 100Hz LF Rd1, one phase | same, matches old 0.5s LF fixed source exactly | file envelope starts/stops twice |
-| Body | exact CC-A2 16cm M0@1 static /a/ | same | no new body run |
+| Body | exact CC-A2 16cm M0@1 static /a/ | same | 2 fresh executions with identical static body |
 | Playback | normalized 48kHz mono PCM16 | same | labeled negative control |
 
 **Static /a/ M0 resonance oracle is P1=720.25, P2=1288.50 Hz** from the accepted Experiment028 Wolfram reference, with absolute 0.25Hz tolerance. The older draft Issue initially confused these with 275/2101.75 Hz (/i/-like task endpoint); this was transparently corrected on Issue #124 **before SV-1 execution**.
@@ -54,7 +54,7 @@ The inherited 10ms source-amplitude envelope denotes imposed file fade-in/out, n
 1. A/B exact samples, finite nonzero raw pressure, one monotonic LF phase trajectory each, file envelope only at ends, no internal envelope retrigger. Source steady segment matches between A/B. Equal geometry and source parameters.
 2. Reuse adopted CC-A2 exact prepared body and transitive frozen scientific/NumPy gate; /a/ static resonance matches independent Wolfram reference. One real acoustic calculation per A and B, no WAV post-processing as physical evidence.
 3. Byte reproducibility on repeated execution: float64 source, pressure, PCM, receipt digests; exact playback format and full provenance. Unsupported vowel, body, revision, duration and reusing output path fail without accepted output.
-4. C is NOT a physical Take. The blind listening package asks for free kana/transcription, then perceived number of starts (one/two/unknown), artifacts, naturalness and creative usefulness. Human pilot N=1 is separate from numeric pass.
+4. C's two short voice components each have freshly computed source/pressure, including separately archived C_second arrays; C's *joined audio* is NOT a single physical Take. The blind listening package asks for free kana/transcription, then perceived number of starts (one/two/unknown), artifacts, naturalness and creative usefulness. Human pilot N=1 is separate from numeric pass.
 5. Existing CC-A2 and full normal test suite must remain green; independent code/security/numeric/scientific-claim review is required before merge. The V4-A Draft #123 is unchanged.
 
 **Gate distinction:** SUPPORT_DURATION_CONTROL is a possible numeric conclusion. SINGLE_SUSTAIN_PERCEPT_CONFIRMED_PILOT requires user listening. Neither means natural Japanese TTS or biomechanically demonstrated phonation.
@@ -74,7 +74,7 @@ The parent output directory must exist and the output path must be new. Presence
 
 GitHub Actions artifacts:
 - sv1-blind-listening-trials: only three anonymized WAV files; use before viewing the key.
-- sv1-full-research-evidence: A/B source flow arrays, raw pressure in Pa, separate normalized WAVs, physical time traces, artifact SHA digests, C negative control, answer key and scientific manifest.
+- sv1-full-research-evidence: A/B source flow arrays, raw pressure in Pa, separate normalized WAVs, physical time traces, artifact SHA digests, C negative control plus independently rendered C_second source/pressure, answer key and scientific manifest.
 
 Sources: [Core Issue #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), [static /a/ fixture Experiment023](../023_static_vowel_calibration/RESULTS.md), [Wolfram frozen M0 Experiment028](../028_task_field_morphology_transfer/RESULTS.md), [adopted CC-A2](../../docs/research/cc-a2-two-body-live.md), [V4-A Draft #123](https://github.com/ryonakayama234/morphoacoustics/pull/123), [speech evaluation Core #37](https://github.com/ryonakayama234/morphoacoustics/issues/37).
 
