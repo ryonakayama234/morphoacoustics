@@ -22,3 +22,8 @@ Independently solve 12 complex p and q = Z_ref U port variables for A.in/A.out/B
 **GREEN (exploration):** restricted network model and causal-delay mathematics are coherent across tested conditions; passive, right-sign J balance; 2-body numerical difference with same source. **AMBER (blocking for physical adoption):** known-case rather than fresh prospectively reserved oracle, no signed science security review, narrow self-consistency tests, source/alias/frequency error budget not fully approved, no output prepared-body digest verified or versioned trusted adapter. **RED/NOT DONE (for requested E2E):** no actual Studio branch3 Perform→new immutable paired Take→restart replay or creator auditory pilot. Never label as a FAILED test when simply not implemented; instead track \`NOT_RUN\`.
 
 **Decision now: \`HOLD_ADOPTION\`.** Keep experiment-only Drafts separate. Proposed future Gate A/B values in [EXPERIMENT](EXPERIMENT.md) are candidates, explicitly not thresholds retroactively used to pass this experiment.
+
+
+## 2026-10-20 exact checked Wolfram artifact replay
+
+Ran the **exact GitHub-stored** [oracle_global_16.wl](oracle_global_16.wl) (blob SHA \`951412148adfbf8438d0e1d213da96891bb811dd\`) through the Wolfram Language evaluator rather than merely repeating the formulas by hand. Environment self-reported \`15.0.1 for Linux x86 (64-bit) (July 2, 2026)\`, \`Linux-x86-64\`, machine precision approximately 15.95458977 decimal digits. The returned association identified \`EXPLORATORY_KNOWN_16_CASES_NOT_GATE_B\` and independently reproduced the four summary extrema documented above, including all 16 tabular rows. This is a computational replay of **known** conditions, not an independently witnessed human signoff nor a new prospective sample.
