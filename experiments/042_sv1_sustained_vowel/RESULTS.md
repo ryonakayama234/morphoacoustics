@@ -14,7 +14,7 @@ Initial CI [run 39364241010](https://github.com/ryonakayama234/morphoacoustics/a
 
 The [repair was recorded on Issue #124](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6282636336) after this first exploratory run. Commit [178661f](https://github.com/ryonakayama234/morphoacoustics/commit/178661ff8b0f35e3081902d6eb747b2ba81860bc) derives **one common LF source normalization from the adopted 0.50-second reference** and uses the fixed gain on fresh 0.25-second source and the unchanged 0.50-second source. The preregistered strict bitwise equal-center-source and exact 0.5s legacy LF source gates were **not weakened**. Previously failed CI remains permanently a failure and the new run is post-fix engineering evidence, not prospective independent confirmation.
 
-## Successful exact-code execution
+## First repaired exact-code execution (historical; C diagnostic implementation later strengthened)
 
 [Dedicated pinned real-physics CI run 39364415813](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39364415813), actual source SHA 178661ff8b0f35e3081902d6eb747b2ba81860bc, Python 3.11 and NumPy 2.4.6:
 
@@ -47,3 +47,16 @@ Created 2026-10-20, artifact expiry recorded by GitHub as 2027-01-18. Do not cla
 - Keep Draft PR #125 open and **do not merge before independent review and explicit GO_LIMITED adoption**.
 
 Scientific limits: static prescribed tract source/filter model, quasi-stationary overlapping FFT time windows; no self-oscillation, respiration/lung dynamics, articulator inertia, connected /a/-to-/i/ coarticulation, arbitrary vowel duration or universal text-to-speech. Duration is bounded to two exact values.
+
+## Second engineering audit: C must contain two independently rendered source/pressure calls
+
+The first passing artifact at 178661f created diagnostic C by duplicating the A PCM buffer; while it was a valid **audio splice negative control**, it did **not** satisfy Issue #124's stronger preregistered wording of two independently calculated short voice performances. This discrepancy was disclosed on [Issue #124](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6282712034), not silently reclassified as a scientific success.
+
+Correction: [commit ca3e92b](https://github.com/ryonakayama234/morphoacoustics/commit/ca3e92bc21e6615b2fa5003b4ab83181ae5b9816) creates a NEW 0.25s LF source and a NEW static-tract pressure rendering as component C_second. Its source, raw pressure Pa, WAV and trace are archived separately. Frozen deterministic matching with component A is an explicit hard gate, after which the distinct PCM payloads are concatenated for **C diagnostics ONLY**. The combined C waveform is still **not** a single physical speech act. [Test update 1918ef4](https://github.com/ryonakayama234/morphoacoustics/commit/1918ef4f33d17d106032cda835022e35f022e8c2) requires C_second actual source and pressure arrays and concatenation bytes.
+
+[Corrected real-physics CI run 39365052298](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365052298) at source/test commit 1918ef4: PASS. Dedicated normal/core regression and full reproducibility re-run; this supersedes the earlier 178661f artifact as the most scientifically complete SV-1 research realization.
+
+- [Corrected blind listening ZIP artifact 12239062649](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365052298/artifacts/12239062649), sha256:55a6bd4cf8d8fd2eed11820bbc3754fd75d4bb40a4ca594479444cd1c8ccd668.
+- [Corrected raw research ZIP artifact 12239420270](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39365052298/artifacts/12239420270), sha256:66dbb3fe4dd055d51f1148286ac775305b67f4f33d5eb78173854153000469c8; includes C_second physical arrays and receipt.
+
+**Source and output physical claims remain frozen**, no retuning of resonance thresholds, source family, body, geometry, F0, Rd, duration or strict common-source center inequality gate. All changes here are repair of implementation/evidence fidelity before adoption; independent reviewer and human listener still pending. Any newer exact-final-HEAD CI status belongs in the Issue #124 acceptance receipts and must be examined before accepting this Draft PR.
