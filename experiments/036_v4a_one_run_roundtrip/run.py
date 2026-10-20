@@ -224,6 +224,14 @@ def publish_listening_wav(output_dir: Path, pressure: np.ndarray,
     return hashlib.sha256(wav_path.read_bytes()).hexdigest(), gain
 
 
+def verified_preview(output_dir: Path, pressure: np.ndarray,
+                     checks: dict[str, bool]) -> tuple[dict[str, object], str | None, float | None]:
+    """Finish provenance verification *before* exposing the research preview."""
+    sources = source_provenance()
+    wav_sha, gain = publish_listening_wav(output_dir, pressure, checks)
+    return sources, wav_sha, gain
+
+
 def write_rows(path: Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         raise ValueError("no CSV rows")
@@ -449,8 +457,8 @@ def run(output_dir: Path) -> dict[str, object]:
     np.save(output_dir/"source_volume_flow_m3_s.npy",source)
     # Do not expose even a provisional listening WAV until the *final* clean
     # checkout/provenance preflight succeeds, after the full physical run.
-    audited_sources = source_provenance()
-    wav_sha, pcm_gain = publish_listening_wav(output_dir, pressure, checks)
+    audited_sources, wav_sha, pcm_gain = verified_preview(
+        output_dir, pressure, checks)
     manifest = {
         "experiment":"V4-A-experiment-036",
         "decision": research_decision(checks),
