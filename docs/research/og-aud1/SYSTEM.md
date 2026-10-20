@@ -83,3 +83,22 @@ For the proposed *paired causal A/B audition*, investigate **one common playback
 ## Experimental 044 — full-grid monitoring prototype (2026-10-20; NOT adopted)
 
 [Experiment 044](../../../experiments/044_og_aud1_monitor/README.md) demonstrates a standalone candidate **new full 0–4 kHz analytic input-impedance grid** followed by source-port pressure IFFT and common A/B gain. This does not modify the adopted OG-4 eight-frequency API. Same graph A → J → (B,C), with prescribed `U(t)` at A.in, both distal outlets matched, and p(A.in) monitoring. It is not radiated speech and is not linked to Studio. The filter sets all frequencies >4kHz to zero, formally introducing an acausal spectral-projection kernel; measured pre-start and end guards are disclosed in the [result evidence](../../../experiments/044_og_aud1_monitor/RESULTS.md). New experiment-local status: `EXPLORATORY_ENGINEERING_PASS`; **Gate A still unratified, Gate B unconfirmed, no production source or Studio integration authorization**. Core→Studio integration requires a distinct exact pinned trusted capability.
+
+
+## Experiment 045 (2026-10-20): causal time-domain six-port graph audit — DRAFT
+
+**Additive research branch only.** [Experiment 045 code/diagram](../../../experiments/045_og_aud1_causal_monitor/README.md) computes the same ideal A→J→(B,C) matched-load model using a time-retarded reflection series rather than Experiment 044's noncausal ideal 4kHz spectral cut. This is **NOT Gate A ratification, confirmed Gate B, radiated sound, or Studio integration**.
+
+~~~mermaid
+flowchart LR
+ Task["Prescribed source U(t), m³/s"] --> Ain["A.in"]
+ Ain --> A["Duct A"]
+ A --> J(("Law J: pA=pB=pC; UA=UB+UC"))
+ J --> B["Duct B to matched load"]
+ J --> C["Duct C to matched load"]
+ Ain -. "p(A.in,t) [Pa]" .-> PCM["pair-common-gain PCM16 WAV"]
+ PCM --> Future["FUTURE: exact SHA/preset verification → Studio research Take"]
+ J --> Diag["six-port p/U, flow/power diagnostic"]
+~~~
+
+The full internal six-port traces derive causally from the fixed source. A single 48kHz internal pressure trace is auditioned as a monitor: **never actual mouth radiation**. With matched distal loads B/C, their lengths are a source-plane null; C area remains the only physical A/B intervention. No general organ graph or production API is introduced. Studio remains on read-only research handoff #21 pending Gate C.
