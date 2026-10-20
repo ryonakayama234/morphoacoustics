@@ -1,10 +1,10 @@
 # SV-1 — Sustained Vowel Performance (Core only)
 
-**Status: DRAFT / PRE-ADOPTION RESEARCH.** Task: [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), parent [Studio Voice Atelier #16](https://github.com/ryonakayama234/morphoacoustics-studio/issues/16). The earlier Studio Scene Composer proposal SC-1 remains a downstream idea, not the task here.
+**Scope: bounded experimental capability; GO_LIMITED adoption decision is tracked in [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124) and [PR #125](https://github.com/ryonakayama234/morphoacoustics/pull/125). NOT a general TTS or Studio feature.** Task: [Core #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), parent [Studio Voice Atelier #16](https://github.com/ryonakayama234/morphoacoustics-studio/issues/16). The earlier Studio Scene Composer proposal SC-1 remains a downstream idea, not the task here.
 
 ## Creative outcome
 
-Compare independently rendered **0.25-second single /a/-like sustain (A)**, **0.50-second single /a/-like sustain (B)** and **two separately computed 0.25s short-voice WAVs (A and C_second) concatenated into 0.50s (C; diagnosis only)**. Creator's percept of "one held あー" versus "two あ, あ" is an independent human Gate.
+Compare independently rendered **0.25-second single /a/-like sustain (A)**, **0.50-second single /a/-like sustain (B)** and **two separately computed 0.25s short-voice WAVs (A and C_second) concatenated into 0.50s (C; diagnosis only)**. Creator's one-shot N=1 pilot **supports both** short A (one 「あ」) and long B (one 「あーー」); the C splice remains bumpy and is not physically continuous. The apparent multiple starts in A from the original report were caused by the **external player looping** trial_03, not by synthesis. [Original report, correction and key](https://github.com/ryonakayama234/morphoacoustics/issues/124#issuecomment-6287370288).
 
 A/B have independent prescribed LF source flow and fresh computed physical pressure through the *same* vocal tract, not stretched, looped or concatenated old WAVs. This is NOT breathing, glottal contact, tissue dynamics or actual self-oscillating vocal folds.
 
@@ -57,7 +57,7 @@ The inherited 10ms source-amplitude envelope denotes imposed file fade-in/out, n
 4. C's two short voice components each have freshly computed source/pressure, including separately archived C_second arrays; C's *joined audio* is NOT a single physical Take. The blind listening package asks for free kana/transcription, then perceived number of starts (one/two/unknown), artifacts, naturalness and creative usefulness. Human pilot N=1 is separate from numeric pass.
 5. Existing CC-A2 and full normal test suite must remain green; independent code/security/numeric/scientific-claim review is required before merge. The V4-A Draft #123 is unchanged.
 
-**Gate distinction:** SUPPORT_DURATION_CONTROL is a possible numeric conclusion. SINGLE_SUSTAIN_PERCEPT_CONFIRMED_PILOT requires user listening. Neither means natural Japanese TTS or biomechanically demonstrated phonation.
+**Gate distinction:** SUPPORT_DURATION_CONTROL was validated numerically, and creator single-onset N=1 listening is positive for **A and B** on one-shot playback. C was an intentionally concatenated diagnostic and is audibly less natural; natural connected speech requires separate, preregistered study [SV-2 #126](https://github.com/ryonakayama234/morphoacoustics/issues/126). None of this proves general Japanese TTS, biomechanical phonation or population-level naturalness.
 
 ## Run in pinned Python 3.11 environment
 
@@ -78,7 +78,7 @@ GitHub Actions artifacts:
 
 Sources: [Core Issue #124](https://github.com/ryonakayama234/morphoacoustics/issues/124), [static /a/ fixture Experiment023](../023_static_vowel_calibration/RESULTS.md), [Wolfram frozen M0 Experiment028](../028_task_field_morphology_transfer/RESULTS.md), [adopted CC-A2](../../docs/research/cc-a2-two-body-live.md), [V4-A Draft #123](https://github.com/ryonakayama234/morphoacoustics/pull/123), [speech evaluation Core #37](https://github.com/ryonakayama234/morphoacoustics/issues/37).
 
-Future Studio duration selector and immutable physical Take are subsequent distinct tasks. Human listening and independent review must not be waived by successful CI.
+Future Studio duration selector and immutable physical Take are subsequent distinct tasks. The creator's single-listener pilot has occurred and is recorded separately from the original CI manifest, which historically says NOT_RUN at generation time. Independent review and accepted scope must not be waived by successful CI.
 
 ### Evidence chain and trust boundary
 
