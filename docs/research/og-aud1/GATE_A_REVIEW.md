@@ -96,3 +96,7 @@ The proposed common-gain rule is a **Gate A decision candidate**, not yet part o
 - Maintain statuses: **A=CANDIDATE**, **B=NOT IMPLEMENTED**, **C=NOT IMPLEMENTED**, **D=NOT ADOPTED** until evidence warrants changing each separately.
 
 This audit records physical predictions **prior to** implementing the new broadband solver or listening bridge and must not be relabeled as a prospective registered acceptance test without explicit review/freeze and timestamp.
+
+## 5. Subsequent preflight evidence (same date; addendum, not replacement)
+
+After this candidate review note was written, [Experiment 043](../../../experiments/043_og_aud1_preflight/README.md) executed a **separately assembled 12-state global p/U matrix** in Wolfram, using pressure-scaled q=Z_ref U internally. The [recorded results](../../../experiments/043_og_aud1_preflight/RESULTS.md) compare against this scalar model at existing OG-4 anchors; a wrong particle-velocity-law mutant disagrees by 0.24–0.48 relative source impedance, and matched-branch length null changes remain at numerical roundoff. No broadband/time-domain signal was computed; independent external review and prospective full-band Gate B numerical thresholds remain **OPEN**. This preflight establishes neither a frozen Gate A nor any new Studio or Core runtime capability.
