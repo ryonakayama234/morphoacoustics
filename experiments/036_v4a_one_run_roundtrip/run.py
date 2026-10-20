@@ -256,6 +256,11 @@ def source_cycle_jump(source: np.ndarray) -> float:
     return float(np.max(np.abs(source[boundaries]-source[boundaries-1]))/rms)
 
 
+def hop_stability_ratio(pressure: np.ndarray, fine_reference: np.ndarray) -> float:
+    """The numerical RMS gate uses the finer renderer as its denominator."""
+    return EXP26.normalized_rms_difference(pressure, fine_reference)
+
+
 def research_decision(checks: dict[str, bool]) -> str:
     """Preserve the failure classes declared before executing Experiment036."""
     groups = (
@@ -388,7 +393,7 @@ def run(output_dir: Path) -> dict[str, object]:
     checks["trajectory_step"] = bool(step_ratio<.20)
     # Experiment026's inherited numerical Gate normalizes by the fine reference.
     # EXP12's similarly named helper reverses argument order (reference first).
-    stability_ratio = EXP26.normalized_rms_difference(pressure, reference)
+    stability_ratio = hop_stability_ratio(pressure, reference)
     jumps = jump_diagnostics(pressure)
     checks["pressure_and_hop_stability"] = bool(
         len(pressure)==SAMPLES and np.all(np.isfinite(pressure)) and
