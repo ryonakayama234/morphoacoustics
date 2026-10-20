@@ -174,6 +174,75 @@ def _trace(cycles: np.ndarray, envelope: np.ndarray, geometry: object) -> bytes:
     return stream.getvalue().encode("utf-8")
 
 
+def _write_at(root_fd: int, relative_name: str, data: bytes) -> None:
+    """Exclusive no-follow file write beneath an already opened directory inode.
+
+    Unlike Path.write_bytes on a name, this is resistant to a parent-directory
+    rename-and-symlink swap by another local process after mkdir.
+    """
+    if not isinstance(data, bytes):
+        raise TypeError("SV-1 payload must be bytes")
+    components = relative_name.split("/")
+    if (not components or any(p in {"", ".", ".."} or "\\" in p
+                              for p in components)):
+        raise ValueError("SV-1 illegal relative artifact path")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    current = root_fd
+    opened: list[int] = []
+    try:
+        for name in components[:-1]:
+            try:
+                os.mkdir(name, mode=0o700, dir_fd=current)
+            except FileExistsError:
+                pass
+            child_fd = os.open(name, flags, dir_fd=current)
+            opened.append(child_fd)
+            current = child_fd
+        file_fd = os.open(
+            components[-1],
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            mode=0o600, dir_fd=current,
+        )
+        with os.fdopen(file_fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+    finally:
+        for fd in reversed(opened):
+            os.close(fd)
+
+
+def _publish_new_bundle(output_dir: Path, files: dict[str, bytes],
+                        manifest: dict) -> None:
+    """Reserve new output, anchor ALL writes to fd, publish complete marker last."""
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        raise RuntimeError("SV-1 requires Linux/POSIX no-follow directory fd")
+    output_dir.mkdir(mode=0o700)
+    root_fd = os.open(
+        output_dir, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    )
+    try:
+        for name, contents in sorted(files.items()):
+            _write_at(root_fd, name, contents)
+        # Refuse a swapped output directory even if its replacement is another
+        # real directory (a symlink replacement was refused by O_NOFOLLOW).
+        actual = os.stat(output_dir, follow_symlinks=False)
+        held = os.fstat(root_fd)
+        if (actual.st_dev, actual.st_ino) != (held.st_dev, held.st_ino):
+            raise RuntimeError("SV-1 output directory was swapped during generation")
+        # Staged manifest file has been fully flushed and fsynced before its
+        # hard-link becomes the atomic completion marker; never overwrite it.
+        _write_at(root_fd, ".manifest.staged",
+                  canonical_bytes(manifest) + b"\n")
+        os.link(".manifest.staged", "manifest.json",
+                src_dir_fd=root_fd, dst_dir_fd=root_fd,
+                follow_symlinks=False)
+        os.unlink(".manifest.staged", dir_fd=root_fd)
+        os.fsync(root_fd)
+    finally:
+        os.close(root_fd)
+
+
 def perform(
     output_dir: Path,
     *,
@@ -303,18 +372,10 @@ def perform(
         "artifact_sha256": {name: digest(data) for name, data in sorted(payloads.items())},
     }
 
-    # Refuse existing files/directories even if they are empty/dangling links.
-    # Complete marker is installed last. Crash before marker is NOT success.
-    output_dir.mkdir()
-    try:
-        for name, content in sorted(payloads.items()):
-            file = output_dir / name
-            file.parent.mkdir(parents=True, exist_ok=True)
-            file.write_bytes(content)
-        (output_dir / "manifest.json").write_bytes(canonical_bytes(manifest) + b"\n")
-    except BaseException:
-        # Retain uncommitted folder to diagnose interruptions; no marker => invalid.
-        raise
+    # The payload and atomic manifest completion marker are always written
+    # relative to the directory inode opened with O_NOFOLLOW; never truncate
+    # an existing file after a path-based symlink swap.
+    _publish_new_bundle(output_dir, payloads, manifest)
     return manifest
 
 
