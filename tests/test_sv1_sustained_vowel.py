@@ -57,6 +57,47 @@ def test_existing_and_symlink_output_never_overwritten(tmp_path: Path) -> None:
         perform(link)
 
 
+def test_nested_directory_entries_durable_before_manifest(tmp_path: Path,
+                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    """Crash-integrity P2 regression: fsync both nested directories before marker."""
+    import stat
+    root = tmp_path / "fresh-evidence"
+    order: list[tuple[str, str]] = []
+    original_fsync = os.fsync
+    original_link = os.link
+
+    def traced_fsync(fd: int) -> None:
+        if stat.S_ISDIR(os.fstat(fd).st_mode):
+            order.append(("fsync_dir", os.readlink(f"/proc/self/fd/{fd}")))
+        original_fsync(fd)
+
+    def traced_link(src: str, dst: str, **kwargs: object) -> None:
+        order.append(("marker_link", dst))
+        original_link(src, dst, **kwargs)
+
+    monkeypatch.setattr(os, "fsync", traced_fsync)
+    monkeypatch.setattr(os, "link", traced_link)
+    MOD["_publish_new_bundle"](
+        root,
+        {
+            "A_listen.wav": b"sample-A",
+            "listening/README.md": b"read first",
+            "listening/blind/trial_01.wav": b"sample-blind",
+        },
+        {"schema": "sv1-test", "status": "complete"},
+    )
+    published = order.index(("marker_link", "manifest.json"))
+    nested = [
+        ("fsync_dir", str(root / "listening" / "blind")),
+        ("fsync_dir", str(root / "listening")),
+        ("fsync_dir", str(root)),
+    ]
+    assert all(item in order[:published] for item in nested)
+    assert order.index(nested[0]) < order.index(nested[1]) < published
+    assert (root / "manifest.json").is_file()
+    assert (root / "listening/blind/trial_01.wav").read_bytes() == b"sample-blind"
+
+
 def test_directory_swap_cannot_overwrite_external_files(tmp_path: Path) -> None:
     """P2 reviewer regression: after opening dirfd, pathname is no longer trust."""
     root = tmp_path / "owned"
