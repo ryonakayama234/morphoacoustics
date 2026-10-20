@@ -165,7 +165,12 @@ def _trace(cycles: np.ndarray, envelope: np.ndarray, geometry: object) -> bytes:
     writer.writerow(["sample_index", "time_s", "phase_cycles", "source_gain",
                      "min_area_m2", "max_area_m2"])
     areas = np.array([s.area_m2 for s in geometry.sections])
-    for i in range(0, len(cycles), 480):
+    # The 10 ms sampling grid ends at the START of the final 10 ms fade.
+    # Always include the actual last audio sample to audit file-off decay.
+    indices = list(range(0, len(cycles), 480))
+    if not indices or indices[-1] != len(cycles) - 1:
+        indices.append(len(cycles) - 1)
+    for i in indices:
         writer.writerow([i, format(i / SAMPLE_RATE, ".5f"),
                          format(float(cycles[i]), ".17g"),
                          format(float(envelope[i]), ".17g"),
