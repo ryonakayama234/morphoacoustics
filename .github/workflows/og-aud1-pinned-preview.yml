@@ -28,7 +28,7 @@ jobs:
           PYTHONPATH: src
         run: |
           python -m unittest discover -s experiments/045_og_aud1_causal_monitor -p test_causal_monitor.py -v
-          python -m unittest discover -s experiments/046_og_aud1_pinned_preview -p test_preview.py -v
+          python -m unittest discover -s experiments/046_og_aud1_pinned_preview -p 'test_*.py' -v
       - name: Generate and archive a new preview pair
         env:
           PYTHONPATH: src
