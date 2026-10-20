@@ -18,6 +18,15 @@ SPEC.loader.exec_module(M)
 
 
 class RoundtripTests(unittest.TestCase):
+    @staticmethod
+    def passing_checks():
+        return {name: True for name in (
+            "frozen_B0", "source_identity", "analytic_schedule",
+            "same_three_tasks", "realized_geometry", "trajectory_step",
+            "pressure_and_hop_stability", "single_phase_source",
+            "single_run_counts",
+        )}
+
     def test_frozen_oracle_and_schedule(self):
         oracle=json.loads(M.ORACLE.read_text())
         self.assertEqual(oracle["sample_count"],48000)
@@ -73,7 +82,7 @@ class RoundtripTests(unittest.TestCase):
             with mock.patch.object(M.EXP26.EXP9, "write_listening_wav",
                                    side_effect=fake_writer) as writer:
                 digest, gain = M.publish_listening_wav(
-                    Path(d), np.ones(16), {"frozen_B0": True})
+                    Path(d), np.ones(16), self.passing_checks())
                 self.assertEqual(gain, 1.5)
                 self.assertEqual(digest, __import__("hashlib").sha256(
                     b"diagnostic-test-only").hexdigest())
@@ -82,6 +91,7 @@ class RoundtripTests(unittest.TestCase):
     def test_execution_provenance_binds_actual_sources(self):
         receipt = M.source_provenance()
         self.assertRegex(receipt["git_head"], r"^[0-9a-f]{40}$")
+        self.assertIs(receipt["tracked_worktree_clean"], True)
         files = receipt["source_sha256"]
         self.assertIn("experiments/036_v4a_one_run_roundtrip/run.py", files)
         self.assertIn("experiments/029_task_field_embodied_infeasibility/run.py", files)
@@ -111,6 +121,50 @@ class RoundtripTests(unittest.TestCase):
             self.assertEqual(result.acoustic_call_count, 0)
             self.assertIsNone(result.waveform)
             self.assertIsNone(result.endpoint)
+
+    def test_reference_normalized_hop_gate(self):
+        candidate = np.array([2.0, -2.0])
+        finer_reference = np.array([1.0, -1.0])
+        self.assertAlmostEqual(M.hop_stability_ratio(candidate, finer_reference), 1.0)
+        # The historical argument order would wrongly normalize against 2x RMS.
+        self.assertAlmostEqual(M.EXP12.normalized_rms_difference(
+            candidate, finer_reference), 0.5)
+
+    def test_gate_failure_has_registered_scientific_decision(self):
+        passing = self.passing_checks()
+        self.assertEqual(M.research_decision(passing), "SUPPORT_ONE_RUN_ROUNDTRIP")
+        cases = {
+            "frozen_B0": "REFERENCE_DRIFT",
+            "analytic_schedule": "REPRESENTATION_OR_SCHEDULE_MISMATCH",
+            "same_three_tasks": "REPRESENTATION_OR_SCHEDULE_MISMATCH",
+            "realized_geometry": "PHYSICAL_ENDPOINT_FAILURE",
+            "trajectory_step": "NUMERICALLY_UNSTABLE",
+            "pressure_and_hop_stability": "NUMERICALLY_UNSTABLE",
+            "source_identity": "SOURCE_OR_PROVENANCE_FAILURE",
+            "single_phase_source": "SOURCE_OR_PROVENANCE_FAILURE",
+            "single_run_counts": "SOURCE_OR_PROVENANCE_FAILURE",
+        }
+        for key, expected in cases.items():
+            with self.subTest(failed=key):
+                checks = passing.copy()
+                checks[key] = False
+                self.assertEqual(M.research_decision(checks), expected)
+        self.assertEqual(M.research_decision({}), "SOURCE_OR_PROVENANCE_FAILURE")
+        self.assertEqual(M.research_decision({"frozen_B0": True}),
+                         "SOURCE_OR_PROVENANCE_FAILURE")
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.object(M.EXP26.EXP9, "write_listening_wav") as writer:
+                digest, gain = M.publish_listening_wav(
+                    Path(d), np.ones(16), {"frozen_B0": True})
+                self.assertIsNone(digest)
+                self.assertIsNone(gain)
+                writer.assert_not_called()
+
+    def test_dirty_tracked_checkout_refuses_physical_execution(self):
+        with mock.patch.object(M.subprocess, "run",
+                               return_value=mock.Mock(stdout=" M src/morphoacoustics/physical/fake.py\\n")):
+            with self.assertRaisesRegex(RuntimeError, "clean Git checkout"):
+                M.verified_git_checkout()
 
     def test_prepared_body_uses_shared_geometry(self):
         prepared=M.body()
