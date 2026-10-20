@@ -1,0 +1,49 @@
+name: OG-AUD1 exploratory physical monitor
+on:
+  push:
+    branches:
+      - research/og-aud1-exploratory-monitor-20261020
+  pull_request:
+    paths:
+      - 'experiments/044_og_aud1_monitor/**'
+      - '.github/workflows/og-aud1-exploratory.yml'
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pinned exploratory dependency
+        run: python -m pip install numpy==2.3.5
+      - name: Test oracle, determinism and failures
+        run: python -m unittest discover -s experiments/044_og_aud1_monitor -p 'test_*.py' -v
+      - name: Generate and verify twice without reusing data
+        shell: bash
+        run: |
+          set -euo pipefail
+          python experiments/044_og_aud1_monitor/monitor.py "$RUNNER_TEMP/og-aud1-first" > "$RUNNER_TEMP/first_stdout.json"
+          python experiments/044_og_aud1_monitor/monitor.py "$RUNNER_TEMP/og-aud1-second" > "$RUNNER_TEMP/second_stdout.json"
+          diff -r "$RUNNER_TEMP/og-aud1-first" "$RUNNER_TEMP/og-aud1-second"
+          python - <<'PY'
+          import json, pathlib, hashlib, os
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'og-aud1-first'
+          m=json.loads((p/'manifest.json').read_bytes())
+          for name, expected in m['artifact_sha256'].items():
+              actual='sha256:'+hashlib.sha256((p/name).read_bytes()).hexdigest()
+              assert expected==actual, name
+          assert m['status']=='EXPLORATORY_ENGINEERING_ONLY_NOT_GATE_B'
+          print('No science/adoption gate is implied by this workflow.')
+          PY
+      - name: Archive candidate source-plane monitor (NOT speech)
+        uses: actions/upload-artifact@v4
+        with:
+          name: og-aud1-exploratory-python-${{ matrix.python }}
+          path: ${{ runner.temp }}/og-aud1-first/
+          if-no-files-found: error
+          retention-days: 14
