@@ -84,3 +84,21 @@ The [Wolfram global-system preflight](../../../experiments/043_og_aud1_preflight
 ## Experimental 044 — new sample/receipt implementation, not adopted schema
 
 [Executed exploratory manifest and hashes](../../../experiments/044_og_aud1_monitor/RESULTS.md) were generated using a standalone `experiments/044_og_aud1_monitor/monitor.py` source (code SHA256 in receipt). Typed conceptual relation remains `fixed graph params + prescribed 48000x float64 U(t) [m³/s] → new complete-grid Zin(f) → 48000x raw p(A.in,t) [Pa] → pair-shared 0.8 peak gain → two 48000-frame PCM16 WAVs`. Input and output pressure are distinct, auditable byte arrays (NPY). Each generated file has a SHA256; manifest is written after staged artifacts. **No `PreparedBranch3` verified digest or CC-A2 `PerformanceRequest` is asserted by this experiment-local output**, and no Studio immutable Take has been written. Run manifest carries source/signal/reference-plane, graph dimensions, numeric-band policy and environment versions; it is not a substitute for a future trusted versioned contract.
+
+
+## Experiment 045: causal six-port evidence boundary (research only)
+
+~~~mermaid
+flowchart LR
+ B["Fixed A/B/C/J body recipe; immutable selected C area"] --> P["Derived Z0, r, tau"]
+ U["Fixed analytic U(t) [m³/s]"] --> S["Causal delayed-echo six-port p/U states"]
+ P --> S
+ S --> Raw["raw p(A.in,t) [Pa], raw U(t) [m³/s]"]
+ S --> Audit["signed junction flow, outlet power and echo-tail bound"]
+ Raw --> Derive["single A/B gain → PCM16 monitor WAV"]
+ Audit --> Receipt["manifest + SHA256; research only"]
+ Derive --> Receipt
+ Receipt -. "after scientific and security gates only" .-> Take["Future Studio immutable Take"]
+~~~
+
+The [Experiment 045 runner](../../../experiments/045_og_aud1_causal_monitor/causal_monitor.py) creates a *separate* experimental manifest schema (og-aud1.causal.experiment.v0), not an adopted Contract v1 extension. The source is the exact finite-time analytical flow program shared with Experiment 044. Two allowed C areas and J law are fixed. Observations include 48kHz 1s raw source U and raw A.in pressure p as separate little-endian float64 NPY, two PCM16 mono WAVs, a **pair-shared** playback gain, physical/FFT-independent echo settings, six-port conservation diagnostics, code version hash and per-file SHA-256. The six-port traces are internal computational diagnostic states, not claimed persisted complete port wavefields. Source input is not acoustic gain or glottal physical actuation; p(A.in) is not receiver SPL. Immutable output directory is staged and receipt written last. No Studio Take acceptance, no published prepared-body identity, and no relaxation of exact-ref trust policy.

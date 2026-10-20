@@ -31,3 +31,10 @@ Every implemented work package must update physical SYSTEM, exact DATA contract 
 - [Prospective but **unreviewed** numerical/source candidate](../../experiments/044_og_aud1_monitor/PROTOCOL_CANDIDATE.md).
 - [Runnable experiment-local Core code and data flow](../../experiments/044_og_aud1_monitor/README.md), [local results and sample hashes](../../experiments/044_og_aud1_monitor/RESULTS.md), [off-anchor full-matrix Wolfram script](../../experiments/044_og_aud1_monitor/oracle_fft_bins.wl). **Two 48kHz preview pressure-monitor WAVs were computed, not speech or adopted Core broadband output.**
 - Parent [SYSTEM](./og-aud1/SYSTEM.md) / [DATA](./og-aud1/DATA.md) / [EXPERIMENT](./og-aud1/EXPERIMENT.md) updated together. Gate A acceptance/reviewer, confirmatory Gate B, Studio adapter and creator audition still outstanding.
+
+
+### OG-AUD1 causal graph-to-monitor, Experiment 045 (research, 2026-10-20)
+
+- [Six-port physical model, node/edge diagram, executable reproduction](../../experiments/045_og_aud1_causal_monitor/README.md)
+- [Causal experiment code](../../experiments/045_og_aud1_causal_monitor/causal_monitor.py) · [scientific/regression tests](../../experiments/045_og_aud1_causal_monitor/test_causal_monitor.py) · [Wolfram oracle](../../experiments/045_og_aud1_causal_monitor/oracle_echo.wl) · [exploratory result and limitations](../../experiments/045_og_aud1_causal_monitor/RESULTS.md)
+- Canonical triad: [SYSTEM](og-aud1/SYSTEM.md) / [DATA](og-aud1/DATA.md) / [EXPERIMENT](og-aud1/EXPERIMENT.md). This independent stacked Draft branch does **not** authorize public API, Studio actor/Takes, radiation, or confirmatory adoption.
