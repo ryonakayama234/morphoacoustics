@@ -9,7 +9,7 @@ Tracking: [SMC-1 #139](https://github.com/ryonakayama234/morphoacoustics/issues/
 - [DATA.md](DATA.md): immutable linguistic and symbolic motor records, ID/source-offset mapping, diagnostics and capability limits.
 - [EXPERIMENTS.md](EXPERIMENTS.md): falsifiable hypotheses, fixed numerical oracle, controls, experiments, evidence status, decision ledger.
 - [wolfram-oracle.wl](wolfram-oracle.wl): independent rational-number timing oracle for inherited Exp011 constraints.
-- `tools/smc1_kana_motor_candidate.py`: bounded exploratory planner; **not exported as public API**.
+- `src/smc1_research/speech_motor_candidate.py`: bounded exploratory planner; **not exported as public API**.
 - `tests/test_speech_motor_candidate.py`: positive, partial, invalid, ambiguity and contradiction tests.
 
 ## Distinguish four questions
