@@ -1,0 +1,114 @@
+{
+  "description": "POST-HOC 16-location exploratory transfer-matrix full-gesture terminal-state sensitivity (5 Hz grid)",
+  "scientific_status": "NOT_CONFIRMATORY_SITE_SELECTED_AFTER_WOLFRAM_SCAN",
+  "source": "Wolfram Language evaluator 2026-10-21; see spatial_sensitivity.wl",
+  "model": {
+    "length_per_section_m": 0.01,
+    "count": 16,
+    "sound_speed_m_s": 343,
+    "air_density_kg_m3": 1.2,
+    "outlet": "ideal pressure release",
+    "harmonic_source_f0_hz": 100
+  },
+  "baseline_final_peak_hz": [
+    275,
+    2100
+  ],
+  "rows": [
+    {
+      "zero_based_site": 0,
+      "f1_span_hz": 0,
+      "f2_span_hz": 15
+    },
+    {
+      "zero_based_site": 1,
+      "f1_span_hz": 0,
+      "f2_span_hz": 10
+    },
+    {
+      "zero_based_site": 2,
+      "f1_span_hz": 5,
+      "f2_span_hz": 55
+    },
+    {
+      "zero_based_site": 3,
+      "f1_span_hz": 5,
+      "f2_span_hz": 20
+    },
+    {
+      "zero_based_site": 4,
+      "f1_span_hz": 0,
+      "f2_span_hz": 65
+    },
+    {
+      "zero_based_site": 5,
+      "f1_span_hz": 5,
+      "f2_span_hz": 40
+    },
+    {
+      "zero_based_site": 6,
+      "f1_span_hz": 5,
+      "f2_span_hz": 0
+    },
+    {
+      "zero_based_site": 7,
+      "f1_span_hz": 5,
+      "f2_span_hz": 20
+    },
+    {
+      "zero_based_site": 8,
+      "f1_span_hz": 0,
+      "f2_span_hz": 15
+    },
+    {
+      "zero_based_site": 9,
+      "f1_span_hz": 0,
+      "f2_span_hz": 10
+    },
+    {
+      "zero_based_site": 10,
+      "f1_span_hz": 5,
+      "f2_span_hz": 5
+    },
+    {
+      "zero_based_site": 11,
+      "f1_span_hz": 10,
+      "f2_span_hz": 0
+    },
+    {
+      "zero_based_site": 12,
+      "f1_span_hz": 5,
+      "f2_span_hz": 0
+    },
+    {
+      "zero_based_site": 13,
+      "f1_span_hz": 5,
+      "f2_span_hz": 0
+    },
+    {
+      "zero_based_site": 14,
+      "f1_span_hz": 0,
+      "f2_span_hz": 0
+    },
+    {
+      "zero_based_site": 15,
+      "f1_span_hz": 0,
+      "f2_span_hz": 0
+    }
+  ],
+  "candidate_end_f2_hz": {
+    "0": {
+      "0.90": 2110,
+      "1.10": 2095
+    },
+    "2": {
+      "0.90": 2130,
+      "1.10": 2075
+    },
+    "4": {
+      "0.90": 2065,
+      "1.10": 2130
+    }
+  },
+  "qualification": "Acoustic resonance maxima of an ideal serial impedance model, not a human listener discrimination result; full-time Core output is separate."
+}

@@ -51,3 +51,24 @@ The conditional output signal is generated through existing physical source/trac
 
 ## Preview renderer is downstream observation only
 The subsequent research build optionally exposes `raw Pa -> common fixed listening gain -> PCM16 WAV` for *three* conditions. This stage does not overwrite raw physical pressure, add EQ, generate phantom phonemes, or claim calibrated acoustic SPL. Same gain matters for causal A/B. It is a research listening artifact only; Studio immutable Take and listener/eardrum physics remain separate future boundaries.
+
+## Listening signal path and sensitivity (diagnostic only)
+```mermaid
+flowchart LR
+  USER["Creator reports: section0 not distinguishable"] --> MAP["Wolfram all-16-section sensitivity scan (post-hoc)"]
+  MAP --> EDIT["site0,2,4 × rest area .90/1.10 (+ null)"]
+  EDIT --> BODY["Exact new prepared bodies, 16x10mm"]
+  BODY --> MOTION["Existing frozen 3-task gestural realizer"]
+  SOURCE["Same frozen LF F0=100Hz source"] --> PHYS["Existing Core frame-wise physical acoustics"]
+  MOTION --> PHYS
+  PHYS --> RAW["7 independently rendered raw Pa streams"]
+  RAW --> WAV["One common playback gain / 7 WAV previews"]
+  RAW --> LOG["Geometry/peaks/hashes/real acoustic calls"]
+  WAV --> HEAR["Future human audition: not yet conducted"]
+```
+Section0 is a 10mm segment at the inlet, and its ±10% area equates to diameter changes roughly −5.13%/+4.88% (circular area equivalence); a single site changes only 1/16 of the axial tract. End-state spectral F2 mode span 15Hz (~0.71% of 2100Hz), F1 nearly invariant. A common-gain WAV should be thought of as a *listening observation* of physical raw pressure, not a human-validated character difference.
+
+## Semantically complete vs incomplete
+**Current physical causal loop demonstrator** is implemented for exact 16-section research fixtures: one rest cross-section only; *all* sites are already subject to the same existing task-field motion. The site4 area at terminal state is ~4.640627× its own rest-area under existing Gesture alone, so this is **not activation of a previously static organ**. Numerically distinct waveform is obtained from the same source/filter law, not per-condition EQ or spoofed voice. This satisfies the *bounded causal proof of principle*.
+
+**Not yet implemented:** a creator directly editing the permanent shape through Studio; Core-authoritative immutable saved/versioned BodyRevision; typed refusal, new bound Performance Contract bridge, independently validated physical oracle for output waveform and untrusted inputs, immutable Studio historical Takes and reload. Current physics is frame-wise prescribed area-dependent lossy 1D transfer with explicit resistive outlet and surrogate monopole radiation, **not** validated 3D moving boundary FSI, natural phonation source coupling or organ junction acoustics. Preserve those limits as separate research backlog, never aesthetic voice-quality guarantees.

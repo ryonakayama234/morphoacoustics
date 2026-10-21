@@ -1,0 +1,44 @@
+name: cc-b1-posthoc-spatial-physical
+on:
+  pull_request:
+    paths:
+      - "experiments/cc_b1_spatial_probe/**"
+      - "tests/test_cc_b1_spatial_probe.py"
+      - "docs/research/cc-b1-tract-edit/**"
+      - ".github/workflows/cc-b1-spatial-probe.yml"
+      - "tools/cc_a2_live.py"
+      - "src/morphoacoustics/**"
+  workflow_dispatch:
+
+jobs:
+  exploratory-spatial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned physical NumPy
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Seven new physical conditions and negative tests
+        env:
+          SPATIAL_PHYSICS: "1"
+        run: python -m pytest -v tests/test_cc_b1_spatial_probe.py
+      - name: New seven-condition physical evidence and preview WAV
+        run: |
+          python experiments/cc_b1_spatial_probe/run.py --output-dir spatial-audibility-observations
+          cat spatial-audibility-observations/decision.json
+      - name: Frozen old CC-A2 baseline regression
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -q tests/test_cc_a2_live.py
+      - name: Archive post-hoc preview output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-spatial-audition-candidates
+          path: spatial-audibility-observations/
+          if-no-files-found: warn
