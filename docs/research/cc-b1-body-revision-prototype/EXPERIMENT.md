@@ -31,3 +31,6 @@ After independent Gate A ratification: freeze chosen site, source/gesture identi
 
 ## Audit decision
 Current default: **HOLD / experimental branch only**. Reviewer must check API trust boundary, deterministic canonicalization, float edge cases, frozen CC-A2 regression and quality claims. Release requires separately evidenced `GO_LIMITED` and cross-repo adapter/UI acceptance.
+
+## Actual CI observation and corrective action (2026-10-21)
+The first experimental HEAD `43e703093bc2157b4e0eded52e8747e53348b6d1` passed the **dedicated BodyRevision candidate checks**, but its general suite and SV1/OG4 gates failed: a new file under `src/morphoacoustics/preparation` violated the frozen package file-inventory invariant (`audited package source inventory changed`). This was a genuine integration regression, not an ordinary solver failure. We preserved the guard and moved the candidate to `tools/cc_b1_revision.py`. **All results on that superseded HEAD remain failed historical receipts; exact-head rerun is mandatory.**
