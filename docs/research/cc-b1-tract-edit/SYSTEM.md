@@ -48,3 +48,6 @@ flowchart LR
   PA --> NOTES["Experimental result; NOT Studio Take"]
 ```
 The conditional output signal is generated through existing physical source/tract path, **not** edited audio amplitude. The measured sound may remain buzzer-like. This code neither implements immutable first-class BodyRevision registry nor character editor; neither permits arbitrary source coupling or branched Port physics.
+
+## Preview renderer is downstream observation only
+The subsequent research build optionally exposes `raw Pa -> common fixed listening gain -> PCM16 WAV` for *three* conditions. This stage does not overwrite raw physical pressure, add EQ, generate phantom phonemes, or claim calibrated acoustic SPL. Same gain matters for causal A/B. It is a research listening artifact only; Studio immutable Take and listener/eardrum physics remain separate future boundaries.
