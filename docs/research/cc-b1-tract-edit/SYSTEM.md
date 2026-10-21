@@ -1,0 +1,38 @@
+# CC-B1 — SYSTEM / physical architecture
+**DESIGN CANDIDATE; NOT ADOPTED.** Defines one creator-editable **rest morphology** axis, not gesture-time control or acoustic postprocessing.
+
+## Existing live implementation and bounded extension
+```mermaid
+flowchart TD
+  subgraph Studio["Studio — creative authority"]
+    UI["Body Atelier: edit single area, see SI and before/after"] --> REQ["Bounded morphology edit proposal"]
+    TAKES["A/B immutable physical Takes, source and body diff"]
+  end
+  subgraph Core["Core — physical authority"]
+    REQ --> VALID["Validate unit, index/semantic coordinate, geometry, capability"]
+    VALID --> PREP["Prepare immutable BodyRevision and digest (candidate)"]
+    PREP --> REAL["Frozen three-task GestureScore + body-specific realization"]
+    SOURCE["Frozen LF 100Hz source, source hash"] --> ACOUST["Existing 1D moving acoustic backend"]
+    REAL --> ACOUST --> OBS["Raw pressure Pa + geometry/source/solver traces"]
+    VALID --> REFUSE["Typed failure: no real Take"]
+  end
+  OBS --> VERIFY["Trusted Studio verification, exact SHA, bytes"] --> TAKES
+```
+
+- Grounded current baseline: [CC-A2](../cc-a2-two-body-live.md) only two 16-section prepared axial bodies, 0.5s 48kHz LF 100Hz / three tasks. New rest-section area is **NOT** currently accepted by the CC-A2 runner.
+- First experiment changes only **a single rest-area cell**. All other source, task, timing, base geometry, listener policy and backend inputs must be held fixed. Choose an area section not actively targeted by a frozen exact-area gesture, then independently verify what the realizer does to this morphology perturbation.
+- Identity separation: Character is the creative entity; BodyRevision is immutable morphology; GestureScore is the performance intent; physical state and waveform are time-varying derived observations.
+- The Core renderer is presently an independently integrated segmented **serial 1D tract**. Do not falsely model it as the separately validated OG-4 branch3 graph, self-oscillating vocal folds or real listener pressure.
+
+## Future typed organ and port mapping (DESIGN ONLY)
+```mermaid
+flowchart LR
+  Lung["Source organ (future)"] -. "candidate airflow/acoustic interface; coupling UNVALIDATED" .-> Tube["Vocal tract organ (current 1D bound)"]
+  Tube -. "future typed acoustic.p_u connection" .-> Branch["Nasal/side-cavity organs (future)"]
+  Tube -. "future radiation boundary" .-> Ear["Listener organ (future)"]
+```
+
+A semantic **organ node** owns stable ID, version, geometry/material capability and typed ports. An **edge** connects validated compatible ports via explicitly chosen physical junction/boundary law. Visual lines do not create legal physical edges. UI node layout never enters physical body hashes. The physical two-port/junction conditions of [OG-4](../og4-branch3-api-v1.md) cannot be retrofitted into the existing live source-filter by UI mapping alone.
+
+## Non-goals
+No automatic voice-sex/age identity, no anatomy 3D, no arbitrary graph editing, no moving-wall FSI, no source-filter feedback proof, no source spectrum retuning, no neural voice conversion or post-hoc EQ. Unsupported asks must fail rather than inventing a more human-like sound.
