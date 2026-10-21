@@ -68,3 +68,22 @@ An independent post-hoc Wolfram [all 16 sites, exact same ideal 16-tube transfer
 In the prior experiment the entire sound source used 100Hz F0 (harmonics spaced 100Hz) and duration 0.5s. Small resonance movements may be poorly reflected by discrete harmonic amplitudes or masked by other aspects of the timbre, but no specific masking cause has been diagnosed from listener-labeled trials. Human perception research: Kewley-Port & Watson (1994), [formant-frequency discrimination of synthesized vowels](https://pubmed.ncbi.nlm.nih.gov/8120259/), reported ~14Hz threshold in an F1 (<800Hz) region under trained/minimal-uncertainty conditions and increased thresholds in F2; Smith et al. (2004), [vowel formant discrimination in high-fidelity naturalistic speech](https://pubmed.ncbi.nlm.nih.gov/15376687/), observed ~0.37 Bark average in modest sentences, which should **not** be directly imposed as a criterion on this buzzer-like signal. Separate Core [Experiment025](../../../experiments/025_smooth_source_spectrum_vowel_cue/RESULTS.md) already documented human report that accurate closed-set phonetic cues still sounded buzzer-like.
 
 **Revised exploratory next test**: [7-condition full physical spatial-run](../../../experiments/cc_b1_spatial_probe/README.md) on a stacked new Draft PR; same exact source/task and all other geometry, site0/2/4 ×0.9/1.1 plus null; check actual 102 acoustic calls, raw pressure and hashes, 0.25Hz-grid peak comparison to coarse Wolfram, common-gain WAV. This is a proof-of-physical-variation study, **not a preregistered sensitivity test or a passed auditory Gate**. Independently predefine and then run *future* blind creator ABX with null and a real positive control and capture response before revealing assignment. No Studio Code/Gate promotion.
+
+## Completed post-hoc seven-body physical rerun (actual machine evidence)
+2026-10-21 [GitHub Actions 39591507980](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39591507980) **PASS** at code/design HEAD `2ccb1f7ee2650a31d35d513eb791d11e60f81ebb`: 2/2 dedicated tests passed (including real seven-condition physical execution), standalone rerun passed, and 7/7 adopted CC-A2 regression passed. Seven freshly computed 48kHz/0.5s raw Pa arrays plus seven single-gain PCM16 preview WAVs + decision.json archived as [15-file artifact 12342252192](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39591507980/artifacts/12342252192); artifact ZIP SHA256 `d6a8c9d91f9553776baf32b19bdfd4a056eb23f8bdc7c9d88e5f4e4edfd90fd5`.
+
+Core observed after exact frozen three-task motion, fixed same `lf_fixed` source within the 7-condition run and **102 acoustic calls per condition**:
+
+| Zero-based local changed section | rest area ratio | F1 end (Hz) | F2 end (Hz) | relative raw Pa L2 distance to null |
+|---:|---:|---:|---:|---:|
+| null | 1.00 | 275.00 | 2101.75 | 0 |
+| 0 | 0.90 | 275.25 | 2108.50 | 0.03340 |
+| 0 | 1.10 | 274.50 | 2095.00 | 0.03150 |
+| 2 | 0.90 | 277.75 | 2130.25 | 0.06603 |
+| 2 | 1.10 | 272.25 | 2075.00 | 0.06381 |
+| 4 | 0.90 | 276.00 | 2066.00 | 0.02989 |
+| 4 | 1.10 | 273.75 | 2132.00 | 0.03078 |
+
+**Important counterexample to naive peak-based ranking:** at section4, F2 span across the two ratios is ~66Hz (more than section2's ~55Hz), but its raw waveform distance to null is only ~3%, versus ~6.4–6.6% for section2. Neither single peak displacement nor global L2 distance is a valid human voice discriminability measure. The listening state remains **NOT VALIDATED**; this CI can't tell whether the creator can hear any new sounds. All FFT/harmonic amplitudes and subjective cues need future controlled testing. The exact baseline quantized raw Pa SHA matched the adopted oracle `dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e`. No signal transformation was introduced upstream of physical acoustics.
+
+**Decision remains REVISE/MORE_DATA**, not GO. Spatial sites were chosen post-hoc; this run is exploratory screening, not an unseen independent scientific validation or natural voice demo.
