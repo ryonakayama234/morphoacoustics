@@ -27,3 +27,13 @@ Tracking: [SMC-1 #139](https://github.com/ryonakayama234/morphoacoustics/issues/
 
 ## Decision states
 Exploration ⇒ independently preregister confirmatory hypotheses ⇒ research verification ⇒ separate physical Gate ⇒ external studio adapter Gate ⇒ scoped adoption. **This PR contributes only exploratory SMC-1 representation and tests.** No main merge or API promotion is implicitly authorized.
+
+## Task closeout — 2026-10-21
+
+**Scope closed: SMC-1 bounded exploratory implementation and verification, not scientific adoption.**
+Definition of done and exact evidence are recorded in [EXPERIMENTS.md](EXPERIMENTS.md#2026-10-21--task-closure-acceptance-decision).
+
+- Outcome: **EXPLORE_COMPLETED / NOT_ADOPTED / NOT_MERGED**; no merge to main, no new physical audio or Studio interface.
+- Exploratory source commit: `fa98c1ca1f2e73cb14933d023880e7b1fa1a1d31` before this documentation-only closeout.
+- [SMC-1 Issue #139](https://github.com/ryonakayama234/morphoacoustics/issues/139) records the bounded task decision; [Draft PR #140](https://github.com/ryonakayama234/morphoacoustics/pull/140) preserves auditable code and reviewable diff, closed without merge after task completion.
+- Parent [M5 #11](https://github.com/ryonakayama234/morphoacoustics/issues/11) remains open with its original requirement for end-to-end physically generated audio. **Do not automatically start follow-up work.**

@@ -63,3 +63,29 @@ Record actual CI exact HEAD, Python/NumPy versions, test counts, failures, artif
 ## Wolfram four-event extension (independent arithmetic, 2026-10-21)
 
 The expanded source in `wolfram-oracle.wl` separately evaluates a four-symbol schedule with rational onset increment `3/25 s`. It returned windows `{0.08,0.26}, {0.20,0.38}, {0.32,0.50}, {0.44,0.62}`, adjacent overlap `{0.06,0.06,0.06}` seconds, and exactly zero timing-equation residual. This is *a synthetic timing example*, **not evidence of human speech articulation**.
+
+## 2026-10-21 — task closure acceptance decision
+
+### Explicitly bounded chat task
+**SMC-1 exploratory candidate v0:** implement a traceable limited kana script → provisional pronunciation → symbolic motor-intent and synthetic coordination-plan representation, prove deterministic/non-substituting failure semantics, independently verify timing arithmetic, preserve frozen physical Core and CI, and record limits and decisions. This is **not** the full M5 physical-audio milestone or a validated general speech-motor compiler.
+
+### Acceptance criteria / recorded results
+
+| Criterion | Evidence | Assessment |
+|---|---|---|
+| C1 bounded provenance | `あい`, `あいあい` typed Script with segment_id, indexed kana units, phonemes, symbolic intent slots and timing relations | PASS for deliberately limited lexicon; derived code-point offsets, not a stable grapheme/general IPA guarantee |
+| C2 fail-closed | `おはよう`, `ありがとう`, `お早う`, punctuation, empty, unanchored/contradictory relation checks; explicit code diagnostics; no output `GestureScore` from candidate | PASS for tested fixtures; human speech phonology unsupported |
+| C3 independent timing calculation | checked-in exact rational Wolfram oracle from Experiment011; 0.06s two-event overlap and repeated four-slot extension residual 0 | PASS **for algebra**; no articulatory or phonetic acceptance |
+| C4 isolation and reproducibility | exact source SHA `fa98c1ca1f2e73cb14933d023880e7b1fa1a1d31`, [Python 3.11/3.12/3.13 + typecheck SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39539361122), [OG3 SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39539360955), [OG4 SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39539360933), [SV1 SUCCESS](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39539361019) | PASS; no frozen physical package inventory/hash weakening |
+| C5 accessible architecture and negative evidence | searchable SYSTEM/DATA/EXPERIMENTS/INDEX + versioned source, tests, Wolfram source, initial failed CI receipts and correction history, Draft PR | PASS for exploratory documentation; peer review not claimed |
+
+### Excluded from completion (not silently fulfilled)
+- Independent prospective protocol review and independently conducted adoption audit: **NOT DONE**.
+- Validated phoneme-to-calibrated physical `GestureTemplate` mapping or body feasibility: **NOT DONE**.
+- Real new physical speech waveform for user text, listening/intelligibility/naturalness and Studio Take: **NOT DONE**.
+- Promotion into Core public API, main merge, general Japanese language support: **NOT DONE**.
+
+### Decision and custody
+**EXPLORE_COMPLETED / NOT_ADOPTED / NO_MERGE.** A task can be fully closed at the *research prototype and bounded verification* level even when the proposed representation remains scientifically unadopted. This decision explicitly does **not** mark Gate A scientific prospective review, Gate B independent design acceptance, Gate C physical realization, Gate D adoption or Gate E Studio as passed. The distinct M5 parent #11 remains open; do not create or start a new work package as part of this chat. Close #139 as completed for its **narrowed exploratory delivery only**, and close draft PR #140 **unmerged** to leave an immutable auditable diff. No branch deletion is required; immutable commit and closed PR are primary evidence.
+
+Retain both failed exploratory heads `0831fd81` and `916bc2c1` as truthful historical evidence. Closing is a project-management disposition, not a scientific assertion of adoption.
