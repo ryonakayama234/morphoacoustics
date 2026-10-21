@@ -40,3 +40,6 @@ Current [Performance Contract v1](../../performance-contract-v1.md) resolves **p
 - **NUMERICALLY_UNRESOLVED:** valid/nominally supported but conditioning/stability prevents defensible physical output.
 - **FAILED:** runtime/infrastructure error (not a physical impossibility).
 No invented WAV, substituted body, or partial apparently-successful immutable Take on refusal. Preserve source commit, Core/Studio adapter commit, exact body/shape/gesture/source/solver and artifact digests independently. Frozen spatial/timing/numerical domains are to be specified before confirmation.
+
+## Frozen Gate A numeric and provenance contract (2026-10-22)
+Site index is **zero-based 8**; absolute SI section rest area is derived from legacy diameter 30mm in rest geometry (π×0.015² m²), multiplier **0.90/1.00/1.10**. Source and task digests must be identical across every run. Output is 48kHz/24000 float64 SI Pa with quantized SHA, 102 acoustic snapshots/case, exact one-section change and rejection codes. The independent ideal frequency peak oracle and thresholds are immutable in [gate_a_site08_oracle.json](gate_a_site08_oracle.json). No registered BodyRevision public schema is changed. Protocol state: pending independent ratification.

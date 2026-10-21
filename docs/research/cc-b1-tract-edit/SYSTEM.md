@@ -36,3 +36,17 @@ A semantic **organ node** owns stable ID, version, geometry/material capability 
 
 ## Non-goals
 No automatic voice-sex/age identity, no anatomy 3D, no arbitrary graph editing, no moving-wall FSI, no source-filter feedback proof, no source spectrum retuning, no neural voice conversion or post-hoc EQ. Unsupported asks must fail rather than inventing a more human-like sound.
+
+## Gate A freeze dependency and validation boundary (2026-10-22)
+```mermaid
+flowchart LR
+  A[Exact approved 16-section geometry] --> E[Freeze site 8 / ratios / task+source / oracle]
+  E --> W[Wolfram two independent static impedance implementations]
+  E --> C[Core fresh 48kHz physical time-run, baseline rerun]
+  W --> V{18 peaks within 7.5Hz?}
+  C --> V
+  V --> P[Research machine pass only]
+  V --> F[Explicit failed/unresolved]
+  P --> I[External independent physics + contract audit]
+```
+Full acceptance freeze in [GATE_A_FREEZE_20261022.md](GATE_A_FREEZE_20261022.md). No Studio UI, no adopted API or time-varying passivity proof.

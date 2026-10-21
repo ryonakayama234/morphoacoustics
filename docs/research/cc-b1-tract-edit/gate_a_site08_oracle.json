@@ -1,0 +1,70 @@
+{
+  "schema": "research.cc-b1.gate-a/site08-v1",
+  "status": "FROZEN_PRE_CORE_PHYSICAL_RUN_INDEPENDENT_REVIEW_PENDING",
+  "date": "2026-10-22",
+  "zero_based_section_index": 8,
+  "ratio_values": [
+    0.9,
+    1,
+    1.1
+  ],
+  "model": {
+    "number_of_sections": 16,
+    "section_length_m": 0.01,
+    "air_density_kg_m3": 1.2,
+    "speed_of_sound_m_s": 343,
+    "outlet": "ideal_pressure_release",
+    "frequency_grid_hz": [
+      100,
+      3500,
+      5
+    ],
+    "methods": [
+      "ABCD_transfer_matrix",
+      "backwards_impedance_recurrence"
+    ]
+  },
+  "frozen_peaks_hz": {
+    "0.90": {
+      "rest": [
+        720,
+        1295,
+        2905
+      ],
+      "terminal": [
+        275,
+        2110,
+        3145
+      ]
+    },
+    "1.00": {
+      "rest": [
+        720,
+        1290,
+        2915
+      ],
+      "terminal": [
+        275,
+        2100,
+        3160
+      ]
+    },
+    "1.10": {
+      "rest": [
+        715,
+        1285,
+        2925
+      ],
+      "terminal": [
+        275,
+        2095,
+        3175
+      ]
+    }
+  },
+  "predetermined_max_peak_error_hz": 7.5,
+  "causal_raw_relative_l2_min_exclusive": 1e-8,
+  "ideal_lossless_uniform_base_det_max_abs_error": 4.884981308350689e-15,
+  "evidence_scope": "ideal transfer snapshots only; no Core run or listener evidence",
+  "note": "All 16 sites previously covered by theoretical POSTHOC scan; new Core physical site08 not yet run"
+}
