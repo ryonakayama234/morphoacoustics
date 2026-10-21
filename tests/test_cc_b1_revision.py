@@ -11,7 +11,7 @@ from morphoacoustics import CavityConnection, CavityKind, CavitySpec, CreatureSp
 from morphoacoustics.integration.body_presets import make_body_preset, preparation_digest
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
-from morphoacoustics.preparation.cc_b1_revision import (
+from tools.cc_b1_revision import (
     RestAreaEditIntent, RevisionStatus, prepare_rest_area_revision,
 )
 
