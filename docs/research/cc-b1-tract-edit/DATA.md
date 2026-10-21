@@ -46,3 +46,6 @@ Experiment-local reference includes `area_ratio∈{0.90,1.00,1.10}` in **zero-ba
 
 ## New exploratory listening artifact (proposed downstream read)
 The experiment now also produces `preview_0.90.wav`, `preview_1.00.wav`, `preview_1.10.wav` only after successful raw physical calculation; all files are exactly mono 48kHz 16-bit. A *single* `comparison_shared_gain` in `decision.json.preview_audio` scales all three from their real Pa arrays and never enters physical body identity or raw Pa hashes. Each WAV has its own SHA-256 in the corresponding condition. This is not a real Studio Take or radiated/listener-calibrated signal.
+
+## Later spatial diagnostic artifacts — NOT released BodyRevision or Take
+Seven condition IDs: `base` (unchanged), `s00_090`, `s00_110`, `s02_090`, `s02_110`, `s04_090`, `s04_110`. Each uses a new Core prepared rest shape and actual exact source/gesture physical execution and outputs a `.npy` float64 SI Pa stream plus single-common-gain `.wav` mono PCM16 at 48kHz, with `decision.json` storing `zero_based_section`, `rest_area_ratio`, `f1_end_hz`, `f2_end_hz`, `relative_raw_pressure_l2_vs_base`, per-file SHA-256 and provenance. Descriptive filenames make this **unblinded**; never conflate with human ABX and never promote to Studio schema without Core Gate A/B. Tests refuse arbitrary site/area values or historical overwrite.
