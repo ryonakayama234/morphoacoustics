@@ -34,3 +34,6 @@ No Japanese general phonology, no physical consonants, no morphology-conditioned
 
 ## Ordering semantics correction
 A graph edge now uses `LEXICAL_NEXT`, **not** a temporal PRECEDES constraint. Actual onset/offset overlap is exclusively represented in `CoordinationPlan`; lexical text order need not imply nonoverlapping actuation. This is a research semantic refinement before API adoption.
+
+## B1 capability receipt
+On code-bearing `a8e41fb6`, all exact-SHA automated checks passed. Changes relative to main comprise 9 new files exclusively: standalone research package, tests, 4 documents, Wolfram source, CI config. The physical kernel, organ graph, Performance Contracts and Studio remain untouched. A test-only synthetic GestureScore is not a runtime artifact or phonetic capability.

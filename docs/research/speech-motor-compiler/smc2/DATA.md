@@ -69,3 +69,6 @@ Research result uses frozen dataclasses; deterministic `dataclasses.asdict` sort
 
 ## 2026-10-22 nonphysical edge-name refinement
 The ordering edge is `LEXICAL_NEXT`, defined strictly as adjacent provisional phonemes in source-derived plan order. It does not encode `end(A) <= start(B)` and is compatible with simultaneous/overlapping gestures. The first implementation used the ambiguous label `PRECEDES`; this is superseded prior to adoption. Added synthetic `UNKNOWN_GESTURE` negative fixture.
+
+## Gate B status
+Validated automatically at `a8e41fb65abd2aee5c19cc3fb413fa25370cea08`: Unicode code-point spans, non-crossing lexical edges, phoneme-level tentative a/i intents, deterministic digests, constrained speed parameter, refusal of unsupported/unknown events. Symbolic API remains private to standalone research package, schema v0 **NOT ADOPTED**.

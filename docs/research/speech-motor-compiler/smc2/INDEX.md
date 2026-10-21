@@ -26,3 +26,6 @@ SMC-2; SpeechMotorPlan; MotorIntentGraph; PronunciationUnit; A_LIKE_INTENT; I_LI
 
 ## 2026-10-22 Gate B pre-audit correction
 Corrected ambiguous ordering-edge label to `LEXICAL_NEXT` (non-physical lexical order, compatible with timed overlaps); expanded negative tests for unknown gesture reference and source offsets crossing unsupported Unicode. No adoption claim. At code SHA `718d0f122833727102938f000494a0c158f0ff8f` original research CI and inherited workflows all passed; this correction creates a **new** code SHA requiring fresh CI.
+
+## B1 reviewed-by-CI evidence (2026-10-22 JST)
+Code-bearing SHA `a8e41fb65abd2aee5c19cc3fb413fa25370cea08` has all 20 GitHub checks successful across push/PR duplicate checks. SMC-2 Python 3.11/3.12/3.13+typecheck, existing full tests, OG3, OG4, SV1 passed. Decision **EXPLORATORY_SOFTWARE_PASS / SCIENCE_NOT_ADOPTED**. Independent design/phonetics review pending; this is not a physical audio API.

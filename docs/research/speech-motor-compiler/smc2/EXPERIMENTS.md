@@ -34,3 +34,12 @@ Standalone research code + lexical, phoneme-granularity, partial input, source o
 Prior code-bearing SHA `718d0f122833727102938f000494a0c158f0ff8f` passed: SMC-2 3.11/3.12/3.13 + mypy/full pytest [run 39625566343](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566343), existing Core [39625566295](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566295), OG3 [39625566344](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566344), OG4 [39625566323](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566323), SV1 [39625566536](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566536). All success on same SHA. Independent Wolfram repeat: exact onset/offset/overlap/unsatisfiable contradictory pair all True. Scientific independent review: PENDING. No inference of naturalness or physical speech.
 
 During self-review, `PRECEDES` was found ambiguous: it could wrongly imply gestures cannot overlap. Refinement: rename to `LEXICAL_NEXT` and add unknown-ID/unsupported-Unicode crossing negatives. This new implementation revision must pass fresh exact-HEAD CI. Initial CI success must not be silently attributed to revised HEAD.
+
+## Entry B2 — exact-SHA automated evidence, 2026-10-22 JST
+**Code-bearing SHA:** `a8e41fb65abd2aee5c19cc3fb413fa25370cea08` after lexical-edge correction / extra negative tests. GitHub check-runs API reports 20/20 `success` (push and PR checks overlap). Five distinct workflows all SUCCESS for this SHA:
+- [SMC-2 symbolic research / Python 3.11/3.12/3.13 + mypy + research and full pytest](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39626061640)
+- Full Core tests and typecheck: exact-SHA check runs SUCCESS (action URL is not asserted here).
+- OG3, OG4 and SV1: check-runs for code-bearing SHA all SUCCESS. Exact action identifiers retrievable from Actions for that commit.
+- **Independent Wolfram Language check:** rational windows and overlaps, contradictory equality UNSAT; `True` for onset/offset/overlap/conflict; pace/2 and pace×2 symbolically verified. Mathematical event scheduling only, not phonetic realism.
+
+**Interpretation:** bounded computational implementation is technically supported for declared fixture set. No body realizer, physics WAV, naturalness, general Japanese support, Studio user testing, independent code/science peer review or scientific adoption. Next Gate: independent design and claim audit, potential additional unseen holdout before decision. Keep PR Draft, do not merge or close #11.
