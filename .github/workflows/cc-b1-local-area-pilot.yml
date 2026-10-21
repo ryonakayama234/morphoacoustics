@@ -1,0 +1,43 @@
+name: cc-b1-research-local-rest-area
+on:
+  pull_request:
+    paths:
+      - "experiments/cc_b1_rest_area_pilot/**"
+      - "tests/test_cc_b1_pilot.py"
+      - "docs/research/cc-b1-tract-edit/**"
+      - ".github/workflows/cc-b1-local-area-pilot.yml"
+      - "tools/cc_a2_live.py"
+      - "src/morphoacoustics/**"
+  workflow_dispatch:
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install exact research dependencies
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Execute CC-B1 physical candidate and negative tests
+        env:
+          CC_B1_REAL_PHYSICS: "1"
+        run: python -m pytest -v tests/test_cc_b1_pilot.py
+      - name: Rerun independent generated physical measurement
+        run: |
+          python experiments/cc_b1_rest_area_pilot/run.py --output-dir cc-b1-exploratory-output
+          cat cc-b1-exploratory-output/decision.json
+      - name: Check CC-A2 frozen legacy path regression
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -q tests/test_cc_a2_live.py
+      - name: Archive evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-exploratory-evidence
+          path: cc-b1-exploratory-output/
+          if-no-files-found: warn

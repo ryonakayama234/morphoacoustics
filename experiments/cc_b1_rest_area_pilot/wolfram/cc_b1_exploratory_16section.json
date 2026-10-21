@@ -1,0 +1,51 @@
+{
+  "model": "exploratory-16x10mm-input-impedance-p-release-v0",
+  "area_edit_section_zero_based": 0,
+  "grid_start_hz": 100,
+  "grid_end_hz": 3500,
+  "grid_step_hz": 5,
+  "conditions": {
+    "0.90": {
+      "rest_peak_hz": [
+        720,
+        1295,
+        2920
+      ],
+      "final_peak_hz": [
+        275,
+        2110,
+        3165
+      ]
+    },
+    "1.00": {
+      "rest_peak_hz": [
+        720,
+        1290,
+        2915
+      ],
+      "final_peak_hz": [
+        275,
+        2100,
+        3160
+      ]
+    },
+    "1.10": {
+      "rest_peak_hz": [
+        715,
+        1285,
+        2915
+      ],
+      "final_peak_hz": [
+        275,
+        2095,
+        3160
+      ]
+    }
+  },
+  "scientific_status": "EXPLORATORY_NOT_PREREGISTERED",
+  "executed_with": "Wolfram Language evaluator 2026-10-21",
+  "limitations": [
+    "independent matrix ideal model; not validated speech",
+    "five-Hz peak grid; no time-domain confirmation"
+  ]
+}

@@ -17,3 +17,10 @@ Owners: [Core #141](https://github.com/ryonakayama234/morphoacoustics/issues/141
 - SMC-1 / ASMR are independent: [#139](https://github.com/ryonakayama234/morphoacoustics/issues/139), [#133](https://github.com/ryonakayama234/morphoacoustics/issues/133).
 
 No code has been run or merged for CC-B1. This draft documents a **proposed** capability and does not freeze Gate A or authorize widening the live contract.
+
+## 2026-10-21 experimental implementation branch (separate, not adopted)
+- [Exploratory executable pilot](../../../experiments/cc_b1_rest_area_pilot/README.md): exact 16×10mm reference, section-0 rest area ×0.90/1.00/1.10, same audited task/source; 3 new raw pressure traces on execution. Standalone branch, no public API/Studio changes.
+- [Independent 16-tube Wolfram code](../../../experiments/cc_b1_rest_area_pilot/wolfram/cc_b1_exploratory_16section.wl), [precomputed exploratory peaks](../../../experiments/cc_b1_rest_area_pilot/wolfram/cc_b1_exploratory_16section.json). Gate A independent signoff and prospective Gate B still pending.
+
+## First actual machine evidence
+[Successful exploratory physical CI at exact code/document HEAD c8a42720f54c9a20f2ce1fb8bed08c6185c06853](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39580500879) executed 3 real 0.5s 48kHz pressure arrays, 3/3 CC-B1 tests and 7/7 CC-A2 regressions. New preview-WAV followup is **not included in that historical run** and requires a new exact-HEAD CI.
