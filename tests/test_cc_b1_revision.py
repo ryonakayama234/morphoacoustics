@@ -11,9 +11,15 @@ from morphoacoustics import CavityConnection, CavityKind, CavitySpec, CreatureSp
 from morphoacoustics.integration.body_presets import make_body_preset, preparation_digest
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
-from tools.cc_b1_revision import (
-    RestAreaEditIntent, RevisionStatus, prepare_rest_area_revision,
-)
+from pathlib import Path
+import runpy
+
+# A research tool is deliberately outside the frozen installed package.
+# Resolve it by checkout path for both 'pytest' and 'python -m pytest' CI.
+_CANDIDATE = runpy.run_path(str(Path(__file__).resolve().parents[1] / "tools" / "cc_b1_revision.py"))
+RestAreaEditIntent = _CANDIDATE["RestAreaEditIntent"]
+RevisionStatus = _CANDIDATE["RevisionStatus"]
+prepare_rest_area_revision = _CANDIDATE["prepare_rest_area_revision"]
 
 
 def baseline(*, branched: bool = False, count: int = 16):
