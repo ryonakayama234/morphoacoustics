@@ -29,3 +29,17 @@ With source, seed, fixed 3-task GestureScore, duration, 16-section geometry exce
 
 ## Historical anchors
 [Exp018](../../../experiments/018_local_area_morphology_sensitivity/RESULTS.md) supports only a static 10-section local rest-area perturbation. [Exp025](../../../experiments/025_smooth_source_spectrum_vowel_cue/RESULTS.md) reports buzzer-like quality despite 29/29 answered closed-set vowels. Do not replace a naturalness experiment with spectral novelty.
+
+## 2026-10-21 second analytical preflight — real 16-section formulation
+New independently assembled Wolfram 16-tube transfer products used Experiment023 /a/ diameters (glottis→lips), length 10mm each, 343m/s, rho=1.2, terminal pressure release, 100–3500 Hz / **5Hz exploratory grid**. For the full-activation Experiment027 field, used exact task locations/degrees/kernel widths, log-area delta=2×log-diameter delta. `p_in/U_in=M_12/M_22`. This independently reproduces coarse baseline modes from adopted previous oracles, but its assumptions are not full human voice or new blind prediction. Table: first three local |input impedance| peaks in Hz.
+
+| zero-based section-0 rest area ratio | rest peaks, Hz | final three-task peaks, Hz |
+|---|---|---|
+| 0.90 | 720,1295,2920 | 275,2110,3165 |
+| 1.00 | 720,1290,2915 | 275,2100,3160 |
+| 1.10 | 715,1285,2915 | 275,2095,3160 |
+
+The **first low resonance is unchanged on this coarse 5-Hz grid at the final gesture**, whereas higher peaks move: do not cherry-pick an expected monotone response of every mode. This remains known/post-hoc exploratory preflight, not preregistered future holdout. [Wolfram source](../../../experiments/cc_b1_rest_area_pilot/wolfram/cc_b1_exploratory_16section.wl), [JSON](../../../experiments/cc_b1_rest_area_pilot/wolfram/cc_b1_exploratory_16section.json).
+
+## Exploratory Core pilot addition — execution status distinct from plan
+A standalone 16-section runner now proposes actual 48 kHz 0.5s **fresh** raw Pa outputs for 0.90/1.00/1.10 with existing exact Experiment029 frozen source/realizer; checks baseline quantized M0 oracle, area-ratio persistence across gestural time, expected 102 acoustic calls, local 16-tube oracle (coarse 5Hz tolerance 7.5Hz), nonzero same-source raw pressure L2 for edited states and no-fallback. New `tests/test_cc_b1_pilot.py` and dedicated CI accompany it. **Pending CI results here must not be advertised as passed until a real run is inspected.** Gate A independent ratification, new unseen confirmatory oracle and speech-like perceptual Gate remain pending. No Core/Studio production API is adopted.
