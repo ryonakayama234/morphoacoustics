@@ -16,7 +16,7 @@ pip install -e '.[dev]'
 python -m pytest -v tests/test_cc_b1_pilot.py
 python experiments/cc_b1_rest_area_pilot/run.py --output-dir /tmp/cc-b1-new-output
 ```
-Outputs: 3 new float64 Pa NPYs + decision.json (written last). The runner refuses an existing output directory, wrong audited numpy, source revision drift, incompatible geometry, unapproved ratio and mismatched reference. **This is not a real Studio Take**.
+Outputs: 3 new float64 Pa NPYs, three **pair-shared-gain** 48kHz mono PCM16 research preview WAVs, and decision.json (written last). Preview PCM is normalized using ONE gain across all 3 bodies; raw pressure remains unchanged, and normalized playback is not calibrated SPL. The runner refuses an existing output directory, wrong audited numpy, source revision drift, incompatible geometry, unapproved ratio and mismatched reference. **This is not a real Studio Take**.
 
 Primary checks: exact same frozen source and GestureScore, unchanged 15 other rest areas, full-time section-0 ratio preservation at selected times, unchanged baseline quantized waveform, independent 3-peak oracle within 7.5Hz of 5Hz-grid exploratory predictions, actual new raw Pa difference above a numerical floor and no unexpected instability. These are preliminary exploratory thresholds and shall **not** be relabeled prospective confirmatory Gate B.
 
