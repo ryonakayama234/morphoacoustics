@@ -4,7 +4,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import runpy
+import wave
 
+import numpy as np
 import pytest
 
 RUNNER = runpy.run_path(str(Path(__file__).resolve().parents[1] /
@@ -42,7 +44,18 @@ def test_fresh_experiment_has_real_three_conditions(tmp_path):
     assert receipt["conditions"][0]["relative_l2_difference_from_baseline"] > 1e-8
     assert receipt["conditions"][2]["relative_l2_difference_from_baseline"] > 1e-8
     assert (out/"decision.json").exists()
+    gains = []
     for ratio in (0.9,1.0,1.1):
-        assert (out/f"pressure_{ratio:.2f}.npy").exists()
+        raw = np.load(out/f"pressure_{ratio:.2f}.npy",allow_pickle=False)
+        assert raw.shape == (24000,)
+        path = out/f"preview_{ratio:.2f}.wav"
+        assert path.exists()
+        with wave.open(str(path),"rb") as wav:
+            assert (wav.getnchannels(),wav.getsampwidth(),wav.getframerate(),wav.getnframes()) == (1,2,48000,24000)
+            samples = np.frombuffer(wav.readframes(24000),dtype="<i2")
+        assert np.max(np.abs(samples)) <= 29491
+        gains.append(receipt["preview_audio"]["comparison_shared_gain"])
+        np.testing.assert_allclose(samples/32767.0, raw*gains[-1],rtol=0,atol=1/32767)
+    assert len(set(gains)) == 1
     with pytest.raises(FileExistsError):
         RUNNER["run"](out)
