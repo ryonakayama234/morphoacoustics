@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from hashlib import sha256
 import json
-from math import isfinite
+from math import isfinite, isclose
 
 from morphoacoustics.integration.body_presets import BodyPreset, preparation_digest
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
@@ -154,7 +154,11 @@ def prepare_rest_area_revision(
     new = float(intent.area_m2)
     if new == old:
         return _refuse(RevisionStatus.INVALID, "NO_OP", "No geometry change: no new revision")
-    if not MIN_RATIO <= new / old <= MAX_RATIO:
+    ratio = new / old
+    # Floating-point products at exact ±10% may round by one ULP.
+    # Accept only machine-roundoff at the boundary, never a material violation.
+    if ((ratio < MIN_RATIO and not isclose(ratio, MIN_RATIO, rel_tol=0, abs_tol=5e-16))
+            or (ratio > MAX_RATIO and not isclose(ratio, MAX_RATIO, rel_tol=0, abs_tol=5e-16))):
         return _refuse(RevisionStatus.UNSUPPORTED, "EDIT_RANGE_UNSUPPORTED",
                        "Rest area must be within the prototype's ±10% exploration envelope")
 
