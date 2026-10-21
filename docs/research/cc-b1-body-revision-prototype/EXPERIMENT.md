@@ -37,3 +37,5 @@ The first experimental HEAD `43e703093bc2157b4e0eded52e8747e53348b6d1` passed th
 
 ### Dedicated typecheck correction (2026-10-21)
 After isolating the research tool, the first dedicated test job passed pytest but direct `mypy tools/cc_b1_revision.py` found only `import-untyped` because its editable imported Core package has no installed `py.typed` marker. Instead of modifying published package metadata, CI now resolves local source with `MYPYPATH=src` for the research tool. The earlier failed workflow is preserved; a new exact-head pass is required.\n
+### Boundary precision negative/positive control
+The ±10% inclusive envelope can land one IEEE-754 ULP beyond the mathematical endpoint when the client multiplies the old area. A near-machine-epsilon check was added for endpoints only; materially out-of-range ratios remain rejected. Explicit ±10% regression cases are now included. The tolerance is an implementation convention, not a physically calibrated acceptance envelope.
