@@ -1,3 +1,43 @@
+# Prospective scientific confirmation work package — 2026-10-17 (GATE A DRAFT)
+
+**NOT PREREGISTERED / NOT RUN AS A CONFIRMATORY TRIAL / NOT ADOPTED.** [Issue #118](https://github.com/ryonakayama234/morphoacoustics/issues/118) is authoritative for next work. Experiment 041's existing N/O/M × 8 anchor results were executed before a finalized Gate A, so remain *exploratory/post-hoc*, including prior independent Wolfram reconstruction and engineering CI. Historical integration records below are preserved, not retroactively relabeled.
+
+## Hypotheses and fixed scientific boundary
+- **H0 (counterexample):** the candidate procedure breaks complex p/U identity, uses the wrong pressure/flow junction law, fails conservation, disagrees with independently assembled global equations, or fails to refuse ill-conditioned/invalid/unsupported conditions.
+- **H1 (bounded):** fixed lossless three-tube/one-ideal-junction network with prescribed peak U_A.in and static distal B/C terminations produces the independently predicted full endpoint complex states and passive energy accounting for three N/O/M cases on predeclared frequency anchors.
+- **No claimed physiological effect:** nasal distal closure is not a VP closure; matched terminal is not a biological radiation boundary; small-signal acoustic U is not steady respiratory airflow.
+
+## Gate A to freeze before any NEW Gate B confirmation
+1. Fix A length=.08 m, area=3e-4 m2; B length=.09 m, area=3e-4 m2; C length=.06 m, area=1.5e-4 m2; rho=1.2 kg/m3; c=343 m/s; exp(+i omega t); A.in U=(1+0.4i)e-6 m3/s; N/O/M distal law semantics and eight anchors 80,250,400,733,997,1200,2000,4000 Hz. Treat these as **candidate** carryovers until independent Gate A sign-off.
+2. Approve *scale-aware* full-state component and power/conservation tolerances, global condition/rank screening, exactly documented solver refusal rules and residual-versus-forward-error distinction. Current draft values such as 1e-10 are **NOT frozen thresholds**.
+3. Predeclare complete law-mutant × case × frequency matrix, injection location, expected detectability and **insensitive anchors**: junction volume-flow versus particle-velocity, transfer/phasor sign, port orientation, B/C swap, terminal boundary, mean-power convention; include invalid/stale metadata and nonfinite/ill-conditioned controls.
+4. Freeze independent 12-complex-state Wolfram global equation construction with executable source and reproducibility procedure. **No oracle regeneration as part of the software test under test.** Define exact canonical input and source/oracle hashes.
+5. Prespecify two independent raw exact-HEAD executions, Python 3.11/3.12/3.13 scientific regression, comparison tolerances across runtimes, SHA-256 receipts, reviewer roles and decision states. Stress the local M B-quarter-wave denominator pole at f*=343/(4*.09)=952.7777777778 Hz separately from global singularity; a general pole-safe solver is out of scope.
+6. Obtain critical physics/numerical and code/API review and **explicit written Gate A acceptance** before starting the new trial.
+
+## Separate Gate B implementation (ONLY after Gate A acceptance)
+Create an isolated new prospective confirmation run/evidence target, reusing adopted Core OG-4 N/O behavior and independently scoped M research backend (not copying its source into published Core), with full 12-complex-state oracle comparison, mutation kills, honest NUMERICALLY_UNRESOLVED refusal and immutable run receipts. Review failures without silently adjusting thresholds or overwriting the exploratory 041 goldens. No Core/Studio API expansion.
+
+## Gate C decision
+Record `SUPPORTED_LIMITED`, `INCONCLUSIVE`, or `REJECT` for **the static distal load routing phenomenon only**, plus limitation and independently reviewed evidence; approval is not implicit in green CI or in a merged research-infrastructure PR.
+
+## Non-confirmatory numerical cross-check (2026-10-17)
+A separate in-session Wolfram analytic transfer-admittance calculation at 733 Hz reproduced the historic exploratory mean terminal powers (W): N=(mouth 5.313060478059517e-7, nose 0); O=(mouth 6.198700790364965e-7, nose 3.0993503951824825e-7); M=(mouth 0, nose 8.612892952017292e-8). Max observed mean-power balance residual in this floating-point check ~2.2e-22 W. This is **not** archived as a complete independent global12 raw artifact, nor independently reviewed or a future Gate B confirmation; it is only a scope sanity check.
+
+## Current status ledger
+| Work | Status | Record |
+|---|---|---|
+| Existing 24-case research infrastructure | EXPLORATORY / POST-HOC | Experiment 041, prior integration |
+| Prospective Gate A document set | DRAFT / REVIEW REQUIRED | SYSTEM + DATA + EXPERIMENT (this work package) |
+| Approved prospective protocol / frozen tolerances | NOT YET | Issue #118 |
+| New independent confirmatory Gate B run | NOT RUN | Separate PR only after Gate A |
+| Scientific Gate C limited adoption | NOT ADOPTED | Separate explicit decision |
+| Studio body-preset UI or moving VP valve | OUT OF SCOPE | Studio #14 / future NR-1b |
+
+Prior record and detailed rationale remain below unchanged.
+
+---
+
 ## Research-infrastructure integration ledger — 2026-10-17 (NOT ADOPTED)
 
 **Engineering decision:** The project owner permits the design-history PR #116 followed by the bounded Experiment 041 PR #117 to be integrated as research infrastructure *only* after exact-head verification and review. The original Gate A-before-Gate B chronology was not followed; existing 24 N/O/M × 8 frequency outputs are **exploratory/post-hoc**, not a prospective Gate A-confirmatory experiment. This note supersedes any unqualified "not run" statements in the historical proposal below. No scientific Gate A/C acceptance or OG-4/Studio API expansion is implied.

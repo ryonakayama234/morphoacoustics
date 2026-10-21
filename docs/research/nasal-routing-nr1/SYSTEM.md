@@ -1,3 +1,28 @@
+# Current next work package — prospective NR-1a confirmation (2026-10-17, GATE A DRAFT)
+
+**Decision: PLAN ONLY / NOT FROZEN / NOT ADOPTED.** Tracking [#118](https://github.com/ryonakayama234/morphoacoustics/issues/118). This section is a forward-looking work order, not a revision of past Experiment 041 results and not approval to publish new physics. Original research infrastructure and 24 N/O/M × 8 pre-Gate-A samples remain *exploratory/post-hoc*. Gate A needs critical review and explicit acceptance before a separate confirmatory Gate B.
+
+## Exactly one scientific capability
+Confirm that a fixed, passive, rigid-wall, lossless three-tube one-junction acoustic circuit distinguishes **distal mouth/nose terminal conditions** with physically lawful full-complex pressure/volume-flow observations. N = B matched / C distal rigid-closed; O = B/C both matched; M = B distal rigid-closed / C matched. Only N/O call the adopted OG-4 Core API; M is experiment-local and must remain unsupported by published OG-4. No real velopharyngeal disconnection, living nasal vowels, WAV, moving anatomy, Studio interface, nor new arbitrary graph backend.
+
+```mermaid
+flowchart LR
+ F["Fixed 3-tube spec + source Uin"] --> S{"N / O / M distal condition"}
+ S -->|"N,O"| C["Adopted Core OG-4 response"]
+ S -->|"M"| R["Isolated research recursion"]
+ C --> P["All 6 endpoints p/U + terminal power"]
+ R --> P
+ W["Independently assembled Wolfram 12-state global Solve"] --> V["Independent full-state + conservation/mutation comparison"]
+ P --> V
+ V --> E["Immutable run receipts + scoped scientific verdict"]
+```
+
+**Next implementation boundary:** first a *docs-only* Gate A freeze candidate with independent numerical/ABI review; after written acceptance, a separate Gate B PR implements a **new prospective confirmation runner**, full-state comparison, law-level mutation matrix, conditioning/refusal stress, two exact-HEAD evidence runs, and CI. Do not silently modify OG-3/OG-4/OG-5, creative contracts, or Experiment 041 immutable source/oracles. Studio's body-preset #14 proceeds independently after Core contract #72. The later **NR-1b** VP coupling element needs its own physical law, topology/capability and protocol; changing the C distal load does *not* disconnect the nasal branch.
+
+The original document below remains as historical context. Current per-layer data is in [DATA](./DATA.md), preregistration/evidence rules in [EXPERIMENT](./EXPERIMENT.md), and previous engineering integration history in [WORK_ORDER](./WORK_ORDER.md).
+
+---
+
 > **Integration amendment (2026-10-17):** PR #117 is an implemented **research-only candidate**, and PR #116 is design history, not approved Gate A. The conceptual proposal sections below remain historical; any “not implemented / no numerical Gate B run” statement there does not override the 24 exploratory cases. Engineering merge does not adopt physiology, public Core/Studio capability or scientific evidence. See [WORK_ORDER](./WORK_ORDER.md) and [EXPERIMENT](./EXPERIMENT.md).
 
 ## NR-1a implementation candidate — 2026-10-17 (PRE-GATE-A, NOT ADOPTED)
