@@ -31,3 +31,6 @@ Implemented only: `RestAreaEditIntent → validate → BodyRevision + PreparedMo
 
 ## Integration hold
 First ratify independent prospective Gate A and physics Gate B. Then introduce a versioned, additive Core registration/performer adapter; Studio must verify exact digest/bytes and preserve older Takes. The prototype alone cannot be used as a live v1 preset or as a truthful Studio Take.
+
+## Frozen package regression discovered during implementation
+Initial placement under `src/morphoacoustics/preparation/` correctly triggered the adopted limited-live *package source inventory* guard. We moved the candidate to `tools/cc_b1_revision.py` rather than weakening or rewriting the frozen-source policy. This is a Core-owned research tool, **not a callable stable module in the released package**. Public integration is postponed until independently audited versioned adoption.
