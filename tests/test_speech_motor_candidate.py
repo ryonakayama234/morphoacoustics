@@ -8,7 +8,7 @@ from morphoacoustics.integration.shared_timeline import (
     CoordinationPlan, GestureEvent, GestureEventRef, GestureTemplate,
     PlanCompileStatus, ProsodyPlan, TimingConstraint, compile_shared_timeline,
 )
-from tools.smc1_kana_motor_candidate import (
+from smc1_research.speech_motor_candidate import (
     CANDIDATE_VERSION, CandidateStatus, MotorIntentSlot,
     ScriptMotorCandidate, plan_kana_motor_candidate,
 )
