@@ -17,3 +17,6 @@ Owners: [Core #141](https://github.com/ryonakayama234/morphoacoustics/issues/141
 - SMC-1 / ASMR are independent: [#139](https://github.com/ryonakayama234/morphoacoustics/issues/139), [#133](https://github.com/ryonakayama234/morphoacoustics/issues/133).
 
 No code has been run or merged for CC-B1. This draft documents a **proposed** capability and does not freeze Gate A or authorize widening the live contract.
+
+## 2026-10-22 fixed prospective NEW Core-run protocol
+[Gate A dated protocol](GATE_A_FREEZE_20261022.md) and paired [Wolfram source](gate_a_site08_oracle.wl) / [frozen data](gate_a_site08_oracle.json) lock zero-based section8 ×{0.90,1.00,1.10} before any new physical pressure run. **FROZEN_INTERNAL / INDEPENDENT_RATIFICATION_PENDING**, not scientific approval or main adoption. Gate B must branch from this exact freeze commit and preserve exploratory earlier studies.

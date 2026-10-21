@@ -29,3 +29,6 @@ With source, seed, fixed 3-task GestureScore, duration, 16-section geometry exce
 
 ## Historical anchors
 [Exp018](../../../experiments/018_local_area_morphology_sensitivity/RESULTS.md) supports only a static 10-section local rest-area perturbation. [Exp025](../../../experiments/025_smooth_source_spectrum_vowel_cue/RESULTS.md) reports buzzer-like quality despite 29/29 answered closed-set vowels. Do not replace a naturalness experiment with spectral novelty.
+
+## 2026-10-22 NEW Core-run prespecification BEFORE measurement
+The [dated Gate A freeze](GATE_A_FREEZE_20261022.md) selects mid-tract index8, ratios 0.9/1.0/1.1, unchanged LF+GestureScore, 48kHz 0.5s, 102 calls, identical-task source SHA and endpoint task-field ratio checks. Pre-run Wolfram **ABCD and impedance recurrence** agree at 5Hz resolution for all three first rest and final resonances; values in [frozen JSON](gate_a_site08_oracle.json). Peak tolerance 7.5Hz; nonbaseline raw L2 >1e-8; baseline null/repeat both match legacy quantized SHA; invalid controls fail closed. No B data exists at this Gate A protocol commit. Internal freeze IS NOT independent science acceptance; earlier #143/#144 site exploration not relabeled confirmatory. Completion of B remains conditional on later independent audit and cannot imply perceptual audibility.
