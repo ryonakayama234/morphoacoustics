@@ -2,13 +2,13 @@ name: cc-b1-body-revision-prototype
 on:
   push:
     paths:
-      - "src/morphoacoustics/preparation/cc_b1_revision.py"
+      - "tools/cc_b1_revision.py"
       - "tests/test_cc_b1_revision.py"
       - "docs/research/cc-b1-body-revision-prototype/**"
       - ".github/workflows/cc-b1-body-revision-prototype.yml"
   pull_request:
     paths:
-      - "src/morphoacoustics/preparation/cc_b1_revision.py"
+      - "tools/cc_b1_revision.py"
       - "tests/test_cc_b1_revision.py"
       - "docs/research/cc-b1-body-revision-prototype/**"
       - ".github/workflows/cc-b1-body-revision-prototype.yml"
@@ -27,4 +27,4 @@ jobs:
       - name: Exact prototype + adopted body binding regression
         run: python -m pytest -v tests/test_cc_b1_revision.py tests/test_preparation.py tests/test_body_presets.py
       - name: Type check
-        run: python -m mypy src/morphoacoustics/preparation/cc_b1_revision.py
+        run: python -m mypy tools/cc_b1_revision.py
