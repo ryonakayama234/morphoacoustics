@@ -36,3 +36,15 @@ A semantic **organ node** owns stable ID, version, geometry/material capability 
 
 ## Non-goals
 No automatic voice-sex/age identity, no anatomy 3D, no arbitrary graph editing, no moving-wall FSI, no source-filter feedback proof, no source spectrum retuning, no neural voice conversion or post-hoc EQ. Unsupported asks must fail rather than inventing a more human-like sound.
+
+## Implemented research-only physical path (NOT a new public feature)
+```mermaid
+flowchart LR
+  A["Exact Experiment023 /a/ 16x10mm"] --> E["section0 rest area x0.9/1.0/1.1"]
+  E --> PREP["Core prepare_tract1d + exp029 capability"]
+  PREP --> MOVE["Exact frozen Experiment027 3-task trajectory"]
+  SOURCE["Frozen LF source / SHA"] --> RENDER["Current moving 1D acoustic renderer"]
+  MOVE --> RENDER --> PA["Raw SI pressure 48kHz x0.5s; hashes"]
+  PA --> NOTES["Experimental result; NOT Studio Take"]
+```
+The conditional output signal is generated through existing physical source/tract path, **not** edited audio amplitude. The measured sound may remain buzzer-like. This code neither implements immutable first-class BodyRevision registry nor character editor; neither permits arbitrary source coupling or branched Port physics.
