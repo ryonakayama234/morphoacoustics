@@ -26,3 +26,6 @@ Exact (no numerical phonetics): `d=9/50; overlap=3/50; t0=2/25;` four onsets `{2
 
 ## Evidence ledger
 - Entry A0: 2026-10-22; authored registration, 4 docs; Wolfram `{2/25,1/5,8/25,11/25}` / `{13/50,19/50,1/2,31/50}`, 3/50 overlap, contradiction False. Independent peer audit PENDING. Code not yet implemented at registration.
+
+## Entry B0 — submitted implementation, no claimed PASS
+Standalone research code + lexical, phoneme-granularity, partial input, source offsets, time scale, inherited synthetic timing, contradiction, deterministic receipt tests submitted. Added Python 3.11/3.12/3.13 / mypy / full pytest workflow. CI status and independent review **PENDING** at initial submission; no physical simulation, natural pronunciation, audio, or adoption gate completed.

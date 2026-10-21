@@ -28,3 +28,6 @@ flowchart TD
 
 ## Claim limits
 No Japanese general phonology, no physical consonants, no morphology-conditioned actuation, no self-oscillating source, no real-time speech, no neural fallback, no recorded speech/audio input, no wav output, no naturalness claim. Recognition is not execution, and `SYMBOLIC_READY` is explicitly not `FEASIBLE`.
+
+## Implemented research boundary (Gate B submission)
+`plan_speech_motor(segment_id, text, pace)` returns immutable phoneme-level nodes, ordering edges, diagnostics and an optional fully mapped synthetic CoordinationPlan. Runtime does not call physical `compile_shared_timeline`, and there is no body adapter or synthesis interface. Test code may use a synthetic CONSTRICT adapter for inherited time arithmetic only.

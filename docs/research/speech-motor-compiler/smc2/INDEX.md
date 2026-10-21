@@ -18,3 +18,8 @@ SMC-2; SpeechMotorPlan; MotorIntentGraph; PronunciationUnit; A_LIKE_INTENT; I_LI
 - 2026-10-22 Gate A preregistration **authored before code**; self-registered, independent science audit pending.
 - Initial output is a proposed symbolic interface, not adopted physics-domain schema, phonetic controller, phonation, waveform, or Studio feature.
 - Keep fixed CC-A2 / SV-1 / OG4 inventory intact; no physical package or Performance Contract edits.
+
+## Implementation revision / still unadopted
+- `src/smc2_research/motor_plan.py`: only explicit import, no public Core or Studio API.
+- `tests/test_smc2_motor_plan.py`: synthetic timing test adapter only; no phonetic execution.
+- `.github/workflows/smc2-research.yml`: check code and unchanged Core regressions at exact head.

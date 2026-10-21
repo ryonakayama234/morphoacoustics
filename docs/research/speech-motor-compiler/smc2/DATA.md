@@ -63,3 +63,6 @@ classDiagram
 
 ## Provenance and status
 `compiler_version=smc2-motor-plan/v0`, `timing_policy=experiment011-derived-synthetic-overlap/v0`, explicit `representation_kind=SYMBOLIC_RESEARCH_ONLY`; caller-specific timestamp intentionally absent from deterministic result. `job_status` and `realization_outcome` belong to downstream request execution, not to the planner's symbolic status.
+
+## Gate B serialization and IDs
+Research result uses frozen dataclasses; deterministic `dataclasses.asdict` sorted JSON with UTF-8 and no nonfinite numbers. `input_digest` SHA-256 includes version, policy, segment ID, exact source text and numeric pace. Node ID `{segment_id}.unitN.phonemeM.motor`. A `PRECEDES` edge cannot cross an unsupported character or punctuation, although a multi-phoneme kana remains ordered. No coordination for partial/invalid plans.
