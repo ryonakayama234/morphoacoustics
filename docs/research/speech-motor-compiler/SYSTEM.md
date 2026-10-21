@@ -27,7 +27,7 @@ flowchart TD
 ```
 
 ## Current vs future
-Current SMC-1 owns *only* pure kana analysis, symbolic A/I-like intents, and a demonstration event-relation plan. It does **not** create `GestureScore`, access body presets or call waveform generation. Import it explicitly from `morphoacoustics.integration.speech_motor_candidate`; it is deliberately absent from `integration.__all__`.
+Current SMC-1 owns *only* pure kana analysis, symbolic A/I-like intents, and a demonstration event-relation plan. It does **not** create `GestureScore`, access body presets or call waveform generation. Import it explicitly from `tools.smc1_kana_motor_candidate`; it is deliberately absent from `integration.__all__`.
 
 Existing `shared_timeline.compile_shared_timeline` accepts **actual** GestureTemplate instances and a CoordinationPlan. Tests use a **synthetic two-CONSTRICT adapter** solely to compare event arithmetic to Experiment011. This test adapter is not a phonetic mapping for 「あい」; never expose the resulting synthetic score to Studio as speech.
 

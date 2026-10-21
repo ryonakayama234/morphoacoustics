@@ -152,7 +152,7 @@ def plan_kana_motor_candidate(*, segment_id: str, text: str) -> ScriptMotorCandi
         previous: GestureEventRef | None = None
         for index, slot in enumerate(slots):
             onset = GestureEventRef(slot.gesture_id, GestureEvent.ONSET)
-            offset = GestureEventRef(slot.gesture_id, GestureEvent.OFFSET)
+            end_event = GestureEventRef(slot.gesture_id, GestureEvent.OFFSET)
             if index == 0:
                 constraints.append(
                     TimingConstraint(onset, AnchorRef(f"{segment_id}.start"), 0.08)
@@ -162,8 +162,8 @@ def plan_kana_motor_candidate(*, segment_id: str, text: str) -> ScriptMotorCandi
                 # Derived from Exp011 two-CONSTRICT timing *as a numeric fixture*.
                 # Not a phonetic assertion about /a/ or /i/.
                 constraints.append(TimingConstraint(onset, previous, -0.06))
-            constraints.append(TimingConstraint(offset, onset, 0.18))
-            previous = offset
+            constraints.append(TimingConstraint(end_event, onset, 0.18))
+            previous = end_event
         coordination = CoordinationPlan(tuple(constraints))
         timeline = ResolvedTimeline(
             (ResolvedAnchor(f"{segment_id}.start", 0.0, "smc1:synthetic"),)

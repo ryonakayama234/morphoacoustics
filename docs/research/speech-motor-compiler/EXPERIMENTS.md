@@ -28,7 +28,7 @@ Wolfram independently returned both exact-zero residuals on 2026-10-21. **This v
 - No CreatureSpec, PreparedMorphology, F0, source pressure, mesh nodes or area-function arrays in planner.
 
 ## Implementation and reproduction
-Candidate file: `src/morphoacoustics/integration/speech_motor_candidate.py`.
+Candidate file: `tools/smc1_kana_motor_candidate.py`.
 Test file: `tests/test_speech_motor_candidate.py`.
 
 WSL2/Linux from repository root:
