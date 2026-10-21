@@ -34,3 +34,6 @@ Current default: **HOLD / experimental branch only**. Reviewer must check API tr
 
 ## Actual CI observation and corrective action (2026-10-21)
 The first experimental HEAD `43e703093bc2157b4e0eded52e8747e53348b6d1` passed the **dedicated BodyRevision candidate checks**, but its general suite and SV1/OG4 gates failed: a new file under `src/morphoacoustics/preparation` violated the frozen package file-inventory invariant (`audited package source inventory changed`). This was a genuine integration regression, not an ordinary solver failure. We preserved the guard and moved the candidate to `tools/cc_b1_revision.py`. **All results on that superseded HEAD remain failed historical receipts; exact-head rerun is mandatory.**
+
+### Dedicated typecheck correction (2026-10-21)
+After isolating the research tool, the first dedicated test job passed pytest but direct `mypy tools/cc_b1_revision.py` found only `import-untyped` because its editable imported Core package has no installed `py.typed` marker. Instead of modifying published package metadata, CI now resolves local source with `MYPYPATH=src` for the research tool. The earlier failed workflow is preserved; a new exact-head pass is required.\n
