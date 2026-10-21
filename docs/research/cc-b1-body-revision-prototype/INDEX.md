@@ -9,7 +9,7 @@ Owner: [Core #141](https://github.com/ryonakayama234/morphoacoustics/issues/141)
 2. [DATA.md](DATA.md): draft RestAreaEditIntent, immutable BodyRevision, digest, typed refusal.
 3. [EXPERIMENT.md](EXPERIMENT.md): preregistered claims vs executable software tests, Wolfram and prospective sensory gates.
 
-Code: `src/morphoacoustics/preparation/cc_b1_revision.py`; checks: `tests/test_cc_b1_revision.py`. No root export, v0/v1 schema change, or v1 body-preset registry registration.
+Code: `tools/cc_b1_revision.py`; checks: `tests/test_cc_b1_revision.py`. No root export, v0/v1 schema change, or v1 body-preset registry registration.
 
 ## Research dependency graph
 - Gate A design: [Core Draft #142](https://github.com/ryonakayama234/morphoacoustics/pull/142) — NOT RATIFIED.
