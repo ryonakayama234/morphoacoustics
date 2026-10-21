@@ -53,7 +53,7 @@ class MotorIntentNode:
 class IntentEdge:
     from_intent_id: str
     to_intent_id: str
-    relation_kind: str = "PRECEDES"
+    relation_kind: str = "LEXICAL_NEXT"
 
 
 @dataclass(frozen=True, slots=True)

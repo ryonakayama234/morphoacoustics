@@ -29,3 +29,8 @@ Exact (no numerical phonetics): `d=9/50; overlap=3/50; t0=2/25;` four onsets `{2
 
 ## Entry B0 — submitted implementation, no claimed PASS
 Standalone research code + lexical, phoneme-granularity, partial input, source offsets, time scale, inherited synthetic timing, contradiction, deterministic receipt tests submitted. Added Python 3.11/3.12/3.13 / mypy / full pytest workflow. CI status and independent review **PENDING** at initial submission; no physical simulation, natural pronunciation, audio, or adoption gate completed.
+
+## Entry B1 — initial exact-code SHA evidence and semantic correction
+Prior code-bearing SHA `718d0f122833727102938f000494a0c158f0ff8f` passed: SMC-2 3.11/3.12/3.13 + mypy/full pytest [run 39625566343](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566343), existing Core [39625566295](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566295), OG3 [39625566344](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566344), OG4 [39625566323](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566323), SV1 [39625566536](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39625566536). All success on same SHA. Independent Wolfram repeat: exact onset/offset/overlap/unsatisfiable contradictory pair all True. Scientific independent review: PENDING. No inference of naturalness or physical speech.
+
+During self-review, `PRECEDES` was found ambiguous: it could wrongly imply gestures cannot overlap. Refinement: rename to `LEXICAL_NEXT` and add unknown-ID/unsupported-Unicode crossing negatives. This new implementation revision must pass fresh exact-HEAD CI. Initial CI success must not be silently attributed to revised HEAD.

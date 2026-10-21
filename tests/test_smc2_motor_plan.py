@@ -153,3 +153,34 @@ def test_bad_script_types():
         plan_speech_motor(segment_id="s", text=None)
     with pytest.raises(ValueError):
         plan_speech_motor(segment_id=" ", text="あ")
+
+
+def test_unknown_synthetic_gesture_reference_fails_closed():
+    from morphoacoustics.integration.shared_timeline import AnchorRef
+    p = plan_speech_motor(segment_id="s", text="あい")
+    assert p.coordination is not None
+    bad = CoordinationPlan(p.coordination.constraints + (TimingConstraint(
+        GestureEventRef("missing-gesture-id", GestureEvent.ONSET),
+        AnchorRef("s.start"), 0.0,
+    ),))
+    r = _synthetic_check(p, coordination=bad)
+    assert r.status is PlanCompileStatus.INVALID and r.score is None
+    assert "UNKNOWN_GESTURE" in {x.code for x in r.diagnostics}
+
+
+def test_lexical_edges_are_not_physical_nonoverlap_constraints():
+    p = plan_speech_motor(segment_id="s", text="あい")
+    assert len(p.intent_graph.edges) == 1
+    assert p.intent_graph.edges[0].relation_kind == "LEXICAL_NEXT"
+    assert p.coordination is not None
+    r = _synthetic_check(p)
+    assert r.score is not None
+    assert r.score.gestures[1].onset_s < r.score.gestures[0].offset_s
+
+
+def test_unknown_between_known_units_breaks_lexical_edge():
+    p = plan_speech_motor(segment_id="s", text="あ🙂い")
+    assert p.status is PlanStatus.INVALID_INPUT
+    assert len(p.intent_graph.nodes) == 2
+    assert p.intent_graph.edges == ()
+    assert [n.start_offset for n in p.intent_graph.nodes] == [0, 2]

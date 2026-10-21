@@ -23,3 +23,6 @@ SMC-2; SpeechMotorPlan; MotorIntentGraph; PronunciationUnit; A_LIKE_INTENT; I_LI
 - `src/smc2_research/motor_plan.py`: only explicit import, no public Core or Studio API.
 - `tests/test_smc2_motor_plan.py`: synthetic timing test adapter only; no phonetic execution.
 - `.github/workflows/smc2-research.yml`: check code and unchanged Core regressions at exact head.
+
+## 2026-10-22 Gate B pre-audit correction
+Corrected ambiguous ordering-edge label to `LEXICAL_NEXT` (non-physical lexical order, compatible with timed overlaps); expanded negative tests for unknown gesture reference and source offsets crossing unsupported Unicode. No adoption claim. At code SHA `718d0f122833727102938f000494a0c158f0ff8f` original research CI and inherited workflows all passed; this correction creates a **new** code SHA requiring fresh CI.

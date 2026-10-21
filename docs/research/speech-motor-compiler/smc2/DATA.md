@@ -66,3 +66,6 @@ classDiagram
 
 ## Gate B serialization and IDs
 Research result uses frozen dataclasses; deterministic `dataclasses.asdict` sorted JSON with UTF-8 and no nonfinite numbers. `input_digest` SHA-256 includes version, policy, segment ID, exact source text and numeric pace. Node ID `{segment_id}.unitN.phonemeM.motor`. A `PRECEDES` edge cannot cross an unsupported character or punctuation, although a multi-phoneme kana remains ordered. No coordination for partial/invalid plans.
+
+## 2026-10-22 nonphysical edge-name refinement
+The ordering edge is `LEXICAL_NEXT`, defined strictly as adjacent provisional phonemes in source-derived plan order. It does not encode `end(A) <= start(B)` and is compatible with simultaneous/overlapping gestures. The first implementation used the ambiguous label `PRECEDES`; this is superseded prior to adoption. Added synthetic `UNKNOWN_GESTURE` negative fixture.

@@ -31,3 +31,6 @@ No Japanese general phonology, no physical consonants, no morphology-conditioned
 
 ## Implemented research boundary (Gate B submission)
 `plan_speech_motor(segment_id, text, pace)` returns immutable phoneme-level nodes, ordering edges, diagnostics and an optional fully mapped synthetic CoordinationPlan. Runtime does not call physical `compile_shared_timeline`, and there is no body adapter or synthesis interface. Test code may use a synthetic CONSTRICT adapter for inherited time arithmetic only.
+
+## Ordering semantics correction
+A graph edge now uses `LEXICAL_NEXT`, **not** a temporal PRECEDES constraint. Actual onset/offset overlap is exclusively represented in `CoordinationPlan`; lexical text order need not imply nonoverlapping actuation. This is a research semantic refinement before API adoption.
