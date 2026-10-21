@@ -1,0 +1,45 @@
+name: cc-b1-gate-b-site08
+on:
+  pull_request:
+    paths:
+      - "experiments/cc_b1_gate_b_site08/**"
+      - "tests/test_cc_b1_gate_b_site08.py"
+      - "docs/research/cc-b1-tract-edit/**"
+      - ".github/workflows/cc-b1-gate-b-site08.yml"
+      - "tools/cc_a2_live.py"
+      - "src/morphoacoustics/**"
+  workflow_dispatch:
+jobs:
+  physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned scientific source and development extras
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Test refusal boundaries and independently rerun physical solver
+        env:
+          CC_B1_GATE_B_PHYSICS: "1"
+        run: python -m pytest -v tests/test_cc_b1_gate_b_site08.py
+      - name: Archive fresh condition, baseline repeat, raw Pa and audio
+        run: |
+          python experiments/cc_b1_gate_b_site08/run.py --output-dir cc-b1-gate-b-site08-output
+          cat cc-b1-gate-b-site08-output/decision.json
+      - name: Regression adopted CC-A2 live source route
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -q tests/test_cc_a2_live.py
+      - name: Preserve receipts even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-gate-b-site08-raw-pa-and-provenance
+          path: cc-b1-gate-b-site08-output/
+          if-no-files-found: warn

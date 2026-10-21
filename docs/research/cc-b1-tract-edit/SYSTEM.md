@@ -50,3 +50,17 @@ flowchart LR
   P --> I[External independent physics + contract audit]
 ```
 Full acceptance freeze in [GATE_A_FREEZE_20261022.md](GATE_A_FREEZE_20261022.md). No Studio UI, no adopted API or time-varying passivity proof.
+
+## Gate B live path (new standalone run, not API)
+```mermaid
+flowchart TD
+  F[Git SHA-fixed Gate A site8 / Wolfram matrix + recurrence] --> O[Read-only frozen 5Hz resonance oracle]
+  B[Audited Exp029 baseline + same LF and 3-task] --> P[Prepare site8 rest geometry 90 / 100 / 110%]
+  P --> R[Execute inherited physical realizations + acoustic solver, 102 calls per trial]
+  R --> Q[Raw SI Pa / endpoint rest spectrum + actual trace]
+  O --> C{18 peaks and waveform/null controls valid?}
+  Q --> C
+  C -->|Yes| H[Research machine result, pending independent physics review]
+  C -->|No| N[Explicit failed/unresolved receipt; no adoption]
+```
+The B script directly uses previously audited physical research functions; there is no BodyRevision stable API, Studio Take, or new time-dependent solver.

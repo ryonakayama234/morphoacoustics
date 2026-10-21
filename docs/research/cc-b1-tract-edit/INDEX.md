@@ -20,3 +20,6 @@ No code has been run or merged for CC-B1. This draft documents a **proposed** ca
 
 ## 2026-10-22 fixed prospective NEW Core-run protocol
 [Gate A dated protocol](GATE_A_FREEZE_20261022.md) and paired [Wolfram source](gate_a_site08_oracle.wl) / [frozen data](gate_a_site08_oracle.json) lock zero-based section8 ×{0.90,1.00,1.10} before any new physical pressure run. **FROZEN_INTERNAL / INDEPENDENT_RATIFICATION_PENDING**, not scientific approval or main adoption. Gate B must branch from this exact freeze commit and preserve exploratory earlier studies.
+
+## 2026-10-22 actual NEW Core physical experiment branch
+[Gate B site08 runner](../../../experiments/cc_b1_gate_b_site08/run.py) + [tests](../../../tests/test_cc_b1_gate_b_site08.py) + dedicated workflow. Branches **from immutable Gate A freeze commit**; no reuse of exploratory site0/2/4 waveform as this observation. Still a *machine hypothesis pending real CI*, not independent ratification. Complete source/hash records and refusal ledger go to EXPERIMENT after exact-head workflow inspection.
