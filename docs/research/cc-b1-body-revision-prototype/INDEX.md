@@ -19,3 +19,5 @@ Code: `tools/cc_b1_revision.py`; checks: `tests/test_cc_b1_revision.py`. No root
 - SMC-1 Core #139 and ASMR Core #133 remain independent.
 
 This branch prototypes only a pure binder/editor. Review cannot promote it until Gate A constraints and prospective B independent physics verification are accepted. Maintain doc/diagram/data/experiment as one PR unit.
+
+Independent reproducible theoretical spot-check: [Wolfram recurrence source](wolfram_site_recurrence.wl) and [machine-readable result](wolfram_site_recurrence_result.json). This is post-hoc ideal-model corroboration, not a new physical Gate or ABX.
