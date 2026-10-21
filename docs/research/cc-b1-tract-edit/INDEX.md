@@ -24,3 +24,6 @@ No code has been run or merged for CC-B1. This draft documents a **proposed** ca
 
 ## First actual machine evidence
 [Successful exploratory physical CI at exact code/document HEAD c8a42720f54c9a20f2ce1fb8bed08c6185c06853](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39580500879) executed 3 real 0.5s 48kHz pressure arrays, 3/3 CC-B1 tests and 7/7 CC-A2 regressions. New preview-WAV followup is **not included in that historical run** and requires a new exact-HEAD CI.
+
+## Post-hoc human listening diagnosis (2026-10-21)
+Creator feedback: previously generated section0 ×0.90/1.00/1.10 WAV variants were **not distinguishable** in an informal, unblinded single-person audition. This is not a negative population ABX finding. [Separate spatial-site diagnostic runner](../../../experiments/cc_b1_spatial_probe/README.md), [independent Wolfram 16-site code](../../../experiments/cc_b1_spatial_probe/wolfram/spatial_sensitivity.wl) and [exploratory map](../../../experiments/cc_b1_spatial_probe/wolfram/spatial_sensitivity.json) are stacked on CC-B1 pilot without changing Core production contracts.
