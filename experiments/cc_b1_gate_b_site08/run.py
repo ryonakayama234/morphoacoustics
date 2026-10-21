@@ -32,6 +32,7 @@ SAMPLE_COUNT = 24000
 SOURCE_RATE = 48000
 ORACLE = ROOT / "docs/research/cc-b1-tract-edit/gate_a_site08_oracle.json"
 FREEZE_COMMIT_SHA = "ca8bf64c8525a9cf59cb1332c4819763a0f9197e"
+FROZEN_ORACLE_GIT_BLOB_SHA = "046a26a7baf31003244e05088a2b5d19bc7af416"
 
 
 def checked_ratio(value: object) -> float:
@@ -55,6 +56,21 @@ def verify_source_identity(expected_sha: str, actual: np.ndarray) -> None:
 def exact_checkout_sha() -> str:
     return subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
                           text=True, capture_output=True, check=True).stdout.strip()
+
+
+def verify_frozen_oracle(path: Path) -> None:
+    actual = subprocess.run(["git", "hash-object", str(path)], cwd=ROOT,
+                            text=True, capture_output=True, check=True).stdout.strip()
+    if actual != FROZEN_ORACLE_GIT_BLOB_SHA:
+        raise RuntimeError("ORACLE_CONTENT_DRIFT: Gate A frozen oracle bytes changed")
+
+
+def verify_gate_a_ancestry() -> None:
+    result = subprocess.run(["git", "merge-base", "--is-ancestor",
+                             FREEZE_COMMIT_SHA, "HEAD"], cwd=ROOT,
+                            text=True, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise RuntimeError("FREEZE_ANCESTRY_MISMATCH: Gate A commit absent")
 
 
 def edit_rest_geometry(reference: Tract1DGeometry, ratio: float) -> Tract1DGeometry:
@@ -121,6 +137,8 @@ def geometry_payload(geometry: Tract1DGeometry) -> dict[str, object]:
 
 
 def run(output_dir: Path) -> dict[str, object]:
+    verify_gate_a_ancestry()
+    verify_frozen_oracle(ORACLE)
     # Frozen source and oracle preflight precedes the experiment's new outputs.
     adapter = runpy.run_path(str(ROOT / "tools" / "cc_a2_live.py"))
     frozen = adapter["_load_frozen_adapter"]()
@@ -259,6 +277,7 @@ def run(output_dir: Path) -> dict[str, object]:
         "prespecified_freeze_commit": FREEZE_COMMIT_SHA,
         "exact_checkout_sha": exact_checkout_sha(),
         "oracle_schema": oracle["schema"],
+        "oracle_git_blob_sha": FROZEN_ORACLE_GIT_BLOB_SHA,
         "section_zero_based": SECTION_INDEX,
         "baseline_repeat": {
             "fresh_physical_execution": True,

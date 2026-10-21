@@ -64,3 +64,6 @@ flowchart TD
   C -->|No| N[Explicit failed/unresolved receipt; no adoption]
 ```
 The B script directly uses previously audited physical research functions; there is no BodyRevision stable API, Studio Take, or new time-dependent solver.
+
+## Post-run causal observation (2026-10-22)
+Unlike an edited audio effect, original and changed pressure traces were separately generated with the same frozen source and task through the inherited realizer/acoustic solver. Three conditions + independent second null were observed. Pre-frozen static 16-tube oracle matched 18 peak coordinates to at most 4.75Hz, but neither full driven passivity, anatomical dynamics nor subjective audibility were checked. The new B runner asserts the Git blob of the PRE-RUN oracle is unchanged and its freeze SHA is an ancestor of the physical CI checkout.

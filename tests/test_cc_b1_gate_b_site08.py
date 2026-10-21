@@ -81,3 +81,14 @@ def test_site_and_source_identity_refusals():
     tampered=pressure.copy();tampered[2]+=1.0
     with pytest.raises(ValueError,match="SOURCE_CHANGED"):
         RUNNER["verify_source_identity"](digest,tampered)
+
+def test_frozen_oracle_cannot_be_silently_replaced(tmp_path):
+    path=RUNNER["ORACLE"]
+    RUNNER["verify_frozen_oracle"](path)
+    bad=tmp_path/"modified_oracle.json"
+    bad.write_text(path.read_text(encoding="utf-8").replace('"site08-v1"', '"site08-v2"'),
+                   encoding="utf-8")
+    # Even if a syntactically valid JSON retains the schema, content-hash pin fails.
+    bad.write_text(path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    with pytest.raises(RuntimeError,match="ORACLE_CONTENT_DRIFT"):
+        RUNNER["verify_frozen_oracle"](bad)
