@@ -38,7 +38,12 @@ def test_single_section_rest_edit_is_identity_elsewhere():
 def test_frozen_site08_fresh_physics_and_exact_repeat(tmp_path):
     out = tmp_path / "new-physical-output"
     receipt = RUNNER["run"](out)
-    assert receipt["status"] == "RESEARCH_MACHINE_PASS_PENDING_INDEPENDENT_AUDIT"\n    assert receipt["prespecified_freeze_commit"] == "ca8bf64c8525a9cf59cb1332c4819763a0f9197e"\n    assert receipt["section_zero_based"] == 8\n    assert receipt["baseline_repeat"]["fresh_physical_execution"]\n    assert receipt["baseline_repeat"]["acoustic_calls"] == 102\n    assert receipt["baseline_repeat"]["quantized_sha256"] == receipt["conditions"][1]["raw_pressure_quantized_sha256"]
+    assert receipt["status"] == "RESEARCH_MACHINE_PASS_PENDING_INDEPENDENT_AUDIT"
+    assert receipt["prespecified_freeze_commit"] == "ca8bf64c8525a9cf59cb1332c4819763a0f9197e"
+    assert receipt["section_zero_based"] == 8
+    assert receipt["baseline_repeat"]["fresh_physical_execution"]
+    assert receipt["baseline_repeat"]["acoustic_calls"] == 102
+    assert receipt["baseline_repeat"]["quantized_sha256"] == receipt["conditions"][1]["raw_pressure_quantized_sha256"]
     assert [x["ratio"] for x in receipt["conditions"]] == [0.9, 1.0, 1.1]
     assert receipt["conditions"][1]["relative_l2_difference_from_baseline"] == 0.0
     assert receipt["conditions"][0]["relative_l2_difference_from_baseline"] > 1e-8
