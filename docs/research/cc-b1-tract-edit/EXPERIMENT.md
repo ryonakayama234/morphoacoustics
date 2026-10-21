@@ -43,3 +43,14 @@ The **first low resonance is unchanged on this coarse 5-Hz grid at the final ges
 
 ## Exploratory Core pilot addition — execution status distinct from plan
 A standalone 16-section runner now proposes actual 48 kHz 0.5s **fresh** raw Pa outputs for 0.90/1.00/1.10 with existing exact Experiment029 frozen source/realizer; checks baseline quantized M0 oracle, area-ratio persistence across gestural time, expected 102 acoustic calls, local 16-tube oracle (coarse 5Hz tolerance 7.5Hz), nonzero same-source raw pressure L2 for edited states and no-fallback. New `tests/test_cc_b1_pilot.py` and dedicated CI accompany it. **Pending CI results here must not be advertised as passed until a real run is inspected.** Gate A independent ratification, new unseen confirmatory oracle and speech-like perceptual Gate remain pending. No Core/Studio production API is adopted.
+
+## 2026-10-21 genuine exploratory CI (run before adding preview WAVs)
+**Completed machine evidence, NOT prospective scientific Gate acceptance**: [Actions 39580500879](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39580500879), exact HEAD `c8a42720f54c9a20f2ce1fb8bed08c6185c06853`, job 119156622189, `cc-b1-exploratory-evidence` artifact ID 12336058554, ZIP SHA256 `1b18c6961501ec8feca090805f5fb409569c7e6f61f8daeeee53cebf097e5d7a`, Python 3.11.17 + pinned NumPy 2.4.6. Dedicated 3/3 CC-B1 tests, fresh standalone run, and 7/7 adopted CC-A2 regression tests passed; 3 independently new raw Pa streams × 24000 samples were archived. Same frozen input `lf_fixed` source SHA256(le-f64) `724412c20feddd9e00112cc362bac56bd8aa428670c5dcb789461df858b512fc` and identical 3-task plan. Baseline quantized pressure SHA matched adopted Experiment029 (`dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e`).
+
+| section0 rest-area multiplier | relative raw Pa L2 vs 1.00 | observed final peaks (Hz) | raw float64 LE SHA256 |
+|---|---:|---|---|
+| .90 | 0.0333967011 | see archived decision.json | `2e03a7d757084d7bc086c20d5a48605e8791bde515352fb5874f9af3f1f82375` |
+| 1.00 | 0 | 275.0, 2101.75, 3164.75 | `86661ece1cd7a5f451b8185bad5b9578ad5ec0ccbc6da1ef5296137be79adcda` |
+| 1.10 | 0.0315043129 | 274.5, 2095.0, 3163.0 | `ddbf488cece554ea4f38bf6bc3f2bc3ccc66db098a316387a3bcce5b2e6edc0e` |
+
+The 16-tube independent Wolfram 5Hz reference compared against Core 0.25Hz-grid peak extraction: maximum error across all **six rest/final cases** ≤4.75Hz versus declared exploratory ≤7.5Hz. Difference in raw waveform **does not certify audibility, quality or real tissue physics**. The 0.90/1.10 waveforms are newly generated and not human-reviewed. Follow-up WAV preview code and its CI are separate unconfirmed work until new run finishes. The frozen research audio output policy requires one common normalization factor and no playback EQ; raw Pa hashes may not be rewritten.
