@@ -135,3 +135,11 @@ def test_old_preparation_and_body_preset_are_never_mutated():
     assert base.prepared.rest_state is original
     assert base.preparation_digest == original_digest
     assert preparation_digest(base.prepared) == original_digest
+
+
+@pytest.mark.parametrize("site,ratio", [(0, 0.9), (15, 1.1), (13, 0.9)])
+def test_inclusive_exploratory_boundaries_are_stable_with_binary_floats(site, ratio):
+    base = baseline()
+    result = prepare_rest_area_revision(base, intent_for(base, site=site, ratio=ratio))
+    assert result.accepted
+    assert result.revision is not None
