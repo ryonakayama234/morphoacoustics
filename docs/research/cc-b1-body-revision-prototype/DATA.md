@@ -28,3 +28,6 @@ flowchart LR
 
 ## Schema adoption hold
 Before external release, freeze canonical numeric precision/rounding, accepted baseline whitelist, detailed failure transport, collision/reload registry semantics, bounded source capability, and cross-repo version negotiation; never retrofit arbitrary area fields into v0/v1 request or bypass the Core authority.
+
+## Authority of prototype implementation
+The prototype is held under `tools/cc_b1_revision.py` to avoid the frozen production source inventory; its `RestAreaEditIntent` and `BodyRevision` are experimental Python records, **not** a published cross-repo JSON schema. No Studio request may assume these classes are already part of an accepted contract.
