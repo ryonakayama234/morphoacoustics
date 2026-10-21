@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 import runpy
 import sys
+import wave
 
 import numpy as np
 
@@ -57,6 +58,25 @@ def edit_rest_geometry(reference: Tract1DGeometry, ratio: float) -> Tract1DGeome
 
 def sha_array(value: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(value, dtype="<f8").tobytes()).hexdigest()
+
+def preview_wav_bytes(raw_pressure_pa: np.ndarray, common_gain: float) -> bytes:
+    """Research preview ONLY: 48kHz mono PCM with shared gain, not calibrated SPL."""
+    raw = np.asarray(raw_pressure_pa, dtype=np.float64)
+    if (raw.shape != (SAMPLE_COUNT,) or not np.all(np.isfinite(raw))
+        or not math.isfinite(common_gain) or common_gain <= 0.0):
+        raise ValueError("invalid research preview source/gain")
+    scaled = raw * common_gain
+    if not np.all(np.isfinite(scaled)) or np.max(np.abs(scaled)) > 0.90000001:
+        raise ValueError("preview common gain would clip")
+    pcm = np.rint(scaled * 32767.0).astype("<i2")
+    stream = io.BytesIO()
+    with wave.open(stream, "wb") as sink:
+        sink.setnchannels(1)
+        sink.setsampwidth(2)
+        sink.setframerate(SOURCE_RATE)
+        sink.writeframes(pcm.tobytes())
+    return stream.getvalue()
+
 
 
 def prepare_condition(exp: object, reference: Tract1DGeometry, ratio: float):
@@ -162,12 +182,29 @@ def run(output_dir: Path) -> dict[str, object]:
             "geometry": geometry_payload(prepared.rest_state),
         })
 
-    # A successful research receipt is written last. These WAV-less raw files are
-    # measurements, not a new public performance or a consumer-facing Take.
+    # Shared gain across ALL three conditions. Preview WAVs are auditable
+    # observations of the actual raw pressure, never modified physical output.
+    max_abs_pressure = max(float(np.max(np.abs(item[3]))) for item in runs)
+    if not math.isfinite(max_abs_pressure) or max_abs_pressure <= 0.0:
+        raise RuntimeError("no valid pressure for common preview normalization")
+    common_gain = 0.9 / max_abs_pressure
+    preview_wavs = {
+        f"{ratio:.2f}": preview_wav_bytes(raw, common_gain)
+        for ratio, _, _, raw in runs
+    }
+    for comparison in comparisons:
+        key = f"{comparison['ratio']:.2f}"
+        comparison["preview_wav_file"] = f"preview_{key}.wav"
+        comparison["preview_wav_sha256"] = hashlib.sha256(preview_wavs[key]).hexdigest()
+
+    # Research preview only: not a new public performance or Studio Take.
     output_dir.mkdir(parents=True, exist_ok=False)
     for ratio, _, _, raw in runs:
         with (output_dir / f"pressure_{ratio:.2f}.npy").open("wb") as f:
             np.save(f, raw, allow_pickle=False)
+        (output_dir / f"preview_{ratio:.2f}.wav").write_bytes(
+            preview_wavs[f"{ratio:.2f}"]
+        )
     payload = {
         "status": "EXPLORATORY_MACHINE_RESULT_NOT_ADOPTED",
         "source_sha256_le_f64": sha_array(source),
@@ -176,6 +213,10 @@ def run(output_dir: Path) -> dict[str, object]:
         "task_plan_sha256": exp.sha256_json(exp.task_plan_payload()),
         "frozen_reference_m0_quantized_sha256": exp.AUDITED_QUANTIZED_WAVEFORM_SHA256,
         "model": "16x10mm segmented serial tract, prescribed LF, no FSI",
+        "preview_audio": {"format": "mono_pcm16_48000hz",
+                          "comparison_shared_gain": common_gain,
+                          "status": "RESEARCH_PREVIEW_NOT_A_STUDIO_TAKE",
+                          "physical_raw_pa_unchanged": True},
         "oracle": "independent 16-tube ideal pressure-release 5Hz Wolfram preflight",
         "oracle_tolerance_hz": ORACLE_TOLERANCE_HZ,
         "conditions": comparisons,
