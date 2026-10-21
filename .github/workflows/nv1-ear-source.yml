@@ -1,0 +1,46 @@
+name: NV1-EAR W0-W1 physical breath-source gate
+on:
+  push:
+    branches:
+      - 'research/nv1-breath-to-ear-e2e'
+  workflow_dispatch:
+jobs:
+  source-test-and-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install exact W1 analysis dependencies
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install 'numpy==2.3.5' 'scipy==1.17.0' 'soundfile==0.13.1'
+      - name: W0 numerical oracles and W1 source/audio gates
+        run: python -m pytest tests/test_experiment_042_nv1_breath_ear.py -q
+      - name: Render new physical-condition W1 WAV + evidence (ideal receiver only)
+        run: |
+          python experiments/042_nv1_breath_ear/run.py --output /tmp/nv1-ear-w1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import soundfile as sf
+          out=Path('/tmp/nv1-ear-w1')
+          e=json.loads((out/'evidence.json').read_text())
+          assert set(e['cases'])=={'P0','P2','A2','Z0'}
+          assert e['claim']=='EXPERIMENTAL_NOT_ADOPTED'
+          assert e['git_dirty'] is False, 'CI execution must be a clean checkout'
+          for case, receipt in e['cases'].items():
+              info=sf.info(out/receipt['wav'])
+              assert info.samplerate==48000 and info.channels==2 and info.subtype=='PCM_24'
+              assert receipt['ideal_monopole_efficiency']<=0.01
+          assert e['cases']['Z0']['playback_peak']==0
+          print('NV1 W1 real physics-conditioned WAV gate passed, source SHA:',e['cases']['P0']['source_sha256'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: NV1-EAR-W1-physical-source-audition
+          path: /tmp/nv1-ear-w1/
+          retention-days: 30
