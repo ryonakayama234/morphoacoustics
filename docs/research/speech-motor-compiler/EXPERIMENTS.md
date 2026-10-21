@@ -52,3 +52,14 @@ Record actual CI exact HEAD, Python/NumPy versions, test counts, failures, artif
 
 ## Source boundary
 [Experiment011 RESULTS](../../../experiments/011_gesture_coordination_overlap/RESULTS.md) supports two-Gesture overlap acoustic dependence, but not natural coarticulation. [Shared timeline candidate](../shared-timeline-candidate-v1.md) already implements constraint solving. [M5 #11](https://github.com/ryonakayama234/morphoacoustics/issues/11) remains the parent for later phonetic/physical end-to-end validation. [V4-A #123](https://github.com/ryonakayama234/morphoacoustics/pull/123) remains a separate unfinished physical boundary.
+
+## 2026-10-21 — executed exploratory CI and remediation receipt
+
+- Initial exploratory commit `0831fd81`: multiple CI failures. Cause A: event variable `offset` shadowed an earlier integer in `mypy`. Cause B: new Python file under the existing frozen physical package violated the intentional full-package source-inventory lock for CC-A2/OG3/OG4/SV-1. **The Core inventory guard was not modified or bypassed.**
+- Correction `916bc2c1`: moved the code out of `morphoacoustics` to standalone `tools/`, fixed variable typing. Typecheck passed; test discovery failed (`ModuleNotFoundError: tools`) in [run 39538792419](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39538792419).
+- Final exploratory correction `05d2e80d`: installed candidate as a distinct `src/smc1_research/` package, **outside** frozen physical `src/morphoacoustics/`; source contract, physics and pretrained/frozen receipts untouched. [Tests run 39539177849](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39539177849) reports **SUCCESS** for Python **3.11, 3.12, 3.13** and typecheck. Exact commit also reports successful `og3-gate-b`, `og4-gate-b`, `sv1-sustained-vowel-physical` workflows. These are software/regression results, **not independent scientific confirmation or future physical speech gate**.
+- Reviewer independence still pending; formal SMC-1 adoption `NOT_DECIDED`. The protocol and code were explored together, so retrospective CI cannot establish preregistered experimental science.
+
+## Wolfram four-event extension (independent arithmetic, 2026-10-21)
+
+The expanded source in `wolfram-oracle.wl` separately evaluates a four-symbol schedule with rational onset increment `3/25 s`. It returned windows `{0.08,0.26}, {0.20,0.38}, {0.32,0.50}, {0.44,0.62}`, adjacent overlap `{0.06,0.06,0.06}` seconds, and exactly zero timing-equation residual. This is *a synthetic timing example*, **not evidence of human speech articulation**.
