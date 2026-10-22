@@ -171,11 +171,11 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
             issue("INVALID_EVENT", c.source_task_id, "expected ONSET or OFFSET")
         if not _rational_ok(c.lag_s):
             issue("INVALID_LAG", c.source_task_id, "must use exact Fraction")
-    for a in plan.anchors:
-        if a.task_id not in task_ids:
-            issue("UNKNOWN_ANCHOR_ENDPOINT", a.task_id, "unknown task")
-        if not _event_ok(a.event) or not _rational_ok(a.time_s):
-            issue("INVALID_ANCHOR", a.task_id, "event and exact Fraction required")
+    for anchor in plan.anchors:
+        if anchor.task_id not in task_ids:
+            issue("UNKNOWN_ANCHOR_ENDPOINT", anchor.task_id, "unknown task")
+        if not _event_ok(anchor.event) or not _rational_ok(anchor.time_s):
+            issue("INVALID_ANCHOR", anchor.task_id, "event and exact Fraction required")
     # Never run numerical graph arithmetic over malformed constraints.
     if not issues:
         potential, component, conflict = _components(_edges(plan))

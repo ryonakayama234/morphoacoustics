@@ -37,3 +37,6 @@ No files from draft PR #147 are auto-merged; reference the original SHAs. Docume
 - Candidate symbolic IR source commit: `6b31e77365cf965931cb895286727bf75eaa9b57`.
 - Standalone package is isolated from Core imports; implementation includes event anchors only for mathematically exact synthetic timing, not inferred phonetic events.
 - Software tests, third-party reviewer, body adapter, perceptual experiments and scientific Gate remain independent. Current status: EXPLORATORY_IMPLEMENTED / VALIDATION_PENDING / NO_MAIN_MERGE.
+
+### Implementation correction, same research branch
+First CI run on `233bdbac18227a5b1dc974557b671f6b79578030`: all 21 synthetic pytest cases passed on Python 3.12, but strict mypy detected reused local loop variable typed first as `TaskAssociation` and later as `EventAnchor` in `validation.py`. Gate remains blocked until a new exact-HEAD rerun. Refactor uses distinct `anchor` local variable; this is a type-check correction only, no physical claim.

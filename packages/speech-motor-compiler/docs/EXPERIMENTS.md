@@ -27,3 +27,6 @@ GO_LIMITED_SYMBOLIC only after clean software checks and independent design revi
 
 ## 2026-10-22 exploratory implementation status
 Pre-implementation criteria frozen at commit `4f7bef4a9709c96efaa80d8070a2d8b352d9b1d8`; code-first commit `6b31e77365cf965931cb895286727bf75eaa9b57` followed it. Package fixtures exercise shared Task ID, exact rational event propagation, contradictory anchors, unknown endpoints, nonpositive durations, unanchored events, source and association failures, deterministic receipt and absence of physical fields. Results are **not yet claimed** until exact-HEAD GitHub CI runs are inspected; physical and phonetic verification remain NOT TESTED.
+
+### CI negative evidence (2026-10-22)
+At HEAD `233bdbac18227a5b1dc974557b671f6b79578030`, first isolated-package Python 3.12 run [workflow run 39777021246](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777021246) installed the package and **21/21 pytest passed**, but strict mypy **FAILED 3 issues**, validation.py line 174/177, from one reused loop variable inferred as conflicting dataclass types (`TaskAssociation` vs `EventAnchor`). Revisions should be tied to a new exact HEAD; never overwrite history or claim CI pass based on pytest alone.

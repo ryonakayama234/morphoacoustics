@@ -23,3 +23,5 @@
 
 - 2026-10-22 Gate B code commit: `6b31e77365cf965931cb895286727bf75eaa9b57` after prior Gate A doc commit `4f7bef4a9709c96efaa80d8070a2d8b352d9b1d8`.
 - Note: this is self-proposed design and self-authored test suite; no independent acceptance. All claims remain symbolic and synthetic. Cross-body physics, Studio, pronunciation and acoustics excluded.
+
+- 2026-10-22 CI attempt `233bdbac...` exposed strict mypy failure despite 21 pytest passes; source now corrected in a separate follow-up commit, new CI pending. [Failing CI run](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777021246).

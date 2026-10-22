@@ -29,3 +29,6 @@ Existing SMC-2 imports `morphoacoustics.integration.shared_timeline`. This sibli
 
 ## 2026-10-22 v0 candidate implementation
 `Event` is ONSET/OFFSET, `lag_s` and `time_s` use exact `Fraction`. `validate_plan` checks symbolic references, duplicate links and internally inconsistent equalities; its success is only `STRUCTURALLY_VALID` (never capability or physical clearance). `resolve_timing` additionally requires every onset and offset connected to at least one common anchored origin and returns synthetic `TimingReport` only. A plan with valid associations but no anchors is structurally valid and has an explicitly invalid/unresolved timing report. There is no automatic phoneme-to-task inference.
+
+### Implementation receipt
+Type-check invariants include no accidental aliasing of `TaskAssociation` iteration variable and `EventAnchor` iteration variable; the first CI mypy gate correctly caught this and requires a new validated HEAD. Runtime pytest alone was insufficient proof.
