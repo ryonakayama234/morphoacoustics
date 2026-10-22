@@ -31,3 +31,8 @@ Before external release, freeze canonical numeric precision/rounding, accepted b
 
 ## Authority of prototype implementation
 The prototype is held under `tools/cc_b1_revision.py` to avoid the frozen production source inventory; its `RestAreaEditIntent` and `BodyRevision` are experimental Python records, **not** a published cross-repo JSON schema. No Studio request may assume these classes are already part of an accepted contract.
+
+
+## CC-B1 performer request candidate (2026-10-22)
+Version `cc-b1-core-limited-performer/v1` is a standalone opt-in JSON boundary; request has exactly `schema_version`, `parent`, `edit`. Parent = `{preset_id:v3b-axial-M0, revision:1, preparation_digest:sha256:<64 hex>}`. Edit = `{cavity_id:oral, section_index:8, rest_area_ratio:"0.90"|"1.10"}`. Ratios are canonical **strings** at external interface, and are converted into SI `area_m2` by Core, with no client-supplied arbitrary audio gain/task/source. JSON schema is published as **candidate** `contracts/cc-b1/v1/core-limited-performer-request.schema.json`.
+Output is a success `result.json` written last only after new two-body physics, archived `baseline_pa.npy`, `edited_pa.npy`, pair-shared-gain `baseline.wav`, `edited.wav`, two physical geometry traces, per-file SHA256, exact parent+revision+prepared hashes, source/task digest, Core checkout SHA and frozen Gate A/B science pins. Error statuses `INVALID/UNSUPPORTED/REVISION_MISMATCH/INFEASIBLE/NUMERICALLY_UNRESOLVED/FAILED` **never produce a completed Take**. A checksum is not a digital signature or authorization to trust unknown upstream data.

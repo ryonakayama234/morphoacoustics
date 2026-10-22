@@ -34,3 +34,17 @@ First ratify independent prospective Gate A and physics Gate B. Then introduce a
 
 ## Frozen package regression discovered during implementation
 Initial placement under `src/morphoacoustics/preparation/` correctly triggered the adopted limited-live *package source inventory* guard. We moved the candidate to `tools/cc_b1_revision.py` rather than weakening or rewriting the frozen-source policy. This is a Core-owned research tool, **not a callable stable module in the released package**. Public integration is postponed until independently audited versioned adoption.
+
+
+## Gate C minimal versioned adapter — candidate, no Studio yet
+```mermaid
+flowchart LR
+ Request[Strict v1 Edit: exact M0 digest; site08; ratio 90/110%] --> Guard[Core source/whitelist/digest guard]
+ Guard -->|refused| X[Typed refusal; NO bytes]
+ Guard -->|accepted| Revision[Immutable BodyRevision + preparation digest]
+ Revision --> C[Same frozen source + 3 tasks; two separate physical evaluations]
+ C --> Validate[Physical feasibility + quantized pressure oracles + finite signal + task/geometry invariants]
+ Validate -->|all pass| P[Atomic marker-last output: 2 raw Pa, 2 WAV, 2 CSV, provenance result.json]
+ Validate -->|failure| F[Explicit FAILED or NUMERICALLY_UNRESOLVED; NO completed result]
+```
+The implementation is a separate `tools/` entrypoint due to legacy frozen source inventory; it deliberately does NOT change the original published package or v0/v1 contracts. It is not yet a stable `pip install` import API. No arbitrary motor/script selection and no fake Studio Take. Final Gate C adoption additionally needs reviewed trust boundary and persistence/version negotiation with Studio.
