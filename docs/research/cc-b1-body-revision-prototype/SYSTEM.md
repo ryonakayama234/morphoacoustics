@@ -48,3 +48,6 @@ flowchart LR
  Validate -->|failure| F[Explicit FAILED or NUMERICALLY_UNRESOLVED; NO completed result]
 ```
 The implementation is a separate `tools/` entrypoint due to legacy frozen source inventory; it deliberately does NOT change the original published package or v0/v1 contracts. It is not yet a stable `pip install` import API. No arbitrary motor/script selection and no fake Studio Take. Final Gate C adoption additionally needs reviewed trust boundary and persistence/version negotiation with Studio.
+
+## Gate C readback validation boundary
+Core's additive candidate now exposes `verify_output_archive(path)`: before allowing future Studio import it independently checks a **complete marker-last manifest**, exact artifact set, SHA256/length, raw finite float64 Pa content, quantized Gate B baseline/edit oracles, same-pair gain WAV reconstruction, exact base/edit reference, and a nonzero numerical pressure difference. It never treats a partial directory as a successful physical output. Digest/hash checking is NOT a digital signature of origin; an adversarial storage and full persisted revision registry remain Gate C product-adoption conditions.

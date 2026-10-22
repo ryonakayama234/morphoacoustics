@@ -260,7 +260,8 @@ def perform(request: object, output_dir: Path) -> dict[str, object]:
         "schema_version": VERSION, "status": "SUCCEEDED",
         "capability": "site08-one-section-rest-area-0.90-or-1.10/v1",
         "claim_limit": "fixed LF and three-task, 16x10mm 1D computational physical model",
-        "parent": request["parent"], "body_revision": rev.receipt(),
+        "parent": request["parent"], "edit_intent": request["edit"],
+        "body_revision": rev.receipt(),
         "source": {"id": frozen.SOURCE_ID, "sha256_le_f64": frozen_source_sha},
         "task_plan_sha256": frozen_task_sha,
         "baseline_quantized_sha256": baseline_sha,
@@ -279,6 +280,110 @@ def perform(request: object, output_dir: Path) -> dict[str, object]:
     }
     frozen._publish_new_take(output_dir, payloads, receipt)
     return receipt
+
+
+
+def verify_output_archive(output_dir: Path) -> dict[str, object]:
+    """Readback validator for complete candidate results, not a signature authority.
+
+    Does not re-synthesize physical sound; it independently checks archived
+    SHA256 bytes, paired WAV encoding, pinned pressure oracles, source/body
+    identity and edit provenance. The verified archive is still not a
+    cryptographically signed body origin or a Studio Take.
+    """
+    manifest_path = output_dir / "result.json"
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise ValueError("INCOMPLETE_RESULT: completion marker missing")
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    if (type(manifest) is not dict or manifest.get("schema_version") != VERSION
+        or manifest.get("status") != "SUCCEEDED"):
+        raise ValueError("INVALID_RESULT_SCHEMA")
+    parent = manifest.get("parent")
+    edit_intent = manifest.get("edit_intent")
+    if (type(parent) is not dict or type(edit_intent) is not dict
+        or check_request({"schema_version": VERSION, "parent": parent,
+                          "edit": edit_intent}) is not None):
+        raise ValueError("REVISION_MISMATCH: malformed body reference or edit")
+    current = inspect_baseline()
+    if parent != current["parent"]:
+        raise ValueError("REVISION_MISMATCH: stored body not in authenticated registry")
+    ratio_key = edit_intent["rest_area_ratio"]
+    ratio = RATIOS[ratio_key]
+    detail = manifest.get("body_revision")
+    if type(detail) is not dict or type(detail.get("edit")) is not dict:
+        raise ValueError("REVISION_MISMATCH: missing prepared revision")
+    change = detail["edit"]
+    reference_area = current["editable"]["original_area_m2"]
+    if (change.get("section_index") != SITE
+        or change.get("cavity_id") != current["editable"]["cavity_id"]
+        or type(change.get("previous_area_m2")) not in (float, int)
+        or type(change.get("new_area_m2")) not in (float, int)
+        or not math.isclose(change["previous_area_m2"], reference_area, rel_tol=0, abs_tol=1e-17)
+        or not math.isclose(change["new_area_m2"], reference_area * ratio,
+                            rel_tol=0, abs_tol=1e-17)):
+        raise ValueError("REVISION_MISMATCH: stored physical edit differs from request")
+    if (detail.get("parent") != parent
+        or type(detail.get("preparation_digest")) is not str
+        or type(detail.get("revision_id")) is not str):
+        raise ValueError("REVISION_MISMATCH: incomplete revision receipts")
+    expected_paths = {
+        "baseline_pa.npy", "edited_pa.npy", "baseline.wav", "edited.wav",
+        "baseline_trace.csv", "edited_trace.csv",
+    }
+    records = manifest.get("artifacts")
+    if type(records) is not list or len(records) != len(expected_paths):
+        raise ValueError("INVALID_ARTIFACT_SET")
+    found: set[str] = set()
+    for record in records:
+        if type(record) is not dict or type(record.get("path")) is not str:
+            raise ValueError("INVALID_ARTIFACT_REFERENCE")
+        filename = record["path"]
+        if filename not in expected_paths or filename in found:
+            raise ValueError("INVALID_ARTIFACT_REFERENCE")
+        found.add(filename)
+        path = output_dir / filename
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("INCOMPLETE_RESULT: missing or linked artifact")
+        blob = path.read_bytes()
+        if (record.get("size_bytes") != len(blob)
+            or record.get("sha256") != sha256_bytes(blob)):
+            raise ValueError("ARTIFACT_HASH_MISMATCH")
+    if found != expected_paths:
+        raise ValueError("INVALID_ARTIFACT_SET")
+    if set(p.name for p in output_dir.iterdir()) != expected_paths | {"result.json"}:
+        raise ValueError("INVALID_ARTIFACT_SET: unexpected extra output")
+    try:
+        b = np.load(io.BytesIO((output_dir / "baseline_pa.npy").read_bytes()),
+                    allow_pickle=False)
+        e = np.load(io.BytesIO((output_dir / "edited_pa.npy").read_bytes()),
+                    allow_pickle=False)
+    except (OSError, ValueError, TypeError) as exc:
+        raise ValueError("INVALID_PRESSURE_FORMAT") from exc
+    if (b.shape != (SAMPLES,) or e.shape != (SAMPLES,)
+        or b.dtype != np.float64 or e.dtype != np.float64
+        or not np.all(np.isfinite(b)) or not np.all(np.isfinite(e))):
+        raise ValueError("INVALID_PRESSURE_DATA")
+    cc_a2 = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
+    frozen = cc_a2["_load_frozen_adapter"]()
+    exp = frozen._load_audited_experiment()
+    if (exp.quantized_waveform_sha256(b) != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256
+        or exp.quantized_waveform_sha256(e) != EXPECTED_EDIT_QUANTIZED[ratio_key]
+        or manifest.get("baseline_quantized_sha256")
+           != exp.quantized_waveform_sha256(b)
+        or manifest.get("edited_quantized_sha256")
+           != exp.quantized_waveform_sha256(e)):
+        raise ValueError("PRESSURE_ORACLE_MISMATCH")
+    gain = manifest.get("shared_playback_gain")
+    if (type(gain) not in (float, int) or not math.isfinite(gain) or gain <= 0
+        or (output_dir / "baseline.wav").read_bytes() != common_gain_wav(b, float(gain))
+        or (output_dir / "edited.wav").read_bytes() != common_gain_wav(e, float(gain))):
+        raise ValueError("PLAYBACK_MISMATCH")
+    l2 = float(np.linalg.norm(e-b) / np.linalg.norm(b))
+    if (not math.isfinite(l2) or l2 <= 1e-8
+        or not math.isclose(l2, manifest.get("relative_raw_pa_l2", float("nan")),
+                            rel_tol=2e-12, abs_tol=1e-15)):
+        raise ValueError("PHYSICAL_DIFFERENCE_MISMATCH")
+    return manifest
 
 
 def main() -> None:

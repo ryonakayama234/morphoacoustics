@@ -25,3 +25,6 @@ Independent reproducible theoretical spot-check: [Wolfram recurrence source](wol
 
 ## Gate C versioned limited performer candidate (2026-10-22)
 **CANDIDATE IN NEW STACKED PR / NOT RELEASED.** [Limited Core performer](../../../tools/cc_b1_limited_performer.py), [v1 strict request schema](../../../contracts/cc-b1/v1/core-limited-performer-request.schema.json), [gated physical acceptance tests](../../../tests/test_cc_b1_limited_performer.py). This is an additive source-checkout adapter alongside PR #145, not yet the installed Python public API. The owner-delegated [Gate A/B limited research decision](https://github.com/ryonakayama234/morphoacoustics/blob/469bb7cf3407c7591fdc89825a6443670896cb5c/docs/research/cc-b1-tract-edit/GATE_AB_OWNER_DELEGATED_TECHNICAL_DECISION_20261022.md) permits ONLY mid-tract **site08** ±10% as a physically tested edit. Older prototype tests for other section edits are software-only; do not expose those sites as a physically validated v1 performer.
+
+## Gate C optional verified archive consumption
+Call `verify_output_archive(output_dir)` on previously generated data; never let Studio infer success from a WAV alone. It checks exact version/profile and physical-origin evidence within the limited numerical model. This is a candidate Core verifier still under `tools/`, not an installed stable library.

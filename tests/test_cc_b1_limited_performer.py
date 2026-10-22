@@ -84,6 +84,7 @@ def test_actual_new_physical_revision_roundtrip(tmp_path,ratio):
     assert ret["baseline_quantized_sha256"] != ret["edited_quantized_sha256"]
     assert ret["edited_quantized_sha256"]==ADAPTER["EXPECTED_EDIT_QUANTIZED"][ratio]
     assert json.loads((output/"result.json").read_text("utf-8"))==ret
+    assert ADAPTER["verify_output_archive"](output)==ret
     for artifact in ret["artifacts"]:
         payload=(output/artifact["path"]).read_bytes()
         assert len(payload)==artifact["size_bytes"]
@@ -97,3 +98,15 @@ def test_actual_new_physical_revision_roundtrip(tmp_path,ratio):
                 wav.getnframes())==(1,2,48000,24000)
     with pytest.raises(FileExistsError):
         ADAPTER["perform"](request(d,ratio),output)
+    # Byte-level tampering must be rejected even when the manifest remains present.
+    wav=output/"edited.wav"
+    wav.write_bytes(wav.read_bytes()+b"TAMPER")
+    with pytest.raises(ValueError,match="ARTIFACT_HASH_MISMATCH"):
+        ADAPTER["verify_output_archive"](output)
+
+def test_partial_archive_without_completion_marker_is_not_a_take(tmp_path):
+    partial=tmp_path/"partial"
+    partial.mkdir()
+    (partial/"edited.wav").write_bytes(b"not a finished physical result")
+    with pytest.raises(ValueError,match="INCOMPLETE_RESULT"):
+        ADAPTER["verify_output_archive"](partial)
