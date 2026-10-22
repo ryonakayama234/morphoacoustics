@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "morphoacoustics-asmr"
+version = "0.0.1"
+description = "Experimental metadata-only ASMR research workspace for Morphoacoustics"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+morphoacoustics_asmr = ["research_registry.json"]
