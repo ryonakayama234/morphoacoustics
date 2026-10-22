@@ -202,7 +202,7 @@ def test_two_true_1d_archives_registry_pair_and_restart(tmp_path: Path) -> None:
         # Remove the completion marker. No unverified physical Take may
         # introduce a new body identity in a different store.
         (archive / "result.json").rename(archive / "removed-marker")
-        other = private_dir(tmp_path / ("other-" + ratio)) if False else tmp_path / ("empty-" + ratio)
+        other = tmp_path / ("empty-" + ratio)
         other.mkdir(mode=0o700)
         code, rejected = command(
             CLI, "--register", "--registry-dir", str(other),
