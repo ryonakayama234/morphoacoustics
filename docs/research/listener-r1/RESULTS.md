@@ -26,3 +26,10 @@
 - Core source code in main unchanged; Studio unchanged; research branch from main SHA 6869cfec04041393eae44485ce2fc91f002114f5.
 - No HRTF concatenation without ear reference-plane metadata; neither blocked-canal SOFA nor microphone field is passed through this system.
 - The apparent finite-pressure resonance is an ideal analytic boundary response. No measured human eardrum load, tissue loss, pinna deformation or perceived ASMR effect can be inferred.
+
+## Gate B CI verification update — 2026-10-22 JST
+Evidence head `47921ed329c7d9a03f1f8622ffd2b319fdbb3d6e`:
+- [EL-R1 PR workflow run 39725768493](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39725768493): **SUCCESS** for Python **3.11 and 3.12**. Both jobs passed installation, frozen Wolfram oracle + EL-R1 42 cases + existing Core UniformTube/SegmentedTube regression tests, and versioned CLI JSON validation.
+- [EL-R1 push workflow run 39725712899](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39725712899): **SUCCESS** for Python 3.11/3.12.
+- [Repo tests push workflow run 39725712901](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39725712901): **SUCCESS**; PR-run existing jobs may independently finish later.
+**Gate B numerical/CI acceptance: PASSED for the scoped research model**. Gate B scientific review/adoption remains **NOT ADOPTED**. This documentation-only CI-evidence update adds no solver changes and does not alter the original preregistered acceptance thresholds. A subsequent check on its new branch commit may be pending.
