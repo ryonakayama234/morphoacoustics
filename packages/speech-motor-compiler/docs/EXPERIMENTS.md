@@ -24,3 +24,6 @@ Run from clean root: editable install in isolated Python environment (3.11+), pa
 
 ## Decision criteria
 GO_LIMITED_SYMBOLIC only after clean software checks and independent design reviewer; else REVISE/MORE_DATA/REJECT. Real pronunciation, physiology, perception, and cross-body execution have separate gates. No `main` merge in this work package.
+
+## 2026-10-22 exploratory implementation status
+Pre-implementation criteria frozen at commit `4f7bef4a9709c96efaa80d8070a2d8b352d9b1d8`; code-first commit `6b31e77365cf965931cb895286727bf75eaa9b57` followed it. Package fixtures exercise shared Task ID, exact rational event propagation, contradictory anchors, unknown endpoints, nonpositive durations, unanchored events, source and association failures, deterministic receipt and absence of physical fields. Results are **not yet claimed** until exact-HEAD GitHub CI runs are inspected; physical and phonetic verification remain NOT TESTED.

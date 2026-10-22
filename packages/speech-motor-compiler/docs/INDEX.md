@@ -1,6 +1,6 @@
 # SMC-3 Research Index / decision provenance
 
-**State:** GATE_A_PREREGISTERED_IMPLEMENTER_ORIGIN / RESEARCH_ONLY / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE.
+**State:** GATE_B_EXPLORATORY_IMPLEMENTED / CI_PENDING / RESEARCH_ONLY / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE.
 
 ## Navigation
 - [SYSTEM.md](SYSTEM.md): architecture, hypotheses, falsifiers and prohibited scope.
@@ -20,3 +20,6 @@
 - 2026-10-22 Gate A: use a standalone package within Core repository, not a separate repository yet; keep explicit boundary, no root Python package import.
 - 2026-10-22 Gate A: select mathematical many-to-many and rational coupling tests before implementing. These are synthetic expressiveness checks, not phonetic data.
 - 2026-10-22 Gate A: keep SMC-1/2 original branches unchanged and PR #147 Draft. No third-party reviewer or adoption is claimed.
+
+- 2026-10-22 Gate B code commit: `6b31e77365cf965931cb895286727bf75eaa9b57` after prior Gate A doc commit `4f7bef4a9709c96efaa80d8070a2d8b352d9b1d8`.
+- Note: this is self-proposed design and self-authored test suite; no independent acceptance. All claims remain symbolic and synthetic. Cross-body physics, Studio, pronunciation and acoustics excluded.

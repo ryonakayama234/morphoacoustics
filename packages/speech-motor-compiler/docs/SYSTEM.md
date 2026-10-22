@@ -31,3 +31,9 @@ No Japanese reading inference, automatic phoneme-to-task mapping, fixed one-phon
 
 ## Engineering handoff
 No files from draft PR #147 are auto-merged; reference the original SHAs. Document every tested change in SYSTEM/DATA/EXPERIMENTS/INDEX together. Gate A is implementer-origin freeze, not independent scientific preregistration. `main` is not an adoption target in this milestone.
+
+## 2026-10-22 Gate B implementation receipt (not scientific adoption)
+- Gate A preregistration commit: `4f7bef4a9709c96efaa80d8070a2d8b352d9b1d8` (preceded source implementation).
+- Candidate symbolic IR source commit: `6b31e77365cf965931cb895286727bf75eaa9b57`.
+- Standalone package is isolated from Core imports; implementation includes event anchors only for mathematically exact synthetic timing, not inferred phonetic events.
+- Software tests, third-party reviewer, body adapter, perceptual experiments and scientific Gate remain independent. Current status: EXPLORATORY_IMPLEMENTED / VALIDATION_PENDING / NO_MAIN_MERGE.

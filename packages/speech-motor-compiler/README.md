@@ -3,7 +3,7 @@
 Status: **DESIGN/RESEARCH ONLY; NOT ADOPTED; NOT MERGED TO MAIN**.
 Parent research: [SMC-2 #146](https://github.com/ryonakayama234/morphoacoustics/issues/146), [design audit #148](https://github.com/ryonakayama234/morphoacoustics/issues/148). Package work: [#162](https://github.com/ryonakayama234/morphoacoustics/issues/162).
 
-This is a self-contained **Python package** boundary for body-independent pronunciation hypotheses, motor Task IDs, many-to-many associations, and typed temporal coupling constraints. It is NOT a phonetic inventory, gesture execution engine, sound synthesizer, morphology adapter, or production API.
+This is a self-contained, experimental **Python package** boundary for body-independent pronunciation hypotheses, motor Task IDs, many-to-many associations, and typed temporal coupling constraints. It is NOT a phonetic inventory, gesture execution engine, sound synthesizer, morphology adapter, or production API.
 
 ## Core causal boundary
 
