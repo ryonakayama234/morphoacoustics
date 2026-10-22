@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import runpy
 import stat
-from typing import Any
+from typing import Any, NoReturn
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "cc-b1-core-limited-performer/v1"
@@ -21,7 +21,7 @@ MANIFEST_MAX_BYTES = 65536
 
 
 class StrictParser(argparse.ArgumentParser):
-    def error(self, message: str) -> None:
+    def error(self, message: str) -> NoReturn:
         raise ValueError("CLI_ARGUMENT_INVALID")
 
 
