@@ -51,3 +51,29 @@ The implementation is a separate `tools/` entrypoint due to legacy frozen source
 
 ## Gate C readback validation boundary
 Core's additive candidate now exposes `verify_output_archive(path)`: before allowing future Studio import it independently checks a **complete marker-last manifest**, exact artifact set, SHA256/length, raw finite float64 Pa content, quantized Gate B baseline/edit oracles, same-pair gain WAV reconstruction, exact base/edit reference, and a nonzero numerical pressure difference. It never treats a partial directory as a successful physical output. Digest/hash checking is NOT a digital signature of origin; an adversarial storage and full persisted revision registry remain Gate C product-adoption conditions.
+
+## Gate C revision replay: archive authority repair (2026-10-22, Draft)
+
+An archived audio payload hash validates stored bytes, **not** its asserted physical parent or derived body. Gate C readback must reconstruct the revision from a trusted Core baseline and canonical edit, then compare the *entire* serialized receipt.
+
+```mermaid
+flowchart TD
+  UI["Studio / future external caller"] --> I["Versioned edit intent (site08 only)"]
+  I --> V["Core request guard"]
+  B["Core owned trusted M0/r1 registry"] --> D["Prepare derived physical BodyRevision"]
+  V --> D
+  D --> P["Fixed LF + 3-task physical solver"]
+  P --> O["New raw Pa, paired WAV, traces"]
+  D --> C["Expected canonical revision receipt"]
+  O --> M["Archive: manifest + SHA256 byte evidence"]
+  C --> M
+  M --> R["Readback verifier, no resynthesis"]
+  B --> E["Re-derive exact revision from trusted parent + edit"]
+  I --> E
+  E --> X{"Full receipt matches types and values?"}
+  R --> X
+  X -->|Yes plus physical byte/oracle gates| T["Verified research archive (NOT Studio Take)"]
+  X -->|No| F["REVISION_MISMATCH; no verified result"]
+```
+
+The verification is a *replay of deterministic preparation* (not a replay of all 102 acoustic calls). The baseline registry still must be trusted by a controlled Core installation. Hashes alone cannot establish who authored a file or authorize an upstream package. Future stable CLI/service ABI, persisted revision store, O_NOFOLLOW/race hardening, end-to-end Studio Take handling and role-scoped authority remain separate Gate C work, not completed by this patch.
