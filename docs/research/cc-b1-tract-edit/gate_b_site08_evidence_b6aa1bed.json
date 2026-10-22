@@ -1,0 +1,307 @@
+{
+  "status": "RESEARCH_MACHINE_PASS_PENDING_INDEPENDENT_AUDIT",
+  "runtime": {
+    "python_version": "3.11.17",
+    "python_implementation": "CPython",
+    "numpy_version": "2.4.6",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39"
+  },
+  "ci": {
+    "run_url": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/39702992138",
+    "run_attempt": "1",
+    "artifact_name": "cc-b1-gate-b-site08-raw-pa-and-provenance",
+    "artifact_id": null,
+    "artifact_id_status": "NOT_YET_ASSIGNED_AT_RECEIPT_WRITE"
+  },
+  "artifact_file_sha256": {
+    "pressure_0.90.npy": "a363336cd30cedda51420dc4843d162a40bddca31ce4f3b6f8d473f22bc6487a",
+    "pressure_1.00.npy": "b2a4ba9432ddb4397139e238b404af6a43baed27de5a44d9214b43852ba3971c",
+    "pressure_1.10.npy": "14ccfbdc3e2885b97668dbed37c257c3bf61b224db3997cc3210e619fa58aabd",
+    "pressure_repeat_1.00.npy": "b2a4ba9432ddb4397139e238b404af6a43baed27de5a44d9214b43852ba3971c",
+    "preview_0.90.wav": "e04bfd93985480ec3182312abed5f49fae0774d556e8309005731034854b51c3",
+    "preview_1.00.wav": "453535ce81d517f8d936a0aa0717e81fca3a3b543f440569beb5ffae9dd67f80",
+    "preview_1.10.wav": "c1bc2be2e77624464b98667c8ebac497cf61abb418798bffae50f8b506a66d36"
+  },
+  "negative_controls": {
+    "scope": "synthetic_gate_b_acceptance_boundary_only",
+    "controls": [
+      {
+        "id": "unsupported_site",
+        "status": "PASS",
+        "expected_error": "UNSUPPORTED"
+      },
+      {
+        "id": "unsupported_ratio",
+        "status": "PASS",
+        "expected_error": "UNSUPPORTED"
+      },
+      {
+        "id": "source_mutation",
+        "status": "PASS",
+        "expected_error": "SOURCE_CHANGED"
+      },
+      {
+        "id": "task_digest_mutation",
+        "status": "PASS",
+        "expected_error": "TASK_PLAN_DRIFT"
+      },
+      {
+        "id": "swapped_revision_ratio",
+        "status": "PASS",
+        "expected_error": "PREPARED_BINDING_MISMATCH"
+      },
+      {
+        "id": "unexpected_fallback_result",
+        "status": "PASS",
+        "expected_error": "PHYSICAL_FALLBACK_OR_INCOMPLETE"
+      },
+      {
+        "id": "nonfinite_solver_pressure",
+        "status": "PASS",
+        "expected_error": "NONFINITE_OR_MALFORMED_PRESSURE"
+      },
+      {
+        "id": "nonfinite_peak",
+        "status": "PASS",
+        "expected_error": "NONFINITE_OR_MALFORMED_PEAKS"
+      }
+    ],
+    "all_pass": true,
+    "not_tested": [
+      {
+        "id": "inherited_solver_internal_fault_injection",
+        "status": "NOT_TESTED",
+        "reason": "upstream physical solver is frozen; no internal fault hook exercised"
+      }
+    ]
+  },
+  "frozen_task_plan_sha256": "17148dea27e59abfb626b149beebcc7893d4ff9ba04ce4cf3af9ad408ce8a7bf",
+  "prespecified_freeze_commit": "ca8bf64c8525a9cf59cb1332c4819763a0f9197e",
+  "exact_checkout_sha": "b6aa1bed340cbd81d90b46bf16639b3fa47a3bb6",
+  "oracle_schema": "research.cc-b1.gate-a/site08-v1",
+  "oracle_git_blob_sha": "046a26a7baf31003244e05088a2b5d19bc7af416",
+  "section_zero_based": 8,
+  "baseline_repeat": {
+    "fresh_physical_execution": true,
+    "quantized_sha256": "dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e",
+    "raw_le_f64_sha256": "1b0ca7e7215af42428a1b11512e9a7547876c9f3b458c4d73c93a711800eb30e",
+    "sample_count": 24000,
+    "acoustic_calls": 102,
+    "raw_pressure_file": "pressure_repeat_1.00.npy"
+  },
+  "source_sha256_le_f64": "4d075fd89958ff481507661ea43e4602ed5fe72b0104bc897685b1f696abf529",
+  "source_id": "lf_fixed",
+  "sample_rate_hz": 48000,
+  "samples": 24000,
+  "task_plan_sha256": "17148dea27e59abfb626b149beebcc7893d4ff9ba04ce4cf3af9ad408ce8a7bf",
+  "frozen_reference_m0_quantized_sha256": "dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e",
+  "model": "16x10mm segmented serial tract, prescribed LF, no FSI",
+  "preview_audio": {
+    "format": "mono_pcm16_48000hz",
+    "comparison_shared_gain": 166.21938856014992,
+    "status": "RESEARCH_PREVIEW_NOT_A_STUDIO_TAKE",
+    "physical_raw_pa_unchanged": true
+  },
+  "oracle": "Gate A SHA-fixed 5Hz ABCD and independent impedance recurrence",
+  "oracle_tolerance_hz": 7.5,
+  "conditions": [
+    {
+      "ratio": 0.9,
+      "section": 8,
+      "rest_area_m2": 0.0006361725123519331,
+      "rest_peaks_hz": [
+        721.5,
+        1291.5,
+        2906.75
+      ],
+      "final_peaks_hz": [
+        275.25,
+        2109,
+        3149
+      ],
+      "wolfram_rest_max_abs_error_hz": 3.5,
+      "wolfram_final_max_abs_error_hz": 4,
+      "raw_pressure_sha256_le_f64": "06b5cb17eea61df2f423740946a2c6aae085b955c9cc6d435454326c00bef99d",
+      "raw_pressure_quantized_sha256": "a5f34b795b886f67f88716be53ebf50dd68731e5b4bd03f2c189a1a17a752aa1",
+      "relative_l2_difference_from_baseline": 0.013811261347324754,
+      "acoustic_calls": 102,
+      "raw_pressure_file": "pressure_0.90.npy",
+      "geometry": {
+        "section_length_m": [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01
+        ],
+        "section_area_m2": [
+          0.00011309733552923255,
+          0.00011309733552923255,
+          0.000530929158456675,
+          0.00020106192982974675,
+          0.00011309733552923255,
+          0.0001539380400258999,
+          0.0003141592653589793,
+          0.000530929158456675,
+          0.0006361725123519331,
+          0.0009079202768874504,
+          0.0011341149479459152,
+          0.0009079202768874504,
+          0.0009079202768874504,
+          0.0007068583470577034,
+          0.0006157521601035995,
+          0.000804247719318987
+        ]
+      },
+      "preview_wav_file": "preview_0.90.wav",
+      "preview_wav_sha256": "e04bfd93985480ec3182312abed5f49fae0774d556e8309005731034854b51c3"
+    },
+    {
+      "ratio": 1,
+      "section": 8,
+      "rest_area_m2": 0.0007068583470577034,
+      "rest_peaks_hz": [
+        720.25,
+        1288.5,
+        2918.25
+      ],
+      "final_peaks_hz": [
+        275,
+        2101.75,
+        3164.75
+      ],
+      "wolfram_rest_max_abs_error_hz": 3.25,
+      "wolfram_final_max_abs_error_hz": 4.75,
+      "raw_pressure_sha256_le_f64": "1b0ca7e7215af42428a1b11512e9a7547876c9f3b458c4d73c93a711800eb30e",
+      "raw_pressure_quantized_sha256": "dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e",
+      "relative_l2_difference_from_baseline": 0,
+      "acoustic_calls": 102,
+      "raw_pressure_file": "pressure_1.00.npy",
+      "geometry": {
+        "section_length_m": [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01
+        ],
+        "section_area_m2": [
+          0.00011309733552923255,
+          0.00011309733552923255,
+          0.000530929158456675,
+          0.00020106192982974675,
+          0.00011309733552923255,
+          0.0001539380400258999,
+          0.0003141592653589793,
+          0.000530929158456675,
+          0.0007068583470577034,
+          0.0009079202768874504,
+          0.0011341149479459152,
+          0.0009079202768874504,
+          0.0009079202768874504,
+          0.0007068583470577034,
+          0.0006157521601035995,
+          0.000804247719318987
+        ]
+      },
+      "preview_wav_file": "preview_1.00.wav",
+      "preview_wav_sha256": "453535ce81d517f8d936a0aa0717e81fca3a3b543f440569beb5ffae9dd67f80"
+    },
+    {
+      "ratio": 1.1,
+      "section": 8,
+      "rest_area_m2": 0.0007775441817634739,
+      "rest_peaks_hz": [
+        718.5,
+        1285.5,
+        2925.5
+      ],
+      "final_peaks_hz": [
+        274.5,
+        2094.25,
+        3177.25
+      ],
+      "wolfram_rest_max_abs_error_hz": 3.5,
+      "wolfram_final_max_abs_error_hz": 2.25,
+      "raw_pressure_sha256_le_f64": "65b7936cfe8e8dedf2973546e4ddbcdc8609dd661fc2db238f9d17446f259067",
+      "raw_pressure_quantized_sha256": "9f359add71f68ce66a2306d7b5dd66a658b3676d54f66369269eadc71c2c8db6",
+      "relative_l2_difference_from_baseline": 0.014914425230425132,
+      "acoustic_calls": 102,
+      "raw_pressure_file": "pressure_1.10.npy",
+      "geometry": {
+        "section_length_m": [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01
+        ],
+        "section_area_m2": [
+          0.00011309733552923255,
+          0.00011309733552923255,
+          0.000530929158456675,
+          0.00020106192982974675,
+          0.00011309733552923255,
+          0.0001539380400258999,
+          0.0003141592653589793,
+          0.000530929158456675,
+          0.0007775441817634739,
+          0.0009079202768874504,
+          0.0011341149479459152,
+          0.0009079202768874504,
+          0.0009079202768874504,
+          0.0007068583470577034,
+          0.0006157521601035995,
+          0.000804247719318987
+        ]
+      },
+      "preview_wav_file": "preview_1.10.wav",
+      "preview_wav_sha256": "c1bc2be2e77624464b98667c8ebac497cf61abb418798bffae50f8b506a66d36"
+    }
+  ],
+  "limitations": [
+    "site8 existed in earlier theoretical full-tract scan",
+    "not a blind anatomical discovery",
+    "not phonetic identity",
+    "not a natural human voice or audibility result",
+    "not a BodyRevision or Studio API",
+    "no independent physics/contract scientific ratification",
+    "ideal lossless static oracle, not full FSI or passivity proof",
+    "Core Exp009 uses attenuation and a small resistive outlet load; the Wolfram oracle assumes lossless pressure-release",
+    "inherited solver internal fallback fault injection NOT_TESTED",
+    "not a quantitative loudness comparison"
+  ]
+}
