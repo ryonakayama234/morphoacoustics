@@ -30,3 +30,8 @@ After implementation: fill the ledger with exact SHA, CI URLs, failures/repairs 
 - **Wolfram:** `wolfram_ideal_two_tube.wl` and `wolfram_ideal_two_tube_result.json` preserve the separate ideal two-tube result. Do not apply the simple 517.97–552.19Hz model to the 16-section solver or to ABX probability.
 
 **Remaining Gate C**: independently inspect path/storage trust against symlink swaps, on-disk canonical revision registry across restart, status-contract completeness, packaging/support and multiple commit CI exactness. **Studio Gate D and auditory Gate E have not started here.**
+
+## Adversarial audit amendment A1 — metadata must not impersonate physics
+Found by code inspection **after initial CLI code** and **before the added negative tests/repair**: inherited `verify_output_archive` validates waveform/revision but does not re-derive every asserted `source`, `task_plan_sha256`, semantic artifact kind and `provenance` field. A copy of real WAV/Pa with a falsely claimed source or Task could therefore receive an overbroad verification label.
+
+New prospective refusal probes for the opt-in CLI layer (not retroactive Gate B): change only `source.id`, `source.sha256_le_f64`, `task_plan_sha256`, `sample_rate_hz`, `acoustic_calls_per_body`, artifact `kind`, and Gate A/B pin string while leaving all six authentic physical files and their hashes intact. Expected: **no `SUCCEEDED`**. Good untouched archives must still pass. Freeze the supported manifest field set and read it against trusted installed Core fixed source/Task; do **not** claim that an unsigned `core_checkout_sha` proves origin or that a checksum is a cryptographic signature. Tamper against signed, durable, hostile storage remains a separate `NOT_TESTED` gate.
