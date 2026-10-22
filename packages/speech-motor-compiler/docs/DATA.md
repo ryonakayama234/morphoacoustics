@@ -32,3 +32,6 @@ Existing SMC-2 imports `morphoacoustics.integration.shared_timeline`. This sibli
 
 ### Implementation receipt
 Type-check invariants include no accidental aliasing of `TaskAssociation` iteration variable and `EventAnchor` iteration variable; the first CI mypy gate correctly caught this and requires a new validated HEAD. Runtime pytest alone was insufficient proof.
+
+## 2026-10-22 verified software Gate B receipt (not research adoption)
+Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API reported **16/16 completed check runs SUCCESS** (some duplicate push/PR runs), including isolated Python 3.11/3.12/3.13 package import/install + 21 synthetic pytest cases per run + strict package mypy, existing Core root test matrix/typecheck, and bounded SV1 regression. Evidence: [isolated package run](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258873), [root tests](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258910), [SV1](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258867). An earlier failing mypy run is preserved in EXPERIMENTS. Individual OG3 and OG4 were not separately confirmed for this SHA. No independent reviewer, phonetic fixture, body adapter, wav or Studio integration. Disposition: **EXPLORATORY_SOFTWARE_PASS / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**.
