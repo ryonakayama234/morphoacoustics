@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import hashlib
+from types import SimpleNamespace
 from pathlib import Path
 import runpy
 import wave
@@ -41,6 +43,15 @@ def test_frozen_site08_fresh_physics_and_exact_repeat(tmp_path):
     assert receipt["status"] == "RESEARCH_MACHINE_PASS_PENDING_INDEPENDENT_AUDIT"
     assert receipt["prespecified_freeze_commit"] == "ca8bf64c8525a9cf59cb1332c4819763a0f9197e"
     assert receipt["section_zero_based"] == 8
+    assert receipt["runtime"]["numpy_version"] == "2.4.6"
+    assert receipt["runtime"]["python_version"].startswith("3.11")
+    assert receipt["ci"]["artifact_name"] == "cc-b1-gate-b-site08-raw-pa-and-provenance"
+    assert receipt["negative_controls"]["scope"] == "synthetic_gate_b_acceptance_boundary_only"
+    assert len(receipt["negative_controls"]["controls"]) == 8
+    assert all(x["status"] == "PASS" for x in receipt["negative_controls"]["controls"])
+    assert receipt["negative_controls"]["not_tested"][0]["status"] == "NOT_TESTED"
+    for name, digest in receipt["artifact_file_sha256"].items():
+        assert hashlib.sha256((out/name).read_bytes()).hexdigest() == digest
     assert receipt["baseline_repeat"]["fresh_physical_execution"]
     assert receipt["baseline_repeat"]["acoustic_calls"] == 102
     assert receipt["baseline_repeat"]["quantized_sha256"] == receipt["conditions"][1]["raw_pressure_quantized_sha256"]
@@ -92,3 +103,61 @@ def test_frozen_oracle_cannot_be_silently_replaced(tmp_path):
     bad.write_text(path.read_text(encoding="utf-8") + " ", encoding="utf-8")
     with pytest.raises(RuntimeError,match="ORACLE_CONTENT_DRIFT"):
         RUNNER["verify_frozen_oracle"](bad)
+
+
+def test_frozen_task_digest_and_finite_peak_refusals():
+    RUNNER["verify_task_plan_digest"](
+        "17148dea27e59abfb626b149beebcc7893d4ff9ba04ce4cf3af9ad408ce8a7bf"
+    )
+    with pytest.raises(RuntimeError, match="TASK_PLAN_DRIFT"):
+        RUNNER["verify_task_plan_digest"]("0" * 64)
+    with pytest.raises(RuntimeError, match="NONFINITE_OR_MALFORMED_PEAKS"):
+        RUNNER["validated_peak_triplet"](np.array([250., float("nan"), 3100.]))
+
+
+def test_fault_injected_fallback_and_nonfinite_pressure_cannot_pass():
+    from morphoacoustics.domain.result import FeasibilityStatus
+    from morphoacoustics.physical import Tract1DGeometry, TubeSection
+    geometry = Tract1DGeometry(
+        cavity_id="oral", sections=tuple(TubeSection(0.01, 1e-4) for _ in range(16))
+    )
+    fake = SimpleNamespace(
+        feasibility=SimpleNamespace(status=FeasibilityStatus.FEASIBLE),
+        endpoint=geometry,
+        waveform=np.zeros(24000, dtype=np.float64),
+        acoustic_call_count=102,
+    )
+    assert RUNNER["validated_pressure"](fake).shape == (24000,)
+    fake.feasibility.status = FeasibilityStatus.UNSUPPORTED
+    with pytest.raises(RuntimeError, match="PHYSICAL_FALLBACK_OR_INCOMPLETE"):
+        RUNNER["validated_pressure"](fake)
+    fake.feasibility.status = FeasibilityStatus.FEASIBLE
+    fake.waveform = np.full(24000, float("inf"))
+    with pytest.raises(RuntimeError, match="NONFINITE_OR_MALFORMED_PRESSURE"):
+        RUNNER["validated_pressure"](fake)
+    fake.waveform = np.zeros(24000, dtype=np.float64)
+    fake.acoustic_call_count = 101
+    with pytest.raises(RuntimeError, match="PHYSICAL_FALLBACK_OR_INCOMPLETE"):
+        RUNNER["validated_pressure"](fake)
+
+
+def test_prepared_revision_and_provenance_guard():
+    from morphoacoustics.physical import Tract1DGeometry, TubeSection
+    from morphoacoustics.preparation import TRACT1D_BACKEND_ID, PreparationProvenance
+    base = Tract1DGeometry("oral", tuple(TubeSection(0.01, 1e-4) for _ in range(16)))
+    prepared = SimpleNamespace(
+        backend_id=TRACT1D_BACKEND_ID,
+        rest_state=RUNNER["edit_rest_geometry"](base, 1.10),
+        provenance=PreparationProvenance(
+            source="cc-b1-gate-b-site08-new-core-physical-run",
+            model="frozen-one-site-rest-area-section-8/v0",
+            notes=("rest_area_ratio=1.10",
+                   "gate-a-commit=ca8bf64c8525a9cf59cb1332c4819763a0f9197e"),
+        ),
+    )
+    RUNNER["verify_prepared_binding"](base, prepared, 1.10)
+    with pytest.raises(RuntimeError, match="PREPARED_BINDING_MISMATCH"):
+        RUNNER["verify_prepared_binding"](base, prepared, 0.90)
+    prepared.provenance = PreparationProvenance(source="forged", model="untrusted")
+    with pytest.raises(RuntimeError, match="PREPARED_BINDING_MISMATCH"):
+        RUNNER["verify_prepared_binding"](base, prepared, 1.10)

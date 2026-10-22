@@ -11,16 +11,21 @@ import hashlib
 import io
 import json
 import math
+import os
+import platform
 import subprocess
 from pathlib import Path
 import runpy
 import sys
+from types import SimpleNamespace
 import wave
 
 import numpy as np
 
 from morphoacoustics.physical import Tract1DGeometry, TubeSection
-from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
+from morphoacoustics.preparation import (PreparationProvenance, TRACT1D_BACKEND_ID,
+                                        prepare_tract1d)
+from morphoacoustics.domain.result import FeasibilityStatus
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
@@ -33,6 +38,9 @@ SOURCE_RATE = 48000
 ORACLE = ROOT / "docs/research/cc-b1-tract-edit/gate_a_site08_oracle.json"
 FREEZE_COMMIT_SHA = "ca8bf64c8525a9cf59cb1332c4819763a0f9197e"
 FROZEN_ORACLE_GIT_BLOB_SHA = "046a26a7baf31003244e05088a2b5d19bc7af416"
+# Frozen Experiment029 task-plan signature, independently recorded before Gate A.
+FROZEN_TASK_PLAN_SHA256 = "17148dea27e59abfb626b149beebcc7893d4ff9ba04ce4cf3af9ad408ce8a7bf"
+ARTIFACT_NAME = "cc-b1-gate-b-site08-raw-pa-and-provenance"
 
 
 def checked_ratio(value: object) -> float:
@@ -93,6 +101,121 @@ def edit_rest_geometry(reference: Tract1DGeometry, ratio: float) -> Tract1DGeome
 
 def sha_array(value: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(value, dtype="<f8").tobytes()).hexdigest()
+
+
+def verify_task_plan_digest(observed_sha: str) -> None:
+    """Guard the upstream audited task plan, not only within-run self-consistency."""
+    if observed_sha != FROZEN_TASK_PLAN_SHA256:
+        raise RuntimeError("TASK_PLAN_DRIFT: not the frozen Experiment029 task")
+
+
+def verify_prepared_binding(reference: Tract1DGeometry, prepared: object,
+                            ratio: float) -> None:
+    """Reject a swapped/mislabeled body before accepting physical evidence."""
+    expected = edit_rest_geometry(reference, ratio)
+    provenance = getattr(prepared, "provenance", None)
+    if (getattr(prepared, "backend_id", None) != TRACT1D_BACKEND_ID
+        or getattr(prepared, "rest_state", None) != expected
+        or getattr(provenance, "source", None) != "cc-b1-gate-b-site08-new-core-physical-run"
+        or getattr(provenance, "model", None) != "frozen-one-site-rest-area-section-8/v0"
+        or f"rest_area_ratio={ratio:.2f}" not in getattr(provenance, "notes", ())
+        or "gate-a-commit=" + FREEZE_COMMIT_SHA not in getattr(provenance, "notes", ())):
+        raise RuntimeError("PREPARED_BINDING_MISMATCH: rest geometry/provenance drift")
+
+
+def validated_pressure(result: object) -> np.ndarray:
+    """Fail closed on a fallback or a malformed/nonfinite 102-call solver result."""
+    status = getattr(getattr(result, "feasibility", None), "status", None)
+    if (status is not FeasibilityStatus.FEASIBLE
+        or getattr(result, "endpoint", None) is None
+        or getattr(result, "waveform", None) is None
+        or getattr(result, "acoustic_call_count", None) != 102):
+        raise RuntimeError("PHYSICAL_FALLBACK_OR_INCOMPLETE: no valid 102-call result")
+    raw = np.asarray(result.waveform, dtype=np.float64)
+    if raw.shape != (SAMPLE_COUNT,) or not np.all(np.isfinite(raw)):
+        raise RuntimeError("NONFINITE_OR_MALFORMED_PRESSURE: cannot accept physical data")
+    return raw
+
+
+def verify_terminal_binding(exp: object, prepared: object, endpoint: object) -> None:
+    expected = exp.EXP27.realize_task_geometry(
+        prepared.rest_state, 1.0, cavity_id=prepared.rest_state.cavity_id
+    )
+    if endpoint != expected:
+        raise RuntimeError("ENDPOINT_PROVENANCE_MISMATCH: unexpected realized geometry")
+
+
+def validated_peak_triplet(values: np.ndarray) -> np.ndarray:
+    peaks = np.asarray(values, dtype=np.float64)
+    if peaks.shape != (3,) or not np.all(np.isfinite(peaks)):
+        raise RuntimeError("NONFINITE_OR_MALFORMED_PEAKS: cannot assess oracle error")
+    return peaks
+
+
+def gate_b_refusal_probes(exp: object, baseline: Tract1DGeometry,
+                          source: np.ndarray, source_sha: str) -> dict[str, object]:
+    """Synthetic fault injection at this research runner's acceptance boundary.
+
+    Does NOT claim fault injection inside the inherited acoustic solver.
+    """
+    changed_source = source.copy()
+    changed_source[0] += 1.0
+    correct_body = prepare_condition(exp, baseline, 1.10)
+    invalid_pressure = SimpleNamespace(
+        feasibility=SimpleNamespace(status=FeasibilityStatus.FEASIBLE),
+        endpoint=baseline, waveform=np.full(SAMPLE_COUNT, np.nan), acoustic_call_count=102,
+    )
+    false_fallback = SimpleNamespace(
+        feasibility=SimpleNamespace(status=FeasibilityStatus.UNSUPPORTED),
+        endpoint=baseline, waveform=np.zeros(SAMPLE_COUNT), acoustic_call_count=102,
+    )
+    cases = (
+        ("unsupported_site", lambda: checked_section_index(7), "UNSUPPORTED"),
+        ("unsupported_ratio", lambda: checked_ratio(0.8), "UNSUPPORTED"),
+        ("source_mutation", lambda: verify_source_identity(source_sha, changed_source), "SOURCE_CHANGED"),
+        ("task_digest_mutation", lambda: verify_task_plan_digest("0" * 64), "TASK_PLAN_DRIFT"),
+        ("swapped_revision_ratio", lambda: verify_prepared_binding(baseline, correct_body, 0.90),
+         "PREPARED_BINDING_MISMATCH"),
+        ("unexpected_fallback_result", lambda: validated_pressure(false_fallback),
+         "PHYSICAL_FALLBACK_OR_INCOMPLETE"),
+        ("nonfinite_solver_pressure", lambda: validated_pressure(invalid_pressure),
+         "NONFINITE_OR_MALFORMED_PRESSURE"),
+        ("nonfinite_peak", lambda: validated_peak_triplet(np.array([250.0, np.nan, 3100.0])),
+         "NONFINITE_OR_MALFORMED_PEAKS"),
+    )
+    receipts = []
+    for name, action, marker in cases:
+        try:
+            action()
+        except (ValueError, RuntimeError) as exc:
+            if marker not in str(exc):
+                raise RuntimeError(f"REFUSAL_CONTROL_WRONG_REASON: {name}") from exc
+            receipts.append({"id": name, "status": "PASS", "expected_error": marker})
+        else:
+            raise RuntimeError(f"REFUSAL_CONTROL_DID_NOT_REJECT: {name}")
+    return {
+        "scope": "synthetic_gate_b_acceptance_boundary_only",
+        "controls": receipts,
+        "all_pass": True,
+        "not_tested": [
+            {"id": "inherited_solver_internal_fault_injection", "status": "NOT_TESTED",
+             "reason": "upstream physical solver is frozen; no internal fault hook exercised"}
+        ],
+    }
+
+
+def ci_provenance() -> dict[str, object]:
+    server = os.environ.get("GITHUB_SERVER_URL")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    return {
+        "run_url": f"{server}/{repository}/actions/runs/{run_id}"
+                   if server and repository and run_id else None,
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "artifact_name": ARTIFACT_NAME,
+        "artifact_id": None,  # Assigned by Actions only after upload.
+        "artifact_id_status": "NOT_YET_ASSIGNED_AT_RECEIPT_WRITE",
+    }
 
 def preview_wav_bytes(raw_pressure_pa: np.ndarray, common_gain: float) -> bytes:
     """Research preview ONLY: 48kHz mono PCM with shared gain, not calibrated SPL."""
@@ -163,22 +286,20 @@ def run(output_dir: Path) -> dict[str, object]:
         raise RuntimeError("FAIL: frozen Gate A oracle drift")
     source_sha = sha_array(source)
     plan_sha = exp.sha256_json(exp.task_plan_payload())
+    verify_task_plan_digest(plan_sha)
+    negative_controls = gate_b_refusal_probes(exp, baseline, source, source_sha)
     runs: list[tuple[float, object, object, np.ndarray]] = []
     for ratio in ALLOWED_RATIOS:
         verify_source_identity(source_sha, source)
         if exp.sha256_json(exp.task_plan_payload()) != plan_sha:
             raise RuntimeError("FAIL: frozen three-task plan drift")
         prepared = prepare_condition(exp, baseline, ratio)
+        verify_prepared_binding(baseline, prepared, ratio)
         if exp.capability_report(prepared).status is not exp.FeasibilityStatus.FEASIBLE:
             raise RuntimeError("edited rest shape is not capable of frozen three-task plan")
         result = exp.evaluate_condition(prepared, source, label=f"cc_b1_gate_b_site08_{ratio:.2f}")
-        if (result.feasibility.status is not exp.FeasibilityStatus.FEASIBLE
-            or result.waveform is None or result.endpoint is None
-            or result.acoustic_call_count != 102):
-            raise RuntimeError("physical execution did not complete 102 time-acoustic calls")
-        raw = np.asarray(result.waveform, dtype=np.float64)
-        if raw.shape != (SAMPLE_COUNT,) or not np.all(np.isfinite(raw)):
-            raise RuntimeError("invalid 48kHz / 0.5-second pressure")
+        raw = validated_pressure(result)
+        verify_terminal_binding(exp, prepared, result.endpoint)
         if ratio == 1.0 and exp.quantized_waveform_sha256(raw) != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256:
             raise RuntimeError("adopted baseline M0 raw pressure changed")
 
@@ -205,30 +326,32 @@ def run(output_dir: Path) -> dict[str, object]:
 
     # The second baseline is a separate fresh solver execution; it is not an array copy.
     repeat_result = exp.evaluate_condition(runs[1][1], source, label="cc_b1_gate_b_baseline_repeat")
-    repeat_raw = np.asarray(repeat_result.waveform, dtype=np.float64) if repeat_result.waveform is not None else None
-    if (repeat_result.feasibility.status is not exp.FeasibilityStatus.FEASIBLE
-        or repeat_result.endpoint is None or repeat_result.acoustic_call_count != 102
-        or repeat_raw is None or repeat_raw.shape != (SAMPLE_COUNT,)
-        or not np.all(np.isfinite(repeat_raw))):
-        raise RuntimeError("FAIL: independently rerun baseline did not physically complete")
+    repeat_raw = validated_pressure(repeat_result)
+    verify_terminal_binding(exp, runs[1][1], repeat_result.endpoint)
     if (exp.quantized_waveform_sha256(repeat_raw) != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256
         or exp.quantized_waveform_sha256(repeat_raw)
            != exp.quantized_waveform_sha256(runs[1][3])):
         raise RuntimeError("FAIL: rerun baseline disagrees with frozen quantized null")
     verify_source_identity(source_sha, source)
+    verify_task_plan_digest(exp.sha256_json(exp.task_plan_payload()))
 
     baseline_raw = runs[1][3]
+    baseline_norm = float(np.linalg.norm(baseline_raw))
+    if not math.isfinite(baseline_norm) or baseline_norm <= 0.0:
+        raise RuntimeError("INVALID_BASELINE_PRESSURE_NORM")
     comparisons = []
     for ratio, prepared, result, raw in runs:
-        start = exp.EXP26.peak_array(prepared.rest_state, count=3)
-        end = exp.EXP26.peak_array(result.endpoint, count=3)
+        start = validated_peak_triplet(exp.EXP26.peak_array(prepared.rest_state, count=3))
+        end = validated_peak_triplet(exp.EXP26.peak_array(result.endpoint, count=3))
         expected = oracle["frozen_peaks_hz"][f"{ratio:.2f}"]
         rest_err = float(np.max(np.abs(start - np.asarray(expected["rest"]))))
         final_err = float(np.max(np.abs(end - np.asarray(expected["terminal"]))))
         if rest_err > ORACLE_TOLERANCE_HZ or final_err > ORACLE_TOLERANCE_HZ:
             raise RuntimeError("FAIL: pre-frozen independent Wolfram oracle mismatch")
         diff = raw - baseline_raw
-        diff_ratio = float(np.linalg.norm(diff) / np.linalg.norm(baseline_raw))
+        diff_ratio = float(np.linalg.norm(diff) / baseline_norm)
+        if not math.isfinite(diff_ratio):
+            raise RuntimeError("NONFINITE_RELATIVE_L2")
         if ratio == 1.0 and diff_ratio != 0.0:
             raise RuntimeError("baseline null differs from itself")
         if ratio != 1.0 and not diff_ratio > 1e-8:
@@ -272,8 +395,21 @@ def run(output_dir: Path) -> dict[str, object]:
         (output_dir / f"preview_{ratio:.2f}.wav").write_bytes(
             preview_wavs[f"{ratio:.2f}"]
         )
+    artifact_files = sorted(output_dir.glob("*.npy")) + sorted(output_dir.glob("*.wav"))
+    artifact_sha256 = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                       for path in artifact_files}
     payload = {
         "status": "RESEARCH_MACHINE_PASS_PENDING_INDEPENDENT_AUDIT",
+        "runtime": {
+            "python_version": platform.python_version(),
+            "python_implementation": platform.python_implementation(),
+            "numpy_version": np.__version__,
+            "platform": platform.platform(),
+        },
+        "ci": ci_provenance(),
+        "artifact_file_sha256": artifact_sha256,
+        "negative_controls": negative_controls,
+        "frozen_task_plan_sha256": FROZEN_TASK_PLAN_SHA256,
         "prespecified_freeze_commit": FREEZE_COMMIT_SHA,
         "exact_checkout_sha": exact_checkout_sha(),
         "oracle_schema": oracle["schema"],
@@ -306,6 +442,9 @@ def run(output_dir: Path) -> dict[str, object]:
                         "not a BodyRevision or Studio API",
                         "no independent physics/contract scientific ratification",
                         "ideal lossless static oracle, not full FSI or passivity proof",
+                        "Core Exp009 uses attenuation and a small resistive outlet load; "
+                        "the Wolfram oracle assumes lossless pressure-release",
+                        "inherited solver internal fallback fault injection NOT_TESTED",
                         "not a quantitative loudness comparison"],
     }
     (output_dir / "decision.json").write_text(
