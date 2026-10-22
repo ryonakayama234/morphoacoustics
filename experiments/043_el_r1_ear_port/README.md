@@ -19,3 +19,6 @@ python -m pytest -q tests/test_experiment_el_r1.py
 - The numeric oracle checks 9 combinations of L={.02,.025,.03} m and R={.5,1,2} at 3000 Hz, with fixture c=343 m/s, rho=1.21 kg/m³ and A=3e-5 m²; additional tests cover 0/1000/3000/7000 Hz, energy, matched load, input errors and phase mutations.
 - Version and independent source fixture recorded in JSON with a canonical SHA-256. No waveform or real measured human-ear calibration is claimed. The 8000 Hz software limit is a research guardrail, not a physiology validation.
 - Synthetic standing-wave terminal pressure gain **does not** imply net energy gain.
+
+## Post-audit A1 amendment
+Research result schema **el-r1.passive.uniform.v0a1** explicitly distinguishes f=0 mathematical limit from physical AC mean power (null at DC), and enforces the declared engineering small-signal pressure envelope. The **total-pressure** source boundary is not an incident-wave or external sound field source. See [audit A1](../../docs/research/listener-r1/AUDIT-AMENDMENT-A1.md), [36-case Wolfram generator](./wolfram_oracle_36.wl), [frozen numerical oracle](./wolfram_oracle_36.json) and [regeneration verifier](./verify_wolfram_oracle_36.py). All A1 tests are post-registration.
