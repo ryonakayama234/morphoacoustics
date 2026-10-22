@@ -8,8 +8,8 @@ Independent of listener research [PR #83](https://github.com/ryonakayama234/morp
 1. [SYSTEM.md](./SYSTEM.md) — physical causal placement, p/U conventions and boundaries.
 2. [DATA.md](./DATA.md) — fixture, versioned ports, observational identity and failure classes.
 3. [EXPERIMENT.md](./EXPERIMENT.md) — preregistered hypotheses, controls, oracle and quantitative gates.
-4. [RESULTS.md](./RESULTS.md) — outcome ledger, not a plan.
-5. [Experimental code](../../../experiments/043_el_r1_ear_port/) — candidate only, no Core public API.
+4. [AUDIT-AMENDMENT-A1.md](./AUDIT-AMENDMENT-A1.md) — post-registration audit response.\n5. [RESULTS.md](./RESULTS.md) — outcome ledger, not a plan.
+6. [Experimental code](../../../experiments/043_el_r1_ear_port/) — candidate only, no Core public API.
 
 ## Scope
 Only **passive listener-side** transfer between named canal entrance and terminal planes is modeled. A fixed external calibrated entrance-pressure excitation is an experimental boundary, not a Speaker body or a microphone measurement. Data are synthetic and **cannot** validate human physiology, ASMR pleasantness, or blocked-canal HRTF integration.
