@@ -20,7 +20,7 @@ def request(digest: str, ratio: str = "0.90") -> dict[str, object]:
     return {"schema_version": ADAPTER["VERSION"],
             "parent": {"preset_id":"v3b-axial-M0", "revision":1,
                        "preparation_digest":digest},
-            "edit":{"cavity_id":"oral", "section_index":8,
+            "edit":{"cavity_id":"oral-vowel-a-16x10mm", "section_index":8,
                     "rest_area_ratio":ratio}}
 
 

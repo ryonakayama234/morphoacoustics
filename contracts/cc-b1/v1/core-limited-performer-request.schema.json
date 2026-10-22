@@ -44,7 +44,7 @@
       ],
       "properties": {
         "cavity_id": {
-          "const": "oral"
+          "const": "oral-vowel-a-16x10mm"
         },
         "section_index": {
           "const": 8

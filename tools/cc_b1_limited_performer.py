@@ -75,7 +75,7 @@ def check_request(request: object) -> dict[str, object] | None:
         or not digest.startswith("sha256:")
         or any(x not in "0123456789abcdef" for x in digest[7:])):
         return refusal("INVALID", "BASE_DIGEST_INVALID", "Require a full lowercase sha256 digest")
-    if (type(edit["cavity_id"]) is not str or edit["cavity_id"] != "oral"
+    if (type(edit["cavity_id"]) is not str or edit["cavity_id"] != "oral-vowel-a-16x10mm"
         or type(edit["section_index"]) is not int or edit["section_index"] != SITE
         or type(edit["rest_area_ratio"]) is not str
         or edit["rest_area_ratio"] not in RATIOS):
@@ -183,7 +183,7 @@ def perform(request: object, output_dir: Path) -> dict[str, object]:
     edit = proto["RestAreaEditIntent"](
         base_preset_id=base.preset_id, base_revision=base.revision,
         base_preparation_digest=base.preparation_digest,
-        cavity_id="oral", section_index=SITE,
+        cavity_id="oral-vowel-a-16x10mm", section_index=SITE,
         area_m2=base.prepared.rest_state.sections[SITE].area_m2 * ratio)
     bound = proto["prepare_rest_area_revision"](base, edit)
     if not bound.accepted or bound.revision is None:
