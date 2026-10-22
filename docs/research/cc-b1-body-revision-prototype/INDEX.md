@@ -37,3 +37,6 @@ Implementation branch: [Gate C revision replay audit](https://github.com/ryonaka
 - **EXPERIMENT**: wrong-identity fault injections and Wolfram ideal-duct sanity check, with unexecuted Gates separately labeled.
 - **Code/tests**: `tools/cc_b1_limited_performer.py` readback replay and `tests/test_cc_b1_limited_performer.py` physical-pair tamper test.
 - **Status**: code authored on Draft branch; do not conflate an authored test with a passing exact-head CI receipt. Still not a durable registry, installed public ABI, Studio Take or Gate C acceptance.
+
+## Separate CC-B1 CLI Gate C worktree (Draft #165)
+[Versioned CLI boundary INDEX](../cc-b1-cli-gate-c/INDEX.md) and its [SYSTEM](../cc-b1-cli-gate-c/SYSTEM.md), [DATA](../cc-b1-cli-gate-c/DATA.md), [EXPERIMENT](../cc-b1-cli-gate-c/EXPERIMENT.md) document a research-only strict parser and archive readback preflight. Its own GitHub CI is distinct from an accepted Core API. This code remains on a new stacked draft; original BodyRevision and trusted physical source remain unchanged. SMC and ASMR independently researched; no Studio runtime or audibility adoption.
