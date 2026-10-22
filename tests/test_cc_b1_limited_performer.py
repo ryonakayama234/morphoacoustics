@@ -98,6 +98,50 @@ def test_actual_new_physical_revision_roundtrip(tmp_path,ratio):
                 wav.getnframes())==(1,2,48000,24000)
     with pytest.raises(FileExistsError):
         ADAPTER["perform"](request(d,ratio),output)
+    # Adversarial manifest tampering: hashes alone never confer body identity.
+    original_manifest = (output/"result.json").read_text("utf-8")
+    for kind, expected_error in [
+        ("revision_id", "REVISION_MISMATCH"),
+        ("prepared_digest", "REVISION_MISMATCH"),
+        ("source", "PHYSICAL_PROVENANCE_MISMATCH"),
+        ("task_plan", "PHYSICAL_PROVENANCE_MISMATCH"),
+        ("artifact_kind", "INVALID_ARTIFACT_REFERENCE"),
+        ("acoustic_call_count", "PHYSICAL_PROVENANCE_MISMATCH"),
+    ]:
+        forged = json.loads(original_manifest)
+        if kind == "revision_id":
+            forged["body_revision"]["revision_id"] = "cc-b1-" + "0"*64
+        elif kind == "prepared_digest":
+            forged["body_revision"]["preparation_digest"] = "sha256:" + "0"*64
+        elif kind == "source":
+            forged["source"]["sha256_le_f64"] = "0"*64
+        elif kind == "task_plan":
+            forged["task_plan_sha256"] = "0"*64
+        elif kind == "artifact_kind":
+            forged["artifacts"][0]["kind"] = "fabricated-voice"
+        else:
+            forged["acoustic_calls_per_body"] = 0
+        (output/"result.json").write_text(json.dumps(forged), "utf-8")
+        with pytest.raises(ValueError, match=expected_error):
+            ADAPTER["verify_output_archive"](output)
+        (output/"result.json").write_text(original_manifest, "utf-8")
+
+    # A forged trace hash and rewritten CSV must not bypass Core geometry.
+    manifest=json.loads(original_manifest)
+    trace=output/"edited_trace.csv"
+    original_trace=trace.read_bytes()
+    fake_trace=b"fabricated,geometry\\n"
+    trace.write_bytes(fake_trace)
+    for rec in manifest["artifacts"]:
+        if rec["path"]=="edited_trace.csv":
+            rec["size_bytes"]=len(fake_trace)
+            rec["sha256"]=ADAPTER["sha256_bytes"](fake_trace)
+    (output/"result.json").write_text(json.dumps(manifest), "utf-8")
+    with pytest.raises(ValueError, match="PHYSICAL_TRACE_MISMATCH"):
+        ADAPTER["verify_output_archive"](output)
+    trace.write_bytes(original_trace)
+    (output/"result.json").write_text(original_manifest, "utf-8")
+    assert ADAPTER["verify_output_archive"](output)["status"]=="SUCCEEDED"
     # Byte-level tampering must be rejected even when the manifest remains present.
     wav=output/"edited.wav"
     wav.write_bytes(wav.read_bytes()+b"TAMPER")
@@ -110,3 +154,22 @@ def test_partial_archive_without_completion_marker_is_not_a_take(tmp_path):
     (partial/"edited.wav").write_bytes(b"not a finished physical result")
     with pytest.raises(ValueError,match="INCOMPLETE_RESULT"):
         ADAPTER["verify_output_archive"](partial)
+
+
+def test_strict_json_rejects_duplicate_keys_and_nonfinite():
+    loader=ADAPTER["strict_json_loads"]
+    with pytest.raises(ValueError,match="DUPLICATE_JSON_KEY"):
+        loader('{"schema_version":"v1","schema_version":"v2"}')
+    with pytest.raises(ValueError,match="NONFINITE_JSON_NUMBER"):
+        loader('{"edit":NaN}')
+
+
+def test_linked_archive_path_is_refused(tmp_path):
+    target=tmp_path/"actual"
+    target.mkdir()
+    alias=tmp_path/"link"
+    alias.symlink_to(target, target_is_directory=True)
+    with pytest.raises(ValueError,match="UNTRUSTED_SYMLINK_PATH"):
+        ADAPTER["verify_output_archive"](alias)
+    with pytest.raises(ValueError,match="UNTRUSTED_SYMLINK_PATH"):
+        ADAPTER["perform"](request("sha256:"+"a"*64), alias/"new")
