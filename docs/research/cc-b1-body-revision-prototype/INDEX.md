@@ -28,3 +28,7 @@ Independent reproducible theoretical spot-check: [Wolfram recurrence source](wol
 
 ## Gate C optional verified archive consumption
 Call `verify_output_archive(output_dir)` on previously generated data; never let Studio infer success from a WAV alone. It checks exact version/profile and physical-origin evidence within the limited numerical model. This is a candidate Core verifier still under `tools/`, not an installed stable library.
+
+## Gate C follow-up: revision authenticity/readback audit (2026-10-22)
+
+Tracked by [Core #160](https://github.com/ryonakayama234/morphoacoustics/issues/160), stacked after [Draft #159](https://github.com/ryonakayama234/morphoacoustics/pull/159). This change is **an adversarial verifier hardening candidate**, not an adopted Core API, Studio Gate D, or main-merge approval. Code: `tools/cc_b1_limited_performer.py`; tests: `tests/test_cc_b1_limited_performer.py`. Read [SYSTEM](SYSTEM.md), [DATA](DATA.md), [EXPERIMENT](EXPERIMENT.md) together. The narrower verified claim is that an archived revision is independently re-derived from the authenticated fixed Core baseline; no digest alone proves authorship. Persistent registry, app authorization, external audit, portable CLI ABI and complete fault-injection remain open.

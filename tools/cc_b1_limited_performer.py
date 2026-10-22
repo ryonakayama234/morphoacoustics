@@ -38,6 +38,29 @@ EXPECTED_EDIT_QUANTIZED = {
 }
 
 
+def strict_json_loads(content: str) -> object:
+    """Reject duplicate JSON keys and non-standard NaN/Infinity before trust checks."""
+    def unique_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        value: dict[str, object] = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError("DUPLICATE_JSON_KEY: " + key)
+            value[key] = item
+        return value
+
+    def reject_constant(value: str) -> object:
+        raise ValueError("NONFINITE_JSON_NUMBER: " + value)
+
+    return json.loads(content, object_pairs_hook=unique_pairs,
+                      parse_constant=reject_constant)
+
+
+def reject_linked_path(path: Path) -> None:
+    """Reduce simple symlink redirection; caller must still own/trust storage."""
+    if any(part.is_symlink() for part in (path, *path.parents)):
+        raise ValueError("UNTRUSTED_SYMLINK_PATH")
+
+
 def refusal(status: str, code: str, message: str) -> dict[str, object]:
     return {"schema_version": VERSION, "status": status,
             "error": {"code": code, "message": message}, "artifacts": []}
@@ -149,6 +172,7 @@ def inspect_baseline() -> dict[str, object]:
 
 def perform(request: object, output_dir: Path) -> dict[str, object]:
     """Create *two* new raw-Pa physical realizations; publish only complete evidence."""
+    reject_linked_path(output_dir)
     if os.path.lexists(output_dir):
         raise FileExistsError("OUTPUT_EXISTS: cannot overwrite a physical observation")
     rejected = check_request(request)
@@ -291,10 +315,11 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
     identity and edit provenance. The verified archive is still not a
     cryptographically signed body origin or a Studio Take.
     """
+    reject_linked_path(output_dir)
     manifest_path = output_dir / "result.json"
     if not manifest_path.is_file() or manifest_path.is_symlink():
         raise ValueError("INCOMPLETE_RESULT: completion marker missing")
-    manifest = json.loads(manifest_path.read_text("utf-8"))
+    manifest = strict_json_loads(manifest_path.read_text("utf-8"))
     if (type(manifest) is not dict or manifest.get("schema_version") != VERSION
         or manifest.get("status") != "SUCCEEDED"):
         raise ValueError("INVALID_RESULT_SCHEMA")
@@ -328,10 +353,58 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
         or type(detail.get("preparation_digest")) is not str
         or type(detail.get("revision_id")) is not str):
         raise ValueError("REVISION_MISMATCH: incomplete revision receipts")
-    expected_paths = {
-        "baseline_pa.npy", "edited_pa.npy", "baseline.wav", "edited.wav",
-        "baseline_trace.csv", "edited_trace.csv",
+    # Reconstruct the only allowed revision from a Core-owned, pinned baseline;
+    # a copied or forged receipt/hash is not an authenticated revision.
+    cc_a2 = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
+    frozen = cc_a2["_load_frozen_adapter"]()
+    exp = frozen._load_audited_experiment()
+    from morphoacoustics.integration.body_presets import CharacterBodyBinding
+    resolved = cc_a2["prepared_registry"](exp).resolve(
+        CharacterBodyBinding("cc-b1", BASE_ID, BASE_REVISION),
+        required_backend_id=exp.TRACT1D_BACKEND_ID)
+    if not resolved.is_bound or resolved.preset is None:
+        raise ValueError("REVISION_MISMATCH: reference body not resolvable")
+    base = resolved.preset
+    if base.preparation_digest != parent["preparation_digest"]:
+        raise ValueError("REVISION_MISMATCH: baseline drift")
+    proto = runpy.run_path(str(ROOT / "tools/cc_b1_revision.py"))
+    edit = proto["RestAreaEditIntent"](
+        base_preset_id=base.preset_id, base_revision=base.revision,
+        base_preparation_digest=base.preparation_digest,
+        cavity_id="oral-vowel-a-16x10mm", section_index=SITE,
+        area_m2=base.prepared.rest_state.sections[SITE].area_m2 * ratio)
+    revision = proto["prepare_rest_area_revision"](base, edit)
+    if not revision.accepted or revision.revision is None:
+        raise ValueError("REVISION_MISMATCH: reference edit not reproducible")
+    if detail != revision.revision.receipt():
+        raise ValueError("REVISION_MISMATCH: stored receipt differs from Core derivation")
+    source_list, _ = exp.EXP26.EXP13.build_sources()
+    physical_source = np.asarray(source_list[frozen.SOURCE_ID].source, dtype=np.float64)
+    if (manifest.get("source") != {
+            "id": frozen.SOURCE_ID, "sha256_le_f64": source_sha(physical_source)}
+        or manifest.get("task_plan_sha256") != exp.sha256_json(exp.task_plan_payload())
+        or manifest.get("baseline_quantized_sha256") != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256
+        or manifest.get("edited_quantized_sha256") != EXPECTED_EDIT_QUANTIZED[ratio_key]
+        or manifest.get("sample_rate_hz") != RATE
+        or manifest.get("sample_count") != SAMPLES
+        or manifest.get("acoustic_calls_per_body") != 102
+        or manifest.get("provenance", {}).get("gate_a_freeze_sha") != FROZEN_GATE_A_SHA
+        or manifest.get("provenance", {}).get("gate_b_limited_decision_sha") != ADOPTED_GATE_B_SHA):
+        raise ValueError("PHYSICAL_PROVENANCE_MISMATCH")
+    if ((output_dir / "baseline_trace.csv").read_bytes()
+            != cc_a2["trace_bytes"](exp, base.prepared.rest_state)
+        or (output_dir / "edited_trace.csv").read_bytes()
+            != cc_a2["trace_bytes"](exp, revision.revision.prepared.rest_state)):
+        raise ValueError("PHYSICAL_TRACE_MISMATCH")
+    expected_records = {
+        "baseline_pa.npy": ("baseline-pressure", "application/x-npy"),
+        "edited_pa.npy": ("edited-pressure", "application/x-npy"),
+        "baseline.wav": ("baseline-audio", "audio/wav"),
+        "edited.wav": ("edited-audio", "audio/wav"),
+        "baseline_trace.csv": ("baseline-trace", "text/csv"),
+        "edited_trace.csv": ("edited-trace", "text/csv"),
     }
+    expected_paths = set(expected_records)
     records = manifest.get("artifacts")
     if type(records) is not list or len(records) != len(expected_paths):
         raise ValueError("INVALID_ARTIFACT_SET")
@@ -341,6 +414,9 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
             raise ValueError("INVALID_ARTIFACT_REFERENCE")
         filename = record["path"]
         if filename not in expected_paths or filename in found:
+            raise ValueError("INVALID_ARTIFACT_REFERENCE")
+        if (set(record) != {"kind", "path", "media_type", "size_bytes", "sha256"}
+            or (record["kind"], record["media_type"]) != expected_records[filename]):
             raise ValueError("INVALID_ARTIFACT_REFERENCE")
         found.add(filename)
         path = output_dir / filename
@@ -365,9 +441,6 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
         or b.dtype != np.float64 or e.dtype != np.float64
         or not np.all(np.isfinite(b)) or not np.all(np.isfinite(e))):
         raise ValueError("INVALID_PRESSURE_DATA")
-    cc_a2 = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
-    frozen = cc_a2["_load_frozen_adapter"]()
-    exp = frozen._load_audited_experiment()
     if (exp.quantized_waveform_sha256(b) != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256
         or exp.quantized_waveform_sha256(e) != EXPECTED_EDIT_QUANTIZED[ratio_key]
         or manifest.get("baseline_quantized_sha256")
@@ -404,8 +477,7 @@ def main() -> None:
     if args.request is None or args.output_dir is None:
         parser.error("--request and --output-dir must be specified together")
     try:
-        request = json.loads(args.request.read_text(encoding="utf-8"),
-                             parse_constant=lambda s: (_ for _ in ()).throw(ValueError(s)))
+        request = strict_json_loads(args.request.read_text(encoding="utf-8"))
         result = perform(request, args.output_dir)
     except Exception as exc:
         result = refusal("FAILED", "CORE_GATE_C_RUNTIME_FAILURE", str(exc))

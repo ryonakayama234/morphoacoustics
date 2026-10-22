@@ -56,3 +56,24 @@ Further requirements not supplied by this PR: true Studio reload/persistence, au
 
 ## Gate C candidate post-publication negative tests
 For both audited ratios, CI now additionally reloads the saved `result.json` and all six physical outputs through Core's own `verify_output_archive` before acceptance. It then flips WAV bytes and confirms `ARTIFACT_HASH_MISMATCH`, plus an incomplete directory without a completion marker is refused. This does not substitute an untrusted-store security audit or future Studio restart/reload browser E2E. Stacked candidate remains DRAFT, not adopted.
+
+## Gate C adversarial trust amendment — 2026-10-22 (pre-CI CANDIDATE)
+
+**Hypothesis H-TRUST:** A completed Gate C candidate archive can be independently bound to Core's frozen M0/r1 and the exact section08 rest-area intervention, instead of trusting caller-written `revision_id` / `preparation_digest` / source/task text and SHA strings. A forged manifest with unchanged physical WAV/Pa must reject; changing geometry traces and updating their manifest hashes must also reject.
+
+| Negative control | Expected response | Current evidence |
+| --- | --- | --- |
+| Copy valid Pa/WAV; forge `BodyRevision.revision_id` | `REVISION_MISMATCH` | test added; CI pending |
+| Forge `BodyRevision.preparation_digest` | `REVISION_MISMATCH` | test added; CI pending |
+| Forge fixed source or task hash | `PHYSICAL_PROVENANCE_MISMATCH` | test added; CI pending |
+| Alter acoustic call count or artifact kind | typed refusal | test added; CI pending |
+| Rewrite CSV and replace its SHA in manifest | `PHYSICAL_TRACE_MISMATCH` | test added; CI pending |
+| Duplicate JSON object key or NaN constant | reject parser input | test added; CI pending |
+| Symlinked archive/parent path | `UNTRUSTED_SYMLINK_PATH` | test added; CI pending |
+| Cross-process restart with durable registry, storage race, hostile writer, OS permission boundary | fail closed | NOT TESTED / Gate C blocker |
+| Same-HEAD CC-A2, SV1, OG3, OG4 and full Core regression | all green | NOT TESTED on follow-up HEAD |
+| Human ABX, voice quality, arbitrary creature/graph | separate future Gate | NOT TESTED / NOT CLAIMED |
+
+**Independent Wolfram cross-check rerun:** For a *different simplified ideal* closed/open two-section duct, each 0.08m, c=343m/s, inlet area 3e-4m² and outlet area {1.5e-4,3e-4,6e-4}m², the evaluator returned {419.98908545780716, 535.9374999999999, 651.8859145421928} Hz using `c/(2 Pi L) ArcTan[Sqrt[A2/A1]]`. It confirmed strict monotonicity and the uniform-quarter-wave middle case. This **matches the earlier ideal check, not** the 16-section time-dependent solver and not a new Gate B/human result. Evaluation date: 2026-10-22 JST.
+
+**Decision policy:** remain `REVISE/MORE_DATA` until exact new HEAD Actions and independent trust review. Merely authoring these negative tests does not mean they passed. No autonomous merge to main. Separate Gate C limited API disposition from Gate D creator usability and Gate E auditory naturalness.
