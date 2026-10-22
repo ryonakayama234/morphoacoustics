@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morphoacoustics.local/contracts/cc-b1/core-limited-performer/v1/request.schema.json",
+  "title": "CC-B1 Core limited performer v1 research candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "parent",
+    "edit"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "cc-b1-core-limited-performer/v1"
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preset_id",
+        "revision",
+        "preparation_digest"
+      ],
+      "properties": {
+        "preset_id": {
+          "const": "v3b-axial-M0"
+        },
+        "revision": {
+          "const": 1
+        },
+        "preparation_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cavity_id",
+        "section_index",
+        "rest_area_ratio"
+      ],
+      "properties": {
+        "cavity_id": {
+          "const": "oral-vowel-a-16x10mm"
+        },
+        "section_index": {
+          "const": 8
+        },
+        "rest_area_ratio": {
+          "enum": [
+            "0.90",
+            "1.10"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+name: cc-b1-gate-c-versioned-limited-performer
+on:
+  pull_request:
+    paths:
+      - "tools/cc_b1_limited_performer.py"
+      - "tests/test_cc_b1_limited_performer.py"
+      - "contracts/cc-b1/**"
+      - "docs/research/cc-b1-body-revision-prototype/**"
+      - ".github/workflows/cc-b1-gate-c-versioned-performer.yml"
+  workflow_dispatch:
+jobs:
+  performer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned physical dependencies
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Boundary refusals and two true fresh physics pairs
+        env:
+          CC_B1_GATE_C_PHYSICAL: "1"
+        run: python -m pytest -v tests/test_cc_b1_limited_performer.py
+      - name: Regression against adopted CC-A2
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -q tests/test_cc_a2_live.py
+      - name: Candidate BodyRevision existing tests
+        run: python -m pytest -v tests/test_cc_b1_revision.py tests/test_body_presets.py
+      - name: Type check new additive adapter
+        run: MYPYPATH=src python -m mypy tools/cc_b1_limited_performer.py
+      - name: Archive physically generated Core v1 candidate pairs
+        run: |
+          mkdir -p gate-c-receipts
+          python tools/cc_b1_limited_performer.py --inspect-base > gate-c-receipts/inspect.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=json.loads(Path("gate-c-receipts/inspect.json").read_text("utf-8"))
+          for key in ("0.90","1.10"):
+              req={"schema_version":base["schema_version"],"parent":base["parent"],
+                   "edit":{"cavity_id":base["editable"]["cavity_id"],
+                           "section_index":base["editable"]["section_index"],
+                           "rest_area_ratio":key}}
+              Path("gate-c-receipts/request_"+key+".json").write_text(
+                  json.dumps(req,ensure_ascii=False,indent=2)+"\n","utf-8")
+          PY
+          python tools/cc_b1_limited_performer.py --request gate-c-receipts/request_0.90.json --output-dir gate-c-receipts/actual_0.90
+          python tools/cc_b1_limited_performer.py --request gate-c-receipts/request_1.10.json --output-dir gate-c-receipts/actual_1.10
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          for ratio in ("0.90","1.10"):
+              path=Path("gate-c-receipts/actual_"+ratio)
+              manifest=json.loads((path/"result.json").read_text("utf-8"))
+              assert manifest["status"]=="SUCCEEDED"
+              for a in manifest["artifacts"]:
+                  b=(path/a["path"]).read_bytes()
+                  assert hashlib.sha256(b).hexdigest()==a["sha256"]
+              print(ratio,manifest["relative_raw_pa_l2"],manifest["body_revision"]["revision_id"])
+          PY
+      - name: Preserve verified raw pressure and versioned provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-gate-c-versioned-physical-candidate
+          path: gate-c-receipts/
+          if-no-files-found: warn
