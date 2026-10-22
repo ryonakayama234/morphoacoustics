@@ -206,7 +206,7 @@ def test_audit_normalized_load_area_null_and_flow_power_change() -> None:
 
 
 @pytest.mark.parametrize("field,value",[
-    ("length_m",10**1000), ("area_m2",10**1000), ("sound_speed_m_s",10**1000),
+    ("length_m",10**1000), ("section_area_m2",10**1000), ("sound_speed_m_s",10**1000),
     ("air_density_kg_m3",10**1000), ("terminal_resistance_ratio_to_zc",10**1000)
 ])
 def test_audit_huge_integer_parameters_are_invalid(field: str,value: int) -> None:
@@ -244,3 +244,9 @@ def test_audit_dc_is_not_measured_work_rate() -> None:
     assert ac["entrance"]["mean_active_power_w"] is None
     assert ac["formal_phasor_power_limit_w"]["entrance"] > 0
     assert ac["terminal"]["mean_active_power_w"] is None
+
+
+def test_audit_extreme_small_medium_refused_without_zero_division() -> None:
+    with pytest.raises(port.InvalidListener):
+        port.evaluate(port.ListenerFixture(air_density_kg_m3=1e-300, sound_speed_m_s=1e-300),
+                      port.EntranceDrive())
