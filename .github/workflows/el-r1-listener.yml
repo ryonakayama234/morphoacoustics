@@ -36,4 +36,4 @@ jobs:
       - name: Run CLI and validate versioned JSON result
         run: |
           python experiments/043_el_r1_ear_port/run.py > el_r1_cli.json
-          python -c "import json;d=json.load(open('el_r1_cli.json'));assert d['schema_version']=='el-r1.passive.uniform.v0';assert d['planes']==['CANAL_ENTRANCE','TERMINAL_SIDE'];assert len(d['frequencies'])==4"
+          python -c "import json;d=json.load(open('el_r1_cli.json'));assert d['schema_version']=='el-r1.passive.uniform.v0a1';assert d['planes']==['CANAL_ENTRANCE','TERMINAL_SIDE'];assert len(d['frequencies'])==4"
