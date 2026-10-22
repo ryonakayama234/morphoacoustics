@@ -4,6 +4,7 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 import os
+import shutil
 from pathlib import Path
 import runpy
 import subprocess
@@ -201,13 +202,29 @@ def test_two_true_1d_archives_registry_pair_and_restart(tmp_path: Path) -> None:
 
         # Remove the completion marker. No unverified physical Take may
         # introduce a new body identity in a different store.
-        (archive / "result.json").rename(archive / "removed-marker")
+        incomplete = tmp_path / ("incomplete-" + ratio)
+        incomplete.mkdir()
+        (incomplete / "edited.wav").write_bytes((archive / "edited.wav").read_bytes())
         other = tmp_path / ("empty-" + ratio)
         other.mkdir(mode=0o700)
         code, rejected = command(
             CLI, "--register", "--registry-dir", str(other),
-            "--archive-dir", str(archive),
+            "--archive-dir", str(incomplete),
         )
         assert code != 0 and rejected["status"] == "REFUSED"
         assert not (other / "revisions").exists()
     assert len(set(ids)) == 2
+    archival = os.environ.get("CC_B1_REGISTRY_ARTIFACT_DIR")
+    if archival:
+        evidence = Path(archival)
+        evidence.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(directory, evidence / "registry")
+        for ratio in ("0.90", "1.10"):
+            shutil.copytree(tmp_path / ("archive-" + ratio),
+                            evidence / ("physical-" + ratio))
+        (evidence / "evidence.json").write_text(json.dumps({
+            "registry_schema_version": VERSION,
+            "revision_ids": ids,
+            "physics": "genuine two freshly executed source-pinned Core 1D pairs",
+            "scope": "research only; never a Studio Take, origin signature or ABX",
+        }, sort_keys=True, indent=2), "utf-8")
