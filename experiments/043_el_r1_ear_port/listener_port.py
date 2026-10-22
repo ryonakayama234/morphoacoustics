@@ -15,7 +15,7 @@ import numpy as np
 
 from morphoacoustics.acoustics.uniform_tube import UniformTube
 
-MODEL_VERSION = "el-r1.passive.uniform.v0"
+MODEL_VERSION = "el-r1.passive.uniform.v0a1"  # audit amendment A1
 ENTRANCE = "CANAL_ENTRANCE"
 TERMINAL = "TERMINAL_SIDE"
 DRIVE_KIND = "PRESCRIBED_TOTAL_ENTRANCE_PRESSURE"
@@ -56,9 +56,13 @@ class EntranceDrive:
 def _positive_finite(name: str, value: object) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise InvalidListener(f"{name}: real numeric value required")
-    if not isfinite(value) or value <= 0:
+    try:
+        number = float(value)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise InvalidListener(f"{name}: cannot convert to finite float") from exc
+    if not isfinite(number) or number <= 0:
         raise InvalidListener(f"{name}: finite and > 0 required")
-    return float(value)
+    return number
 
 
 def _bounded(name: str, value: float, low: float, high: float) -> None:
@@ -101,22 +105,43 @@ def evaluate(fixture: ListenerFixture, drive: EntranceDrive) -> dict[str, object
     if not isinstance(drive.frequencies_hz, (tuple, list)) or not 1 <= len(drive.frequencies_hz) <= 128:
         raise InvalidListener("frequencies_hz must contain 1..128 samples")
     for f in drive.frequencies_hz:
-        if isinstance(f, bool) or not isinstance(f, (float, int)) or not isfinite(f) or f < 0:
+        if isinstance(f, bool) or not isinstance(f, (float, int)):
             raise InvalidListener("frequencies_hz: finite nonnegative real required")
-    fs = np.asarray(drive.frequencies_hz, dtype=float)
+        try:
+            converted = float(f)
+        except (OverflowError, ValueError, TypeError) as exc:
+            raise InvalidListener("frequencies_hz: numeric conversion failed") from exc
+        if not isfinite(converted) or converted < 0:
+            raise InvalidListener("frequencies_hz: finite nonnegative real required")
+    try:
+        fs = np.asarray(drive.frequencies_hz, dtype=float)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise InvalidListener("frequencies_hz: numeric conversion failed") from exc
     if np.any(np.diff(fs) <= 0):
         raise InvalidListener("frequencies_hz must strictly increase")
     if fs[-1] > 8000:
         raise UnsupportedListener("frequency beyond 8000 Hz research capability")
     if isinstance(drive.entrance_pressure_pa, bool) or not isinstance(drive.entrance_pressure_pa, (float, int, complex)):
         raise InvalidListener("entrance_pressure_pa must be numeric phasor")
-    p0 = complex(drive.entrance_pressure_pa)
+    try:
+        p0 = complex(drive.entrance_pressure_pa)
+    except (OverflowError, ValueError, TypeError) as exc:
+        raise InvalidListener("entrance_pressure_pa numeric conversion failed") from exc
     if not isfinite(p0.real) or not isfinite(p0.imag):
         raise InvalidListener("entrance_pressure_pa must be finite")
+    # Audit amendment A1: conservative engineering small-signal envelope.
+    # epsilon=|p0|/(rho*c^2) is dimensionless; threshold is not a physiological law.
+    epsilon = abs(p0) / (rho * c * c)
+    if not isfinite(epsilon):
+        raise InvalidListener("nonfinite dimensionless pressure perturbation")
+    if epsilon > 1e-3:
+        raise UnsupportedListener("entrance pressure exceeds small-signal research envelope epsilon<=1e-3")
 
     tube = UniformTube(length_m=length, area_m2=area, air_density_kg_m3=rho, sound_speed_m_s=c)
     zc = tube.characteristic_impedance_pa_s_m3
     zt = ratio * zc
+    if not all(isfinite(x) and x > 0 for x in (zc, zt)):
+        raise InvalidListener("derived impedances must be finite and positive")
     matrix = tube.transfer_matrix(fs)
     a, b = matrix[:, 0, 0], matrix[:, 0, 1]
     cc, d = matrix[:, 1, 0], matrix[:, 1, 1]
@@ -161,23 +186,32 @@ def evaluate(fixture: ListenerFixture, drive: EntranceDrive) -> dict[str, object
         "fixture_sha256": sha256(canonical.encode("utf-8")).hexdigest(),
         "planes": [ENTRANCE, TERMINAL],
         "phase_convention": "exp(+i*omega*t)", "phasor_scale": "peak",
+        "linear_pressure_perturbation_ratio": float(epsilon),
+        "linear_pressure_perturbation_limit": 1e-3,
         "frequencies": [],
     }
     rows = result["frequencies"]
     assert isinstance(rows, list)
     for i, frequency in enumerate(fs):
+        # At f=0 the algebraic phasor solution is only a limit, not a DC
+        # acoustic power observation (where the 1/2 factor is inapplicable).
+        zero_limit = frequency == 0.0
         rows.append({
             "frequency_hz": float(frequency),
+            "frequency_interpretation": "ZERO_FREQUENCY_LIMIT" if zero_limit else "HARMONIC_AC",
+            "formal_phasor_power_limit_w": ({
+                "entrance": float(pin[i]), "terminal": float(pout[i])
+            } if zero_limit else None),
             "entrance": {"pressure_pa": _complex_record(p0),
                          "volume_velocity_m3_s": _complex_record(u0[i]),
-                         "mean_active_power_w": float(pin[i])},
+                         "mean_active_power_w": None if zero_limit else float(pin[i])},
             "terminal": {"pressure_pa": _complex_record(pl[i]),
                          "volume_velocity_m3_s": _complex_record(ul[i]),
-                         "mean_active_power_w": float(pout[i])},
+                         "mean_active_power_w": None if zero_limit else float(pout[i])},
             "characteristic_impedance_pa_s_m3": float(zc),
             "input_impedance_pa_s_m3": _complex_record(zin[i]),
             "transfer_pressure_terminal_per_entrance": _complex_record(h[i]),
             "entrance_reflection_coefficient": _complex_record(gamma0[i]),
-            "power_residual_w": float(pin[i] - pout[i]),
+            "power_residual_w": None if zero_limit else float(pin[i] - pout[i]),
         })
     return result
