@@ -24,4 +24,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e ./asmr pytest
       - run: python -m pytest -q asmr/tests/test_catalog.py
-      - run: python -c "from morphoacoustics_asmr import list_research;assert len(list_research())==5"
+      - run: python -c "from morphoacoustics_asmr import list_research;assert len(list_research())==6"
+      - name: Built wheel resource smoke test (isolated environment)
+        run: |
+          python -m pip wheel --no-deps --wheel-dir "$RUNNER_TEMP/asmr-wheels" ./asmr
+          python -m venv "$RUNNER_TEMP/asmr-installed"
+          "$RUNNER_TEMP/asmr-installed/bin/python" -m pip install --no-deps "$RUNNER_TEMP"/asmr-wheels/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/asmr-installed/bin/python" -c "from morphoacoustics_asmr import list_research; assert len(list_research())==6; assert any(x.id=='EL-R2-S1' for x in list_research())"
