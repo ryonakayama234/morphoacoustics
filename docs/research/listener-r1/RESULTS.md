@@ -33,3 +33,6 @@ Evidence head `47921ed329c7d9a03f1f8622ffd2b319fdbb3d6e`:
 - [EL-R1 push workflow run 39725712899](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39725712899): **SUCCESS** for Python 3.11/3.12.
 - [Repo tests push workflow run 39725712901](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39725712901): **SUCCESS**; PR-run existing jobs may independently finish later.
 **Gate B numerical/CI acceptance: PASSED for the scoped research model**. Gate B scientific review/adoption remains **NOT ADOPTED**. This documentation-only CI-evidence update adds no solver changes and does not alter the original preregistered acceptance thresholds. A subsequent check on its new branch commit may be pending.
+
+## Independent scientific audit follow-up A1 (2026-10-22)
+Audit verdict on head `fea964e...`: CONDITIONAL PASS. Follow-up A1 implements clarified total vs incident boundary comparison, 0Hz formal power limit semantics, normalized load area-null, full reproducible Wolfram 36-case golden, Python giant-integer refusal, and conservative engineering small-signal guard. **This is after Gate A** and changes the research output schema to v0a1. Read [AUDIT-AMENDMENT-A1](./AUDIT-AMENDMENT-A1.md). CI for latest amended head is pending; no physiological validation or production adoption.
