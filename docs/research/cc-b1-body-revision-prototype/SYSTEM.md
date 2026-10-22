@@ -51,3 +51,28 @@ The implementation is a separate `tools/` entrypoint due to legacy frozen source
 
 ## Gate C readback validation boundary
 Core's additive candidate now exposes `verify_output_archive(path)`: before allowing future Studio import it independently checks a **complete marker-last manifest**, exact artifact set, SHA256/length, raw finite float64 Pa content, quantized Gate B baseline/edit oracles, same-pair gain WAV reconstruction, exact base/edit reference, and a nonzero numerical pressure difference. It never treats a partial directory as a successful physical output. Digest/hash checking is NOT a digital signature of origin; an adversarial storage and full persisted revision registry remain Gate C product-adoption conditions.
+
+## Gate C revision-readback trust boundary — 2026-10-22 (CANDIDATE)
+
+```mermaid
+flowchart TD
+  subgraph Studio["Studio (future Gate D, NOT ACTIVE)"]
+    UX["Creator selects one supported edit"] --> R["Version-pinned request (no raw sound/source control)"]
+    T["Immutable creator Take (NOT IMPLEMENTED)"]
+  end
+  subgraph Core["Core Gate C stacked research"]
+    R --> Q["Strict JSON parser and capability guard"]
+    M["Core-owned frozen M0/r1 + audited reference digest"] --> D["Re-derive deterministic BodyRevision"]
+    Q --> D
+    D --> S["Existing fixed LF and 3-task physical solver"]
+    S --> P["Raw Pa + physical traces + pair-common-gain WAV"]
+    P --> A["Completion marker last: result.json"]
+    A --> V["Reload checks source/task, re-derived BodyRevision, traces, Pa/WAV, exact hashes"]
+    V -. "future verified evidence only" .-> T
+  end
+  B["Untrusted client/manifest/files"] -. "never authoritative" .-> V
+```
+
+**Security model:** external manifest fields are claims, not proof; re-derive Core-owned physical identity. The sole numerical mutation is still the 16×10mm rigid isolated 1D cavity's section 8 rest area; no arbitrary organ graph, full 3D anatomy, ASMR, SMC-1, or neural acoustics enters this boundary. Symlink rejection lowers risk but does not eliminate TOCTOU: call only within a trusted, owned private workspace until a service/storage security review. Currently the command still runs from source checkout and is **not** a supported distribution ABI. Strict process restart, durable registry and Studio negotiation remain Gate C blockers.
+
+**Physical vs listener conclusion:** verify model provenance and acoustic difference in raw Pa, not naturalness, intelligibility, cross-body character identity, or live studio audition.
