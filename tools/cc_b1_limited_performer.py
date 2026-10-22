@@ -307,15 +307,17 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
     current = inspect_baseline()
     if parent != current["parent"]:
         raise ValueError("REVISION_MISMATCH: stored body not in authenticated registry")
+    current_edit = current["editable"]
+    assert isinstance(current_edit, dict)
     ratio_key = edit_intent["rest_area_ratio"]
     ratio = RATIOS[ratio_key]
     detail = manifest.get("body_revision")
     if type(detail) is not dict or type(detail.get("edit")) is not dict:
         raise ValueError("REVISION_MISMATCH: missing prepared revision")
     change = detail["edit"]
-    reference_area = current["editable"]["original_area_m2"]
+    reference_area = current_edit["original_area_m2"]
     if (change.get("section_index") != SITE
-        or change.get("cavity_id") != current["editable"]["cavity_id"]
+        or change.get("cavity_id") != current_edit["cavity_id"]
         or type(change.get("previous_area_m2")) not in (float, int)
         or type(change.get("new_area_m2")) not in (float, int)
         or not math.isclose(change["previous_area_m2"], reference_area, rel_tol=0, abs_tol=1e-17)
@@ -374,7 +376,9 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
            != exp.quantized_waveform_sha256(e)):
         raise ValueError("PRESSURE_ORACLE_MISMATCH")
     gain = manifest.get("shared_playback_gain")
-    if (type(gain) not in (float, int) or not math.isfinite(gain) or gain <= 0
+    if not isinstance(gain, (float, int)) or isinstance(gain, bool):
+        raise ValueError("PLAYBACK_MISMATCH: nonnumeric gain")
+    if (not math.isfinite(gain) or gain <= 0
         or (output_dir / "baseline.wav").read_bytes() != common_gain_wav(b, float(gain))
         or (output_dir / "edited.wav").read_bytes() != common_gain_wav(e, float(gain))):
         raise ValueError("PLAYBACK_MISMATCH")
