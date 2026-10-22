@@ -146,3 +146,27 @@ def test_actual_two_physical_pairs_via_cli(tmp_path: Path) -> None:
         rc, verified, _ = invoke(*OPT, "--verify", "--archive-dir", output)
         assert rc == 0
         assert verified == receipt
+        manifest = output / "result.json"
+        authentic = manifest.read_text("utf-8")
+        for location, key, forged in (
+            ("source", "id", "impostor-source"),
+            ("source", "sha256_le_f64", "a" * 64),
+            ("", "task_plan_sha256", "b" * 64),
+            ("", "sample_rate_hz", 44100),
+            ("", "acoustic_calls_per_body", 0),
+            ("provenance", "gate_a_freeze_sha", "0" * 40),
+            ("artifacts", "kind", "studio-take"),
+        ):
+            copy = json.loads(authentic)
+            if location == "":
+                copy[key] = forged
+            elif location == "artifacts":
+                copy["artifacts"][0][key] = forged
+            else:
+                copy[location][key] = forged
+            manifest.write_text(json.dumps(copy, ensure_ascii=False), "utf-8")
+            expect_failure([*OPT, "--verify", "--archive-dir", output],
+                           "ARCHIVE_VERIFICATION_FAILED")
+            manifest.write_text(authentic, "utf-8")
+        rc, restored, _ = invoke(*OPT, "--verify", "--archive-dir", output)
+        assert rc == 0 and restored == receipt
