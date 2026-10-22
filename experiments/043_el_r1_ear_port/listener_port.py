@@ -131,7 +131,10 @@ def evaluate(fixture: ListenerFixture, drive: EntranceDrive) -> dict[str, object
         raise InvalidListener("entrance_pressure_pa must be finite")
     # Audit amendment A1: conservative engineering small-signal envelope.
     # epsilon=|p0|/(rho*c^2) is dimensionless; threshold is not a physiological law.
-    epsilon = abs(p0) / (rho * c * c)
+    medium_pressure_scale = rho * c * c
+    if not isfinite(medium_pressure_scale) or medium_pressure_scale <= 0:
+        raise InvalidListener("medium pressure scale rho*c^2 must be representable and positive")
+    epsilon = abs(p0) / medium_pressure_scale
     if not isfinite(epsilon):
         raise InvalidListener("nonfinite dimensionless pressure perturbation")
     if epsilon > 1e-3:
