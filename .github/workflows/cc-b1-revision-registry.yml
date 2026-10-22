@@ -23,9 +23,17 @@ jobs:
       - name: New registry adversarial tests and two genuine physical archives
         env:
           CC_B1_GATE_C_PHYSICAL: "1"
+          CC_B1_REGISTRY_ARTIFACT_DIR: "registry-evidence"
         run: |
           python -m pytest -v tests/test_cc_b1_revision_registry.py
           python -m pytest -v tests/test_cc_b1_candidate_cli.py tests/test_cc_b1_limited_performer.py tests/test_cc_b1_revision.py
+      - name: Preserve original physical pressure/WAV and restored immutable body receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-revision-registry-verified-physical-evidence
+          path: registry-evidence/
+          if-no-files-found: warn
       - name: Existing Core physics and contract regressions
         run: |
           python -m pytest -q tests/test_performance_contract_v0.py tests/test_performance_contract_v1.py tests/test_body_presets.py tests/test_branch3_public.py tests/test_sv1_sustained_vowel.py
