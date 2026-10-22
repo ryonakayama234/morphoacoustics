@@ -18,6 +18,7 @@ import runpy
 import subprocess
 import sys
 import wave
+from typing import Any
 
 import numpy as np
 
@@ -102,7 +103,7 @@ def common_gain_wav(pressure: np.ndarray, gain: float) -> bytes:
     return stream.getvalue()
 
 
-def checked_physical_result(exp: object, result: object, label: str) -> np.ndarray:
+def checked_physical_result(exp: Any, result: Any, label: str) -> np.ndarray:
     if (result.feasibility.status is not exp.FeasibilityStatus.FEASIBLE
         or result.endpoint is None or result.waveform is None
         or result.acoustic_call_count != 102):
