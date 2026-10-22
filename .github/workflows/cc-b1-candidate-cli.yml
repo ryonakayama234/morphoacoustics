@@ -1,0 +1,79 @@
+name: cc-b1-candidate-cli-boundary
+on:
+  pull_request:
+    paths:
+      - "tools/cc_b1_candidate_cli.py"
+      - "tests/test_cc_b1_candidate_cli.py"
+      - "docs/research/cc-b1-cli-gate-c/**"
+      - ".github/workflows/cc-b1-candidate-cli.yml"
+  workflow_dispatch:
+
+jobs:
+  contract-and-physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned physical dependencies and project
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Boundary regression and two real Core physical pairs
+        env:
+          CC_B1_GATE_C_PHYSICAL: "1"
+        run: |
+          python -m pytest -v tests/test_cc_b1_candidate_cli.py
+          python -m pytest -v tests/test_cc_b1_limited_performer.py
+      - name: Adopted Core and legacy API regression
+        run: |
+          python -m pytest -q tests/test_performance_contract_v0.py tests/test_performance_contract_v1.py tests/test_body_presets.py tests/test_branch3_public.py tests/test_sv1_sustained_vowel.py
+      - name: Generate persisted physical CLI evidence with readback
+        run: |
+          mkdir -p cli-evidence
+          python tools/cc_b1_candidate_cli.py --protocol-version cc-b1-core-limited-performer/v1 --inspect > cli-evidence/inspection.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base = Path("cli-evidence")
+          report = json.loads((base / "inspection.json").read_text("utf-8"))
+          for ratio in ("0.90", "1.10"):
+              payload = {
+                  "schema_version": report["schema_version"],
+                  "parent": report["parent"],
+                  "edit": {"cavity_id": report["editable"]["cavity_id"],
+                           "section_index": 8, "rest_area_ratio": ratio},
+              }
+              (base / ("request_" + ratio + ".json")).write_text(
+                  json.dumps(payload, sort_keys=True, indent=2), "utf-8")
+          PY
+          for ratio in 0.90 1.10; do
+            python tools/cc_b1_candidate_cli.py --protocol-version cc-b1-core-limited-performer/v1 \
+              --perform --request "cli-evidence/request_${ratio}.json" \
+              --output-dir "cli-evidence/physical_${ratio}" > "cli-evidence/performed_${ratio}.json"
+            python tools/cc_b1_candidate_cli.py --protocol-version cc-b1-core-limited-performer/v1 \
+              --verify --archive-dir "cli-evidence/physical_${ratio}" > "cli-evidence/verified_${ratio}.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("cli-evidence")
+          for ratio in ("0.90", "1.10"):
+              performed = json.loads((p / ("performed_" + ratio + ".json")).read_text("utf-8"))
+              verified = json.loads((p / ("verified_" + ratio + ".json")).read_text("utf-8"))
+              assert performed == verified and performed["status"] == "SUCCEEDED"
+              assert performed["acoustic_calls_per_body"] == 102
+              assert len(performed["artifacts"]) == 6
+          PY
+      - name: Preserve physical receipts and actual raw Pa/WAV only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-b1-cli-boundary-candidate-physical-evidence
+          path: cli-evidence/
+          if-no-files-found: warn
+      - name: Static type check candidate outer CLI
+        run: |
+          MYPYPATH=src python -m mypy tools/cc_b1_candidate_cli.py

@@ -1,0 +1,12 @@
+{
+  "source": "wolfram_ideal_two_tube.wl",
+  "evaluation_date": "2026-10-22",
+  "oracle": "WolframLanguageEvaluator",
+  "model": "two equal uniform 0.08m lossless ducts with a pressure-release outlet",
+  "air_sound_speed_m_per_s": 343,
+  "first_area_m2": 0.0003,
+  "ratios": [0.9, 1, 1.1],
+  "first_resonance_hz": [517.97191442245, 535.9375, 552.19071361832],
+  "strictly_increasing": true,
+  "scope": "Independent ideal-model sanity check only; NOT a frozen physical Core gate or human audibility"
+}
