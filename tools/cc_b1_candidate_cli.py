@@ -74,6 +74,92 @@ def candidate() -> dict[str, Any]:
     return runpy.run_path(str(ROOT / "tools/cc_b1_limited_performer.py"))
 
 
+def assert_fixed_causal_metadata(manifest: dict[str, Any], backend: dict[str, Any]) -> None:
+    """Bind claimed source/task/metadata to the actually installed fixed Core law.
+
+    Not a signature or proof of the Git checkout's origin; the archive still
+    requires a trusted local installation and controlled storage.
+    """
+    keys = {
+        "schema_version", "status", "capability", "claim_limit", "parent",
+        "edit_intent", "body_revision", "source", "task_plan_sha256",
+        "baseline_quantized_sha256", "edited_quantized_sha256",
+        "relative_raw_pa_l2", "acoustic_calls_per_body", "sample_rate_hz",
+        "sample_count", "shared_playback_gain", "artifacts", "provenance",
+        "limitations",
+    }
+    if set(manifest) != keys:
+        raise ValueError("ARCHIVE_METADATA_MISMATCH: top-level fields")
+    core = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
+    frozen = core["_load_frozen_adapter"]()
+    exp = frozen._load_audited_experiment()
+    source_list, _ = exp.EXP26.EXP13.build_sources()
+    source = source_list[frozen.SOURCE_ID].source
+    expected = {
+        "schema_version": VERSION,
+        "status": "SUCCEEDED",
+        "capability": "site08-one-section-rest-area-0.90-or-1.10/v1",
+        "claim_limit": "fixed LF and three-task, 16x10mm 1D computational physical model",
+        "source": {"id": frozen.SOURCE_ID,
+                   "sha256_le_f64": backend["source_sha"](source)},
+        "task_plan_sha256": exp.sha256_json(exp.task_plan_payload()),
+        "acoustic_calls_per_body": 102,
+        "sample_rate_hz": 48000,
+        "sample_count": 24000,
+        "limitations": [
+            "research candidate, not installed/published stable API",
+            "no stable Studio Take yet", "no audible voice identity claim",
+            "digest is integrity evidence, not cryptographic origin signature",
+        ],
+    }
+    # JSON canonical serialization is type sensitive: True cannot spoof 1.
+    def exact(value: object) -> str:
+        return json.dumps(value, sort_keys=True, ensure_ascii=False,
+                          separators=(",", ":"), allow_nan=False)
+    for key, value in expected.items():
+        if exact(manifest[key]) != exact(value):
+            raise ValueError("ARCHIVE_METADATA_MISMATCH: " + key)
+    provenance = manifest["provenance"]
+    if type(provenance) is not dict or set(provenance) != {
+        "core_checkout_sha", "gate_a_freeze_sha",
+        "gate_b_limited_decision_sha", "numpy_version", "python_version",
+    }:
+        raise ValueError("ARCHIVE_METADATA_MISMATCH: provenance shape")
+    for key, expected_sha in (
+        ("gate_a_freeze_sha", backend["FROZEN_GATE_A_SHA"]),
+        ("gate_b_limited_decision_sha", backend["ADOPTED_GATE_B_SHA"]),
+    ):
+        if provenance[key] != expected_sha:
+            raise ValueError("ARCHIVE_METADATA_MISMATCH: " + key)
+    reported_sha = provenance["core_checkout_sha"]
+    if (type(reported_sha) is not str or len(reported_sha) != 40
+        or any(char not in "0123456789abcdef" for char in reported_sha)):
+        raise ValueError("ARCHIVE_METADATA_MISMATCH: checkout SHA shape")
+    if (provenance["numpy_version"] != exp.AUDITED_NUMPY_VERSION
+        or type(provenance["python_version"]) is not str
+        or not provenance["python_version"]):
+        raise ValueError("ARCHIVE_METADATA_MISMATCH: dependency provenance")
+    expected_kinds = {
+        "baseline_pa.npy": ("baseline-pressure", "application/x-npy"),
+        "edited_pa.npy": ("edited-pressure", "application/x-npy"),
+        "baseline.wav": ("baseline-audio", "audio/wav"),
+        "edited.wav": ("edited-audio", "audio/wav"),
+        "baseline_trace.csv": ("baseline-trace", "text/csv"),
+        "edited_trace.csv": ("edited-trace", "text/csv"),
+    }
+    artifacts = manifest["artifacts"]
+    if type(artifacts) is not list or len(artifacts) != 6:
+        raise ValueError("ARCHIVE_METADATA_MISMATCH: artifacts")
+    for item in artifacts:
+        if (type(item) is not dict or set(item) != {
+            "kind", "path", "media_type", "size_bytes", "sha256"
+        } or item.get("path") not in expected_kinds
+            or type(item["size_bytes"]) is not int):
+            raise ValueError("ARCHIVE_METADATA_MISMATCH: artifact fields")
+        if (item["kind"], item["media_type"]) != expected_kinds[item["path"]]:
+            raise ValueError("ARCHIVE_METADATA_MISMATCH: artifact semantics")
+
+
 def execute(argv: list[str] | None = None) -> dict[str, object]:
     parser = StrictParser(description="Opt-in limited CC-B1 Core research ABI")
     parser.add_argument("--protocol-version", required=True)
@@ -130,7 +216,10 @@ def execute(argv: list[str] | None = None) -> dict[str, object]:
     except (OSError, UnicodeError, ValueError, TypeError):
         return refusal("INVALID", "ARCHIVE_JSON_INVALID", "Untrusted or incomplete archive manifest")
     try:
-        return candidate()["verify_output_archive"](args.archive_dir)
+        backend = candidate()
+        verified = backend["verify_output_archive"](args.archive_dir)
+        assert_fixed_causal_metadata(verified, backend)
+        return verified
     except Exception:
         return refusal("FAILED", "ARCHIVE_VERIFICATION_FAILED", "Core archive verification failed")
 
