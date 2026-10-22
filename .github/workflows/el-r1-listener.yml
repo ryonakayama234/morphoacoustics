@@ -1,0 +1,39 @@
+name: el-r1-listener-port
+
+on:
+  push:
+    paths:
+      - "experiments/043_el_r1_ear_port/**"
+      - "docs/research/listener-r1/**"
+      - "tests/test_experiment_el_r1.py"
+      - ".github/workflows/el-r1-listener.yml"
+  pull_request:
+    paths:
+      - "experiments/043_el_r1_ear_port/**"
+      - "docs/research/listener-r1/**"
+      - "tests/test_experiment_el_r1.py"
+      - ".github/workflows/el-r1-listener.yml"
+
+jobs:
+  passive-ear-port:
+    name: "EL-R1 oracle + existing Core tube / Python ${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Core and research dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Test EL-R1, frozen Wolfram oracle and existing tube regressions
+        run: python -m pytest -q tests/test_experiment_el_r1.py tests/test_acoustics_uniform_tube.py tests/test_acoustics_segmented_tube.py tests/scientific/test_uniform_tube.py
+      - name: Run CLI and validate versioned JSON result
+        run: |
+          python experiments/043_el_r1_ear_port/run.py > el_r1_cli.json
+          python -c "import json;d=json.load(open('el_r1_cli.json'));assert d['schema_version']=='el-r1.passive.uniform.v0';assert d['planes']==['CANAL_ENTRANCE','TERMINAL_SIDE'];assert len(d['frequencies'])==4"
