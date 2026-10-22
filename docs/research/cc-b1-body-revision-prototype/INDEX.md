@@ -28,3 +28,12 @@ Independent reproducible theoretical spot-check: [Wolfram recurrence source](wol
 
 ## Gate C optional verified archive consumption
 Call `verify_output_archive(output_dir)` on previously generated data; never let Studio infer success from a WAV alone. It checks exact version/profile and physical-origin evidence within the limited numerical model. This is a candidate Core verifier still under `tools/`, not an installed stable library.
+
+## Gate C / revision replay security increment (2026-10-22)
+Implementation branch: [Gate C revision replay audit](https://github.com/ryonakayama234/morphoacoustics/tree/feature/cc-b1-gate-c-revision-replay-audit-20261022), stacked on candidate [PR #159](https://github.com/ryonakayama234/morphoacoustics/pull/159), tracked by [Core #160](https://github.com/ryonakayama234/morphoacoustics/issues/160).
+
+- **SYSTEM**: trust/data-flow diagram of baseline registry → deterministic derived BodyRevision → readback verification.
+- **DATA**: complete canonical receipt equality, not only file hashes, with explicit type preservation.
+- **EXPERIMENT**: wrong-identity fault injections and Wolfram ideal-duct sanity check, with unexecuted Gates separately labeled.
+- **Code/tests**: `tools/cc_b1_limited_performer.py` readback replay and `tests/test_cc_b1_limited_performer.py` physical-pair tamper test.
+- **Status**: code authored on Draft branch; do not conflate an authored test with a passing exact-head CI receipt. Still not a durable registry, installed public ABI, Studio Take or Gate C acceptance.

@@ -56,3 +56,17 @@ Further requirements not supplied by this PR: true Studio reload/persistence, au
 
 ## Gate C candidate post-publication negative tests
 For both audited ratios, CI now additionally reloads the saved `result.json` and all six physical outputs through Core's own `verify_output_archive` before acceptance. It then flips WAV bytes and confirms `ARTIFACT_HASH_MISMATCH`, plus an incomplete directory without a completion marker is refused. This does not substitute an untrusted-store security audit or future Studio restart/reload browser E2E. Stacked candidate remains DRAFT, not adopted.
+
+## Gate C replay falsification experiment (2026-10-22, authored / exact-head CI pending)
+
+**H:** A stored archive can have correctly hashed, unchanged raw-Pa and WAV files while claiming a false `BodyRevision` identity. A readback verifier which only checks geometry edit fields and file hashes is insufficient. A verifier which deterministically re-derives the full revision from the Core-trusted M0/r1 parent and site08 intent rejects these forged receipts, while accepting untampered candidates.
+
+**Controls, identical frozen source and existing physics:**
+- Positive: newly computed two-body archives at ratios `0.90` and `1.10`, exact parent, unchanged JSON receipt, byte/oracle checks.
+- Negative: change only `revision_id`, `edit_digest`, `preparation_digest` or `backend_id` in `result.json`; preserve six physical artifact files and SHA-256 values. Each must reject `REVISION_MISMATCH`.
+- Type mutation: `section_index: 8` → `true` must reject, even when loosely equal in Python. Restore manifest and verify acceptance, then flip WAV bytes to ensure previous `ARTIFACT_HASH_MISMATCH` gate is retained.
+- This change intentionally does **not** re-run the Gate A/B science design or modify physical solver. Dedicated physical CI must execute against the exact PR HEAD and report PASS/FAIL; until then every newly authored negative gate is **NOT TESTED**.
+
+**Independent ideal-acoustic spot check (Wolfram evaluator run 2026-10-22; not a new 16-section oracle):** For a two-section lossless 0.08m+0.08m pressure-release tube, `c=343 m/s`, first area `3e-4 m²`, second area `{1.5e-4,3e-4,6e-4} m²`, `f1=c/(2πL) atan(sqrt(A2/A1))` gives `{419.9890854578,535.9375,651.8859145422} Hz` and a monotone response. This confirms **only** a minimal physical geometry→resonance sensitivity, not the existing 16-section site08 sound or listening discriminability. Previous Gate B 16-section Wolfram/source-pinned evidence remains upstream; do not call this an independent confirmation of it.
+
+**Decision:** `HOLD` for formal Core Gate C until exact-head tests, trust-boundary negative-case ledger, external source identity, importable package or documented supported ABI, durable registry and independent owner-delegated review are complete. Passing a GitHub test is not an independent-human scientific audit.

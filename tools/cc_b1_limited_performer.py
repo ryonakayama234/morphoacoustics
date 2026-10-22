@@ -368,6 +368,47 @@ def verify_output_archive(output_dir: Path) -> dict[str, object]:
     cc_a2 = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
     frozen = cc_a2["_load_frozen_adapter"]()
     exp = frozen._load_audited_experiment()
+    # Reconstruct the immutable revision *from trusted Core data*, not from
+    # caller-editable result.json claims. File hashes authenticate neither
+    # revision identity nor ancestry: both can be forged with a changed manifest.
+    from morphoacoustics.integration.body_presets import (
+        CharacterBodyBinding, preparation_digest,
+    )
+    registry = cc_a2["prepared_registry"](exp)
+    resolution = registry.resolve(
+        CharacterBodyBinding("cc-b1", BASE_ID, BASE_REVISION),
+        required_backend_id=exp.TRACT1D_BACKEND_ID,
+    )
+    if not resolution.is_bound or resolution.preset is None:
+        raise ValueError("REVISION_MISMATCH: trusted parent unavailable")
+    base = resolution.preset
+    if (base.preparation_digest != parent["preparation_digest"]
+        or preparation_digest(base.prepared) != base.preparation_digest):
+        raise ValueError("REVISION_MISMATCH: trusted parent changed")
+    proto = runpy.run_path(str(ROOT / "tools/cc_b1_revision.py"))
+    edit = proto["RestAreaEditIntent"](
+        base_preset_id=base.preset_id,
+        base_revision=base.revision,
+        base_preparation_digest=base.preparation_digest,
+        cavity_id=edit_intent["cavity_id"],
+        section_index=SITE,
+        area_m2=base.prepared.rest_state.sections[SITE].area_m2 * ratio,
+    )
+    derived = proto["prepare_rest_area_revision"](base, edit)
+    if not derived.accepted or derived.revision is None:
+        raise ValueError("REVISION_MISMATCH: cannot replay trusted edit")
+    # Compare serialized types and all keys, not Python dict equality:
+    # True == 1 would otherwise admit an altered integer field.
+    def canonical_receipt(value: object) -> str:
+        return json.dumps(value, sort_keys=True, ensure_ascii=False,
+                          separators=(",", ":"), allow_nan=False)
+    try:
+        valid_receipt = (canonical_receipt(detail)
+                         == canonical_receipt(derived.revision.receipt()))
+    except (ValueError, TypeError):
+        valid_receipt = False
+    if not valid_receipt:
+        raise ValueError("REVISION_MISMATCH: derived revision receipt mismatch")
     if (exp.quantized_waveform_sha256(b) != exp.AUDITED_QUANTIZED_WAVEFORM_SHA256
         or exp.quantized_waveform_sha256(e) != EXPECTED_EDIT_QUANTIZED[ratio_key]
         or manifest.get("baseline_quantized_sha256")

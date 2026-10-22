@@ -98,6 +98,30 @@ def test_actual_new_physical_revision_roundtrip(tmp_path,ratio):
                 wav.getnframes())==(1,2,48000,24000)
     with pytest.raises(FileExistsError):
         ADAPTER["perform"](request(d,ratio),output)
+    # A valid WAV/NPY hash does not prove the body receipt. An attacker may
+    # rewrite result.json alone, or replace bool/int metadata without altering
+    # physical payload bytes. Trusted physical replay must catch every case.
+    manifest_path = output / "result.json"
+    original_manifest = manifest_path.read_text("utf-8")
+    for key, forged in (
+        ("revision_id", "cc-b1-forged"),
+        ("edit_digest", "sha256:" + "f" * 64),
+        ("preparation_digest", "sha256:" + "e" * 64),
+        ("backend_id", "forged-physical-solver"),
+    ):
+        altered = json.loads(original_manifest)
+        altered["body_revision"][key] = forged
+        manifest_path.write_text(json.dumps(altered, ensure_ascii=False), "utf-8")
+        with pytest.raises(ValueError, match="REVISION_MISMATCH"):
+            ADAPTER["verify_output_archive"](output)
+        manifest_path.write_text(original_manifest, "utf-8")
+    altered = json.loads(original_manifest)
+    altered["body_revision"]["edit"]["section_index"] = True
+    manifest_path.write_text(json.dumps(altered, ensure_ascii=False), "utf-8")
+    with pytest.raises(ValueError, match="REVISION_MISMATCH"):
+        ADAPTER["verify_output_archive"](output)
+    manifest_path.write_text(original_manifest, "utf-8")
+    assert ADAPTER["verify_output_archive"](output) == ret
     # Byte-level tampering must be rejected even when the manifest remains present.
     wav=output/"edited.wav"
     wav.write_bytes(wav.read_bytes()+b"TAMPER")

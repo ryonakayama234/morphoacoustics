@@ -39,3 +39,9 @@ Output is a success `result.json` written last only after new two-body physics, 
 
 ## Gate C v1 extended receipt and readback
 Successful manifest now has `edit_intent` as a strictly accepted canonical profile and `body_revision` with exact immutable edit, so stored data can be compared against the verified CC-A2 M0/r1 baseline after restart. `verify_output_archive` rejects missing marker, unexpected file, linked/missing artifact, bytes/length mismatch, nonfinite pressure, wrong quantized oracle, wrong body digest/profile, and mismatched common playback audio. This is read-only checked evidence, NOT cryptographic origin authentication or app persistence.
+
+## Gate C archive receipt authority constraint (2026-10-22, Draft)
+
+On readback, `body_revision` must be an **exact typed JSON serialization match** to `prepare_rest_area_revision(trusted_registry_M0_r1, canonical_site08_edit).revision.receipt()`. This additionally binds `revision_id`, `edit_digest`, `preparation_digest`, `backend_id`, `schema`, complete `parent` and all `edit` fields. Reject unknown keys, omitted keys, changed numbers, changed types (e.g. `true` in place of integer), or nonfinite metadata. A Python mapping `==` is insufficient because `True == 1`.
+
+Archive validation and source trust are separate: this addition does not implement signed provenance, persistent canonical-byte BodyRevision registry, collision protection across hostile stores or path-race-safe file handles. Existing raw Pa quantized checksum and WAV reconstruction guards remain mandatory. The data maturity is **research-only archived receipt**; no general-v1 BodyRevision API is adopted.
