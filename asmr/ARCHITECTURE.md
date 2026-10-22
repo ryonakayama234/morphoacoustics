@@ -15,8 +15,8 @@ flowchart TD
 **Studio** (separate repo) cannot directly import experiment scripts or treat PR branch APIs as stable. A future Studio adapter must **pin** a released package version plus compatible Core contract/capabilities, specify units, time conventions and physical reference planes, and produce immutable Takes. No auto-discovery/import on installation; explicit creator/UI enablement required.
 
 ## Research and production stages
-1. `asmr/` registry + installable metadata package (this PR); all studies remain `RESEARCH_ONLY`, `load_feature` refuses. Nothing is enabled.
-2. Independent research PRs stay on their own branches; tests and evidence links remain in the registry. Stacked studies must be separated or land only after their parent contracts have explicitly passed.
+1. `asmr/` registry + installable metadata package (this PR); all studies remain `RESEARCH_ONLY`, `require_adopted` refuses. Nothing is enabled.
+2. The registry is a package-version snapshot, manually updated on relevant new research PRs with corresponding tests; it is never an adoption or live-API guarantee. Independent research PRs stay on their own branches; tests and evidence links remain in the registry. Stacked studies must be separated or land only after their parent contracts have explicitly passed.
 3. Adoption RFC per candidate: scientific gate evidence, reproducibility, allowed physical boundary/units, backward compatibility, type-tested Core adapter and source-version hash. PR to import a **specific audited capability** without duplicating the Core physics.
 4. Optional Studio integration: version pin and capability negotiation, schema conformance, creator audition pipeline, rollback and secure opt-in; no imports from arbitrary GitHub branches.
 5. Only then may a production `morphoacoustics_asmr` API publicly load an adopted feature. Independent Studio design [PR #24](https://github.com/ryonakayama234/morphoacoustics-studio/pull/24) is currently Draft.
