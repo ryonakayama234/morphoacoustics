@@ -45,10 +45,19 @@ def test_passivity_and_matrix_invariant(length: float, ratio: float) -> None:
     assert np.max(np.abs(det - 1)) <= 1e-12
     for row in response["frequencies"]:
         entry, terminal = row["entrance"], row["terminal"]
-        pi_w = entry["mean_active_power_w"]
-        po_w = terminal["mean_active_power_w"]
-        assert abs(pi_w - po_w) <= 1e-10 * max(1e-12, abs(pi_w), abs(po_w))
-        assert pi_w >= -1e-12 and po_w >= -1e-12
+        if row["frequency_hz"] == 0:
+            assert row["frequency_interpretation"] == "ZERO_FREQUENCY_LIMIT"
+            assert entry["mean_active_power_w"] is None
+            assert terminal["mean_active_power_w"] is None
+            assert row["power_residual_w"] is None
+            assert row["formal_phasor_power_limit_w"]["entrance"] == pytest.approx(
+                row["formal_phasor_power_limit_w"]["terminal"], rel=1e-10)
+        else:
+            assert row["frequency_interpretation"] == "HARMONIC_AC"
+            pi_w = entry["mean_active_power_w"]
+            po_w = terminal["mean_active_power_w"]
+            assert abs(pi_w - po_w) <= 1e-10 * max(1e-12, abs(pi_w), abs(po_w))
+            assert pi_w >= -1e-12 and po_w >= -1e-12
         assert abs(z(row["entrance_reflection_coefficient"])) < 1+1e-12
         assert abs(z(entry["pressure_pa"]) - 1) <= 1e-11
         assert abs(z(terminal["pressure_pa"]) - ratio*tube.characteristic_impedance_pa_s_m3*z(terminal["volume_velocity_m3_s"])) <= 1e-11
@@ -128,3 +137,110 @@ def test_version_planes_digest_and_json_output_stable() -> None:
     assert len(a["fixture_sha256"]) == 64
     assert len(a["frequencies"]) == 4
     assert json.loads(json.dumps(a,allow_nan=False)) == a
+
+
+# AUDIT A1 ADDENDUM TESTS (not part of frozen original Gate A).
+FULL_ORACLE = json.loads((RESEARCH / "wolfram_oracle_36.json").read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("row", FULL_ORACLE["rows"])
+def test_audit_full_36_wolfram_wave_oracle(row: list[float]) -> None:
+    length, ratio, freq, hr, hi, gr, gi, normalized_formal_power = row
+    obs = port.evaluate(
+        port.ListenerFixture(length_m=length, terminal_resistance_ratio_to_zc=ratio),
+        port.EntranceDrive(frequencies_hz=(freq,)))
+    entry = obs["frequencies"][0]
+    assert abs(z(entry["transfer_pressure_terminal_per_entrance"])-complex(hr,hi)) <= 1e-11
+    assert abs(z(entry["entrance_reflection_coefficient"])-complex(gr,gi)) <= 1e-11
+    if freq == 0:
+        assert entry["frequency_interpretation"] == "ZERO_FREQUENCY_LIMIT"
+        assert entry["entrance"]["mean_active_power_w"] is None
+        observed = entry["formal_phasor_power_limit_w"]["entrance"]
+    else:
+        assert entry["frequency_interpretation"] == "HARMONIC_AC"
+        observed = entry["entrance"]["mean_active_power_w"]
+    assert observed * entry["characteristic_impedance_pa_s_m3"] == pytest.approx(normalized_formal_power,abs=1e-11)
+
+
+def test_audit_distinguish_total_vs_incident_pressure_boundaries() -> None:
+    # Existing solver ONLY supports prescribed TOTAL p0; here an independent
+    # incident-wave boundary is emulated by choosing p0=pi*(1+Gamma0) per L.
+    # Equal external pressure fields are NOT claimed.
+    f, ratio, p_inc = 3000.0, 2.0, 1+0j
+    term_gamma = (ratio - 1)/(ratio + 1)
+    incident_mags, total_mags = [], []
+    for length in [0.02, 0.025, 0.03]:
+        q = np.exp(-1j*2*pi*f*length/343.0)
+        p_total = p_inc * (1+term_gamma*q*q)
+        row_inc = port.evaluate(
+            port.ListenerFixture(length_m=length,terminal_resistance_ratio_to_zc=ratio),
+            port.EntranceDrive(frequencies_hz=(f,),entrance_pressure_pa=p_total)
+        )["frequencies"][0]
+        p_terminal = z(row_inc["terminal"]["pressure_pa"])
+        assert p_terminal == pytest.approx(p_inc*q*(1+term_gamma),abs=1e-11)
+        incident_mags.append(abs(p_terminal))
+        row_total = port.evaluate(
+            port.ListenerFixture(length_m=length,terminal_resistance_ratio_to_zc=ratio),
+            port.EntranceDrive(frequencies_hz=(f,))
+        )["frequencies"][0]
+        total_mags.append(abs(z(row_total["terminal"]["pressure_pa"])))
+    assert max(incident_mags)-min(incident_mags) < 1e-11
+    assert max(total_mags)-min(total_mags) > 0.3
+
+
+def test_audit_normalized_load_area_null_and_flow_power_change() -> None:
+    # Fix R=Zt/Zc, so changing A changes Zt too; H and Gamma invariant.
+    rows = [port.evaluate(
+        port.ListenerFixture(section_area_m2=area,terminal_resistance_ratio_to_zc=2),
+        port.EntranceDrive(frequencies_hz=(3000,))
+    )["frequencies"][0] for area in [3e-5,6e-5]]
+    a,b=rows
+    assert z(a["transfer_pressure_terminal_per_entrance"]) == pytest.approx(
+        z(b["transfer_pressure_terminal_per_entrance"]),abs=1e-11)
+    assert z(a["entrance_reflection_coefficient"]) == pytest.approx(
+        z(b["entrance_reflection_coefficient"]),abs=1e-11)
+    assert z(b["terminal"]["volume_velocity_m3_s"]) == pytest.approx(
+        2*z(a["terminal"]["volume_velocity_m3_s"]),rel=1e-11)
+    assert b["entrance"]["mean_active_power_w"] == pytest.approx(
+        2*a["entrance"]["mean_active_power_w"],rel=1e-11)
+
+
+@pytest.mark.parametrize("field,value",[
+    ("length_m",10**1000), ("area_m2",10**1000), ("sound_speed_m_s",10**1000),
+    ("air_density_kg_m3",10**1000), ("terminal_resistance_ratio_to_zc",10**1000)
+])
+def test_audit_huge_integer_parameters_are_invalid(field: str,value: int) -> None:
+    fixture=port.ListenerFixture(**{field:value})
+    with pytest.raises(port.InvalidListener):
+        port.evaluate(fixture,port.EntranceDrive())
+
+
+@pytest.mark.parametrize("drive",[
+    port.EntranceDrive(frequencies_hz=(10**1000,)),
+    port.EntranceDrive(entrance_pressure_pa=10**1000),
+])
+def test_audit_huge_integer_drives_are_invalid(drive: object) -> None:
+    with pytest.raises(port.InvalidListener):
+        port.evaluate(port.ListenerFixture(),drive)
+
+
+def test_audit_linear_small_signal_limit() -> None:
+    medium_bulk_modulus = 1.21*343.0**2
+    ok=port.evaluate(port.ListenerFixture(),port.EntranceDrive(
+        frequencies_hz=(3000,),entrance_pressure_pa=0.0005*medium_bulk_modulus))
+    assert ok["linear_pressure_perturbation_ratio"] == pytest.approx(0.0005)
+    assert ok["linear_pressure_perturbation_limit"] == 1e-3
+    with pytest.raises(port.UnsupportedListener):
+        port.evaluate(port.ListenerFixture(),port.EntranceDrive(
+            frequencies_hz=(3000,),entrance_pressure_pa=0.002*medium_bulk_modulus))
+
+
+def test_audit_dc_is_not_measured_work_rate() -> None:
+    ac, dc = port.evaluate(port.ListenerFixture(),port.EntranceDrive(
+        frequencies_hz=(0,1000)))["frequencies"]
+    assert dc["frequency_interpretation"] == "HARMONIC_AC"
+    assert dc["entrance"]["mean_active_power_w"] is not None
+    assert ac["frequency_interpretation"] == "ZERO_FREQUENCY_LIMIT"
+    assert ac["entrance"]["mean_active_power_w"] is None
+    assert ac["formal_phasor_power_limit_w"]["entrance"] > 0
+    assert ac["terminal"]["mean_active_power_w"] is None
