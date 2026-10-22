@@ -76,7 +76,7 @@ def test_actual_new_physical_revision_roundtrip(tmp_path,ratio):
     assert not (tmp_path/"reject").exists()
     output=tmp_path/(ratio.replace(".","_"))
     ret=ADAPTER["perform"](request(d,ratio),output)
-    assert ret["status"]=="SUCCEEDED"
+    assert ret["status"]=="SUCCEEDED", json.dumps({"refusal": ret, "base": base}, ensure_ascii=False)
     assert ret["acoustic_calls_per_body"]==102
     assert ret["relative_raw_pa_l2"]>1e-8
     assert ret["body_revision"]["edit"]["section_index"]==8
