@@ -118,6 +118,9 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
 
     if not isinstance(plan.segment_id, str) or not plan.segment_id.strip():
         issue("INVALID_SEGMENT_ID", "", "segment ID must be nonblank")
+    # Frozen dataclass type hints are not enforced at runtime. A malformed
+    # source must be rejected as data, never crash during later span checks.
+    source_length = len(plan.source_text) if isinstance(plan.source_text, str) else 0
     if not isinstance(plan.source_text, str) or not plan.source_text:
         issue("EMPTY_SOURCE", plan.segment_id, "source must be nonempty")
     if plan.schema_version != SCHEMA_VERSION or plan.representation_kind != REPRESENTATION_KIND:
@@ -131,7 +134,7 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
             issue("UNRESOLVED_PRONUNCIATION", u.unit_id, "no supplied candidate")
         if (type(u.start_offset) is not int or type(u.end_offset) is not int
                 or u.start_offset < 0 or u.start_offset >= u.end_offset
-                or u.end_offset > len(plan.source_text)):
+                or u.end_offset > source_length):
             issue("INVALID_SOURCE_SPAN", u.unit_id, "span must fit unchanged source")
     if not plan.pronunciation_units:
         issue("NO_PRONUNCIATION", plan.segment_id, "no candidate; do not invent reading")
