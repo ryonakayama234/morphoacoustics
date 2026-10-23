@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from hashlib import sha256
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import shutil
@@ -153,6 +154,70 @@ def test_refuse_world_writable_store_and_invalid_cli(tmp_path: Path) -> None:
     code, value = command(CLI, "--register", "--resolve",
                           "--registry-dir", str(directory))
     assert code != 0 and value["status"] == "REFUSED"
+
+
+
+def test_staging_fault_never_publishes_partially_written_revision(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    directory = private_dir(tmp_path)
+    expected = derive("0.90")
+    original_link = os.link
+
+    def interrupted_before_publication(*args, **kwargs):
+        raise OSError("FAULT_INJECTION_LINK_FAILED")
+
+    monkeypatch.setattr(os, "link", interrupted_before_publication)
+    with pytest.raises(RegistryError, match="REGISTRY_PUBLISH_FAILED"):
+        put(directory, expected)
+    monkeypatch.setattr(os, "link", original_link)
+    entries = directory / "revisions"
+    assert list(entries.iterdir()) == []  # no final record or staging leftovers
+    with pytest.raises(RegistryError, match="REVISION_NOT_FOUND"):
+        resolve(directory, expected["revision_id"])
+    assert put(directory, expected) == "REGISTERED"
+
+
+def test_failed_staging_fsync_no_false_registered_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    directory = private_dir(tmp_path)
+    record = derive("1.10")
+    original_fsync = os.fsync
+
+    def failed_sync(fd: int) -> None:
+        raise OSError("FAULT_INJECTION_SYNC_FAILED")
+
+    monkeypatch.setattr(os, "fsync", failed_sync)
+    with pytest.raises(RegistryError, match="REGISTRY_PUBLISH_FAILED"):
+        put(directory, record)
+    monkeypatch.setattr(os, "fsync", original_fsync)
+    assert list((directory / "revisions").iterdir()) == []
+    assert put(directory, record) == "REGISTERED"
+    assert resolve(directory, record["revision_id"])["status"] == "RESOLVED"
+
+
+def test_concurrent_same_revision_never_generates_two_identities(tmp_path: Path) -> None:
+    directory = private_dir(tmp_path)
+    record = derive("0.90")
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(put, directory, record) for _ in range(2)]
+        results: list[str] = []
+        for future in futures:
+            try:
+                results.append(future.result(timeout=15))
+            except RegistryError as exc:
+                # An in-progress hard link may temporarily have nlink=2;
+                # refusing during publication is safer than false success.
+                assert exc.code == "REGISTRY_ENTRY_UNSAFE"
+                results.append("REFUSED_DURING_PUBLICATION")
+    assert results.count("REGISTERED") == 1
+    assert all(x in ("REGISTERED", "ALREADY_REGISTERED",
+                     "REFUSED_DURING_PUBLICATION") for x in results)
+    assert resolve(directory, record["revision_id"])["body_revision"] == record["body_revision"]
+    assert sorted(p.name for p in (directory / "revisions").iterdir()) == [
+        record["revision_id"] + ".json"
+    ]
 
 
 @pytest.mark.skipif(os.environ.get("CC_B1_GATE_C_PHYSICAL") != "1",
