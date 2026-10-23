@@ -41,3 +41,10 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - [First failing exact-SHA CI receipt](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236): `2a3a038c342150b37323a6c4b24cc846954d1c42`. One runtime malformed source crashes on `len(None)` instead of reporting `INVALID`. Category **BUG**; no timing solver conflict shown.
 - [Targeted validator correction](https://github.com/ryonakayama234/morphoacoustics/commit/2de422883e544c1dff5ec12121a1f033a2f3afc5) **subsequent** to the recorded red run; frozen protocol and 100 synthetic test cases unchanged.
 - Current stage **REVISE_IN_PROGRESS / POST_FIX_CI_PENDING / HUMAN_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. The earlier historical Gate B status must not substitute for this Gate C result.
+
+## 2026-10-23 Gate C — verified exact-source-SHA repair CI
+
+- **Fixed-source commit `2de422883e544c1dff5ec12121a1f033a2f3afc5`** is **16/16 completed SUCCESS**, zero failure/pending in GitHub check-runs API (two push/PR job sets): isolated package Python 3.11, 3.12, 3.13 pytest with 127 synthetic tests per interpreter, package strict mypy, existing root test matrix/typecheck, and bounded SV1. [Python 3.12 job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39973099897/job/120480625178). This is independent of the earlier red SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`.
+- Initial red failure **PRESERVED**, caused by `source_text=None` and unguarded `len(None)`; minimal source guard fixed the runtime fail-closed behavior with unchanged frozen test fixtures.
+- All verified outcomes above refer to the **code-bearing SHA `2de422883e544c1dff5ec12121a1f033a2f3afc5`**, not automatically to later documentation-only commits. Document-only final branch HEAD checks require their own confirmation. OG3 and OG4 were not run as separate exact-SHA science gates by these package-scoped actions; do not claim them.
+- Disposition: **GATE_C_IMPLEMENTER_ORIGIN_SOFTWARE_PASS / HUMAN_INDEPENDENT_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. This is not a physical or phonetic validation.
