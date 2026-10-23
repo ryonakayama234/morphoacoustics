@@ -1,0 +1,39 @@
+{
+  "source_type": "independent Wolfram kernel evaluation on 2026-10-23",
+  "scope": "symbolic 16-segment static rest geometry and known canonical JSON fixture; not 16-section acoustic solver, not actual Core BodyRevision SHA",
+  "site_index_zero_based": 8,
+  "one_based_index": 9,
+  "total_rest_tract_length_m": "4/25 = 0.16",
+  "ratios": [
+    {
+      "ratio": "9/10",
+      "changed_zero_based": [
+        8
+      ],
+      "15_other_sections_unchanged": true,
+      "positive_area_given_positive_base": true,
+      "delta_area": "-aa[9]/10 square meters",
+      "delta_volume_m3": "-aa[9]/1000 (aa[9] has m2 units)"
+    },
+    {
+      "ratio": "11/10",
+      "changed_zero_based": [
+        8
+      ],
+      "15_other_sections_unchanged": true,
+      "positive_area_given_positive_base": true,
+      "delta_area": "+aa[9]/10 square meters",
+      "delta_volume_m3": "+aa[9]/1000 (aa[9] has m2 units)"
+    }
+  ],
+  "fixture": {
+    "canonical_utf8_bytes": 146,
+    "sha256_hex_wolfram": "c461f5f2b9d270562a37ae743f163fd8d0ae4c90fe2110d9947f5e889a0e3625",
+    "sha256_hex_python_stdlib": "c461f5f2b9d270562a37ae743f163fd8d0ae4c90fe2110d9947f5e889a0e3625"
+  },
+  "claim_limits": [
+    "Checks static rest-geometry algebra only; fixed motor Task dynamics validated elsewhere by real Core CI",
+    "SHA of user-controlled bytes not proof of source authenticity or cryptographic signature",
+    "No audio, FSI, audibility, quality or service robustness claim"
+  ]
+}
