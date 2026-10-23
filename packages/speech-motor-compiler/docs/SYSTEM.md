@@ -49,3 +49,10 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - Audited boundary: `PronunciationUnit` / `MotorTask` / many-to-many associations / rational `CouplingConstraint` -> symbolic diagnostics / timing. No body, Japanese reading inference, Studio code, physical audio, or phonetic claims.
 - New tests treat the *original validator* as candidate under test. Construct event timestamps externally, add redundant rational cycles, exact contradictions, tuple permutations, absolute time shifts, incomplete components, invalid intervals, Unicode codepoint spans, and malformed runtime payloads.
 - Audit written by the present implementation assistant: **adversarial implementer-origin, NOT independent third-party signoff**. Gate C remains unadopted; no merge.
+
+## 2026-10-23 Gate C first red-run and bounded candidate correction
+
+- Initial untouched candidate under adversarial tests: **`2a3a038c342150b37323a6c4b24cc846954d1c42`**. 100 constructive synthetic timing cases and metamorphic transformations reached passing assertions, but one explicit invalid-runtime-input case failed in standalone-package pytest; root matrix/typecheck and bounded SV1 checks succeeded. This is a software audit result, not phonetics.
+- **BUG recorded before correction:** [PR #169 red-run receipt](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236). `source_text=None` is rejected as `EMPTY_SOURCE` but a later codepoint span check called `len(None)`, raising `TypeError` instead of returning `INVALID`.
+- **Subsequent fix commit `2de422883e544c1dff5ec12121a1f033a2f3afc5`**: compute `source_length` only for real strings, otherwise 0. Keep adversarial fixture and frozen protocol unchanged; no body, sound, Studio, schema, or main change.
+- Post-fix exact HEAD CI and third-party design review are **separate gates**; do not interpret the patch itself as a pass. SCIENCE_NOT_ADOPTED.
