@@ -28,3 +28,10 @@
 
 ## 2026-10-22 verified software Gate B receipt (not research adoption)
 Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API reported **16/16 completed check runs SUCCESS** (some duplicate push/PR runs), including isolated Python 3.11/3.12/3.13 package import/install + 21 synthetic pytest cases per run + strict package mypy, existing Core root test matrix/typecheck, and bounded SV1 regression. Evidence: [isolated package run](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258873), [root tests](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258910), [SV1](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258867). An earlier failing mypy run is preserved in EXPERIMENTS. Individual OG3 and OG4 were not separately confirmed for this SHA. No independent reviewer, phonetic fixture, body adapter, wav or Studio integration. Disposition: **EXPLORATORY_SOFTWARE_PASS / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**.
+
+## 2026-10-23 Gate C audit tracking
+- [Frozen Gate C protocol](GATE_C_PROTOCOL.md): preregistered falsifiers, fixed SHA, deterministic generator seeds, acceptance vs independent-review requirements. Protocol commit `7705ebd752e191a545506c0a2a79d56a40efc6bf` **precedes** all Gate C test code.
+- [Adversarial Python tests](../tests/test_gate_c_adversarial.py): 100 synthetic cases, metamorphic invariants, contradiction and malformed-input probes.
+- [Wolfram mathematical oracle](../wolfram/gate_c_oracle.wl): independent exact rational witness; no CI execution inferred.
+- Audit branch: [research/smc3-gate-c-audit-20261023](https://github.com/ryonakayama234/morphoacoustics/tree/research/smc3-gate-c-audit-20261023), forked from PR #164 HEAD `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`.
+- Review/state **GATE_C_AUDIT_IN_PROGRESS / ORIGINAL_CANDIDATE_UNCHANGED / INDEPENDENT_HUMAN_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. Gate B records above are historical, not Gate C verdicts.
