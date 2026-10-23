@@ -31,3 +31,6 @@ No waveform-to-waveform EQ/crossfade/vocoder. The pressure is obtained by a fres
 
 ### Dependencies
 A frozen CC-A2 prepared M0 via SV-1 `_validated_context()` is required; use source preflight unchanged. Exp042's `_render()` is reused to generate new pressure samples. If the upstream version differs or does not bind, fail without fabricated Take. SMC (`packages/speech-motor-compiler/`) and ASMR (`asmr/`) are completely independent, disabled in this experiment.
+
+### After-run boundary (2026-10-23; retrospective)
+Physical Core rendering succeeded but source-noise→acoustic response did **not** pass the predeclared high-band criterion. See [failure audit](FAILURE_AUDIT_20261023.md) and the explicit future coupled-system sketch in [Voice Lab roadmap](VOICE_LAB_ROADMAP.md). The JET-P0 forward source is not yet a finite-impedance acoustic feedback loop.

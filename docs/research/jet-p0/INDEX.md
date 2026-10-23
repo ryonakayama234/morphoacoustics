@@ -14,3 +14,7 @@
 
 ## Decisions
 Do not alter adopted LF/SV-1, organ graph, Character/Performance contracts, main's CC-A2, or SMC/ASMR branches. Do not expose a "breathy character" preset until source physics, acoustic output, and human voice-likeness gates are separately assessed. Any neural closure must satisfy the already documented causal boundary.
+
+## Post-run scientific outcome (2026-10-23)
+- **Gate B failed**, not source adoption. Evidence and detailed numbers: [FAILURE_AUDIT_20261023.md](FAILURE_AUDIT_20261023.md).
+- Broader creator/physics sequencing: [VOICE_LAB_ROADMAP.md](VOICE_LAB_ROADMAP.md). Selected next concrete Core task: [SA-1 #168](https://github.com/ryonakayama234/morphoacoustics/issues/168).

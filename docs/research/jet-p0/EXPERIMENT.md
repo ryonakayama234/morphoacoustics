@@ -23,3 +23,6 @@ Use masked order, free voice description before any forced choice, perceptual vo
 ## Evidence log
 - Before implementation: independent Wolfram calculation for rho=1.2 kg/m³, Cd=0.6, A=20 mm², ΔP=800 Pa and 1 mm width gives Q=0.000438178046 m³/s, pressure doubling ratio=1.41421356237, speed=21.9089 m/s, Re≈1460.59. This checks the equation, **not** the later candidate aperture parameters, turbulence validity, or human voice quality.
 - **At freeze:** Gate B Core rendering/CI=NOT_RUN; Gate C listening=NOT_RUN; adoption=HOLD. Record all failed gates and changes here with immutable commit/run links, not revised history.
+
+## Post-run result (2026-10-23; append-only, no rewrite of preregistration)
+Source-unit tests: seven PASS in GitHub run [39951204385](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39951204385); true frozen M0 Core rendering: PASS; originally frozen output energy fraction >2kHz <0.20: **FAIL** for modal 0.807576, breathy_gap 0.861492, pressure_x2 0.936400; noise_off 0.000524 PASS. Entire JET-P0 Gate B therefore **FAIL**, not a qualified success. No human listening. See [FAILURE_AUDIT_20261023.md](FAILURE_AUDIT_20261023.md) for hashes, retrospective differential measurement and next proposed [SA-1 #168](https://github.com/ryonakayama234/morphoacoustics/issues/168).
