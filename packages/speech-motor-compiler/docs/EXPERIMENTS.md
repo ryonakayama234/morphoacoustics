@@ -41,3 +41,15 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - Prior independent Wolfram arithmetic exercise established an internally consistent exact 4-variable system, an extra inconsistent equality with no solutions, and two distinct assignments for a free variable; reference script formalizes these controls. No CI Wolfram execution claimed.
 - **Pending exact-audit-SHA CI receipt**: no passing status, bug finding, or new adoption claim should be inferred from the committed test code alone. Inspect first run, retain failures, classify unexpected behavior and report separately before any candidate correction.
 - Explicit scope: no changes to the candidate validator in the audit's initial test implementation; no Core physics or Studio modifications, no merging to main, no scientific/phonetic adoption, independent human review still outstanding.
+
+## 2026-10-23 Gate C prospective audit — first falsification and controlled repair
+
+### Initial exact-HEAD negative receipt
+- Candidate+audit SHA: **`2a3a038c342150b37323a6c4b24cc846954d1c42`**. This SHA contained ONLY audit tests/docs and the untouched candidate implementation.
+- [Python 3.12 standalone job failed](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39966372894/job/120457185392); [Python 3.11 standalone job failed](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39966253851/job/120456777040). One explicit exception probe failed: `test_malformed_runtime_source_does_not_crash_validator` → `TypeError: object of type 'NoneType' has no len()` from `validation.py:134`. Other instances of the isolated matrix were cancelled. All checked root test/typecheck jobs and bounded SV1 passed.
+- Classification **BUG / FAIL_CLOSED_RUNTIME_INPUT**, captured [before patch](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236). Consistent rational plan fixtures and metamorphic checks were not the failing cases.
+
+### Correction performed ONLY after recording failure
+- Patch commit **`2de422883e544c1dff5ec12121a1f033a2f3afc5`** guards `len(source_text)` for non-string data in source range checks; no changes to signed Gate C protocol, adversarial fixtures, timing solver, physical Core or Studio.
+- **Post-patch software result: PENDING exact final audit SHA and fresh CI inspection.** First red run remains a permanent negative receipt; do not retroactively relabel or silently overwrite.
+- This is implementer-origin adversarial testing and repair, **not** independent design review, mathematical/phonetic scientific adoption, or authorization to merge `main`.
