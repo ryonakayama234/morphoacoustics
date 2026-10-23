@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import runpy
+import secrets
 import stat
 from typing import Any, NoReturn
 
@@ -176,26 +177,35 @@ def _install_record(registry_dir: Path, expected: dict[str, object]) -> str:
     root, child = _secure_dir_fd(registry_dir, create_children=True)
     try:
         name = revision_id + ".json"
+        stage_name = ".stage-" + secrets.token_hex(16)
+        # Never expose the final ID as a partial record. Write and fsync a
+        # private staging inode, then atomically hard-link without replacement.
         flags = (os.O_WRONLY | os.O_CREAT | os.O_EXCL
                  | getattr(os, "O_NOFOLLOW", 0))
         try:
-            fd = os.open(name, flags, 0o600, dir_fd=child)
-        except FileExistsError:
-            _match_trusted_entry(_read_entry(child, name), expected)
-            return "ALREADY_REGISTERED"
-        except OSError as exc:
-            raise RegistryError("REGISTRY_PUBLISH_FAILED") from exc
-        try:
-            with os.fdopen(fd, "wb", closefd=True) as stream:
-                stream.write(payload)
-                stream.flush()
-                os.fsync(stream.fileno())
+            stage_fd = os.open(stage_name, flags, 0o600, dir_fd=child)
+            try:
+                with os.fdopen(stage_fd, "wb") as stream:
+                    written = stream.write(payload)
+                    if written != len(payload):
+                        raise OSError("SHORT_STAGING_WRITE")
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                try:
+                    os.link(stage_name, name, src_dir_fd=child,
+                            dst_dir_fd=child, follow_symlinks=False)
+                    outcome = "REGISTERED"
+                except FileExistsError:
+                    outcome = "ALREADY_REGISTERED"
+            finally:
+                # A failed stage/commit may leave garbage on crash; a staged
+                # inode is never a valid revision ID and never a success.
+                os.unlink(stage_name, dir_fd=child)
             os.fsync(child)
+            _match_trusted_entry(_read_entry(child, name), expected)
+            return outcome
         except OSError as exc:
-            # Partial file is fail-closed on readback; never claim success.
             raise RegistryError("REGISTRY_PUBLISH_FAILED") from exc
-        _match_trusted_entry(_read_entry(child, name), expected)
-        return "REGISTERED"
     finally:
         os.close(child)
         os.close(root)
