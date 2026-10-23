@@ -17,3 +17,10 @@ This is a diagnostic enabling VF-1 source–tract interface, not a new natural v
 - Follow-on: physical voice-regime map is future work, not an SA-1 deliverable
 
 Science gate outcomes: DIAGNOSIS_VERIFIED_INTERFACE_READY, DIAGNOSIS_VERIFIED_REPAIR_REQUIRED, or UNRESOLVED_ORACLE_FAIL. Keep previous JET-P0 rejection unchanged. SMC and ASMR remain independent. No changes to Studio or public Core APIs.
+
+## After execution (retrospective, NOT an edit to preregistration)
+
+- **Gate B NUMERIC TESTS PASSED**, exact-branch-head source commit `5a048551b94b7b3e77c33b37c47d2de814b4c3e6`, [push CI run #39973210182](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39973210182).
+- The detailed post-run measured diagnosis and 24 hashed raw artifacts are preserved in [RESULTS_20261023.md](RESULTS_20261023.md).
+- Decision **DIAGNOSIS_VERIFIED_REPAIR_REQUIRED**: source/tube/monopole frequency weighting is mathematically explained; unified biologically valid lip radiation boundary is not yet available for VF-1. Next bounded study: [SA-2 #171](https://github.com/ryonakayama234/morphoacoustics/issues/171).
+- Previous JET-P0 high-band failure and lack of audition remain. No main merge, no public source adoption, no Studio/SMC/ASMR change.

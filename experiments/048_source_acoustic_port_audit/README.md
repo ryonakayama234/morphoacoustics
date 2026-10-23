@@ -11,7 +11,7 @@ The analytic glottal and lip pressure/volume-flow ports are **reconstructions** 
 - Calibration flows at 200 / 1000 / 3000 Hz.
 - Source, tract and observer monopole high-frequency gain budget; source-free/receiver-only diagnostics distinguished from actual acoustic pressure.
 - Reproduction of original rejected JET-P0 2kHz energy ratios within 0.01 percentage point, without rewriting historical threshold or manipulating final WAVs.
-- Saved raw flow m³/s, actual raw observer pressure Pa, derived lip flows and complex gain/impedance arrays, signed manifests and exact-head CI record (SHA256 digests attest integrity, not third-party authenticity).
+- Saved raw flow m³/s, actual raw observer pressure Pa, derived lip flows and complex gain/impedance arrays, SHA256 integrity manifests and exact-head CI record (SHA256 digests attest integrity, not third-party authenticity).
 
 Run from a prepared WSL2/Linux source checkout with Python dev dependencies:
 
