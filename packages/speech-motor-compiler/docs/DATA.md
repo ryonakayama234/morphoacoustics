@@ -44,3 +44,9 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - Adversarial malformed runtime input (`source_text=None`) tests whether a type-annotated frozen dataclass is actually validated fail-closed; this is an audit probe, not an adopted public `None` contract. Any crash must be preserved as a counterexample pending disposition.
 - Source character offsets count Python Unicode codepoints, **not** grapheme clusters; synthetic complex-emoji fixture documents this distinction.
 - Independent exact-math script: [../wolfram/gate_c_oracle.wl](../wolfram/gate_c_oracle.wl). Script existence is not evidence of execution. No semantic-equivalence hashing beyond tuple-order normalization is promised.
+
+## 2026-10-23 Gate C failure-mode correction
+
+At first audited SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`, a runtime malformed `SymbolicPlan(source_text=None)` elicited a Python `TypeError` in a source-span bound check after `EMPTY_SOURCE` was already diagnosed. This is a **runtime type-enforcement failure** in a typed dataclass, not a time solver inconsistency. See [first red-run receipt](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236).
+
+`validation.py` fix `2de422883e544c1dff5ec12121a1f033a2f3afc5` computes `source_length = len(source_text)` only when it is a `str`, else 0. The preregistered malformed runtime case must now return `INVALID` and never reach event resolution. This does not imply complete validation of all arbitrarily malformed runtime object graphs; other inputs remain future audit scope.
