@@ -158,8 +158,32 @@ def execute(output_dir):
 
     frame_f=np.fft.rfftfreq(1024,1./SR)
     response=ports(exp9,geom,frame_f)
+    # Peak-phasor acoustic power coefficients normalized by |U_in|^2.
+    # Both powers use their OWN matched pressure/flow port, not farfield Pa^2.
+    # The resistive load and lossy tube should not create passive port power.
+    inlet_power_coeff=.5*np.real(response["zin"])
+    outlet_power_coeff=.5*np.real(response["zload"])*np.abs(response["tube"])**2
+    dissipated_coeff=inlet_power_coeff-outlet_power_coeff
+    if (np.any(inlet_power_coeff < -1e-8)
+        or np.any(outlet_power_coeff < -1e-8)
+        or np.any(dissipated_coeff < -1e-8)):
+        raise AssertionError("acoustic two-port passivity oracle failed")
+    # Check the declared monopole observation gain grows precisely with f.
+    rad_reference=ports(exp9,geom,np.array([1000.,3000.]))["radiation"]
+    rad_gain_ratio=float(np.abs(rad_reference[1])/np.abs(rad_reference[0]))
+    if abs(rad_gain_ratio-3.)>1e-12:
+        raise AssertionError(("monopole frequency gain law",rad_gain_ratio))
     lip={name:separated_frame(exp12,exp9,geom,src[name][0],"tube") for name in CASES}
     rad_only=separated_frame(exp12,exp9,geom,src["modal"][0],"radiation")
+    # Independent same-source renderer sensitivity to finite OLA hop.
+    def render_alt(hop):
+        return exp12.frame_render(src["modal"][0],
+            lambda _t,f: exp9.far_field_pressure_transfer(geom,f),
+            hop_size=hop,edge_mode="preroll_edge")
+    hop128=render_alt(128)
+    hop_sensitivity={"original_hop256_highband":high(p["modal"]),
+                     "hop128_highband":high(hop128),
+                     "relative_pressure_rms_difference":rms(hop128-p["modal"])/rms(p["modal"])}
     calibrations={}
     for hz in (200,1000,3000):
         t=np.arange(N,dtype=np.float64)/SR
@@ -194,6 +218,15 @@ def execute(output_dir):
         "zero_input_observer_rms_pa":rms(pnull),
         "fixed_tract_superposition_relative_error":rel,
         "transfer_identity_max_error":response["identity_error"],
+        "passive_port_power_per_inlet_flow_peak2":{
+            "minimum_inlet_coefficient":float(inlet_power_coeff.min()),
+            "minimum_outlet_coefficient":float(outlet_power_coeff.min()),
+            "minimum_internal_loss_coefficient":float(dissipated_coeff.min()),
+            "unit":"Pa s / m3 (actual port power is coefficient times |U_in|^2)",
+            "boundary_is_physical_lip_radiation":False,
+        },
+        "monopole_3khz_to_1khz_gain_ratio":rad_gain_ratio,
+        "hop256_vs_hop128":hop_sensitivity,
         "jet_p0_original_reproduction":historic,
         "tone_calibration":calibrations,
         "band_attribution":decomposition,
@@ -217,6 +250,7 @@ def execute(output_dir):
     save("modal_mean_observer_pa.npy",pmean)
     save("modal_noise_observer_pa.npy",pnoise)
     save("modal_radiation_only_observer_pa.npy",rad_only)
+    save("modal_hop128_actual_core_pa.npy",hop128)
     save("zero_observer_pa.npy",pnull)
     save("frame_frequencies_hz.npy",frame_f)
     for part in ("tube","radiation","total","zin","zload"):
