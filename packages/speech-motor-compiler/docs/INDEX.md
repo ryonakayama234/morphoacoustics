@@ -35,3 +35,9 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - [Wolfram mathematical oracle](../wolfram/gate_c_oracle.wl): independent exact rational witness; no CI execution inferred.
 - Audit branch: [research/smc3-gate-c-audit-20261023](https://github.com/ryonakayama234/morphoacoustics/tree/research/smc3-gate-c-audit-20261023), forked from PR #164 HEAD `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`.
 - Review/state **GATE_C_AUDIT_IN_PROGRESS / ORIGINAL_CANDIDATE_UNCHANGED / INDEPENDENT_HUMAN_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. Gate B records above are historical, not Gate C verdicts.
+
+## 2026-10-23 Gate C first failure and targeted revision
+
+- [First failing exact-SHA CI receipt](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236): `2a3a038c342150b37323a6c4b24cc846954d1c42`. One runtime malformed source crashes on `len(None)` instead of reporting `INVALID`. Category **BUG**; no timing solver conflict shown.
+- [Targeted validator correction](https://github.com/ryonakayama234/morphoacoustics/commit/2de422883e544c1dff5ec12121a1f033a2f3afc5) **subsequent** to the recorded red run; frozen protocol and 100 synthetic test cases unchanged.
+- Current stage **REVISE_IN_PROGRESS / POST_FIX_CI_PENDING / HUMAN_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. The earlier historical Gate B status must not substitute for this Gate C result.
