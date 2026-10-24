@@ -89,3 +89,6 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 - [SMC-4 Gate B source](../src/morphoacoustics_smc/smc4_lexicon.py) and [typed entities](../src/morphoacoustics_smc/smc4_types.py): versioned synthetic TaskLexicon → unchanged SMC-3 symbolic IR + separate mapping receipt.
 - [Gate B synthetic adversarial tests](../tests/test_smc4_gate_b_preregistered.py), [Experiment/evidence timeline](EXPERIMENTS.md), [System and causal boundary diagram](SYSTEM.md), [Data contract](DATA.md).
 - [Issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Gate A `GO_DESIGN_ONLY`; Gate B outcome pending final exact HEAD checks and `@codex review` at the time of initial docs write. **Not merged to `main`; no Japanese phonetic/physical or waveform evidence.**
+
+
+**SMC-4 Gate B review ledger:** [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md) — two reviewed exact SHAs, seven P2 GitHub Codex findings, preserved test-only red evidence, repaired exact-source SHA `504e1e4` 16/16 green (184 synthetic cases on Python3.12), final review/CI still pending at document-write time. Scientific/physical/phonetic adoption remains withheld; research Draft only.
