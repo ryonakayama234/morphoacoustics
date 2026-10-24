@@ -80,3 +80,12 @@ Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an addit
 Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` found another P2: simultaneous per-unit and multi-unit TemplateBundles could overlap selected pronunciation units without a defined coverage/exclusivity rule. **Original Gate A protocol and Amendments 01/02 are preserved unchanged.**
 
 [SMC4_GATE_A_AMENDMENT_03.md](SMC4_GATE_A_AMENDMENT_03.md) at initial commit `7a80f8b0b016cb51ad5b9c3225cd919acc2cbfbc` narrows first Gate B mapping scope to exactly one selected pronunciation unit per TemplateBundle; multi-unit/overlapping bundles in the requested profile are rejected as `UNSUPPORTED_MAPPING_SCOPE`, not silently accepted or discarded. Context predicates may inspect neighbors without owning their mapping scope. F28–F32 prospective fixtures specify covered/overlapping/missing/ambiguous cases. No SMC-4 code, no scientific adoption or main merge.
+
+
+## SMC-4 Gate B navigation and scoped decision trail (2026-10-24)
+
+- [Gate A first frozen design](SMC4_GATE_A_PROTOCOL.md); [post-review Amendment 01](SMC4_GATE_A_AMENDMENT_01.md), [Amendment 02](SMC4_GATE_A_AMENDMENT_02.md), [Amendment 03](SMC4_GATE_A_AMENDMENT_03.md) — all preserved.
+- [**Gate B frozen test protocol**](SMC4_GATE_B_PROTOCOL.md) — created before executable compiler; its fixture expectations originate in Gate A F01–F32.
+- [SMC-4 Gate B source](../src/morphoacoustics_smc/smc4_lexicon.py) and [typed entities](../src/morphoacoustics_smc/smc4_types.py): versioned synthetic TaskLexicon → unchanged SMC-3 symbolic IR + separate mapping receipt.
+- [Gate B synthetic adversarial tests](../tests/test_smc4_gate_b_preregistered.py), [Experiment/evidence timeline](EXPERIMENTS.md), [System and causal boundary diagram](SYSTEM.md), [Data contract](DATA.md).
+- [Issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Gate A `GO_DESIGN_ONLY`; Gate B outcome pending final exact HEAD checks and `@codex review` at the time of initial docs write. **Not merged to `main`; no Japanese phonetic/physical or waveform evidence.**
