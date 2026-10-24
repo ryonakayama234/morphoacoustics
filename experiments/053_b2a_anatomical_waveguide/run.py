@@ -349,6 +349,27 @@ class AnatomicalWaveguide:
             a[i,:]=tuple(vars(self.step(float(v))).values())
         return a
 
+    def trace_with_states(self,inlet):
+        """Archive every physical FIFO wave cell and B0 inertial state per tick.
+
+        Unlike an energy column, these are independently re-integrable raw
+        states. Returned in [tick, section, forward/backward, local cell] order.
+        """
+        values=np.asarray(inlet,dtype=np.float64)
+        if values.ndim!=1 or not np.isfinite(values).all():
+            raise ValueError("finite source required")
+        rows=np.empty((len(values),len(TRACE_COLUMNS)),dtype=np.float64)
+        states=np.empty((len(values),16,2,self.cfg.cells_per_section),dtype=np.float64)
+        q=np.zeros(len(values),dtype=np.float64)
+        for i,u in enumerate(values):
+            rows[i,:]=tuple(vars(self.step(float(u))).values())
+            for sec in range(16):
+                states[i,sec,0,:]=tuple(self.forward[sec])
+                states[i,sec,1,:]=tuple(self.backward[sec])
+            if self.port is not None:
+                q[i]=self.port.q_m3_s
+        return rows,states,q
+
     def impulse_lip_pressure(self,length,amplitude_m3_s=1e-6):
         if type(length) is not int or length<=0 or not math.isfinite(amplitude_m3_s) or amplitude_m3_s==0:
             raise ValueError("invalid impulse")
@@ -417,9 +438,25 @@ def experiment(out:Path):
     """Sample all three frozen bodies and all scales; immutable verifiable evidence."""
     if out.exists():
         raise FileExistsError("never overwrite physical evidence")
+    # Reserve a new evidence folder BEFORE any audit can fail; stage data
+    # incrementally and leave source-state evidence behind on scientific HOLD.
+    out.mkdir(parents=True)
+    (out/"RUN_STARTED.txt").write_text(
+        "B2-A source experiment started; absence of RUN_COMPLETE means HOLD.\n")
+    reference_bytes=REFERENCE.read_bytes()
+    reference_git_blob=hashlib.sha1(
+        b"blob "+str(len(reference_bytes)).encode("ascii")+b"\0"+reference_bytes
+    ).hexdigest()
+    if reference_git_blob!="7810dfbb72cb6c41af007db6e9d51c58cad9a522":
+        raise RuntimeError("frozen experiment 028 reference changed")
+    (out/"frozen_reference.json").write_bytes(reference_bytes)
+    sha={}
+    def save(name,arr):
+        binary=_npy(arr)
+        (out/name).write_bytes(binary)
+        sha[name]=hashlib.sha256(binary).hexdigest()
     bodies=prepared_bodies()
     rng=np.random.default_rng(20261025)
-    files={}
     ledgers={}
     fronts={}
     transfer={}
@@ -431,12 +468,16 @@ def experiment(out:Path):
             cfg=AcousticConfig(body,termination=termination)
             x=np.zeros(768);x[:128]=rng.normal(scale=1e-6,size=128)
             d=AnatomicalWaveguide(cfg)
-            tr=d.trace(x)
+            tr,states,q=d.trace_with_states(x)
+            # Evidence FIRST, physical acceptance SECOND.
+            save(label+"_"+termination+"_port.npy",tr)
+            save(label+"_"+termination+"_states.npy",states)
+            if termination=="b0":
+                save(label+"_"+termination+"_q.npy",q)
             ledgers[label][termination]=energy_gate(tr)
-            files[label+"_"+termination+"_port.npy"]=tr
             impulse=np.zeros(4*cfg.wave_cells+4);impulse[0]=1e-6
             front=AnatomicalWaveguide(cfg).trace(impulse)
-            files[label+"_"+termination+"_front.npy"]=front
+            save(label+"_"+termination+"_front.npy",front)
             fronts[label][termination]={
                 "first_lip_incident_tick":int(np.flatnonzero(front[:,4])[0]),
                 "first_source_reflection_tick":(
@@ -451,7 +492,7 @@ def experiment(out:Path):
             duration_s=18.0 if label=="M0_i" else 5.0
             signal=AnatomicalWaveguide(cfg).impulse_lip_pressure(
                 int(math.ceil(duration_s*cfg.fs_hz)))
-            files[label+"_b0_full_impulse_n"+str(n)+".npy"]=signal
+            save(label+"_b0_full_impulse_n"+str(n)+".npy",signal)
             errors={}
             for f in FREQS:
                 a=continuous_transfer(f,cfg)
@@ -462,14 +503,10 @@ def experiment(out:Path):
                     "analog_complex":[a.real,a.imag],
                 }
             transfer[label][str(n)]=errors
-    out.mkdir(parents=True)
-    sha={}
-    for name,arr in sorted(files.items()):
-        content=_npy(arr)
-        (out/name).write_bytes(content)
-        sha[name]=hashlib.sha256(content).hexdigest()
     result={
-        "schema":"research.sa2b_b2a.v0",
+        "schema":"research.sa2b_b2a.v1-state-archive",
+        "frozen_reference_sha256":hashlib.sha256(reference_bytes).hexdigest(),
+        "frozen_reference_git_blob_sha1":reference_git_blob,
         "prereg_sha":PREREG,
         "executed_sha":"VERIFY_WITH_GITHUB_ACTIONS_RECEIPT",
         "scientific_status":"AWAITING_INDEPENDENT_CI_AND_ARTIFACT_AUDIT",
@@ -494,6 +531,7 @@ def experiment(out:Path):
     }
     (out/"manifest.json").write_text(
         json.dumps(result,indent=2,sort_keys=True,allow_nan=False)+"\n",encoding="utf-8")
+    (out/"RUN_COMPLETE.txt").write_text("B2-A source experiment completed; separate independent raw audit still required.\n")
     return result
 
 
@@ -501,7 +539,13 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("--out",type=Path,required=True)
     opts=parser.parse_args()
-    data=experiment(opts.out)
+    try:
+        data=experiment(opts.out)
+    except Exception as failure:
+        if opts.out.is_dir():
+            (opts.out/"RUN_FAILED.txt").write_text(
+                type(failure).__name__+": "+str(failure)+"\n")
+        raise
     print(json.dumps({"scientific_status":data["scientific_status"],
                       "energy":data["energy"],"arrival":data["one_way"],
                       "transfer":{b:{n:{f:d["complex_relative"] for f,d in rows.items()}

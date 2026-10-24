@@ -23,8 +23,16 @@ jobs:
           python-version: '3.11'
       - name: Research dependencies (existing Core)
         run: |
+          python -m pip install 'numpy==2.4.6'
           python -m pip install -e '.[dev]'
           python -m pip install 'scipy>=1.11,<2'
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+      - name: Reserve failure-evidence folder and exact source identity
+        run: |
+          mkdir -p "$RUNNER_TEMP/sa2b-b2a"
+          echo "EXACT_GITHUB_SHA=$GITHUB_SHA" | tee "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
+          echo "GITHUB_REF=$GITHUB_REF" | tee -a "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" | tee -a "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
       - name: Preregistered B0 B1 B1b and NEW anatomical science tests
         run: |
           python -m pytest -q \
@@ -32,15 +40,15 @@ jobs:
             tests/test_experiment_051_sa2b_b1.py \
             tests/test_experiment_052_sa2b_b1b.py \
             tests/test_experiment_053_sa2b_b2a.py
-      - name: Execute body-dependent physical experiment
+      - name: Execute body-dependent physical experiment even after test failure
+        if: always()
         run: |
-          python experiments/053_b2a_anatomical_waveguide/run.py --out "$RUNNER_TEMP/sa2b-b2a"
-          echo "EXACT_GITHUB_SHA=$GITHUB_SHA" | tee "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
-          echo "GITHUB_REF=$GITHUB_REF" | tee -a "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
-          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" | tee -a "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt"
+          python experiments/053_b2a_anatomical_waveguide/run.py --out "$RUNNER_TEMP/sa2b-b2a/raw"
+          cp "$RUNNER_TEMP/sa2b-b2a/CI_EVIDENCE.txt" "$RUNNER_TEMP/sa2b-b2a/raw/CI_EVIDENCE.txt"
       - name: Independent raw SI/archive audit (imports neither solver)
+        if: always()
         run: |
-          python experiments/053_b2a_anatomical_waveguide/independent_audit.py --dir "$RUNNER_TEMP/sa2b-b2a"
+          python experiments/053_b2a_anatomical_waveguide/independent_audit.py --dir "$RUNNER_TEMP/sa2b-b2a/raw"
       - name: Archive EVERY raw trace including science-gate failure
         if: always()
         uses: actions/upload-artifact@v4

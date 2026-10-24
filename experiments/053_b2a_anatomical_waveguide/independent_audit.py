@@ -65,11 +65,18 @@ def audit(folder:Path):
         if not np.isfinite(arr).all():
             raise AssertionError("nonfinite physical raw artifact: "+name)
         arrays[name]=arr
-    if len(arrays)!=33:
-        raise AssertionError(f"expected 33 raw NPY, got {len(arrays)}")
-    reference=json.loads(
-        (ROOT/"experiments/028_task_field_morphology_transfer/frozen_reference.json").read_text()
-    )["M0"]
+    if len(arrays)!=48:
+        raise AssertionError(f"expected 48 physical NPY states, got {len(arrays)}")
+    # Only the ARCHIVE is trusted as an input: no checkout-dependent anatomy.
+    raw_ref=(folder/"frozen_reference.json").read_bytes()
+    if hashlib.sha256(raw_ref).hexdigest()!=manifest["frozen_reference_sha256"]:
+        raise AssertionError("embedded frozen anatomy SHA256 mismatch")
+    blob_id=hashlib.sha1(b"blob "+str(len(raw_ref)).encode("ascii")+b"\0"+raw_ref).hexdigest()
+    if blob_id!="7810dfbb72cb6c41af007db6e9d51c58cad9a522":
+        raise AssertionError("embedded frozen anatomy not original Experiment028 Git blob")
+    reference=json.loads(raw_ref)["M0"]
+    if not (folder/"RUN_COMPLETE.txt").is_file():
+        raise AssertionError("science experiment did not finish; partial raw states retained")
     bodies=manifest["bodies"]
     if set(bodies)!=set(BODIES):
         raise AssertionError("unexpected character morphology")
@@ -117,10 +124,48 @@ def audit(folder:Path):
                 assert np.array_equal(front[N,5],(front[N,4] if term=="closed" else -front[N,4]))
             if term=="matched":
                 assert front[N,5]==0.
-            E=tr[:,9]+tr[:,10]
+            # Re-derive physical stored energy from ARCHIVED wave states, not
+            # from any solver-reported stored-energy/loss columns.
+            states=arrays[name+"_"+term+"_states.npy"]
+            if states.shape!=(768,16,2,2):
+                raise AssertionError("missing actual per-cell pressure waves")
+            zi=RHO*C/np.asarray(areas,dtype=np.float64)
+            calc_pipe=h*np.sum(np.sum(states*states,axis=(2,3))/zi[None,:],axis=1)
+            np.testing.assert_allclose(tr[:,9],calc_pipe,rtol=1e-10,atol=1e-20)
+            # Physical ports must close on the same pressure / volume-flow:
+            np.testing.assert_allclose(tr[:,6],tr[:,2]+tr[:,3],rtol=1e-11,atol=1e-14)
+            np.testing.assert_allclose(tr[:,1],(tr[:,2]-tr[:,3])/zi[0],
+                                       rtol=1e-10,atol=1e-14)
+            np.testing.assert_allclose(tr[:,7],tr[:,4]+tr[:,5],rtol=1e-11,atol=1e-14)
+            np.testing.assert_allclose(tr[:,8],(tr[:,4]-tr[:,5])/zi[-1],
+                                       rtol=1e-10,atol=1e-14)
+            if term=="b0":
+                lip=float(areas[-1])
+                radius=math.sqrt(lip/math.pi)
+                M=8*RHO*radius/(3*math.pi*lip)
+                tau=3*math.pi*radius/(16*C)
+                R=M/tau
+                q=arrays[name+"_b0_q.npy"]
+                if q.shape!=(768,):
+                    raise AssertionError("missing independent B0 inertial storage")
+                q_prev=np.r_[0.,q[:-1]]
+                np.testing.assert_allclose(q-q_prev,h*tr[:,7]/M,rtol=1e-9,atol=1e-15)
+                np.testing.assert_allclose(tr[:,8],(q+q_prev)/2+tr[:,7]/R,
+                                           rtol=1e-9,atol=1e-14)
+                calc_mouth=.5*M*q*q
+                calc_loss=h*tr[:,7]**2/R
+            elif term=="matched":
+                calc_mouth=np.zeros(len(tr))
+                calc_loss=h*tr[:,4]**2/zi[-1]
+            else:
+                calc_mouth=np.zeros(len(tr))
+                calc_loss=np.zeros(len(tr))
+            np.testing.assert_allclose(tr[:,10],calc_mouth,rtol=1e-10,atol=1e-20)
+            np.testing.assert_allclose(tr[:,12],calc_loss,rtol=1e-10,atol=1e-20)
+            E=calc_pipe+calc_mouth
             before=np.r_[0.,E[:-1]]
             work=h*tr[:,6]*tr[:,1]
-            loss=tr[:,12]
+            loss=calc_loss
             delta=E-before
             res=delta-work+loss
             scale=np.maximum(1e-9*np.maximum.reduce(
@@ -208,6 +253,8 @@ def audit(folder:Path):
         raise AssertionError("axial anatomy ratio lost")
     return {
         "status":"B2A_RAW_ARTIFACT_INDEPENDENT_AUDIT_PASS",
+        "independently_recomputed_all_48_wave_and_B0_physical_states":True,
+        "authenticated_frozen_reference_git_blob_sha1":blob_id,
         "exact_source_sha":source_sha,
         "workflow_run_id":pairs["GITHUB_RUN_ID"],
         "npy_files_rehashed":len(arrays),

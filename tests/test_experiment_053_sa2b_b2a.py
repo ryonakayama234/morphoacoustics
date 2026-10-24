@@ -257,7 +257,11 @@ def test_experiment_manifest_signed_SI_and_archive_exclusivity(tmp_path):
     m=w.experiment(destination)
     assert m["scientific_status"]=="AWAITING_INDEPENDENT_CI_AND_ARTIFACT_AUDIT"
     assert set(m["bodies"])==set(w.BODIES)
-    assert len(m["sha256"])==33
+    assert len(m["sha256"])==48
+    assert (destination/"frozen_reference.json").exists()
+    assert (destination/"RUN_COMPLETE.txt").exists()
+    assert all((destination/(name+"_states.npy")).exists() for name in
+               ("M0_a_b0","M0_i_b0","M1_a_b0"))
     import hashlib
     for name,digest in m["sha256"].items():
         blob=(destination/name).read_bytes()
