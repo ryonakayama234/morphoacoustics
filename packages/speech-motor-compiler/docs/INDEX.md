@@ -62,3 +62,9 @@ This is a **new, design-only, stacked research effort** tracked in [Issue #174](
 - [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md): goal semantics, TaskDefinition vs TaskTemplate vs MotorTask identity, explicit sharing, versioned pronunciation-to-task mapping, diagnostic/failure and preregistered falsifiers. Original protocol-first (no mapping code) SHA: `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
 - [SMC4_EVIDENCE_REGISTER.md](SMC4_EVIDENCE_REGISTER.md): original literature and project evidence boundaries, synthetic 2-phoneme/3-task graph, measurement and body-realization ownership.
 - Gate A has **no implemented new Task lexicon / planner**, no empirically accepted Japanese mapping, no body capability or WAV output. `SMC4_GATE_A_DESIGN_ONLY / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`. SMC-3 PR #164 remains Draft.
+
+## 2026-10-24 SMC-4 Gate A — separate P2 correction addendum
+
+The **original frozen [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md)** remains unchanged at protocol-first SHA `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
+
+GitHub Codex's manual **design review of initial docs SHA `44d21d1118ff8994af430e2abd4484030f60f3a2`** found four P2 specification defects: combining alternative pronunciation readings, missing context predicate semantics, incompatible shared goals, and F12's non-falsifiable alternative outcomes. See the separately committed [SMC4_GATE_A_AMENDMENT_01.md](SMC4_GATE_A_AMENDMENT_01.md), origin commit `4686726b2b588e8b2350462750fe095319c43202`, for **normative supersession of only those ambiguous clauses** and explicit F12a/b/c + F16–F22 negative fixtures. No mapping source, physical/audio code or scientific adoption; new exact-SHA CI and Codex re-review required.
