@@ -189,7 +189,7 @@ def test_actual_impulse_b0_transfer_and_metered_unmetered_agree():
         experimental=w.empirical_transfer_at_frequency(impulse,cfg,f)
         analytic=w.continuum_analog_transfer(f,cfg)
         discrete=w.independent_discrete_scattering_transfer(f,cfg)
-        assert abs(experimental-analog)/abs(analog)<.005
+        assert abs(experimental-analytic)/abs(analytic)<.005
         assert abs(experimental-discrete)/abs(discrete)<.0001
 
 
