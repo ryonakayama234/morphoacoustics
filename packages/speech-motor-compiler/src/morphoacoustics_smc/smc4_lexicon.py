@@ -18,7 +18,8 @@ from .validation import plan_digest, resolve_timing, validate_plan
 from .smc4_types import (
     CompileReceipt, CompileResult, GoalSlot, Predicate, PronunciationPath,
     ShareDecision, SlotCandidate, TaskDefinition, TaskLexicon, TemplateBundle,
-    TimeAnchor, TimeRelation, digest_payload, evaluate, pick, stable_task_id,
+    TimeAnchor, TimeRelation, canonical_request_fingerprint, digest_payload,
+    evaluate, pick, stable_task_id,
 )
 
 @dataclass(frozen=True)
@@ -78,14 +79,26 @@ def compile_lexicon(
     source_revision: str = "unspecified",
 ) -> CompileResult:
     """One complete explicitly selected path, no text-to-reading inference."""
+    input_fingerprint = canonical_request_fingerprint({
+        "segment_id": segment_id, "source_text": source_text,
+        "source_revision": source_revision, "language": language,
+        "profile": profile, "paths": paths,
+        "selected_path_id": selected_path_id, "lexicon": lexicon,
+        "context": context, "shares": shares,
+        "anchors": anchors, "relations": relations,
+        "coordination_kind": coordination_kind,
+    })
     # A rejection never returns a partially assembled SymbolicPlan.
+    # Its fingerprint binds all submitted hypotheses and even failed timing.
     def reject(code: str, *details: str) -> CompileResult:
         normalized = tuple(sorted(str(s) for s in details))
-        token = _safe_digest((segment_id, source_text, source_revision,
-                              selected_path_id, lexicon.revision,
-                              lexicon.rule_revision, code, normalized))
+        token = digest_payload({
+            "input_fingerprint": input_fingerprint,
+            "code": code, "details": normalized,
+        })
         return CompileResult(None, CompileReceipt(
-            "REJECTED", code, normalized, token, (), None, "NOT_RESOLVED"))
+            "REJECTED", code, normalized, token, (), None, "NOT_RESOLVED",
+            input_fingerprint=input_fingerprint))
 
     def scalar(s: object) -> bool:
         return isinstance(s, str) and bool(s) and not any(
@@ -324,7 +337,8 @@ def compile_lexicon(
         "context": tuple(sorted(context.items())),
         "selected_bundles": tuple(sorted(selected_bundles)),
         "selected_templates": provenance,
-        "groups": group_details, "plan_digest": pdigest, "timing_status": time_status,
+        "groups": group_details, "plan_digest": pdigest,
+        "timing_status": time_status, "input_fingerprint": input_fingerprint,
     })
     readable_provenance = tuple(sorted((
         (o.unit_id, o.slot_id, o.bundle_id, o.candidate.template_id,
@@ -343,7 +357,7 @@ def compile_lexicon(
     return CompileResult(plan, CompileReceipt(
         "MAPPED_SYMBOLIC", "OK", (), receipt_digest, tuple(sorted(evidence)),
         pdigest, time_status, "UNVERIFIED", readable_provenance,
-        target_ranges, input_provenance))
+        target_ranges, input_provenance, input_fingerprint))
 
 
 __all__ = [
