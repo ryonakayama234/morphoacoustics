@@ -1,0 +1,12 @@
+# SYSTEM — physically local two-way propagation
+
+The preceding all-domain implicit-midpoint B1 was energy-consistent but its discrete transition has dense support: tiny pre-arrival far-end activity. The new independent method stores two pressure traveling-wave streams, shifted by ONE physical cell per internal clock. No previous or future remote cell can influence the lip until N local wave shifts have occurred.
+
+Creator/physical path:
+Morphology (only a uniform calibration pipe; NOT full M0) -> compute cell length and physical fs=c/dx -> source-volume-flow boundary (external prescribed ACTIVE port for test only) -> forward and backward wave queues (lossless passive traveling propagation) -> immutable B0 termination (mouth inertance/resistance) -> returned reflected pressure wave. Observable p and U are reconstructed from traveling waves at each location; mic/farfield remains outside B1b.
+
+P_wave = a+b and U_wave=(a-b)/Zc at each cell, Zc=rho c/A. The physical tube E=dx * SUM[ A*p²/(2 rho c²)+rho*U²/(2 A) ] = (h/Zc) SUM[a²+b²]. At every time tick the queues both shift once. Inlet source a_source=b_source + Zc U_in and signed work h*p_source*U_in; mouth b_out is +a (closed), -a (pressure-release), 0 (matched) or exact original B0 one-port.step(a). Matched power leaves h*a²/Zc. B0 physical resistance dissipation and inertance state enter total energy; no filter, external EQ or invented loss is allowed.
+
+The clock is *not* assumed to be 48k. Here dx=10mm/n, n=2/4/8, so fs=68.6/137.2/274.4kHz and N=32/64/128 for a uniform 16cm duct. Physical transit N/fs=L/c is exact and is 22.39067 times 48k observer samples. A 48k output could later be *observed* by an appropriate physically justified resampler; no such bridge is implemented or certified. Actual variable-area geometry and glottal self-exciting source are explicitly deferred. As a research calibration, exact cell delay cannot by itself establish fidelity for arbitrary continuously deforming topology.
+
+Independent evidence: analytic continuum impedance transfer, the ORIGINAL B0 one-port, original global B1 midpoint solver, plus measured actual impulse response and FIFO spatial support. Acceptance means a single B1 passive-uniform propagation candidate, not irrevocable selection of one universal production backend.
