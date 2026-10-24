@@ -46,7 +46,7 @@ def read_and_audit(directory: Path):
     receipt = (directory/"CI_EVIDENCE.txt").read_text()
     assert "EXACT_GITHUB_SHA=" in receipt
     assert "GITHUB_RUN_ID=" in receipt
-    assert "GITHUB_REF=refs/heads/research/sa2b-b1b-local-waveguide-20261024" in receipt
+    assert ("GITHUB_REF=refs/heads/research/sa2b-b1b-local-waveguide-20261024" in receipt\n            or "GITHUB_REF=refs/pull/181/merge" in receipt)  # PR CI tests exact merge commit; push CI tests branch HEAD
     data={}
     for name,sha in manifest["sha256"].items():
         raw=(directory/name).read_bytes()
