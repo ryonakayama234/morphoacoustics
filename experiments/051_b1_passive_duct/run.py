@@ -255,14 +255,27 @@ def energy_gate(rows: np.ndarray, *,initial_energy_j: float = 0.) -> dict:
     if r.ndim != 2 or r.shape[1] != len(TRACE_COLUMNS) or not np.isfinite(r).all():
         raise ValueError("bad trace")
     d, w, loss, residual = r[:,10], r[:,8], r[:,9], r[:,11]
-    tolerance = 1e-8*np.maximum.reduce((abs(d),abs(w),abs(loss),
-                                         np.full(len(r), 1e-20)))
+    # The original preregistered |work|/|loss|/|dE| numerical denominator
+    # failed for a conservative closed pipe after its active input ceased:
+    # stored E >> 0 while work=loss=0. See the original FAILED run and
+    # frozen prospective numerical-only Gate A1 in AMENDMENT_01.md.
+    # Never replace the observed quadratic-energy delta with an "ideal" zero.
+    energy_current = r[:,6] + r[:,7]
+    energy_previous = np.concatenate(([initial_energy_j],energy_current[:-1]))
+    flux_tolerance = 1e-8*np.maximum.reduce((
+        abs(d), abs(w), abs(loss), np.full(len(r), 1e-20)))
+    stored_tolerance = 1e-12*np.maximum.reduce((
+        abs(energy_current), abs(energy_previous), np.full(len(r),1e-20)))
+    tolerance = np.maximum(flux_tolerance,stored_tolerance)
     if not np.all(abs(residual) <= tolerance):
-        raise AssertionError("energy: per-sample balance failed")
+        raise AssertionError("energy: per-sample balance failed (Gate A1)")
     cumulative = abs(float(np.sum(residual)))
-    allowed = 1e-8*max(float(sum(abs(w))+sum(abs(loss))), 1e-20)
+    allowed = max(
+        1e-8*max(float(sum(abs(w))+sum(abs(loss))), 1e-20),
+        1e-10*max(float(initial_energy_j),
+                  float(np.max(abs(energy_current),initial=0.)),1e-20))
     if cumulative > allowed:
-        raise AssertionError("energy: cumulative balance failed")
+        raise AssertionError("energy: cumulative balance failed (Gate A1)")
     if np.any(loss < 0) or np.any(r[:,6] < 0) or np.any(r[:,7] < 0):
         raise AssertionError("negative physical energy or loss")
     return {
