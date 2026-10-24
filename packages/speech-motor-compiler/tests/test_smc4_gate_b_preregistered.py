@@ -185,3 +185,200 @@ def test_f10_lexicon_revision_changes_receipt_not_graph():
     b = run(lex=replace(lex, revision="lex-v2"))
     assert a.plan == b.plan
     assert a.receipt.digest != b.receipt.digest
+
+# The following additional oracles implement cases frozen in Gate A/Gate B
+# protocol, added as a separate source commit for auditable test provenance.
+from morphoacoustics_smc.model import Event
+from morphoacoustics_smc.smc4_lexicon import TimeAnchor
+
+
+def _all_anchors(p2_start=Q(0), p2_stop=Q(1)):
+    return tuple(TimeAnchor(unit, slot, event, time)
+                 for unit, start, stop in (("P1", Q(0), Q(1)),
+                                           ("P2", p2_start, p2_stop))
+                 for slot in ("tract", "source")
+                 for event, time in ((Event.ONSET, start), (Event.OFFSET, stop)))
+
+
+def _source_targets(a: tuple[int, int], b: tuple[int, int]):
+    _, lex = standard()
+    new_bundles = []
+    for index, original in enumerate(lex.bundles):
+        slot = original.slots[1]
+        low, high = (a, b)[index]
+        changed = replace(slot.candidates[0], lower=Q(low), upper=Q(high))
+        new_bundles.append(replace(original, slots=(
+            original.slots[0], replace(slot, candidates=(changed,)))))
+    return replace(lex, bundles=tuple(new_bundles))
+
+
+def test_f03_repeated_symbol_is_not_automatically_shared():
+    p, lex = standard()
+    p = replace(p, units=(p.units[0], replace(p.units[1], symbol="p1")))
+    b2 = replace(lex.bundles[1], symbol="p1")
+    r = run(path=p, lex=replace(lex, bundles=(lex.bundles[0], b2)))
+    assert r.plan is not None
+    assert len(r.plan.tasks) == 4
+
+
+def test_f06_invalid_unicode_and_invalid_codepoint_span():
+    bad_unicode = run(source="甲\\ud800")
+    assert bad_unicode.receipt.code == "INVALID_INPUT" and bad_unicode.plan is None
+    p, _ = standard()
+    malformed = replace(p, units=(replace(p.units[0], start_offset=-1), p.units[1]))
+    r = run(path=malformed)
+    assert r.receipt.code == "INVALID_INPUT" and r.plan is None
+
+
+def test_f07_dangling_definition_is_invalid_not_silent():
+    p, lex = standard()
+    slot = lex.bundles[0].slots[0]
+    wrong = replace(slot.candidates[0], definition_id="missing")
+    b = replace(lex.bundles[0],
+                slots=(replace(slot, candidates=(wrong,)), lex.bundles[0].slots[1]))
+    r = run(lex=replace(lex, bundles=(b, lex.bundles[1])))
+    assert r.receipt.code == "INVALID_PLAN" and r.plan is None
+
+
+def test_f08_contradictory_exact_anchors_are_not_solved():
+    anchors = (TimeAnchor("P1", "source", Event.ONSET, Q(0)),
+               TimeAnchor("P1", "source", Event.ONSET, Q(1)))
+    r = run(anchors=anchors)
+    assert r.receipt.code == "INVALID_PLAN" and r.plan is None
+    assert any("CONTRADICTORY_TIMING" in x for x in r.receipt.detail)
+
+
+def test_f12a_overlapping_disjoint_same_variable_is_conflict():
+    lex = _source_targets((0, 1), (2, 3))
+    r = run(lex=lex, anchors=_all_anchors(Q(1, 2), Q(3, 2)))
+    assert r.receipt.code == "TASK_GOAL_CONFLICT" and r.plan is None
+
+
+def test_f12b_different_variables_stay_unverified_not_infeasible():
+    r = run(anchors=_all_anchors(Q(1, 2), Q(3, 2)))
+    assert r.plan is not None and r.receipt.status == "MAPPED_SYMBOLIC"
+    assert r.receipt.body_status == "UNVERIFIED"
+
+
+def test_f12c_same_variable_disjoint_time_can_succeed():
+    r = run(lex=_source_targets((0, 1), (2, 3)),
+            anchors=_all_anchors(Q(2), Q(3)))
+    assert r.plan is not None and r.receipt.status == "MAPPED_SYMBOLIC"
+
+
+def test_f13_unanchored_cannot_invent_absolute_times():
+    r = run()
+    assert r.plan is not None and r.receipt.timing_status == "UNRESOLVED"
+
+
+def test_f14_phase_oscillator_is_unsupported():
+    r = run(coordination_kind="OSCILLATOR_PHASE")
+    assert r.plan is None and r.receipt.code == "UNSUPPORTED_COORDINATION"
+
+
+def test_f19_unknown_vs_known_mismatching_context():
+    p, lex = standard()
+    b = replace(lex.bundles[0], context=Predicate("EQ", "position", "X"))
+    l2 = replace(lex, bundles=(b, lex.bundles[1]))
+    assert run(lex=l2).receipt.code == "INSUFFICIENT_CONTEXT"
+    assert run(lex=l2, context={"position": "Y"}).receipt.code == "UNMAPPED"
+
+
+def test_f20_shared_scalar_target_intersection_is_preserved():
+    lex = _source_targets((0, 2), (1, 3))
+    decision = ShareDecision("e", (("P2", "source"), ("P1", "source")))
+    r = run(lex=lex, shares=(decision,))
+    assert r.plan is not None
+    assert len(r.plan.tasks) == 3
+    targets = [(lo, hi) for _, lo, hi in r.receipt.task_targets]
+    assert (Q(1), Q(2)) in targets
+    assert {"TS1", "TS2"}.issubset(r.receipt.evidence)
+    assert len(r.receipt.mapping_provenance) == 4
+
+
+def test_f22_share_mismatched_semantic_domain_is_unverified():
+    p, lex = standard()
+    alt = TaskDefinition("src_alt", "r1", "q_src", "categorical",
+                         "FUNCTIONAL_src")
+    b2 = lex.bundles[1]
+    source = b2.slots[1]
+    c = replace(source.candidates[0], definition_id="src_alt")
+    b2 = replace(b2, slots=(b2.slots[0], replace(source, candidates=(c,))))
+    newlex = replace(lex, definitions=lex.definitions + (alt,),
+                     bundles=(lex.bundles[0], b2))
+    r = run(lex=newlex, shares=(
+        ShareDecision("e", (("P1", "source"), ("P2", "source"))),))
+    assert r.receipt.code == "UNVERIFIED_SHARE_COMPATIBILITY"
+    assert r.plan is None
+
+
+def test_f25_false_alternative_does_not_add_third_slot_task():
+    p, lex = standard()
+    b = lex.bundles[0]
+    slot = b.slots[0]
+    false_candidate = replace(slot.candidates[0], template_id="NO",
+                              context=Predicate("FALSE"))
+    b = replace(b, slots=(replace(slot, candidates=slot.candidates +
+                                 (false_candidate,)), b.slots[1]))
+    r = run(lex=replace(lex, bundles=(b, lex.bundles[1])))
+    assert r.plan is not None and len(r.plan.tasks) == 4
+    assert "NO" not in r.receipt.evidence
+
+
+def test_f26_unmatched_required_slot_never_partial_mapping():
+    p, lex = standard()
+    b = lex.bundles[0]
+    source = b.slots[1]
+    bad = replace(source.candidates[0], context=Predicate("FALSE"))
+    b = replace(b, slots=(b.slots[0], replace(source, candidates=(bad,))))
+    r = run(lex=replace(lex, bundles=(b, lex.bundles[1])))
+    assert r.receipt.code == "UNMAPPED" and r.plan is None
+
+
+def test_f27_unknown_competing_bundle_blocks_fallback():
+    p, lex = standard()
+    specific = replace(lex.bundles[0], bundle_id="B_specific", context=DEVOICE)
+    r = run(lex=replace(lex, bundles=lex.bundles + (specific,)))
+    assert r.receipt.code == "INSUFFICIENT_CONTEXT" and r.plan is None
+
+
+def test_f29_f32_complete_per_unit_coverage_and_missing_case():
+    p, lex = standard()
+    assert {a.unit_id for a in run().plan.associations} == {"P1", "P2"}
+    r = run(lex=replace(lex, bundles=lex.bundles[:1]))
+    assert r.receipt.code == "UNMAPPED" and r.plan is None
+
+
+def test_f31_neighbor_fact_is_read_only():
+    p, lex = standard()
+    b = replace(lex.bundles[0], context=Predicate("EQ", "neighbor_P2", "p2"))
+    l2 = replace(lex, bundles=(b, lex.bundles[1]))
+    assert run(lex=l2).receipt.code == "INSUFFICIENT_CONTEXT"
+    r = run(lex=l2, context={"neighbor_P2": "p2"})
+    assert r.plan is not None
+    assert {a.unit_id for a in r.plan.associations} == {"P1", "P2"}
+
+
+def test_f10_rule_revision_changes_receipt():
+    _, lex = standard()
+    assert run().receipt.digest != run(
+        lex=replace(lex, rule_revision="rule-v2")).receipt.digest
+
+
+def test_f09_reordering_share_members_preserves_digest():
+    a = run(shares=(ShareDecision("e", (("P1", "source"),
+                                       ("P2", "source"))),))
+    b = run(shares=(ShareDecision("e", (("P2", "source"),
+                                       ("P1", "source"))),))
+    assert a.plan == b.plan and a.receipt.digest == b.receipt.digest
+
+
+def test_f15_gateb_does_not_accept_unreviewed_project_phonetics():
+    p, lex = standard()
+    b = lex.bundles[0]
+    source = b.slots[1]
+    candidate = replace(source.candidates[0], status="PROJECT_MEASURED")
+    b = replace(b, slots=(b.slots[0],
+                         replace(source, candidates=(candidate,))))
+    r = run(lex=replace(lex, bundles=(b, lex.bundles[1])))
+    assert r.receipt.code == "UNVERIFIED" and r.plan is None
