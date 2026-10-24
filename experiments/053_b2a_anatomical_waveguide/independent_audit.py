@@ -83,7 +83,7 @@ def audit(folder:Path):
         digest=hashlib.sha256(np.asarray(areas,dtype="<f8").tobytes()).hexdigest()
         assert digest==info["areas_digest_float64"],name
         assert info["lip_area_m2"]==float(areas[-1])
-        assert info["length_m"]==np.sum(lengths)
+        assert math.isclose(info["length_m"],math.fsum(lengths),rel_tol=1e-14)
         assert info["preset_id"]==("v3b-axial-M1" if name=="M1_a" else "v3b-axial-M0")
     np.testing.assert_array_equal(bodies["M0_a"]["areas_m2"],bodies["M1_a"]["areas_m2"])
     error={}
