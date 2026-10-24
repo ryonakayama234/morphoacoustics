@@ -117,6 +117,7 @@ class CompileReceipt:
     mapping_provenance: tuple[tuple[str, ...], ...] = ()
     task_targets: tuple[tuple[str, Fraction, Fraction], ...] = ()
     input_provenance: tuple[tuple[str, str], ...] = ()
+    input_fingerprint: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,3 +196,45 @@ def digest_payload(payload: object) -> str:
 
 def stable_task_id(parts: tuple[str, ...]) -> str:
     return "smc4:" + digest_payload(parts)[:32]
+
+
+# Unlike a success plan hash, a rejection receipt must identify the
+# complete attempted experiment (including invalid and unselected inputs).
+_UNORDERED_FIELDS = frozenset({
+    "paths", "units", "required_spans", "definitions", "bundles",
+    "slots", "candidates", "members", "operands", "shares",
+    "anchors", "relations",
+})
+
+
+def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
+    """Deterministic safe fingerprint even for malformed Unicode/runtime data.
+
+    Sort genuinely unordered declarations; preserve ordered pairs and
+    direction-sensitive tuples. Do not use Python repr of the entire lexicon,
+    since it is ordering-sensitive and not stable under source reordering.
+    """
+    def normalized(value: object, field_name: str = "") -> object:
+        if isinstance(value, Fraction):
+            return {"rational": [value.numerator, value.denominator]}
+        if is_dataclass(value) and not isinstance(value, type):
+            return {"dataclass": type(value).__name__,
+                    "fields": normalized(asdict(value))}
+        if isinstance(value, Mapping):
+            entries = [(str(k), normalized(v, str(k))) for k, v in value.items()]
+            return {"entries": sorted(entries, key=lambda entry: entry[0])}
+        if isinstance(value, (tuple, list, set, frozenset)):
+            values = [normalized(item) for item in value]
+            if field_name in _UNORDERED_FIELDS or isinstance(value, (set, frozenset)):
+                values.sort(key=lambda item: dumps(item, sort_keys=True,
+                                                  ensure_ascii=True))
+            return values
+        if value is None or isinstance(value, (str, bool, int)):
+            return value
+        # Nonfinite/unsupported values are fingerprinted, not executed as
+        # valid script input; their public validation remains separate.
+        return {"unrecognized_type": type(value).__name__, "repr": repr(value)}
+
+    encoded = dumps(normalized(request), sort_keys=True, ensure_ascii=True,
+                    separators=(",", ":"), allow_nan=False)
+    return sha256(encoded.encode("utf-8")).hexdigest()
