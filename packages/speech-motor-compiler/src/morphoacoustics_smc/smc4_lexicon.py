@@ -4,6 +4,7 @@ Research-only synthetic semantics. No phonetic, bodily or acoustic claims.
 """
 from __future__ import annotations
 
+from collections import defaultdict, deque
 from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
@@ -37,6 +38,34 @@ class _Group:
 
 def _safe_digest(value: object) -> str:
     return sha256(repr(value).encode("utf-8", "backslashreplace")).hexdigest()
+
+def _anchored_seconds(plan: SymbolicPlan) -> dict[tuple[str, Event], Fraction]:
+    """Independently proved exact event times, even with unrelated free events.
+
+    This is a read-only partial-time projection after SMC-3 validation succeeds;
+    it never invents times for unanchored components.
+    """
+    origin: tuple[str, Event] = ("", Event.ONSET)
+    edges: dict[tuple[str, Event],
+                list[tuple[tuple[str, Event], Fraction]]] = defaultdict(list)
+    def link(left: tuple[str, Event], right: tuple[str, Event],
+             lag: Fraction) -> None:
+        edges[left].append((right, lag))
+        edges[right].append((left, -lag))
+    for anchor in plan.anchors:
+        link(origin, (anchor.task_id, anchor.event), anchor.time_s)
+    for relation in plan.couplings:
+        link((relation.source_task_id, relation.source_event),
+             (relation.target_task_id, relation.target_event), relation.lag_s)
+    times = {origin: Fraction(0)}
+    queue = deque([origin])
+    while queue:
+        node = queue.popleft()
+        for other, lag in edges[node]:
+            if other not in times:
+                times[other] = times[node] + lag
+                queue.append(other)
+    return times
 
 def compile_lexicon(
     segment_id: str, source_text: str, language: str, profile: str,
@@ -251,22 +280,27 @@ def compile_lexicon(
         return reject("INVALID_PLAN", *(d.code + ":" + d.subject_id for d in v.diagnostics))
     timing = resolve_timing(plan)
     time_status = "RESOLVED" if timing.status is ReportStatus.RESOLVED else "UNRESOLVED"
-    if timing.status is ReportStatus.RESOLVED:
-        seconds = {(tid, ev): val for tid, ev, val in timing.events}
-        for ix, ga in enumerate(groups):
-            for gb in groups[ix + 1:]:
-                da, db = ga.members[0].definition, gb.members[0].definition
-                if ((da.definition_id, da.semantic_revision, da.variable,
-                     da.value_domain, da.algebra) !=
-                    (db.definition_id, db.semantic_revision, db.variable,
-                     db.value_domain, db.algebra) or da.algebra != "SCALAR_INTERVAL"):
-                    continue
-                overlap = (max(seconds[(ga.task_id, Event.ONSET)],
-                               seconds[(gb.task_id, Event.ONSET)]) <
-                           min(seconds[(ga.task_id, Event.OFFSET)],
-                               seconds[(gb.task_id, Event.OFFSET)]))
-                if overlap and (ga.upper < gb.lower or gb.upper < ga.lower):
-                    return reject("TASK_GOAL_CONFLICT", ga.task_id, gb.task_id)
+    # Partial timing is enough to prove a contradiction for one pair; all
+    # other unanchored Task windows remain unknown, not defaulted to zero.
+    seconds = _anchored_seconds(plan)
+    for ix, ga in enumerate(groups):
+        for gb in groups[ix + 1:]:
+            da, db = ga.members[0].definition, gb.members[0].definition
+            if ((da.definition_id, da.semantic_revision, da.variable,
+                 da.value_domain, da.algebra) !=
+                (db.definition_id, db.semantic_revision, db.variable,
+                 db.value_domain, db.algebra) or da.algebra != "SCALAR_INTERVAL"):
+                continue
+            keys = tuple((tid, event) for tid in (ga.task_id, gb.task_id)
+                         for event in (Event.ONSET, Event.OFFSET))
+            if not all(k in seconds for k in keys):
+                continue
+            overlap = (max(seconds[(ga.task_id, Event.ONSET)],
+                           seconds[(gb.task_id, Event.ONSET)]) <
+                       min(seconds[(ga.task_id, Event.OFFSET)],
+                           seconds[(gb.task_id, Event.OFFSET)]))
+            if overlap and (ga.upper < gb.lower or gb.upper < ga.lower):
+                return reject("TASK_GOAL_CONFLICT", ga.task_id, gb.task_id)
 
     # Receipt is separate from the frozen SMC-3 plan digest.
     provenance = tuple(sorted((
