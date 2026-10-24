@@ -304,8 +304,8 @@ class AnatomicalWaveguide:
         for i,(reflection,left_to_right,right_to_left) in enumerate(self.junction_scatter):
             a,b=incoming_a[i],incoming_b[i+1]
             # Algebraically identical to independently tested passive_junction.
-            out_b[i]=reflection*a+right_to_left*b
-            out_a[i+1]=left_to_right*a-reflection*b
+            out_b[i]=reflection*a+left_to_right*b
+            out_a[i+1]=right_to_left*a-reflection*b
         mouth_a=incoming_a[15]
         if self.cfg.termination=="closed":
             mouth_b,loss,mouthE=mouth_a,0.,0.
