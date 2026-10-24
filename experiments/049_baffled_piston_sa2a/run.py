@@ -211,21 +211,21 @@ def body_frequency_study() -> tuple[dict[str, object], dict[str,np.ndarray]]:
         raise AssertionError("no M0 frequency within registered ka domain")
     valid_f=f[mask]
     m=exp9.lossy_transfer_matrix(geom,valid_f)
-    A,B,C,D=m[...,0,0],m[...,0,1],m[...,1,0],m[...,1,1]
+    aa,bb,cc,dd=m[...,0,0],m[...,0,1],m[...,1,0],m[...,1,1]
     zl=radiation_impedance(valid_f,a)
-    denominator=C*zl+D
+    denominator=cc*zl+dd
     if (np.any(~np.isfinite(denominator))
         or np.any(abs(denominator)<1e-12)):
         raise AssertionError("ill-conditioned tube/loaded mouth")
     tu=1./denominator
-    zin=(A*zl+B)/denominator
+    zin=(aa*zl+bb)/denominator
     # Compute port state from a single declared hypothetical peak volume flow.
     u_in=1e-6
     u_lip=tu*u_in
     p_lip=zl*u_lip
     p_in=zin*u_in
-    port_identity = np.max(abs((C*p_lip+D*u_lip)-u_in))/u_in
-    p_identity = np.max(abs(A*p_lip+B*u_lip-p_in))/max(np.max(abs(p_in)),1e-20)
+    port_identity = np.max(abs((cc*p_lip+dd*u_lip)-u_in))/u_in
+    p_identity = np.max(abs(aa*p_lip+bb*u_lip-p_in))/max(np.max(abs(p_in)),1e-20)
     identity=float(max(port_identity,p_identity))
     if identity>PORT_IDENTITY_REL_ERROR: raise AssertionError(("port identities",identity))
     power_in=.5*np.real(p_in*np.conj(u_in))
