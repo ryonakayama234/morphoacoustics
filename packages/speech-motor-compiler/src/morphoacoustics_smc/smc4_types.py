@@ -156,6 +156,11 @@ def evaluate(predicate: Predicate, facts: Mapping[str, str]) -> str:
 def pick(candidates: tuple[object, ...], facts: Mapping[str, str]
          ) -> tuple[object | None, str]:
     """Return a uniquely qualified choice; uncertainty is never a fallback."""
+    # Frozen dataclass type hints are not enforced on runtime caller data.
+    # Reject malformed priorities even when only one candidate would win.
+    if any(c.priority is not None and type(c.priority) is not int  # type: ignore[attr-defined]
+           for c in candidates):
+        return None, "INVALID_PLAN"
     true = [c for c in candidates if evaluate(c.context, facts) == "TRUE"]  # type: ignore[attr-defined]
     unknown = [c for c in candidates if evaluate(c.context, facts) == "UNKNOWN"]  # type: ignore[attr-defined]
     if not true:
@@ -189,7 +194,7 @@ def _default_json(value: object) -> object:
 
 
 def digest_payload(payload: object) -> str:
-    raw = dumps(payload, sort_keys=True, ensure_ascii=False,
+    raw = dumps(payload, sort_keys=True, ensure_ascii=True,
                 separators=(",", ":"), default=_default_json, allow_nan=False)
     return sha256(raw.encode("utf-8")).hexdigest()
 
@@ -203,7 +208,7 @@ def stable_task_id(parts: tuple[str, ...]) -> str:
 _UNORDERED_FIELDS = frozenset({
     "paths", "units", "required_spans", "definitions", "bundles",
     "slots", "candidates", "members", "operands", "shares",
-    "anchors", "relations",
+    "anchors", "relations", "capabilities", "target_unit_ids",
 })
 
 
