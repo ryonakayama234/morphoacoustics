@@ -7,6 +7,8 @@ This is a stacked research branch on the unmerged B0 branch. DO NOT merge B1 int
 - [SYSTEM.md](SYSTEM.md): dynamics, conservation, coupling, architecture, Core/Studio boundary.
 - [DATA.md](DATA.md): states, SI quantities and output/evidence fields.
 - [EXPERIMENT.md](EXPERIMENT.md): hypotheses, tests, expected failures and prospective gate.
-- [GATE_A.md](GATE_A.md): immutable original preregistration (initial numerical zero-work gate failed).\n- [AMENDMENT_01.md](AMENDMENT_01.md): post-failure separately preregistered numerical precision gate.\n- [RESULTS_20261024.md](RESULTS_20261024.md): failed initial CI, executed A1 CI, independently rehashed ZIP and finite-wavefront scientific limitation.
+- [GATE_A.md](GATE_A.md): immutable original preregistration (initial numerical zero-work gate failed).
+- [AMENDMENT_01.md](AMENDMENT_01.md): post-failure separately preregistered numerical precision gate.
+- [RESULTS_20261024.md](RESULTS_20261024.md): failed initial CI, executed A1 CI, independently rehashed ZIP and finite-wavefront scientific limitation.
 
 Scope: one fixed uniform lossless tube, not genuine variable-area M0 body; M0 lip *area* sets B0 load but uniform tube sections are calibration-only. No waveform synthesized, human voice, glottal self-oscillation, nearfield microphone, SMC, ASMR, or Studio adoption. B2 follows after independent B1 evidence.
