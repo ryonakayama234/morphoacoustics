@@ -54,3 +54,11 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - [Codex P2 review/evidence ledger](GATE_C_CODEX_REVIEW.md): exact reviewed implementation SHA, two P2 findings, red CI and controlled fix, AI-vs-human provenance, limited symbolic research gate.
 - [Unchanged original Gate C audit tests](../tests/test_gate_c_adversarial.py), plus [post-review regression tests](../tests/test_codex_p2_regression.py). Test-only SHA `08e2a47c8fd34017b6a52cacaef3485779515617` was red (7 Unicode cases + 1 contradiction-permutation case); repair-code SHA `a3f876fcaef3b63e2612807fab288a7e36e7e54a` had **16/16** completed success checks.
 - **Current status:** corrected code validated; exact latest amended-head independent Codex re-review pending, final docs HEAD CI separately pending. Scientific/physical claims not adopted; research Draft only; **NO_MAIN_MERGE**.
+
+## 2026-10-24 SMC-4 Gate A — prospective Task semantics and limited lexicon design
+
+This is a **new, design-only, stacked research effort** tracked in [Issue #174](https://github.com/ryonakayama234/morphoacoustics/issues/174), based on SMC-3 research commit `f36bfd5620268f07d5136d101303bcdc0afc0e7b`, not `main`. It does not supersede or re-label the historical Gate B/C records above.
+
+- [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md): goal semantics, TaskDefinition vs TaskTemplate vs MotorTask identity, explicit sharing, versioned pronunciation-to-task mapping, diagnostic/failure and preregistered falsifiers. Original protocol-first (no mapping code) SHA: `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
+- [SMC4_EVIDENCE_REGISTER.md](SMC4_EVIDENCE_REGISTER.md): original literature and project evidence boundaries, synthetic 2-phoneme/3-task graph, measurement and body-realization ownership.
+- Gate A has **no implemented new Task lexicon / planner**, no empirically accepted Japanese mapping, no body capability or WAV output. `SMC4_GATE_A_DESIGN_ONLY / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`. SMC-3 PR #164 remains Draft.
