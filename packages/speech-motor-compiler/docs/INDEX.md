@@ -54,3 +54,29 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - [Codex P2 review/evidence ledger](GATE_C_CODEX_REVIEW.md): exact reviewed implementation SHA, two P2 findings, red CI and controlled fix, AI-vs-human provenance, limited symbolic research gate.
 - [Unchanged original Gate C audit tests](../tests/test_gate_c_adversarial.py), plus [post-review regression tests](../tests/test_codex_p2_regression.py). Test-only SHA `08e2a47c8fd34017b6a52cacaef3485779515617` was red (7 Unicode cases + 1 contradiction-permutation case); repair-code SHA `a3f876fcaef3b63e2612807fab288a7e36e7e54a` had **16/16** completed success checks.
 - **Current status:** corrected code validated; exact latest amended-head independent Codex re-review pending, final docs HEAD CI separately pending. Scientific/physical claims not adopted; research Draft only; **NO_MAIN_MERGE**.
+
+## 2026-10-24 SMC-4 Gate A — prospective Task semantics and limited lexicon design
+
+This is a **new, design-only, stacked research effort** tracked in [Issue #174](https://github.com/ryonakayama234/morphoacoustics/issues/174), based on SMC-3 research commit `f36bfd5620268f07d5136d101303bcdc0afc0e7b`, not `main`. It does not supersede or re-label the historical Gate B/C records above.
+
+- [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md): goal semantics, TaskDefinition vs TaskTemplate vs MotorTask identity, explicit sharing, versioned pronunciation-to-task mapping, diagnostic/failure and preregistered falsifiers. Original protocol-first (no mapping code) SHA: `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
+- [SMC4_EVIDENCE_REGISTER.md](SMC4_EVIDENCE_REGISTER.md): original literature and project evidence boundaries, synthetic 2-phoneme/3-task graph, measurement and body-realization ownership.
+- Gate A has **no implemented new Task lexicon / planner**, no empirically accepted Japanese mapping, no body capability or WAV output. `SMC4_GATE_A_DESIGN_ONLY / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`. SMC-3 PR #164 remains Draft.
+
+## 2026-10-24 SMC-4 Gate A — separate P2 correction addendum
+
+The **original frozen [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md)** remains unchanged at protocol-first SHA `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
+
+GitHub Codex's manual **design review of initial docs SHA `44d21d1118ff8994af430e2abd4484030f60f3a2`** found four P2 specification defects: combining alternative pronunciation readings, missing context predicate semantics, incompatible shared goals, and F12's non-falsifiable alternative outcomes. See the separately committed [SMC4_GATE_A_AMENDMENT_01.md](SMC4_GATE_A_AMENDMENT_01.md), origin commit `4686726b2b588e8b2350462750fe095319c43202`, for **normative supersession of only those ambiguous clauses** and explicit F12a/b/c + F16–F22 negative fixtures. No mapping source, physical/audio code or scientific adoption; new exact-SHA CI and Codex re-review required.
+
+## 2026-10-24 SMC-4 Gate A — second review finding and additive/exclusive bundle amendment
+
+Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an additional P2: multiple *required* Task templates for one pronunciation cannot be handled by unique per-unit candidate choice, while unioning all matches would combine mutually exclusive alternatives. Historical frozen protocol and Amendment 01 remain unchanged.
+
+[SMC4_GATE_A_AMENDMENT_02.md](SMC4_GATE_A_AMENDMENT_02.md), initial commit `da0fb2f93d8921effc20c03cb6c90ff0ee89c3c8`, defines versioned `TemplateBundle` of **additive REQUIRED GoalSlots**, **exclusive alternatives within each slot and between bundles**, tri-valued eligibility, explicit priority and no partial plans, with F23–F27 prospective oracles and an unambiguous F01 3-task/4-link witness. A fresh exact-SHA CI and Codex re-review are needed for any `GO_DESIGN_ONLY`; no new executable SMC-4 code.
+
+## 2026-10-24 SMC-4 Gate A — third review scope amendment
+
+Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` found another P2: simultaneous per-unit and multi-unit TemplateBundles could overlap selected pronunciation units without a defined coverage/exclusivity rule. **Original Gate A protocol and Amendments 01/02 are preserved unchanged.**
+
+[SMC4_GATE_A_AMENDMENT_03.md](SMC4_GATE_A_AMENDMENT_03.md) at initial commit `7a80f8b0b016cb51ad5b9c3225cd919acc2cbfbc` narrows first Gate B mapping scope to exactly one selected pronunciation unit per TemplateBundle; multi-unit/overlapping bundles in the requested profile are rejected as `UNSUPPORTED_MAPPING_SCOPE`, not silently accepted or discarded. Context predicates may inspect neighbors without owning their mapping scope. F28–F32 prospective fixtures specify covered/overlapping/missing/ambiguous cases. No SMC-4 code, no scientific adoption or main merge.
