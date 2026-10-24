@@ -1,0 +1,16 @@
+# SYSTEM — physical single shared propagation mechanism across unequal areas
+
+B1b certified locally coupled TWO directional pressure waves on a *uniform* stationary pipe. B2-A uses the EXACT SAME forward/backward, inlet active volume-flow and B0 mouth p/U physics, and inserts power-unitary ZERO-volume junctions between each adjacent pair of physically different cross-sections (Z_i = rho c/S_i). Each of 16 sections has independent forward and backward local shift queues. At each stationary zero-volume junction, pressure p and volume flow U are continuous; outgoing waves are uniquely determined by conservation:
+b_L = (Z_R-Z_L)/(Z_R+Z_L) a_L + 2Z_L/(Z_R+Z_L) b_R,
+a_R = 2Z_R/(Z_R+Z_L) a_L + (Z_L-Z_R)/(Z_R+Z_L) b_R.
+Every junction conserves incident minus reflected acoustic power in both directions. Internal reflections from real area changes legitimately arrive before mouth-reflected waves; a closed-minus-matched outlet A/B isolates the actual mouth-origin round-trip at 2L/c (see pre-test AMENDMENT_01).
+
+Physical state E_tube = sum_i h/Z_i * sum_cells(a_i² + b_i²); B0 E = M q²/2. Active input work W = h p_source U_source, signed (input can absorb reflected energy). Mouth B0 dissipation is nonnegative. Entire system must satisfy Δ(E_tube+E_B0) = W - D. No numerical wall loss, EQ, arbitrary spectral target, or round-number anatomy delay. B0 lip R and M derive from the LAST section area of that very body; never reuse M0/a aperture for M0/i.
+
+At present each M0 axial section is 10mm and each M1 section 11mm, so a body-specific physics clock fs=c n / length_section (n=2/4/8 subdivisions) keeps exact local FIFO physical delay and stage count 16n without per-section audio sample rounding. The relative M1/M0 physical transit 1.10 is a causal property. Real source/output rate 48k interclock physical coupling is *not* implemented; one cannot assume that deriving an internal clock from geometry automatically solves it.
+
+**Character/body provenance:** CC-A2 registry prepares v3b-axial-M0 and v3b-axial-M1, revision 1. M1 differs only in axial scale. /a/ section areas are the audited rest-state. M0 /i/ alternative area function is drawn from the frozen Experiment028 M0 physical reference; it is labeled clearly and is NOT impersonated as a separately registered body preset. This reference is a computational model, not actual patient 3D anatomy.
+
+Uniformized 16-section numerical control with all areas equal must reduce to old B1b pressure and flow. True multi-section transfer is independently predicted from analytic continuum 2x2 T matrices and analog physical B0 R||M. Frequency-domain reference calculations are *oracles*, not the synthesized time-domain audio. Old static Fidelity0 ideal pressure-release vowel resonance peaks are NOT the same as current B0-connected acoustic resonance spectrum; physical endpoint treatment must be matched before comparison.
+
+Limits: fixed rigid lossless plane-wave 1D body. Moving walls may do work on air; static surface changes alone do not certify dynamic source-filter physics. Branching, nasal side-cavity, high-order mode scattering, wall energy, viscosity, VF-1, good voice timbre, real-time source-to-output integration, full auditory observation are intentionally not claimed.
