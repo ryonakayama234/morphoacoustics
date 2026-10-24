@@ -113,6 +113,10 @@ class CompileReceipt:
     plan_digest: str | None = None
     timing_status: str = "NOT_REQUESTED"
     body_status: str = "UNVERIFIED"
+    # Explicitly inspectable provenance, not merely an opaque hash.
+    mapping_provenance: tuple[tuple[str, ...], ...] = ()
+    task_targets: tuple[tuple[str, Fraction, Fraction], ...] = ()
+    input_provenance: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
