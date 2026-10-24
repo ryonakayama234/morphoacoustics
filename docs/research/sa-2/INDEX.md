@@ -14,3 +14,9 @@ Goal: derive mouth load Z_rad and exterior pressure from ONE specified baffled c
 Gate B SA-2A: analytic frequency-domain reference and independently checked physics. Gate C SA-2B (SEPARATE future prereg): stable causal positive-real time-domain termination, exact historic JET inputs, 2 authentic bodies if possible, sound traces and VF-1 compatibility. DO NOT infer Gate C from frequency-only success.
 
 No main merge, public API changes, Studio Takes, SMC/ASMR, biologically naturalness or full vocal-fold FSI.
+
+## Post-run status (retrospective, 2026-10-24)
+- Gate-A pre-registration: [38f27596](https://github.com/ryonakayama234/morphoacoustics/commit/38f27596b91c47f7307d34af225f8293afb6268a).
+- Gate-B analytic radiation oracle and genuine M0 frequency-domain probe: PASS on exact executed [6eca7a25](https://github.com/ryonakayama234/morphoacoustics/commit/6eca7a250e30de8d758087dad83d5f02a1301f38), [Actions #40062355337](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40062355337), [raw data #12548026973](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40062355337/artifacts/12548026973).
+- Audit: [RESULTS_20261024.md](RESULTS_20261024.md) including exact numeric results, SHA checks and initially failed run.
+- Biological/causal time-domain physics: NOT VERIFIED. SA-2B remains separate; current interface status MODEL_BOUNDARY_HOLD, no VF-1 readiness or main adoption.
