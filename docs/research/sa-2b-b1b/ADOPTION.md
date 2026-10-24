@@ -1,0 +1,12 @@
+# B1b single common propagation kernel — selection and later cutover
+
+**Decision 2026-10-24:** LOCAL_BIDIRECTIONAL_WAVEGUIDE_SELECTED_FOR_FUTURE_TIME_DOMAIN_CORE. Status SCIENTIFIC_UNIFORM_TUBE_PASS / PRODUCTION_NOT_ADOPTED. The former globally implicit B1 is a scientific *reference*, not a permanent second selectable ordinary creator-facing engine.
+
+System contract:
+1. Character morphology specifies physical tract lengths, cross-section areas, materials, boundaries, and physical motion through existing task/realization contracts. A common acoustics backend carries actual causal p/U waves through that body and returns physically coupled port values. Body data are individual; the wave propagation laws are shared.
+2. The present kernel solves a passive uniform tube only with geometry-derived internal physical clocks 68.6/137.2/274.4kHz and B0 physical termination. Because its exact-cell scheme assumes integer 10mm subdivision and stationary uniform c/dx, do NOT substitute it silently for arbitrary M0 or 48k source/audio I/O. No waveform EQ or fake physical delay.
+3. At later adoption the runtime should choose ONE production time-domain propagation implementation. Original implicit prototype can be kept in tests/research history but not exposed as an equally endorsed playback engine. Static Fidelity 0 remains independent frequency-domain diagnostic capability, not a redundant waveform path.
+4. To cut over: first validate genuine B2 nonuniform M0 junction scattering, energy and geometry; then define and test stable source boundary coupling plus geometry/clock changes; then justify energy-preserving/resolved interclock interface to audio observer and performance budget. Only then choose stable Core API and perform a separate production PR with migration/backwards-compatibility plan, contract and CI. Retain failed numerical evidence unedited.
+5. If B2 or cross-clock validation fails, retain B1b as verified uniform research and mark production HOLD. Do not weaken physical criteria to force a single-engine adoption.
+
+Why select this candidate? Strict wavefront supports tick N instead of dense instantaneous numerical precursors; exact physically measured uniform transit; signed energy conservation including unchanged B0; independent measured group delay/complex transfer with fourfold refinement; clear one-mechanism story for future character bodies. Why not replace Core immediately? Only uniform body and derived-clock boundary are proven; real character sectionwise M0 and physical-to-48k integration are unproved.

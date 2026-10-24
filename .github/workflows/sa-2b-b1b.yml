@@ -1,0 +1,77 @@
+name: SA-2B B1b Independent Local Waveguide Gate
+on:
+  push:
+    branches:
+      - research/sa2b-b1b-local-waveguide-20261024
+  pull_request:
+    paths:
+      - 'experiments/052_b1b_local_waveguide/**'
+      - 'tests/test_experiment_052_sa2b_b1b.py'
+      - 'docs/research/sa-2b-b1b/**'
+      - 'docs/research/sa-2b-b1/GATE_A2_LOCAL_WAVEGUIDE.md'
+      - '.github/workflows/sa-2b-b1b.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  b1b_research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research dependencies
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install 'scipy>=1.11,<2'
+      - name: Run B0 B1 and preregistered B1b independent scientific tests
+        run: python -m pytest -q tests/test_experiment_050_sa2b_b0.py tests/test_experiment_051_sa2b_b1.py tests/test_experiment_052_sa2b_b1b.py
+      - name: Execute physical experiment with raw evidence
+        run: |
+          python experiments/052_b1b_local_waveguide/run.py --out "$RUNNER_TEMP/sa2b-b1b"
+          echo "EXACT_GITHUB_SHA=$GITHUB_SHA" | tee "$RUNNER_TEMP/sa2b-b1b/CI_EVIDENCE.txt"
+          echo "GITHUB_REF=$GITHUB_REF" | tee -a "$RUNNER_TEMP/sa2b-b1b/CI_EVIDENCE.txt"
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" | tee -a "$RUNNER_TEMP/sa2b-b1b/CI_EVIDENCE.txt"
+      - name: Verify evidence and full empirical acceptance
+        run: |
+          python - "$RUNNER_TEMP/sa2b-b1b" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          import numpy as np
+          folder=Path(sys.argv[1])
+          m=json.loads((folder/'manifest.json').read_text())
+          assert m['preregistration_git_sha']=='ef7d74cbbafeca5113db9e4b34bbb0d220b228c4'
+          for name,expected in m['sha256'].items():
+              assert hashlib.sha256((folder/name).read_bytes()).hexdigest()==expected
+              obj=np.load(folder/name,allow_pickle=False)
+              assert np.isfinite(obj).all(),name
+          for mouth,t in m['first_arrival'].items():
+              assert t['first_lip_nonzero_tick']==32,mouth
+              if mouth=='matched':
+                  assert t['first_source_return_nonzero_tick'] is None
+              else:
+                  assert t['first_source_return_nonzero_tick']==64,mouth
+          freqs=('200.0','400.0','600.0','1000.0','2600.0')
+          for f in freqs:
+              errors=[m['complex_transfer'][str(n)][f]['empirical_vs_analog_complex_relative'] for n in (2,4,8)]
+              assert errors[0]<.005,(f,errors)
+              assert errors[1]<=.32*errors[0],(f,errors)
+              assert errors[2]<=.32*errors[1],(f,errors)
+              for n in (2,4,8):
+                  value=m['complex_transfer'][str(n)][f]['empirical_vs_discrete_complex_relative']
+                  assert value<.0001,(f,n,value)
+          for key,result in m['energy'].items():
+              assert result['max_normalized_step_residual']<=1.,key
+          print("B1b propagation, raw hashes and empirical convergence PASS:",len(m['sha256']))
+          PY
+      - name: Independent evidence-only audit (does not import solver)
+        run: python experiments/052_b1b_local_waveguide/independent_audit.py --dir "$RUNNER_TEMP/sa2b-b1b"
+      - name: Publish raw port data, including on validation failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sa2b-b1b-waveguide-raw-evidence
+          path: ${{ runner.temp }}/sa2b-b1b/
+          if-no-files-found: warn
