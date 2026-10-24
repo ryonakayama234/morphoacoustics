@@ -1,0 +1,61 @@
+{
+  "schema_version": "asmr.workspace.research-registry.v1",
+  "policy": "RESEARCH_INDEX_ONLY_NOT_PRODUCTION",
+  "repository": "ryonakayama234/morphoacoustics",
+  "items": [
+    {
+      "id": "EL-HYPOTHESES",
+      "area": "listener",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 83,
+      "core_issue": null,
+      "branch": "docs/embodied-listener-research-20261011",
+      "description": "Parked embodied listener, near-field and two-body hypotheses; no solver"
+    },
+    {
+      "id": "EL-G0",
+      "area": "listener",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 114,
+      "core_issue": 113,
+      "branch": "research/listener-g0-reception-20261017",
+      "description": "Ideal two-probe analytic baseline"
+    },
+    {
+      "id": "EL-G0A",
+      "area": "listener",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 129,
+      "core_issue": 128,
+      "branch": "research/listener-g0a-embodied-audition-20261020",
+      "description": "Measured head HRTF comparison and reference-plane questions"
+    },
+    {
+      "id": "NV1-EAR",
+      "area": "nonvocal",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 138,
+      "core_issue": 133,
+      "branch": "research/nv1-breath-to-ear-e2e",
+      "description": "Physically conditioned audible breath source/point receiver, unmerged"
+    },
+    {
+      "id": "EL-R1",
+      "area": "listener",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 153,
+      "core_issue": 152,
+      "branch": "research/el-r1-ear-port-20261022",
+      "description": "Audited passive 1D listener ear-canal port; no production adoption"
+    },
+    {
+      "id": "EL-R2-S1",
+      "area": "listener",
+      "state": "RESEARCH_ONLY",
+      "core_pr": 158,
+      "core_issue": 157,
+      "branch": "research/el-r2-s1-source-load-20261022",
+      "description": "18-case independent Wolfram source/load Gate A preregistration; no Gate B solver yet"
+    }
+  ]
+}
