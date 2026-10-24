@@ -320,8 +320,12 @@ def experiment(out:Path)->dict[str,object]:
     seed=np.random.default_rng(48017)
     noise=seed.standard_normal(int(.2*fs))
     noise=noise/np.sqrt(np.mean(noise*noise))
+    alternating=np.zeros(int(.2*fs))
+    alternating[::37]=1.
+    alternating[19::41]=-1.
     traces={"zero_trace.npy":zero,"impulse_trace.npy":run_trace(p,impulse),
             "noise_trace.npy":run_trace(p,noise),
+            "alternating_trace.npy":run_trace(p,alternating),
             "discharge_trace.npy":run_trace(p,np.zeros(int(.2*fs)),initial_q=1e-6)}
     for name,t in traces.items():
         trace_energy_gate(t)
@@ -377,6 +381,10 @@ def experiment(out:Path)->dict[str,object]:
         incident_same_power=np.sqrt(shape.zc_pa_s_m3/p.zc_pa_s_m3)
         wave=run_trace(shape,np.array([1.,0.,0.]))
         wave_equal=run_trace(shape,np.array([incident_same_power,0.,0.]))
+        reference_power=p.h_s/p.zc_pa_s_m3
+        shape_power=shape.h_s*incident_same_power**2/shape.zc_pa_s_m3
+        if not math.isclose(reference_power,shape_power,rel_tol=1e-13):
+            raise AssertionError("morphology comparison does not hold incident power fixed")
         trace_energy_gate(wave)
         trace_energy_gate(wave_equal)
         power_calibration.append({"radius_m":radius,
