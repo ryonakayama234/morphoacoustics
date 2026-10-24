@@ -446,8 +446,11 @@ def experiment(out:Path):
             }
         for n in (2,4,8):
             cfg=AcousticConfig(body,cells_per_section=n)
+            # Gate A2: M0/i has genuine long-lived passive ringing; never
+            # zero-pad, window, damp, or analytically replace its real time trace.
+            duration_s=18.0 if label=="M0_i" else 5.0
             signal=AnatomicalWaveguide(cfg).impulse_lip_pressure(
-                int(math.ceil(5.0*cfg.fs_hz)))
+                int(math.ceil(duration_s*cfg.fs_hz)))
             files[label+"_b0_full_impulse_n"+str(n)+".npy"]=signal
             errors={}
             for f in FREQS:
@@ -478,6 +481,8 @@ def experiment(out:Path):
                          "section_lengths_m":list(v.lengths_m),
                          "areas_m2":list(v.areas_m2)}
                    for name,v in bodies.items()},
+        "impulse_duration_s":{"M0_a":5.0,"M1_a":5.0,"M0_i":18.0},
+        "post_failure_amendment":"AMENDMENT_02_LONG_RINGDOWN.md",
         "port_columns":TRACE_COLUMNS,
         "one_way":fronts,
         "energy":ledgers,
