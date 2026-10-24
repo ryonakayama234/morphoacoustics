@@ -29,3 +29,16 @@ New test-only SHA `dc0b6b9f2086c677b599b7d8643a4d5ab9d6ecc3` **RED** in [isolate
 ## Decision boundary
 
 All fixes are research-only within new `smc4_*.py` and bounded synthetic tests. The existing SMC-3 v0 IR remains unchanged, and no Core/Studio/waveform code was modified. New review must target exact **final amended HEAD**, not infer passing status from ancestor source. Final `GO_LIMITED_SYMBOLIC/REVISE/MORE_DATA/REJECT` decision is conditional on clean fresh review+CI; do not interpret no Codex findings as phonetic scientific adoption. **NO_MAIN_MERGE**.
+
+
+## Third Codex review: SHA 827c66d3 (three additional P2)
+
+GitHub manual [third review](https://github.com/ryonakayama234/morphoacoustics/pull/180) audited full docs+code HEAD `827c66d3a47e077e4600218ab600fcda09d28ae6` (**16/16 checks SUCCESS**). It identified three *new* actionable defects:
+
+1. [Reject receipt on illegal surrogate crashed](https://github.com/ryonakayama234/morphoacoustics/pull/180#discussion_r4367521705) when an invalid share episode / unsupported scope ID crossed JSON→strict UTF-8. Correction: canonical receipt JSON uses `ensure_ascii=True` for unencodable values; invalid IDs still reject.
+2. [Malformed priority was accepted or crashed](https://github.com/ryonakayama234/morphoacoustics/pull/180#discussion_r4367521708): mixed integer/string priority produced TypeError, all-string priority was compared lexicographically. Correction: `type(priority) is int` or `None` at common selector, including boolean rejection, even for one eligible candidate.
+3. [Semantic-unordered capability/scope declarations changed fingerprints](https://github.com/ryonakayama234/morphoacoustics/pull/180#discussion_r4367521709). Correction: `capabilities` and `target_unit_ids` normalized as unordered in full request fingerprint; additionally emitted symbolic `MotorTask.capability_requirements` tuple sorted for full graph equality (not just digest equality).
+
+**Test-before-fix RED:** new `tests/test_smc4_gate_b_codex_p2_round3.py` at SHA `0b49c5df4eeee06eba9dca26380f59514aa5fdc4` failed isolated package CI, e.g. [3.11 job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40105618567/job/120906574327). First repair `cd5b2e1fa20bd2433cdc95f586c08f6874111137` retained a failing graph-equivalence test; [3.12 negative job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40105645918/job/120906657406). Distinct second repair `4a9bfa29949309defdcf02d54d9341174dccc158` yielded **16/16 completed SUCCESS**, zero failed/pending, including standalone package Python3.11–3.13 and strict mypy, root matrix/typecheck, bounded SV1. [Python3.12 package job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40105808997/job/120907135474) exercised **194 synthetic tests** (72+72+50 progress dots), mypy: no issues in 5 source files.
+
+**Cumulative:** 3 GitHub Codex rounds found 10 substantive P2 defects in initial Gate B candidates, with separate test-first failures and repairs. All are software/specification findings, **not scientific validation**. The final documented HEAD requires its own exact CI and a *fresh* Codex review; do not inherit verdict from ancestor SHA. Main remains unmerged.
