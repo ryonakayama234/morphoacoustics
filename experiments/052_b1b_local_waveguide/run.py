@@ -357,7 +357,7 @@ def experiment(out:Path):
     for n in (2,4,8):
         cfg_n=PhysicalClockDuct(cells_per_section=n)
         # Record fully empirical frequency response, not just algebraic gamma.
-        ticks=int(math.ceil(2.4*cfg_n.fs_hz))
+        ticks=int(math.ceil(5.0*cfg_n.fs_hz))
         signal=LocalTravelingWaveDuct(cfg_n).impulse_lip_pressure(ticks)
         per={}
         for f in (200.,400.,600.,1000.,2600.):
