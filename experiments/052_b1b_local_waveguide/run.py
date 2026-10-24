@@ -373,6 +373,7 @@ def experiment(out:Path):
         comparisons[str(n)]=per
         # Compact raw impulse excerpts containing direct arrival and first reflection.
         data["b0_impulse_prefix_"+str(n)+".npy"]=signal[:4*cfg_n.n_cells].copy()
+        data["b0_full_impulse_"+str(n)+".npy"]=signal.copy()  # independently recomputable 5-second H(f)
     out.mkdir(parents=True)
     digests={}
     for name,array in sorted(data.items()):
