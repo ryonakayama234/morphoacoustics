@@ -121,6 +121,12 @@ def compile_lexicon(
     if len(choices) != 1:
         return reject("INVALID_INPUT", "selected path not present")
     path = choices[0]
+    if type(path.complete) is not bool:
+        return reject("INVALID_INPUT", "path.complete must be a bool")
+    if (not isinstance(path.units, (tuple, list))
+            or any(not isinstance(u, PronunciationUnit) for u in path.units)
+            or not isinstance(path.required_spans, (tuple, list))):
+        return reject("INVALID_INPUT", "malformed pronunciation/coverage container")
     if (not scalar(path.path_id) or
             any(not scalar(u.unit_id) or not scalar(u.symbol) for u in path.units)):
         return reject("INVALID_INPUT", "bad unit/path identifier or symbol")
@@ -131,7 +137,8 @@ def compile_lexicon(
                 not 0 <= u.start_offset < u.end_offset <= len(source_text)):
             return reject("INVALID_INPUT", u.unit_id, "invalid codepoint span")
     for span in path.required_spans:
-        if (len(span) != 2 or type(span[0]) is not int or type(span[1]) is not int
+        if (not isinstance(span, (tuple, list)) or len(span) != 2
+                or type(span[0]) is not int or type(span[1]) is not int
                 or not 0 <= span[0] < span[1] <= len(source_text)):
             return reject("INVALID_INPUT", "invalid required source coverage")
     if not path.complete or not path.units or not path.required_spans:
@@ -158,6 +165,7 @@ def compile_lexicon(
             return reject("INVALID_PLAN", "duplicate or malformed TaskDefinition")
         defs[key] = declared_definition
     units_by_id = {u.unit_id: u for u in path.units}
+    unsupported_scope_ids: set[str] = set()
     for b in lexicon.bundles:
         if b.profile != profile:
             continue
@@ -165,7 +173,9 @@ def compile_lexicon(
         if (b.target_scope_kind != "EXACT_ONE_SELECTED_UNIT"
                 or (b.target_unit_ids and b.target_unit_ids != (b.unit_id,))):
             if (scope & units_by_id.keys() and evaluate(b.context, context) != "FALSE"):
-                return reject("UNSUPPORTED_MAPPING_SCOPE", b.bundle_id)
+                unsupported_scope_ids.add(b.bundle_id)
+    if unsupported_scope_ids:
+        return reject("UNSUPPORTED_MAPPING_SCOPE", *sorted(unsupported_scope_ids))
     occurrences: dict[tuple[str, str], _Occurrence] = {}
     evidence: set[str] = set()
     selected_bundles: list[str] = []
@@ -283,10 +293,12 @@ def compile_lexicon(
     plan = SymbolicPlan(
         segment_id, source_text,
         tuple(sorted(path.units, key=lambda u: u.unit_id)), tasks, associations,
-        tuple(sorted(prepared_relations, key=lambda c: (
+        # Sharing can project multiple identical lexical constraints onto
+        # one Task; identical equalities are idempotent, not contradictory.
+        tuple(sorted(set(prepared_relations), key=lambda c: (
             c.source_task_id, c.source_event, c.target_task_id,
             c.target_event, c.lag_s))),
-        tuple(sorted(prepared_anchors, key=lambda a: (a.task_id, a.event, a.time_s))),
+        tuple(sorted(set(prepared_anchors), key=lambda a: (a.task_id, a.event, a.time_s))),
     )
     v = validate_plan(plan)
     if v.status is ReportStatus.INVALID:
