@@ -96,3 +96,8 @@ The third GitHub `@codex review` of exact docs+code SHA `827c66d3a47e077e4600218
 - Test-only source `0b49c5df4eeee06eba9dca26380f59514aa5fdc4` **RED**; first fix `cd5b2e1...` still RED for graph capability ordering.
 - Final repair code `4a9bfa29949309defdcf02d54d9341174dccc158`: **16/16 completed successful GitHub checks**, including 194 synthetic pytest cases in Python3.12 and strict mypy, plus Python3.11/3.13, root regressions and bounded SV1. This is exact *code* SHA evidence and **not** phonetic or physical science adoption.
 - Await a fresh `@codex review` and exact combined docs-HEAD checks before a Gate B limited adoption verdict; preserve all previous reviews and negative runs.
+
+
+## SMC-4 Gate B — fourth Codex review, capability-input fail-closed proof
+
+Fourth reviewed SHA `32492597` CI was 16/16 green but Codex found P2: malformed `TaskDefinition.capabilities` strings were tokenized characterwise or raised `TypeError`. The regression suite `test_smc4_gate_b_codex_p2_round4.py` preceded repair: `e5d5948c...` isolated package **RED**. Correction `d57cddc1bb0f9a8b8620039cb695c51e2351d2c8` **16/16 exact-source-SHA SUCCESS** across package/root/SV1 checks. Details and reviewer thread in [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). A subsequent exact docs HEAD review/CI must be recorded independently. No scientific / body / audio gate was performed.
