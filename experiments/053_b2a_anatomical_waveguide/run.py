@@ -242,6 +242,11 @@ class AnatomicalWaveguide:
     def __init__(self,cfg:AcousticConfig,*,initial_forward_pa=None,
                  initial_backward_pa=None,initial_b0_q_m3_s:float=0.):
         self.cfg=cfg
+        self.z=cfg.z
+        self.junction_scatter=tuple(
+            ((zr-zl)/(zl+zr),2*zl/(zl+zr),2*zr/(zl+zr))
+            for zl,zr in zip(self.z[:-1],self.z[1:])
+        )
         self.forward=[deque([0.]*cfg.cells_per_section) for _ in range(16)]
         self.backward=[deque([0.]*cfg.cells_per_section) for _ in range(16)]
         for name,initial,queues in (
@@ -292,13 +297,15 @@ class AnatomicalWaveguide:
         old=self.total_energy() if audit else 0.
         incoming_a=[q.popleft() for q in self.forward]
         incoming_b=[q.popleft() for q in self.backward]
-        z=self.cfg.z
+        z=self.z
         out_a=[0.]*16
         out_b=[0.]*16
         out_a[0]=incoming_b[0]+z[0]*u
-        for i in range(15):
-            out_b[i],out_a[i+1]=passive_junction(
-                incoming_a[i],incoming_b[i+1],z[i],z[i+1])
+        for i,(reflection,left_to_right,right_to_left) in enumerate(self.junction_scatter):
+            a,b=incoming_a[i],incoming_b[i+1]
+            # Algebraically identical to independently tested passive_junction.
+            out_b[i]=reflection*a+right_to_left*b
+            out_a[i+1]=left_to_right*a-reflection*b
         mouth_a=incoming_a[15]
         if self.cfg.termination=="closed":
             mouth_b,loss,mouthE=mouth_a,0.,0.
