@@ -382,3 +382,21 @@ def test_f15_gateb_does_not_accept_unreviewed_project_phonetics():
                          replace(source, candidates=(candidate,))))
     r = run(lex=replace(lex, bundles=(b, lex.bundles[1])))
     assert r.receipt.code == "UNVERIFIED" and r.plan is None
+
+
+def test_f12a_partial_time_proof_with_unrelated_unanchored_tasks():
+    # P1/P2 source occurrences have complete exact windows, while tract
+    # occurrences remain unanchored. Their absence must not mask contradiction.
+    src_anchors = tuple(a for a in _all_anchors(Q(1, 2), Q(3, 2))
+                        if a.slot_id == "source")
+    r = run(lex=_source_targets((0, 1), (2, 3)), anchors=src_anchors)
+    assert r.receipt.code == "TASK_GOAL_CONFLICT" and r.plan is None
+
+
+def test_strong_kleene_negation_and_unknown_explicit_semantics():
+    from morphoacoustics_smc.smc4_types import evaluate
+    eq = Predicate("EQ", "specified", "yes")
+    assert evaluate(Predicate("NOT", operands=(eq,)), {}) == "UNKNOWN"
+    assert evaluate(Predicate("AND", operands=(Predicate("FALSE"), eq)), {}) == "FALSE"
+    assert evaluate(Predicate("OR", operands=(Predicate("TRUE"), eq)), {}) == "TRUE"
+    assert evaluate(eq, {"specified": "no"}) == "FALSE"
