@@ -79,3 +79,7 @@ tests/                   software and scientific tests
 ## Status
 
 Early research scaffold. Domain and causal contracts come first; higher-fidelity numerical solvers follow.
+
+## Standalone Speech Motor Compiler research (not adopted)
+
+Experimental many-to-many symbolic motor-task planning is isolated under [`packages/speech-motor-compiler/`](packages/speech-motor-compiler/). This sibling Python package is research-only, separate from physical Core and Studio; follow its [`docs/INDEX.md`](packages/speech-motor-compiler/docs/INDEX.md) and [tracking issue #162](https://github.com/ryonakayama234/morphoacoustics/issues/162). Neither physical gesture execution nor scientific adoption is implied. Draft PRs remain unmerged pending independent reviews.
