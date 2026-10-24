@@ -92,3 +92,6 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 
 
 **SMC-4 Gate B review ledger:** [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md) — two reviewed exact SHAs, seven P2 GitHub Codex findings, preserved test-only red evidence, repaired exact-source SHA `504e1e4` 16/16 green (184 synthetic cases on Python3.12), final review/CI still pending at document-write time. Scientific/physical/phonetic adoption remains withheld; research Draft only.
+
+
+**Third SMC-4 Gate B Codex review:** three further P2 at `827c66d3`, 10 total across three AI review rounds, with separate test-only RED at `0b49c5d`, intermediate RED at `cd5b2e1`, corrected source `4a9bfa2` **16/16 green** and 194 synthetic tests. Detailed [review ledger](SMC4_GATE_B_CODEX_REVIEW.md), [experiments](EXPERIMENTS.md). Fresh final-HEAD review remains required; no human linguistic evidence or main merge.
