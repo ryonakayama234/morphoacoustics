@@ -89,3 +89,10 @@ smc3_plan_digest: computed_from_validated_plan_only
 5. Gate B freezes executable tests/generators and expected fixtures before writing production mapping. Target body physics, Studio performance paths, sound synthesis and public schemas remain untouched.
 
 Current broader research status: **SCIENCE_NOT_ADOPTED / SMC-3_PR164_DRAFT / SMC-4_DOCS_ONLY / NO_MAIN_MERGE**.
+
+## 5. First independent AI design-critique receipt and amendment
+
+- **Frozen prior design SHA:** `44d21d1118ff8994af430e2abd4484030f60f3a2`, exactly 3 Markdown changes; 16/16 exact-SHA GitHub CI green **only for existing software regressions**.
+- **Codex manual review:** completed with `has_any_findings=true`, `has_unresolved_findings=true`; four P2 issues: (i) alternate reading paths can be combined, (ii) context UNKNOWN improperly collapses into false, (iii) explicit sharing can merge disjoint target parameters, (iv) F12 admits either pass and lacks an oracle.
+- **Correction:** [SMC4_GATE_A_AMENDMENT_01.md](SMC4_GATE_A_AMENDMENT_01.md) in a separate commit `4686726b2b588e8b2350462750fe095319c43202`. The initial protocol's actual words are **preserved unchanged**. Correction defines path selection/completeness, 3-valued predicates and unknown-context refusal, task-goal intersection and provenance, hard positive-overlap scalar conflict oracle, with F12a/b/c and F16–F22 prospective fixtures.
+- This is **static design-review evidence**, not a synthetic-test RED, not empirically validated phonetics. New amended docs SHA and second Codex review must be checked before claiming `GO_DESIGN_ONLY`.
