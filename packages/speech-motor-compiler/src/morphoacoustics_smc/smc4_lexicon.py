@@ -265,7 +265,7 @@ def compile_lexicon(
 
     by_occ = {(o.unit_id, o.slot_id): g.task_id for g in groups for o in g.members}
     tasks = tuple(MotorTask(g.task_id, g.members[0].definition.goal_kind,
-                            g.members[0].definition.capabilities)
+                            tuple(sorted(g.members[0].definition.capabilities)))
                   for g in groups)
     associations = tuple(TaskAssociation(u, t) for u, t in
                          sorted({(o.unit_id, g.task_id)
