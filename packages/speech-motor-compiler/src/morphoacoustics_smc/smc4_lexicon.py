@@ -163,6 +163,11 @@ def compile_lexicon(
                 declared_definition.goal_kind, declared_definition.applicability_domain))
                 or key in defs):
             return reject("INVALID_PLAN", "duplicate or malformed TaskDefinition")
+        caps = declared_definition.capabilities
+        if (not isinstance(caps, tuple) or any(not scalar(cap) for cap in caps)
+                or len(set(caps)) != len(caps)):
+            return reject("INVALID_PLAN", declared_definition.definition_id,
+                          "invalid capability declaration")
         defs[key] = declared_definition
     units_by_id = {u.unit_id: u for u in path.units}
     unsupported_scope_ids: set[str] = set()
