@@ -68,3 +68,9 @@ This is a **new, design-only, stacked research effort** tracked in [Issue #174](
 The **original frozen [SMC4_GATE_A_PROTOCOL.md](SMC4_GATE_A_PROTOCOL.md)** remains unchanged at protocol-first SHA `cc626535cc32b56f13edbb4349f39e7cf5926e6d`.
 
 GitHub Codex's manual **design review of initial docs SHA `44d21d1118ff8994af430e2abd4484030f60f3a2`** found four P2 specification defects: combining alternative pronunciation readings, missing context predicate semantics, incompatible shared goals, and F12's non-falsifiable alternative outcomes. See the separately committed [SMC4_GATE_A_AMENDMENT_01.md](SMC4_GATE_A_AMENDMENT_01.md), origin commit `4686726b2b588e8b2350462750fe095319c43202`, for **normative supersession of only those ambiguous clauses** and explicit F12a/b/c + F16–F22 negative fixtures. No mapping source, physical/audio code or scientific adoption; new exact-SHA CI and Codex re-review required.
+
+## 2026-10-24 SMC-4 Gate A — second review finding and additive/exclusive bundle amendment
+
+Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an additional P2: multiple *required* Task templates for one pronunciation cannot be handled by unique per-unit candidate choice, while unioning all matches would combine mutually exclusive alternatives. Historical frozen protocol and Amendment 01 remain unchanged.
+
+[SMC4_GATE_A_AMENDMENT_02.md](SMC4_GATE_A_AMENDMENT_02.md), initial commit `da0fb2f93d8921effc20c03cb6c90ff0ee89c3c8`, defines versioned `TemplateBundle` of **additive REQUIRED GoalSlots**, **exclusive alternatives within each slot and between bundles**, tri-valued eligibility, explicit priority and no partial plans, with F23–F27 prospective oracles and an unambiguous F01 3-task/4-link witness. A fresh exact-SHA CI and Codex re-review are needed for any `GO_DESIGN_ONLY`; no new executable SMC-4 code.
