@@ -67,3 +67,37 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - **RED:** test-only commit `08e2a47c8fd34017b6a52cacaef3485779515617`, untouched production validator; [job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40049643238/job/120739210866) reproduced 7 invalid-unicode-string acceptances and 1 order-variant contradiction diagnostic (8 test invocations fail). Original 100 synthetic Gate C plan fixtures unchanged.
 - **GREEN:** separate validator commit `a3f876fcaef3b63e2612807fab288a7e36e7e54a`; **16/16** exact code-SHA GitHub check-runs completed SUCCESS with package pytest + strict mypy on Python 3.11/3.12/3.13 and existing root tests/typecheck plus bounded SV1. [Python 3.12 job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40049732250/job/120739514305). No change to physics, schema, Studio, or main.
 - See [GATE_C_CODEX_REVIEW.md](GATE_C_CODEX_REVIEW.md) for expected diagnostics, limitation of AI reviewer provenance, review gate, and per-SHA receipts. **Re-review of final amended HEAD remains separately required; final docs-HEAD checks must not be inferred from the code SHA.** No physical/phonetic science adoption.
+
+
+## 2026-10-24 SMC-4 Gate B — tests first, failures preserved
+
+**Branch:** `research/smc4-gate-b-bounded-tasklexicon-20261024`; stacked [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180), not `main`. **Initial protocol SHA:** `4a2957d9b10256bcd4354902df1655e3377bbeae`, committed before compiler source. Test-only SHA `8f523589e6c8a3bb91d7ad171d9bb9e6b085fa35` preceded source modules.
+
+- **RED proof:** test-only SHA `8f523589...` failed the isolated package CI because the deliberately absent `smc4_lexicon` import cannot resolve; other root/SV1 checks passed. This is test-first evidence, not an existing-software regression.
+- **Initial implementation negative:** SHA `c8818a561fdcf23e59fb94af0df5c951e5eb25b9` failed strict mypy (12 diagnostic entries caused by typed loop-variable collisions), retained in [package job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40103863858/job/120901383796). Do not misreport it as scientific falsification.
+- **First verified GREEN:** separate fix SHA `5e0059fa5385cc8a95417be5b68c8cf28d39d394` obtained **16/16 completed successful GitHub check-runs** (duplicate push/PR CI, isolated Python 3.11/3.12/3.13 package pytest+mypy, root regressions and bounded SV1). Later exact-source SHAs need their **own** CI receipts.
+- **Falsifier expansion:** original test-only commit has 12 named test functions covering preregistered F01/F02/F04/F05/F09/F10/F16/F17/F18/F21/F23/F24/F28/F30; subsequent `a6c7048...` and `1214d86...` add F03/F06/F07/F08/F12a/b/c/F13/F14/F15/F19/F20/F22/F25/F26/F27/F29/F31/F32 and metamorphic/Unicode checks. `c80e1e9...` plus `3470445...` address partial exact timing: an unrelated unanchored Task must not hide an independently proved overlapping-goal contradiction. Tests are all **synthetic and implementer-origin**.
+- **Review / adoption:** exact final implementation+docs SHA CI and GitHub manual `@codex review` remain separate checks; a no-findings review is limited AI code scrutiny. Gate B software result may support `GO_LIMITED_SYMBOLIC` only, **never** human-language phonetic, physical or perceptual validation. `SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`.
+
+
+## SMC-4 Gate B — two independent AI software-review loops (2026-10-24)
+
+The [Gate B Codex evidence ledger](SMC4_GATE_B_CODEX_REVIEW.md) records exact review SHAs, seven material P2 findings across **two** GitHub Codex review rounds, separately committed regression failures and corrected candidates. The first code-review findings at `c8818a5` concerned partial-time semantic conflict, missing inspectable sharing evidence and rejection fingerprint collisions. The second at `1be16c5` concerned malformed path-coverage runtime types, identical constraint projection under Task sharing, first-wins unsupported-scope reporting and selected rule content missing from receipt identity.
+
+- Reviewer-driven test-only `6f12d42...` RED; corrected input fingerprint `c74421840...` **16/16 success**.
+- Reviewer-driven test-only `dc0b6b9...` RED; corrected source `504e1e4cee5472402062054ec7e493fd4ae85cf8` **16/16 success** across two push/PR workflow sets; package Python3.11/3.12/3.13 pytest plus strict mypy, root and bounded SV1. Python3.12 isolated package run: [job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40104996247/job/120904743276), **184/184 synthetic pytest checks passed**. This is software evidence only.
+- Additional final documentation HEAD CI and a **fresh manual `@codex review` at that exact SHA** remain necessary before Gate B disposition. Source result is not a main-merge authorization or scientific adoption.
+
+
+## 2026-10-24 SMC-4 Gate B — third GitHub Codex re-review evidence
+
+The third GitHub `@codex review` of exact docs+code SHA `827c66d3a47e077e4600218ab600fcda09d28ae6` found **three further P2** (invalid Unicode during refusal serialization; unchecked priority runtime types; capability/scope permutations changing canonical receipt identity). These issues were NOT masked by 16/16 passing CI. See [new dated review evidence and links](SMC4_GATE_B_CODEX_REVIEW.md).
+
+- Test-only source `0b49c5df4eeee06eba9dca26380f59514aa5fdc4` **RED**; first fix `cd5b2e1...` still RED for graph capability ordering.
+- Final repair code `4a9bfa29949309defdcf02d54d9341174dccc158`: **16/16 completed successful GitHub checks**, including 194 synthetic pytest cases in Python3.12 and strict mypy, plus Python3.11/3.13, root regressions and bounded SV1. This is exact *code* SHA evidence and **not** phonetic or physical science adoption.
+- Await a fresh `@codex review` and exact combined docs-HEAD checks before a Gate B limited adoption verdict; preserve all previous reviews and negative runs.
+
+
+## SMC-4 Gate B — fourth Codex review, capability-input fail-closed proof
+
+Fourth reviewed SHA `32492597` CI was 16/16 green but Codex found P2: malformed `TaskDefinition.capabilities` strings were tokenized characterwise or raised `TypeError`. The regression suite `test_smc4_gate_b_codex_p2_round4.py` preceded repair: `e5d5948c...` isolated package **RED**. Correction `d57cddc1bb0f9a8b8620039cb695c51e2351d2c8` **16/16 exact-source-SHA SUCCESS** across package/root/SV1 checks. Details and reviewer thread in [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). A subsequent exact docs HEAD review/CI must be recorded independently. No scientific / body / audio gate was performed.

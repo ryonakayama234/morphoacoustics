@@ -63,3 +63,22 @@ At first audited SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`, a runtime malfo
 [Codex P2 ledger](GATE_C_CODEX_REVIEW.md) records the review provenance, first red CI, and separate correction. Python `str` can contain unpaired surrogate code points U+D800–U+DFFF even though strict UTF-8 encoding cannot represent them. Since the research digest uses strict `encode("utf-8")`, validator must return `INVALID_UNICODE_SCALAR` before treating such string fields as accepted. This guard checks the input source, IDs, hypothesis symbols, goal kinds, capability tokens and symbolic edge reference strings. It does **not** prohibit legitimate supplementary-plane Unicode or valid ZWJ sequences.
 
 For exact contradictory temporal equalities, the global `CONTRADICTORY_TIMING` diagnostic takes precedence over numerical duration or pre-zero diagnostics derived from BFS traversal potentials; such potentials are arbitrary after a conflict. For otherwise consistent components the existing `NONPOSITIVE_DURATION` and `NEGATIVE_ANCHORED_TIME` behavior remains. This is not a physical gesture-duration claim.
+
+
+## SMC-4 Gate B — separate typed mapping layer (2026-10-24)
+
+**Location:** `src/morphoacoustics_smc/smc4_types.py`, `smc4_lexicon.py`. Research-only API; existing SMC-3 v0 `SymbolicPlan` schema and digest are unchanged.
+
+- `PronunciationPath(path_id, units, required_spans, complete)`: one complete, explicitly selected reading interpretation. No orthography-to-pronunciation inference.
+- `Predicate(op, key, expected, operands)`: TRUE/FALSE/EQ/NOT/AND/OR using strong Kleene TRUE/FALSE/UNKNOWN; context is caller-supplied and never guessed.
+- `TaskDefinition(definition_id, semantic_revision, variable, value_domain, goal_kind, applicability_domain, capabilities, algebra)`: versioned functional goal-variable declaration, not a physical coordinate.
+- `SlotCandidate(template_id, definition_id, semantic_revision, lower, upper, context, priority, evidence_id, status)`: exact-Fraction synthetic scalar bounded target and source of mapping. No claim of phonetic calibration.
+- `TemplateBundle(bundle_id, unit_id, symbol, slots, context, priority, profile, target_scope_kind, target_unit_ids)`: initially one selected occurrence only. All `GoalSlot`s REQUIRED; exactly one alternative chosen per slot.
+- `ShareDecision(episode_id, members)`: explicit *proposed* shared episode; compatibility checks include definition/revision, variable/domain/algebra and exact target interval intersection. Neither automatic same-kind deduplication nor silent fallback split.
+- `TimeAnchor`, `TimeRelation`: occurrence-keyed exact event equality requests. Unsupported phase-oscillator requests explicitly refused.
+- `CompileResult(plan|None, receipt)`: successful mapped symbolic graph plus a **separate** `CompileReceipt`. Receipt includes readable chosen (unit, slot, bundle, template, definition/revision, scalar target/evidence), exact `task_targets`, revision/path metadata and deterministic digest; failures return `plan=None`.
+- `compile_lexicon(...)`: finite, selected-path-only research function. Status `MAPPED_SYMBOLIC` has `body_status=UNVERIFIED`; rejection codes distinguish incomplete path, UNKNOWN context, ambiguous candidates, unmapped unit, unsupported scope, sharing conflict, semantic goal conflict, invalid graph, unsupported timing and absent empirical confirmation.
+
+**Exactness:** bounded target intervals and temporal anchors use `Fraction`; stable instance IDs are deterministic digest-derived tokens scoped by selected path, occurrence or explicit episode. Unanchored timing stays unresolved; provably overlapping exact windows with disjoint scalar targets are rejected without any body-infeasibility assertion.
+
+**Evidence boundary:** original Gate A protocol + Amendments 01/02/03 and [Gate B frozen protocol](SMC4_GATE_B_PROTOCOL.md) provide the normative oracle. No human Japanese gesture table, morphology fit, animation, waveforms or industrial public API has been adopted.

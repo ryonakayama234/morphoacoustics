@@ -80,3 +80,21 @@ Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an addit
 Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` found another P2: simultaneous per-unit and multi-unit TemplateBundles could overlap selected pronunciation units without a defined coverage/exclusivity rule. **Original Gate A protocol and Amendments 01/02 are preserved unchanged.**
 
 [SMC4_GATE_A_AMENDMENT_03.md](SMC4_GATE_A_AMENDMENT_03.md) at initial commit `7a80f8b0b016cb51ad5b9c3225cd919acc2cbfbc` narrows first Gate B mapping scope to exactly one selected pronunciation unit per TemplateBundle; multi-unit/overlapping bundles in the requested profile are rejected as `UNSUPPORTED_MAPPING_SCOPE`, not silently accepted or discarded. Context predicates may inspect neighbors without owning their mapping scope. F28–F32 prospective fixtures specify covered/overlapping/missing/ambiguous cases. No SMC-4 code, no scientific adoption or main merge.
+
+
+## SMC-4 Gate B navigation and scoped decision trail (2026-10-24)
+
+- [Gate A first frozen design](SMC4_GATE_A_PROTOCOL.md); [post-review Amendment 01](SMC4_GATE_A_AMENDMENT_01.md), [Amendment 02](SMC4_GATE_A_AMENDMENT_02.md), [Amendment 03](SMC4_GATE_A_AMENDMENT_03.md) — all preserved.
+- [**Gate B frozen test protocol**](SMC4_GATE_B_PROTOCOL.md) — created before executable compiler; its fixture expectations originate in Gate A F01–F32.
+- [SMC-4 Gate B source](../src/morphoacoustics_smc/smc4_lexicon.py) and [typed entities](../src/morphoacoustics_smc/smc4_types.py): versioned synthetic TaskLexicon → unchanged SMC-3 symbolic IR + separate mapping receipt.
+- [Gate B synthetic adversarial tests](../tests/test_smc4_gate_b_preregistered.py), [Experiment/evidence timeline](EXPERIMENTS.md), [System and causal boundary diagram](SYSTEM.md), [Data contract](DATA.md).
+- [Issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Gate A `GO_DESIGN_ONLY`; Gate B outcome pending final exact HEAD checks and `@codex review` at the time of initial docs write. **Not merged to `main`; no Japanese phonetic/physical or waveform evidence.**
+
+
+**SMC-4 Gate B review ledger:** [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md) — two reviewed exact SHAs, seven P2 GitHub Codex findings, preserved test-only red evidence, repaired exact-source SHA `504e1e4` 16/16 green (184 synthetic cases on Python3.12), final review/CI still pending at document-write time. Scientific/physical/phonetic adoption remains withheld; research Draft only.
+
+
+**Third SMC-4 Gate B Codex review:** three further P2 at `827c66d3`, 10 total across three AI review rounds, with separate test-only RED at `0b49c5d`, intermediate RED at `cd5b2e1`, corrected source `4a9bfa2` **16/16 green** and 194 synthetic tests. Detailed [review ledger](SMC4_GATE_B_CODEX_REVIEW.md), [experiments](EXPERIMENTS.md). Fresh final-HEAD review remains required; no human linguistic evidence or main merge.
+
+
+**Fourth Codex Gate B review:** 11 total P2 across four reviews, new capability-declaration failure from SHA `32492597`, test-only RED `e5d5948c`, repaired source SHA `d57cddc1` 16/16 green. [Full review evidence](SMC4_GATE_B_CODEX_REVIEW.md). No code/main/phonetic-science promotion until a fresh final-HEAD independent AI review and explicit limited decision.
