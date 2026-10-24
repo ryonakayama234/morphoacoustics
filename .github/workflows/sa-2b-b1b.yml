@@ -66,6 +66,8 @@ jobs:
               assert result['max_normalized_step_residual']<=1.,key
           print("B1b propagation, raw hashes and empirical convergence PASS:",len(m['sha256']))
           PY
+      - name: Independent evidence-only audit (does not import solver)
+        run: python experiments/052_b1b_local_waveguide/independent_audit.py --dir "$RUNNER_TEMP/sa2b-b1b"
       - name: Publish raw port data, including on validation failure
         if: always()
         uses: actions/upload-artifact@v4
