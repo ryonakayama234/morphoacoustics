@@ -57,3 +57,9 @@ At first audited SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`, a runtime malfo
 - Initial red failure **PRESERVED**, caused by `source_text=None` and unguarded `len(None)`; minimal source guard fixed the runtime fail-closed behavior with unchanged frozen test fixtures.
 - All verified outcomes above refer to the **code-bearing SHA `2de422883e544c1dff5ec12121a1f033a2f3afc5`**, not automatically to later documentation-only commits. Document-only final branch HEAD checks require their own confirmation. OG3 and OG4 were not run as separate exact-SHA science gates by these package-scoped actions; do not claim them.
 - Disposition: **GATE_C_IMPLEMENTER_ORIGIN_SOFTWARE_PASS / HUMAN_INDEPENDENT_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. This is not a physical or phonetic validation.
+
+## 2026-10-24 Unicode scalar boundary and contradiction semantics (Codex P2)
+
+[Codex P2 ledger](GATE_C_CODEX_REVIEW.md) records the review provenance, first red CI, and separate correction. Python `str` can contain unpaired surrogate code points U+D800–U+DFFF even though strict UTF-8 encoding cannot represent them. Since the research digest uses strict `encode("utf-8")`, validator must return `INVALID_UNICODE_SCALAR` before treating such string fields as accepted. This guard checks the input source, IDs, hypothesis symbols, goal kinds, capability tokens and symbolic edge reference strings. It does **not** prohibit legitimate supplementary-plane Unicode or valid ZWJ sequences.
+
+For exact contradictory temporal equalities, the global `CONTRADICTORY_TIMING` diagnostic takes precedence over numerical duration or pre-zero diagnostics derived from BFS traversal potentials; such potentials are arbitrary after a conflict. For otherwise consistent components the existing `NONPOSITIVE_DURATION` and `NEGATIVE_ANCHORED_TIME` behavior remains. This is not a physical gesture-duration claim.
