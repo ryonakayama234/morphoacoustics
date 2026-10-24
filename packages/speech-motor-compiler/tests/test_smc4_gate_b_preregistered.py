@@ -222,7 +222,7 @@ def test_f03_repeated_symbol_is_not_automatically_shared():
 
 
 def test_f06_invalid_unicode_and_invalid_codepoint_span():
-    bad_unicode = run(source="甲\\ud800")
+    bad_unicode = run(source="甲" + chr(0xD800))
     assert bad_unicode.receipt.code == "INVALID_INPUT" and bad_unicode.plan is None
     p, _ = standard()
     malformed = replace(p, units=(replace(p.units[0], start_offset=-1), p.units[1]))
