@@ -136,7 +136,8 @@ def compile_lexicon(
                               b.target_unit_ids == (unit.unit_id,)))
         picked, error = pick(cast(tuple[object, ...], matching), context)
         if error != "SELECTED":
-            return reject(error, unit.unit_id, "bundle selection")
+            return reject(error, unit.unit_id, "bundle selection",
+                          *(candidate_bundle.bundle_id for candidate_bundle in matching))
         b = cast(TemplateBundle, picked)
         if not scalar(b.bundle_id) or not b.slots:
             return reject("INVALID_PLAN", unit.unit_id, "empty/invalid bundle")
@@ -149,7 +150,9 @@ def compile_lexicon(
                 return reject("INVALID_PLAN", b.bundle_id, "invalid slot")
             picked_c, error = pick(cast(tuple[object, ...], slot.candidates), context)
             if error != "SELECTED":
-                return reject(error, unit.unit_id, slot.slot_id)
+                return reject(error, unit.unit_id, slot.slot_id,
+                              *(candidate_template.template_id
+                                for candidate_template in slot.candidates))
             c = cast(SlotCandidate, picked_c)
             d = defs.get((c.definition_id, c.semantic_revision))
             if d is None or not scalar(c.template_id) or not scalar(c.evidence_id):
@@ -289,9 +292,24 @@ def compile_lexicon(
         "selected_templates": provenance,
         "groups": group_details, "plan_digest": pdigest, "timing_status": time_status,
     })
+    readable_provenance = tuple(sorted((
+        (o.unit_id, o.slot_id, o.bundle_id, o.candidate.template_id,
+         o.candidate.evidence_id, o.definition.definition_id,
+         o.definition.semantic_revision, o.definition.variable,
+         o.definition.value_domain, str(o.candidate.lower),
+         str(o.candidate.upper)) for o in occurrences.values()
+    ), key=lambda item: (item[0], item[1])))
+    target_ranges = tuple((g.task_id, g.lower, g.upper) for g in groups)
+    input_provenance = tuple(sorted((
+        ("path_id", path.path_id), ("source_revision", source_revision),
+        ("language", language), ("profile", profile),
+        ("lexicon_revision", lexicon.revision),
+        ("rule_revision", lexicon.rule_revision),
+    )))
     return CompileResult(plan, CompileReceipt(
         "MAPPED_SYMBOLIC", "OK", (), receipt_digest, tuple(sorted(evidence)),
-        pdigest, time_status, "UNVERIFIED"))
+        pdigest, time_status, "UNVERIFIED", readable_provenance,
+        target_ranges, input_provenance))
 
 
 __all__ = [
