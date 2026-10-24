@@ -95,3 +95,6 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 
 
 **Third SMC-4 Gate B Codex review:** three further P2 at `827c66d3`, 10 total across three AI review rounds, with separate test-only RED at `0b49c5d`, intermediate RED at `cd5b2e1`, corrected source `4a9bfa2` **16/16 green** and 194 synthetic tests. Detailed [review ledger](SMC4_GATE_B_CODEX_REVIEW.md), [experiments](EXPERIMENTS.md). Fresh final-HEAD review remains required; no human linguistic evidence or main merge.
+
+
+**Fourth Codex Gate B review:** 11 total P2 across four reviews, new capability-declaration failure from SHA `32492597`, test-only RED `e5d5948c`, repaired source SHA `d57cddc1` 16/16 green. [Full review evidence](SMC4_GATE_B_CODEX_REVIEW.md). No code/main/phonetic-science promotion until a fresh final-HEAD independent AI review and explicit limited decision.
