@@ -94,7 +94,7 @@ def test_physical_junction_bidirectional_continuity_energy_and_pressure_oracle()
         power_right=(transmitted*transmitted-b*b)/z2
         assert abs(power_left-power_right)<=1e-11*max(abs(power_left),abs(power_right),
               abs(a*a/z1),abs(b*b/z2),1e-20)
-        mat=np.array([[1.,1.],[-1/z1,1/z2]])
+        mat=np.array([[1.,-1.],[-1/z1,-1/z2]])
         # Unknowns reflected, transmitted: pL=pR, U_L=U_R.
         independent=np.linalg.solve(mat,np.array([b-a,-a/z1-b/z2]))
         np.testing.assert_allclose([reflected,transmitted],independent,
