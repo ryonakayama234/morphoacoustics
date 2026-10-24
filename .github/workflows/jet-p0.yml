@@ -1,0 +1,64 @@
+name: JET-P0 physical source research
+on:
+  push:
+    branches: [research/jet-aspiration-p0-20261023]
+    paths:
+      - 'experiments/047_glottal_jet_closure/**'
+      - 'tests/test_experiment_047_jet_source.py'
+      - '.github/workflows/jet-p0.yml'
+      - 'docs/research/jet-p0/**'
+  pull_request:
+    paths:
+      - 'experiments/047_glottal_jet_closure/**'
+      - 'tests/test_experiment_047_jet_source.py'
+      - '.github/workflows/jet-p0.yml'
+  workflow_dispatch:
+
+jobs:
+  acoustic-research:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e '.[dev]'
+      - name: Source mathematical invariants
+        run: python -m pytest -q tests/test_experiment_047_jet_source.py
+      - name: Generate fresh Core pressure on prepared M0
+        run: python experiments/047_glottal_jet_closure/run.py --out "$RUNNER_TEMP/jet-p0" > "$RUNNER_TEMP/p0-console.json"
+      - name: Frozen objective pressure and provenance screen
+        env:
+          P0_OUT: ${{ runner.temp }}/jet-p0
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          import numpy as np
+          p=Path(os.environ["P0_OUT"])
+          m=json.loads((p/"manifest.json").read_text())
+          assert m["adoption"]=="NOT_ADOPTED_RESEARCH"
+          assert m["source_head"]=="MUST_FILL_FROM_GITHUB_CI_OR_LOCAL_GIT_HEAD"
+          for name, case in m["cases"].items():
+              for suffix, field in [("_source.npy","source_hash"),("_pressure_pa.npy","raw_pressure_hash"),(".wav","listening_wav_hash")]:
+                  blob=(p/f"{name}{suffix}").read_bytes()
+                  assert hashlib.sha256(blob).hexdigest()==case[field]
+              raw=np.load(p/f"{name}_pressure_pa.npy",allow_pickle=False)
+              assert raw.shape==(24000,) and np.isfinite(raw).all() and np.any(raw!=0)
+              assert case["source_2khz_fraction"]<0.10
+              assert case["raw_pressure_2khz_fraction"]<0.20, (name,case["raw_pressure_2khz_fraction"])
+          assert m["cases"]["modal"]["raw_pressure_hash"]!=m["cases"]["noise_off"]["raw_pressure_hash"]
+          (p/"CI_EVIDENCE.txt").write_text("source_commit="+os.environ["GITHUB_SHA"]+"\nGate=NUMERIC_CANDIDATE_ONLY_NOT_ADOPTED\n")
+          print("JET-P0 NUMERIC CANDIDATE GATE PASS; NO HUMAN LISTENING / NO ADOPTION")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jet-p0-physical-source-audit
+          path: |
+            ${{ runner.temp }}/jet-p0
+            ${{ runner.temp }}/p0-console.json
+          retention-days: 30
