@@ -35,3 +35,31 @@ Type-check invariants include no accidental aliasing of `TaskAssociation` iterat
 
 ## 2026-10-22 verified software Gate B receipt (not research adoption)
 Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API reported **16/16 completed check runs SUCCESS** (some duplicate push/PR runs), including isolated Python 3.11/3.12/3.13 package import/install + 21 synthetic pytest cases per run + strict package mypy, existing Core root test matrix/typecheck, and bounded SV1 regression. Evidence: [isolated package run](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258873), [root tests](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258910), [SV1](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39777258867). An earlier failing mypy run is preserved in EXPERIMENTS. Individual OG3 and OG4 were not separately confirmed for this SHA. No independent reviewer, phonetic fixture, body adapter, wav or Studio integration. Disposition: **EXPLORATORY_SOFTWARE_PASS / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**.
+
+## 2026-10-23 Gate C — audit data and independent oracle
+- Preregistered audit protocol: [GATE_C_PROTOCOL.md](GATE_C_PROTOCOL.md), commit `7705ebd752e191a545506c0a2a79d56a40efc6bf`, fixed candidate HEAD `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`.
+- `tests/test_gate_c_adversarial.py` creates **100 deterministic artificial plans** from 5 fixed seeds times 20 indexed cases, each with 3–8 tasks; pairs of onset/offset values are constructed first using `Fraction`, then encoded as event equalities; every association is explicit and task IDs are unique. Expected timestamps are stored outside the SMC solver.
+- Metamorphic relations: collection permutation preserves `canonical_plan_json`/`plan_digest` and event table; positive absolute-anchor translation shifts all resolved event timestamps; contradictory extra anchor fails with no partial time series.
+- Distinguish `STRUCTURALLY_VALID` vs fully `RESOLVED`: an unanchored component may have valid graph syntax but has no executable/fully-resolved timing. Even RESOLVED is neither capability validation nor physical speech.
+- Adversarial malformed runtime input (`source_text=None`) tests whether a type-annotated frozen dataclass is actually validated fail-closed; this is an audit probe, not an adopted public `None` contract. Any crash must be preserved as a counterexample pending disposition.
+- Source character offsets count Python Unicode codepoints, **not** grapheme clusters; synthetic complex-emoji fixture documents this distinction.
+- Independent exact-math script: [../wolfram/gate_c_oracle.wl](../wolfram/gate_c_oracle.wl). Script existence is not evidence of execution. No semantic-equivalence hashing beyond tuple-order normalization is promised.
+
+## 2026-10-23 Gate C failure-mode correction
+
+At first audited SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`, a runtime malformed `SymbolicPlan(source_text=None)` elicited a Python `TypeError` in a source-span bound check after `EMPTY_SOURCE` was already diagnosed. This is a **runtime type-enforcement failure** in a typed dataclass, not a time solver inconsistency. See [first red-run receipt](https://github.com/ryonakayama234/morphoacoustics/pull/169#issuecomment-6367686236).
+
+`validation.py` fix `2de422883e544c1dff5ec12121a1f033a2f3afc5` computes `source_length = len(source_text)` only when it is a `str`, else 0. The preregistered malformed runtime case must now return `INVALID` and never reach event resolution. This does not imply complete validation of all arbitrarily malformed runtime object graphs; other inputs remain future audit scope.
+
+## 2026-10-23 Gate C — verified exact-source-SHA repair CI
+
+- **Fixed-source commit `2de422883e544c1dff5ec12121a1f033a2f3afc5`** is **16/16 completed SUCCESS**, zero failure/pending in GitHub check-runs API (two push/PR job sets): isolated package Python 3.11, 3.12, 3.13 pytest with 127 synthetic tests per interpreter, package strict mypy, existing root test matrix/typecheck, and bounded SV1. [Python 3.12 job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/39973099897/job/120480625178). This is independent of the earlier red SHA `2a3a038c342150b37323a6c4b24cc846954d1c42`.
+- Initial red failure **PRESERVED**, caused by `source_text=None` and unguarded `len(None)`; minimal source guard fixed the runtime fail-closed behavior with unchanged frozen test fixtures.
+- All verified outcomes above refer to the **code-bearing SHA `2de422883e544c1dff5ec12121a1f033a2f3afc5`**, not automatically to later documentation-only commits. Document-only final branch HEAD checks require their own confirmation. OG3 and OG4 were not run as separate exact-SHA science gates by these package-scoped actions; do not claim them.
+- Disposition: **GATE_C_IMPLEMENTER_ORIGIN_SOFTWARE_PASS / HUMAN_INDEPENDENT_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. This is not a physical or phonetic validation.
+
+## 2026-10-24 Unicode scalar boundary and contradiction semantics (Codex P2)
+
+[Codex P2 ledger](GATE_C_CODEX_REVIEW.md) records the review provenance, first red CI, and separate correction. Python `str` can contain unpaired surrogate code points U+D800–U+DFFF even though strict UTF-8 encoding cannot represent them. Since the research digest uses strict `encode("utf-8")`, validator must return `INVALID_UNICODE_SCALAR` before treating such string fields as accepted. This guard checks the input source, IDs, hypothesis symbols, goal kinds, capability tokens and symbolic edge reference strings. It does **not** prohibit legitimate supplementary-plane Unicode or valid ZWJ sequences.
+
+For exact contradictory temporal equalities, the global `CONTRADICTORY_TIMING` diagnostic takes precedence over numerical duration or pre-zero diagnostics derived from BFS traversal potentials; such potentials are arbitrary after a conflict. For otherwise consistent components the existing `NONPOSITIVE_DURATION` and `NEGATIVE_ANCHORED_TIME` behavior remains. This is not a physical gesture-duration claim.

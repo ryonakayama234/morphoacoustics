@@ -116,8 +116,28 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
     def issue(code: str, subject: str, detail: str) -> None:
         issues.append(Diagnostic(code, subject, detail))
 
+    def reject_surrogates(field: str, value: object) -> None:
+        # JSON-escaped lone (or paired) surrogate code points cannot be encoded
+        # by the strict UTF-8 research digest. Keep diagnostic subjects ASCII.
+        if isinstance(value, str) and any(
+            0xD800 <= ord(char) <= 0xDFFF for char in value
+        ):
+            issue("INVALID_UNICODE_SCALAR", field,
+                  "string contains UTF-8-unencodable surrogate code point")
+
+    for field, value in (
+        ("segment_id", plan.segment_id),
+        ("source_text", plan.source_text),
+        ("schema_version", plan.schema_version),
+        ("representation_kind", plan.representation_kind),
+    ):
+        reject_surrogates(field, value)
+
     if not isinstance(plan.segment_id, str) or not plan.segment_id.strip():
         issue("INVALID_SEGMENT_ID", "", "segment ID must be nonblank")
+    # Frozen dataclass type hints are not enforced at runtime. A malformed
+    # source must be rejected as data, never crash during later span checks.
+    source_length = len(plan.source_text) if isinstance(plan.source_text, str) else 0
     if not isinstance(plan.source_text, str) or not plan.source_text:
         issue("EMPTY_SOURCE", plan.segment_id, "source must be nonempty")
     if plan.schema_version != SCHEMA_VERSION or plan.representation_kind != REPRESENTATION_KIND:
@@ -127,11 +147,13 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
         if not isinstance(u.unit_id, str) or not u.unit_id.strip() or u.unit_id in unit_ids:
             issue("INVALID_OR_DUPLICATE_UNIT_ID", str(u.unit_id), "unit IDs must be distinct")
         unit_ids.add(u.unit_id)
+        reject_surrogates("pronunciation_unit.unit_id", u.unit_id)
+        reject_surrogates("pronunciation_unit.symbol", u.symbol)
         if not isinstance(u.symbol, str) or not u.symbol:
             issue("UNRESOLVED_PRONUNCIATION", u.unit_id, "no supplied candidate")
         if (type(u.start_offset) is not int or type(u.end_offset) is not int
                 or u.start_offset < 0 or u.start_offset >= u.end_offset
-                or u.end_offset > len(plan.source_text)):
+                or u.end_offset > source_length):
             issue("INVALID_SOURCE_SPAN", u.unit_id, "span must fit unchanged source")
     if not plan.pronunciation_units:
         issue("NO_PRONUNCIATION", plan.segment_id, "no candidate; do not invent reading")
@@ -140,6 +162,10 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
         if not isinstance(t.task_id, str) or not t.task_id.strip() or t.task_id in task_ids:
             issue("INVALID_OR_DUPLICATE_TASK_ID", str(t.task_id), "task IDs must be distinct")
         task_ids.add(t.task_id)
+        reject_surrogates("task.task_id", t.task_id)
+        reject_surrogates("task.goal_kind", t.goal_kind)
+        for requirement in t.capability_requirements:
+            reject_surrogates("task.capability_requirement", requirement)
         if not isinstance(t.goal_kind, str) or not t.goal_kind:
             issue("UNRESOLVED_TASK_GOAL", t.task_id, "task goal must be supplied")
         if any(not isinstance(x, str) or not x for x in t.capability_requirements):
@@ -148,6 +174,8 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
         issue("NO_MOTOR_TASKS", plan.segment_id, "no tasks; do not invent gestures")
     links: set[tuple[str, str]] = set()
     for a in plan.associations:
+        reject_surrogates("association.unit_id", a.unit_id)
+        reject_surrogates("association.task_id", a.task_id)
         pair = (a.unit_id, a.task_id)
         if pair in links:
             issue("DUPLICATE_ASSOCIATION", a.task_id, "same link repeated")
@@ -162,6 +190,8 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
             issue("ORPHAN_TASK", task_id, "no pronunciation unit linked")
     couplings: set[CouplingConstraint] = set()
     for c in plan.couplings:
+        reject_surrogates("coupling.source_task_id", c.source_task_id)
+        reject_surrogates("coupling.target_task_id", c.target_task_id)
         if c in couplings:
             issue("DUPLICATE_COUPLING", c.source_task_id, "same constraint repeated")
         couplings.add(c)
@@ -172,6 +202,7 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
         if not _rational_ok(c.lag_s):
             issue("INVALID_LAG", c.source_task_id, "must use exact Fraction")
     for anchor in plan.anchors:
+        reject_surrogates("anchor.task_id", anchor.task_id)
         if anchor.task_id not in task_ids:
             issue("UNKNOWN_ANCHOR_ENDPOINT", anchor.task_id, "unknown task")
         if not _event_ok(anchor.event) or not _rational_ok(anchor.time_s):
@@ -181,15 +212,18 @@ def validate_plan(plan: SymbolicPlan) -> ValidationReport:
         potential, component, conflict = _components(_edges(plan))
         if conflict:
             issue("CONTRADICTORY_TIMING", plan.segment_id, "inconsistent exact equalities")
-        for task_id in sorted(task_ids):
-            onset, offset = (task_id, Event.ONSET), (task_id, Event.OFFSET)
-            if component[onset] == component[offset] and potential[offset] <= potential[onset]:
-                issue("NONPOSITIVE_DURATION", task_id, "resolved OFFSET must follow ONSET")
-        for task_id in sorted(task_ids):
-            for event in (Event.ONSET, Event.OFFSET):
-                node = (task_id, event)
-                if component[node] == component[_ORIGIN] and potential[node] < potential[_ORIGIN]:
-                    issue("NEGATIVE_ANCHORED_TIME", task_id, "time before zero")
+        else:
+            # Conflicted components have arbitrary traversal potentials. Neither
+            # negative time nor task duration may be inferred from them.
+            for task_id in sorted(task_ids):
+                onset, offset = (task_id, Event.ONSET), (task_id, Event.OFFSET)
+                if component[onset] == component[offset] and potential[offset] <= potential[onset]:
+                    issue("NONPOSITIVE_DURATION", task_id, "resolved OFFSET must follow ONSET")
+            for task_id in sorted(task_ids):
+                for event in (Event.ONSET, Event.OFFSET):
+                    node = (task_id, event)
+                    if component[node] == component[_ORIGIN] and potential[node] < potential[_ORIGIN]:
+                        issue("NEGATIVE_ANCHORED_TIME", task_id, "time before zero")
     ordered = tuple(sorted(set(issues), key=lambda d: (d.code, d.subject_id, d.detail)))
     return ValidationReport(
         ReportStatus.INVALID if ordered else ReportStatus.STRUCTURALLY_VALID, ordered
