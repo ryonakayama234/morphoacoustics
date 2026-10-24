@@ -106,13 +106,15 @@ def compile_lexicon(
         return reject("UNSUPPORTED_MAPPING_SCOPE", "overlapping selected occurrences")
 
     defs: dict[tuple[str, str], TaskDefinition] = {}
-    for d in lexicon.definitions:
-        key = (d.definition_id, d.semantic_revision)
-        if (not all(scalar(s) for s in (d.definition_id, d.semantic_revision,
-                 d.variable, d.value_domain, d.goal_kind,
-                 d.applicability_domain)) or key in defs):
+    for declared_definition in lexicon.definitions:
+        key = (declared_definition.definition_id, declared_definition.semantic_revision)
+        if (not all(scalar(s) for s in (
+                declared_definition.definition_id, declared_definition.semantic_revision,
+                declared_definition.variable, declared_definition.value_domain,
+                declared_definition.goal_kind, declared_definition.applicability_domain))
+                or key in defs):
             return reject("INVALID_PLAN", "duplicate or malformed TaskDefinition")
-        defs[key] = d
+        defs[key] = declared_definition
     units_by_id = {u.unit_id: u for u in path.units}
     for b in lexicon.bundles:
         if b.profile != profile:
@@ -222,15 +224,17 @@ def compile_lexicon(
         if key not in by_occ or not isinstance(a.event, Event) or not isinstance(a.time_s, Fraction):
             return reject("INVALID_PLAN", "invalid anchor", str(key))
         prepared_anchors.append(EventAnchor(by_occ[key], a.event, a.time_s))
-    for c in relations:
-        first_key, last_key = (c.from_unit, c.from_slot), (c.to_unit, c.to_slot)
+    for relation in relations:
+        first_key = (relation.from_unit, relation.from_slot)
+        last_key = (relation.to_unit, relation.to_slot)
         if (first_key not in by_occ or last_key not in by_occ
-                or not isinstance(c.from_event, Event)
-                or not isinstance(c.to_event, Event)
-                or not isinstance(c.lag_s, Fraction)):
+                or not isinstance(relation.from_event, Event)
+                or not isinstance(relation.to_event, Event)
+                or not isinstance(relation.lag_s, Fraction)):
             return reject("INVALID_PLAN", "invalid coupling", str(first_key), str(last_key))
         prepared_relations.append(CouplingConstraint(
-            by_occ[first_key], c.from_event, by_occ[last_key], c.to_event, c.lag_s))
+            by_occ[first_key], relation.from_event, by_occ[last_key],
+            relation.to_event, relation.lag_s))
     plan = SymbolicPlan(
         segment_id, source_text,
         tuple(sorted(path.units, key=lambda u: u.unit_id)), tasks, associations,
