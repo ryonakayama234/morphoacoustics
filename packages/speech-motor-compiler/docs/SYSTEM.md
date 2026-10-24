@@ -69,3 +69,26 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 See [GATE_C_CODEX_REVIEW.md](GATE_C_CODEX_REVIEW.md). Original implementation PR #164 received **two Codex P2 software findings** at SHA `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`: malformed Unicode scalar data could be accepted then break the UTF-8 research receipt, and inconsistent anchors could cause input-order-dependent follow-on diagnostics. This is an independently executed **AI code review**, not human or scientific validation.
 
 The first post-review regression commit `08e2a47c8fd34017b6a52cacaef3485779515617` failed 8 fixture invocations before any new validator patch. Separate fix `a3f876fcaef3b63e2612807fab288a7e36e7e54a` rejects surrogate code points across caller strings used in the receipt and suppresses time/duration derivations when equalities conflict. Its exact code SHA passed **16/16** GitHub check-runs, including package tests/mypy on 3.11–3.13. Fresh Codex review and final documentation-HEAD CI are separate future receipts. No physical semantics, no Studio, no main merge.
+
+
+## SMC-4 Gate B — bounded compiler research topology (2026-10-24)
+
+**Authorization:** [Gate A design-only PR #175](https://github.com/ryonakayama234/morphoacoustics/pull/175) final SHA `9f7a8d1` (owner-delegated `GO_DESIGN_ONLY`); separate [Gate B issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). The existing SMC-3 frozen `model.py`/`validation.py` are unchanged.
+
+```mermaid
+flowchart LR
+  TXT["Creator Script"] -. "external reading provider; NOT built here" .-> H["PronunciationHypothesisSet"]
+  H --> P["ONE explicit complete PronunciationPath"]
+  L["Versioned finite TaskLexicon: TaskDefinitions, Bundles, Slots, Candidates"] --> C["SMC-4 synthetic compiler"]
+  F["Typed context and explicit share/timing declarations"] --> C
+  P --> C
+  C --> R["SMC-4 provenance + refusal receipt"]
+  C --> V["SMC-3 unchanged SymbolicPlan validator"]
+  V --> T["Unverified body-independent MotorTask graph"]
+  T -. "future V3 body adapter" .-> B["Body motion"]
+  B -. "future Core physics" .-> A["Sound from moving physical system"]
+```
+
+Only finite per-unit `EXACT_ONE_SELECTED_UNIT` bundles can map a selected path. For every selected unit choose one exclusive bundle, then one exclusive candidate for **each** additive REQUIRED GoalSlot. UNKNOWN contextual applicability and unknown source readings cannot be coerced into a plan. Shared task IDs require an explicitly named episode and compatible semantic revision, variable and target-intersection algebra; a matching label alone never causes sharing. Conditional exact-rational goal conflict checking and ordinary SMC-3 structural validation form separate gates.
+
+The graph is not body-bound and does **not** output organ positions, pressure/F0, waveform or Studio changes. The chosen functional goals are `SYNTHETIC_ONLY`, with no validated Japanese articulatory TaskLexicon. Public `TaskScore` wire schema remains undecided. GitHub `@codex review` is an AI software review, not human scientific peer review. **SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE.**
