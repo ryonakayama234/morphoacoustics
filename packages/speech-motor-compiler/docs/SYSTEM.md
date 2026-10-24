@@ -63,3 +63,9 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 - Initial red failure **PRESERVED**, caused by `source_text=None` and unguarded `len(None)`; minimal source guard fixed the runtime fail-closed behavior with unchanged frozen test fixtures.
 - All verified outcomes above refer to the **code-bearing SHA `2de422883e544c1dff5ec12121a1f033a2f3afc5`**, not automatically to later documentation-only commits. Document-only final branch HEAD checks require their own confirmation. OG3 and OG4 were not run as separate exact-SHA science gates by these package-scoped actions; do not claim them.
 - Disposition: **GATE_C_IMPLEMENTER_ORIGIN_SOFTWARE_PASS / HUMAN_INDEPENDENT_REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE**. This is not a physical or phonetic validation.
+
+## 2026-10-24 Codex-reviewed software boundary extension
+
+See [GATE_C_CODEX_REVIEW.md](GATE_C_CODEX_REVIEW.md). Original implementation PR #164 received **two Codex P2 software findings** at SHA `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`: malformed Unicode scalar data could be accepted then break the UTF-8 research receipt, and inconsistent anchors could cause input-order-dependent follow-on diagnostics. This is an independently executed **AI code review**, not human or scientific validation.
+
+The first post-review regression commit `08e2a47c8fd34017b6a52cacaef3485779515617` failed 8 fixture invocations before any new validator patch. Separate fix `a3f876fcaef3b63e2612807fab288a7e36e7e54a` rejects surrogate code points across caller strings used in the receipt and suppresses time/duration derivations when equalities conflict. Its exact code SHA passed **16/16** GitHub check-runs, including package tests/mypy on 3.11–3.13. Fresh Codex review and final documentation-HEAD CI are separate future receipts. No physical semantics, no Studio, no main merge.
