@@ -157,8 +157,17 @@ def audit(folder:Path):
             fs=C*n/section_len
             N=16*n
             pressure=arrays[name+"_b0_full_impulse_n"+str(n)+".npy"]
-            if len(pressure)!=int(math.ceil(5.*fs)):
-                raise AssertionError("inadequate archived impulse tail")
+            duration=18.0 if name=="M0_i" else 5.0
+            if manifest.get("impulse_duration_s",{}).get(name)!=duration:
+                raise AssertionError("post-failure preregistered duration not retained")
+            if len(pressure)!=int(math.ceil(duration*fs)):
+                raise AssertionError("wrong archived high-Q impulse duration")
+            if name=="M0_i":
+                width=int(round(0.5*fs))
+                first_rms=math.sqrt(float(np.mean(pressure[:width]**2)))
+                last_rms=math.sqrt(float(np.mean(pressure[-width:]**2)))
+                if first_rms<=0 or last_rms>1e-7*first_rms:
+                    raise AssertionError("M0/i 18s tail still not decayed to prospectively frozen tolerance")
             if not np.array_equal(pressure[:N],np.zeros(N)) or pressure[N]==0.:
                 raise AssertionError("finite-speed spatial support failed")
             times=np.arange(len(pressure),dtype=np.float64)/fs
