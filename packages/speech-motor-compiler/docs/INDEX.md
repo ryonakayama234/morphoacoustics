@@ -74,3 +74,9 @@ GitHub Codex's manual **design review of initial docs SHA `44d21d1118ff8994af430
 Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an additional P2: multiple *required* Task templates for one pronunciation cannot be handled by unique per-unit candidate choice, while unioning all matches would combine mutually exclusive alternatives. Historical frozen protocol and Amendment 01 remain unchanged.
 
 [SMC4_GATE_A_AMENDMENT_02.md](SMC4_GATE_A_AMENDMENT_02.md), initial commit `da0fb2f93d8921effc20c03cb6c90ff0ee89c3c8`, defines versioned `TemplateBundle` of **additive REQUIRED GoalSlots**, **exclusive alternatives within each slot and between bundles**, tri-valued eligibility, explicit priority and no partial plans, with F23–F27 prospective oracles and an unambiguous F01 3-task/4-link witness. A fresh exact-SHA CI and Codex re-review are needed for any `GO_DESIGN_ONLY`; no new executable SMC-4 code.
+
+## 2026-10-24 SMC-4 Gate A — third review scope amendment
+
+Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` found another P2: simultaneous per-unit and multi-unit TemplateBundles could overlap selected pronunciation units without a defined coverage/exclusivity rule. **Original Gate A protocol and Amendments 01/02 are preserved unchanged.**
+
+[SMC4_GATE_A_AMENDMENT_03.md](SMC4_GATE_A_AMENDMENT_03.md) at initial commit `7a80f8b0b016cb51ad5b9c3225cd919acc2cbfbc` narrows first Gate B mapping scope to exactly one selected pronunciation unit per TemplateBundle; multi-unit/overlapping bundles in the requested profile are rejected as `UNSUPPORTED_MAPPING_SCOPE`, not silently accepted or discarded. Context predicates may inspect neighbors without owning their mapping scope. F28–F32 prospective fixtures specify covered/overlapping/missing/ambiguous cases. No SMC-4 code, no scientific adoption or main merge.
