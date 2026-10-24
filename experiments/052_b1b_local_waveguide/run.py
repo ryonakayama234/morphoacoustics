@@ -281,13 +281,13 @@ def energy_gate(tr: np.ndarray, initial_total_j=0.0):
     cumulative = abs(float(sum(res)))
     allowed=max(
         1e-9*max(float(sum(abs(work))+sum(diss)),1e-20),
-        1e-10*max(float(max(cur,initial=0.)),initial_total_j,1e-20))
+        1e-10*max(float(np.max(cur,initial=0.)),initial_total_j,1e-20))
     if cumulative>allowed:
         raise AssertionError("energy ledger accumulates mismatch")
     return {
         "max_normalized_step_residual":float(max(abs(res)/bound,default=0.0)),
         "cumulative_residual_j":cumulative,
-        "max_stored_energy_j":float(max(cur,initial=0.)),
+        "max_stored_energy_j":float(np.max(cur,initial=0.)),
         "total_outlet_dissipation_j":float(sum(diss)),
         "sum_signed_inlet_work_j":float(sum(work)),
     }
