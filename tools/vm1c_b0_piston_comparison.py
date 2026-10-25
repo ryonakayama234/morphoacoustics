@@ -134,6 +134,12 @@ def port_matrix(areas: list[float], segment_length: float, frequency: float) -> 
 
 
 def tube_load(total: np.ndarray, z_load: complex) -> dict:
+    # Without a genuine nonzero calibration flow, an arbitrary nonconserving
+    # matrix can produce Pin=Pout=0 and manufacture an energy "PASS".
+    if not isinstance(U_IN, (int, float)) or isinstance(U_IN, bool) or (
+        not math.isfinite(U_IN) or U_IN <= 0
+    ):
+        raise ValueError("INVALID_CALIBRATION_SOURCE_FLOW")
     if not np.isfinite(z_load) or z_load.real < -1e-12:
         raise ValueError("INVALID_NONPASSIVE_BOUNDARY")
     aa, bb, cc, dd = total[0, 0], total[0, 1], total[1, 0], total[1, 1]
