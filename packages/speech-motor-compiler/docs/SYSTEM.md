@@ -69,3 +69,18 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 See [GATE_C_CODEX_REVIEW.md](GATE_C_CODEX_REVIEW.md). Original implementation PR #164 received **two Codex P2 software findings** at SHA `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`: malformed Unicode scalar data could be accepted then break the UTF-8 research receipt, and inconsistent anchors could cause input-order-dependent follow-on diagnostics. This is an independently executed **AI code review**, not human or scientific validation.
 
 The first post-review regression commit `08e2a47c8fd34017b6a52cacaef3485779515617` failed 8 fixture invocations before any new validator patch. Separate fix `a3f876fcaef3b63e2612807fab288a7e36e7e54a` rejects surrogate code points across caller strings used in the receipt and suppresses time/duration derivations when equalities conflict. Its exact code SHA passed **16/16** GitHub check-runs, including package tests/mypy on 3.11–3.13. Fresh Codex review and final documentation-HEAD CI are separate future receipts. No physical semantics, no Studio, no main merge.
+
+## SMC-4 Gate B-R: isolated, research-only canonical ingress
+
+This is a **research prototype** stacked under design Draft PR #186 and independent code Draft PR #189. Legacy Gate B Draft #180 remains intentionally RED / REVISE. The new ingress has no TaskLexicon→SMC-3 compiler source and is **not** a sound generator.
+
+```mermaid
+flowchart LR
+  A["UTF-8 byte submission"] --> B["bounded finite JSON lexer, parser, schema"]
+  B -->|"valid"| C["immutable canonical bytes + typed-schema hash"]
+  B -->|"malformed"| D["ingress refusal, raw-byte evidence"]
+  C --> E["future independent TaskLexicon adapter (NOT IMPLEMENTED)"]
+  E --> F["unchanged SMC-3 SymbolicPlan"]
+```
+
+Implementation: `../src/morphoacoustics_smc/canonical_ingress.py`. Direct arbitrary Python object graphs are rejected **without traversal**, with no fabricated SHA. For bytes of at most 262144, the raw submitted bytes have SHA256 evidence even on refusal. Canonical semantic digest exists only for schema-validated accepted requests; this does not claim a valid motor plan. Structural validation makes only finite schema assertions, not linguistic/plausibility/physical ones. The design draft/CI and external AI code-review outcomes are separate adoption gates.
