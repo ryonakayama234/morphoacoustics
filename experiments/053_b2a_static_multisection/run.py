@@ -258,8 +258,25 @@ def run(out):
         for term in TERMS:
             cfg=config_for(body,2,term)
             excitation=np.zeros(1024);excitation[:128]=rng.normal(0,1e-6,128)
-            tr=StaticMultisection(cfg).trace(excitation)
+            model=StaticMultisection(cfg)
+            tr=np.empty((len(excitation),len(COLS)),dtype=np.float64)
+            # Full physical wave state AFTER each tick, two directions, all
+            # original anatomy sections and all local cells. Independent audit
+            # must reconstruct pressure/flow energy from these RAW wave states,
+            # not trust the solver's energy ledger columns.
+            waves=np.empty((len(excitation),2,len(cfg.areas),cfg.cells_per_section),
+                           dtype=np.float64)
+            inertance_q=np.empty(len(excitation),dtype=np.float64)
+            for tick,flow in enumerate(excitation):
+                step=model.step(float(flow))
+                tr[tick]=tuple(vars(step).values())
+                for cell in range(len(cfg.areas)):
+                    waves[tick,0,cell,:]=model.f[cell]
+                    waves[tick,1,cell,:]=model.b[cell]
+                inertance_q[tick]=(model.port.q_m3_s if model.port else 0.)
             saved[f"{name}_{term}_signed_trace.npy"]=tr
+            saved[f"{name}_{term}_wave_states.npy"]=waves
+            saved[f"{name}_{term}_b0_q.npy"]=inertance_q
             manifest["energy"][f"{name}_{term}"]=energy_gate(tr)
     out.mkdir(parents=True)
     for key,arr in sorted(saved.items()):
