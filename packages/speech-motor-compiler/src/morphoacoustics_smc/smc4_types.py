@@ -128,29 +128,39 @@ class CompileResult:
 
 
 def valid_predicate(predicate: object) -> bool:
-    """Validate a finite Strong-Kleene tree by structure, not object identity.
+    """Validate Strong-Kleene predicates as bounded finite DAGs, not trees.
 
-    An immutable Predicate object may be reused as a DAG subtree; only a node
-    that reappears on the active path is cyclic. Depth and node count are bounded
-    so eligibility cannot recurse indefinitely even for a well-typed input.
+    Memoized subtree *heights* are checked at every attachment. An already
+    validated child can be attached under a deeper parent, but cannot bypass
+    the absolute root-to-leaf depth bound. Only back-edges on the ACTIVE path
+    are cycles; repeated references to an immutable subtree remain legal.
     """
     pending: list[tuple[object, bool, int]] = [(predicate, False, 0)]
     active: set[int] = set()
-    validated: set[int] = set()
+    heights: dict[int, int] = {}
     while pending:
         node, leaving, depth = pending.pop()
         if not isinstance(node, Predicate):
             return False
         identity = id(node)
         if leaving:
+            height = 1 + max(
+                (heights[id(child)] for child in node.operands), default=0)
+            if depth + height > 128:
+                return False
+            heights[identity] = height
             active.remove(identity)
-            validated.add(identity)
             continue
-        if identity in validated:
-            continue
-        if identity in active or depth >= 128 or len(validated) + len(active) >= 1024:
+        if identity in active:
             return False
-        if not isinstance(node.op, str) or not isinstance(node.key, str) or not isinstance(node.expected, str):
+        if identity in heights:
+            if depth + heights[identity] > 128:
+                return False
+            continue
+        if depth >= 128 or len(heights) + len(active) >= 1024:
+            return False
+        if (not isinstance(node.op, str) or not isinstance(node.key, str)
+                or not isinstance(node.expected, str)):
             return False
         if any(0xD800 <= ord(ch) <= 0xDFFF
                for part in (node.op, node.key, node.expected) for ch in part):
@@ -179,30 +189,48 @@ def valid_predicate(predicate: object) -> bool:
 
 
 def evaluate(predicate: Predicate, facts: Mapping[str, str]) -> str:
-    """Strong Kleene three-valued logic with no guessed context facts."""
-    if predicate.op == "TRUE":
-        return "TRUE"
-    if predicate.op == "FALSE":
-        return "FALSE"
-    if predicate.op == "EQ":
-        if not predicate.key:
-            return "UNKNOWN"
-        if predicate.key not in facts:
-            return "UNKNOWN"
-        return "TRUE" if facts[predicate.key] == predicate.expected else "FALSE"
-    if predicate.op == "NOT" and len(predicate.operands) == 1:
-        value = evaluate(predicate.operands[0], facts)
-        return {"TRUE": "FALSE", "FALSE": "TRUE", "UNKNOWN": "UNKNOWN"}[value]
-    if predicate.op in ("AND", "OR") and predicate.operands:
-        values = tuple(evaluate(p, facts) for p in predicate.operands)
-        if predicate.op == "AND":
-            if "FALSE" in values:
-                return "FALSE"
-            return "UNKNOWN" if "UNKNOWN" in values else "TRUE"
-        if "TRUE" in values:
-            return "TRUE"
-        return "UNKNOWN" if "UNKNOWN" in values else "FALSE"
-    return "UNKNOWN"
+    """Strong Kleene semantics evaluated once per distinct DAG node.
+
+    Unlike naive recursion, a shared child referenced k times does not create
+    exponential work. The compiler validates all predicate declarations before
+    this function is called; malformed direct callers yield UNKNOWN.
+    """
+    if not valid_predicate(predicate):
+        return "UNKNOWN"
+    done: dict[int, str] = {}
+    pending: list[tuple[Predicate, bool]] = [(predicate, False)]
+    while pending:
+        node, leaving = pending.pop()
+        key = id(node)
+        if key in done:
+            continue
+        if not leaving:
+            pending.append((node, True))
+            pending.extend((child, False) for child in reversed(node.operands)
+                           if id(child) not in done)
+            continue
+        if node.op == "TRUE":
+            value = "TRUE"
+        elif node.op == "FALSE":
+            value = "FALSE"
+        elif node.op == "EQ":
+            value = ("UNKNOWN" if node.key not in facts
+                     else "TRUE" if facts[node.key] == node.expected else "FALSE")
+        elif node.op == "NOT":
+            value = {"TRUE": "FALSE", "FALSE": "TRUE", "UNKNOWN": "UNKNOWN"}[
+                done[id(node.operands[0])]]
+        else:
+            children = (done[id(child)] for child in node.operands)
+            if node.op == "AND":
+                outcomes = tuple(children)
+                value = ("FALSE" if "FALSE" in outcomes else "UNKNOWN"
+                         if "UNKNOWN" in outcomes else "TRUE")
+            else:
+                outcomes = tuple(children)
+                value = ("TRUE" if "TRUE" in outcomes else "UNKNOWN"
+                         if "UNKNOWN" in outcomes else "FALSE")
+        done[key] = value
+    return done[id(predicate)]
 
 
 def pick(candidates: tuple[object, ...], facts: Mapping[str, str]
@@ -266,49 +294,89 @@ _UNORDERED_FIELDS = frozenset({
 
 
 def _predicate_digest(root: Predicate) -> str:
-    """Canonical, nonrecursive Predicate DAG fingerprint; cycles stay representable.
+    """Canonical structural fingerprint for valid DAGs AND invalid cycles.
 
-    This runs BEFORE declaration validation to bind rejected experiments to
-    their attempted inputs, including invalid deep/cyclic predicate graphs.
-    A reused immutable child and two equal independent children hash alike.
+    Acyclic graphs use exact bottom-up hashes. For cyclic caller-built graphs
+    (which always fail semantic validation), fixed synchronous refinement
+    hashes graph connectivity without any DFS-dependent cycle marker. AND/OR
+    children are unordered; shared DAG nodes and their unfolded copies agree.
     """
-    pending: list[tuple[Predicate, bool]] = [(root, False)]
-    active: set[int] = set()
-    hashes: dict[int, str] = {}
     def atom(value: object) -> object:
         if value is None or isinstance(value, (str, int, bool)):
             return value
         return {"invalid_type": type(value).__name__, "repr": repr(value)}
+
+    nodes: dict[int, Predicate] = {}
+    pending = [root]
     while pending:
-        node, leaving = pending.pop()
-        ident = id(node)
-        if leaving:
-            raw = node.operands
-            if isinstance(raw, tuple):
-                children = [hashes.get(id(child), "CYCLE_OR_INVALID_OPERAND")
-                            if isinstance(child, Predicate)
-                            else digest_payload({"malformed_operand": atom(child)})
-                            for child in raw]
-                if node.op in ("AND", "OR"):
-                    children.sort()
-                operand_repr: object = children
-            else:
-                operand_repr = {"malformed_operands": atom(raw)}
-            hashes[ident] = digest_payload({
-                "op": atom(node.op), "key": atom(node.key),
-                "expected": atom(node.expected), "operands": operand_repr,
-            })
-            active.remove(ident)
+        node = pending.pop()
+        identity = id(node)
+        if identity in nodes:
             continue
-        if ident in hashes or ident in active:
-            continue
-        active.add(ident)
-        pending.append((node, True))
+        nodes[identity] = node
+        if len(nodes) > 4096:
+            return digest_payload({"predicate_over_budget": True})
         if isinstance(node.operands, tuple):
-            for child in reversed(node.operands):
-                if isinstance(child, Predicate) and id(child) not in active and id(child) not in hashes:
-                    pending.append((child, False))
-    return hashes[id(root)]
+            pending.extend(child for child in node.operands
+                           if isinstance(child, Predicate))
+
+    def render(node: Predicate, hashes: dict[int, str]) -> str:
+        operands: object
+        if isinstance(node.operands, tuple):
+            values = [
+                hashes[id(child)] if isinstance(child, Predicate)
+                else digest_payload({"malformed_operand": atom(child)})
+                for child in node.operands
+            ]
+            if node.op in ("AND", "OR"):
+                values.sort()
+            operands = values
+        else:
+            operands = {"malformed_operands": atom(node.operands)}
+        return digest_payload({
+            "op": atom(node.op), "key": atom(node.key),
+            "expected": atom(node.expected), "operands": operands,
+        })
+
+    dependencies: dict[int, set[int]] = {
+        identity: {id(child) for child in node.operands
+                   if isinstance(child, Predicate)}
+        if isinstance(node.operands, tuple) else set()
+        for identity, node in nodes.items()
+    }
+    parents: dict[int, set[int]] = {identity: set() for identity in nodes}
+    for parent, children in dependencies.items():
+        for child in children:
+            parents[child].add(parent)
+    remaining = {identity: len(children)
+                 for identity, children in dependencies.items()}
+    ready = [identity for identity, count in remaining.items() if count == 0]
+    complete: dict[int, str] = {}
+    while ready:
+        identity = ready.pop()
+        complete[identity] = render(nodes[identity], complete)
+        for parent in parents[identity]:
+            remaining[parent] -= 1
+            if remaining[parent] == 0:
+                ready.append(parent)
+    if len(complete) == len(nodes):
+        return complete[id(root)]
+
+    # A cycle is invalid. Refine ALL reachable nodes synchronously from
+    # intrinsic labels, without visit-order effects; fixed round count
+    # produces equal receipts for commutative operand permutations.
+    labels = {
+        identity: digest_payload({
+            "op": atom(node.op), "key": atom(node.key),
+            "expected": atom(node.expected),
+            "operands_type": type(node.operands).__name__,
+        })
+        for identity, node in nodes.items()
+    }
+    for _ in range(64):
+        labels = {identity: render(node, labels)
+                  for identity, node in nodes.items()}
+    return labels[id(root)]
 
 
 def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
