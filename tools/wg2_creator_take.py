@@ -59,7 +59,7 @@ def _core_commit() -> str:
     flags = subprocess.run(
         ["git", "-C", str(ROOT), "ls-files", "-v", "-z"],
         check=True, capture_output=True,
-    ).stdout.split(b"\\x00")
+    ).stdout.split(b"\x00")
     if any(entry and entry[:1] != b"H" for entry in flags):
         raise RuntimeError("WG2_CORE_UNSAFE_GIT_INDEX_FLAGS")
     # Ignored executable source may not show in status; empty bytecode caches
@@ -68,10 +68,10 @@ def _core_commit() -> str:
         ["git", "-C", str(ROOT), "ls-files", "--others", "--ignored",
          "--exclude-standard", "-z", "--", "src", "tools", "experiments"],
         check=True, capture_output=True,
-    ).stdout.decode("utf-8").split("\\x00")
+    ).stdout.decode("utf-8").split("\x00")
     for filename in ignored:
-        if (re.search(r"\\.(py|pyw|pyc|pyo|pth|so|pyd|dll|dylib)$", filename, re.I)
-                and not re.search(r"(^|/)__pycache__/[^/]+\\.pyc$", filename)):
+        if (re.search(r"\.(py|pyw|pyc|pyo|pth|so|pyd|dll|dylib)$", filename, re.I)
+                and not re.search(r"(^|/)__pycache__/[^/]+\.pyc$", filename)):
             raise RuntimeError("WG2_CORE_IGNORED_EXECUTABLE_SOURCE")
     return head
 
