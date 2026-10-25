@@ -169,29 +169,33 @@ def compile_lexicon(
             return reject("INVALID_PLAN", declared_definition.definition_id,
                           "invalid capability declaration")
         defs[key] = declared_definition
-    # Gate B rule declarations are caller-supplied frozen dataclasses: reject
-    # malformed predicate trees even when they belong to a losing candidate.
-    # In particular, an invalid high-priority EQ must never silently become
-    # FALSE and allow a generic fallback mapping to succeed.
+    # Every malformed rule is rejected, including losing competitors.
+    # Collect a deterministic diagnostic set; never report first-in-input
+    # declaration (F09 order-invariance of rejected experiments).
+    invalid_rules: set[str] = set()
     for declared_bundle in lexicon.bundles:
         if not isinstance(declared_bundle, TemplateBundle):
-            return reject("INVALID_PLAN", "invalid bundle declaration")
+            invalid_rules.add("malformed bundle declaration")
+            continue
         if not valid_predicate(declared_bundle.context):
-            return reject("INVALID_PLAN", declared_bundle.bundle_id,
-                          "invalid bundle predicate")
+            invalid_rules.add(declared_bundle.bundle_id)
         if not isinstance(declared_bundle.slots, tuple):
-            return reject("INVALID_PLAN", declared_bundle.bundle_id,
-                          "invalid slot container")
+            invalid_rules.add(declared_bundle.bundle_id)
+            continue
         for declared_slot in declared_bundle.slots:
-            if (not isinstance(declared_slot, GoalSlot)
-                    or not isinstance(declared_slot.candidates, tuple)):
-                return reject("INVALID_PLAN", declared_bundle.bundle_id,
-                              "invalid required slot")
+            if not isinstance(declared_slot, GoalSlot):
+                invalid_rules.add(declared_bundle.bundle_id)
+                continue
+            if not isinstance(declared_slot.candidates, tuple):
+                invalid_rules.add(declared_bundle.bundle_id + "::" + declared_slot.slot_id)
+                continue
             for declared_candidate in declared_slot.candidates:
                 if (not isinstance(declared_candidate, SlotCandidate)
                         or not valid_predicate(declared_candidate.context)):
-                    return reject("INVALID_PLAN", declared_bundle.bundle_id,
-                                  declared_slot.slot_id, "invalid slot predicate")
+                    invalid_rules.add(declared_bundle.bundle_id + "::" + declared_slot.slot_id)
+    if invalid_rules:
+        return reject("INVALID_PLAN", "invalid lexicon predicate or declaration",
+                      *sorted(invalid_rules))
     units_by_id = {u.unit_id: u for u in path.units}
     unsupported_scope_ids: set[str] = set()
     for b in lexicon.bundles:
