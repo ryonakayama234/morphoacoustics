@@ -45,7 +45,7 @@ def load(out):
         arr=np.load(out/name,allow_pickle=False)
         assert np.isfinite(arr).all()
         blobs[name]=arr
-    assert len(blobs)==14
+    assert len(blobs)==30
     report={}
     for body in ("M0","M1"):
         spec=manifest["bodies"][body]
@@ -88,24 +88,87 @@ def load(out):
                 assert es[2]<=.38*es[1],(body,f,es)
         for term in ("closed","pressure_release","matched","b0"):
             raw=blobs[f"{body}_{term}_signed_trace.npy"]
-            assert raw.shape==(1024,15)
+            waves=blobs[f"{body}_{term}_wave_states.npy"]
+            q=blobs[f"{body}_{term}_b0_q.npy"]
+            assert raw.shape==(1024,15) and waves.shape==(1024,2,16,2)
+            assert q.shape==(1024,)
             cfg_dt=expected_section/(2*C)
-            prev=np.r_[0.,raw[:-1,9]+raw[:-1,10]]
-            current=raw[:,9]+raw[:,10]
-            srcwork=cfg_dt*raw[:,6]*raw[:,1]
-            loss=raw[:,12]
-            assert np.all(loss>=0)
-            np.testing.assert_allclose(srcwork,raw[:,11],rtol=1e-11,atol=1e-19)
-            de=current-prev
-            residual=de-srcwork+loss
+            impedances=RHO*C/areas
+            # Independent RAW wave state -> physical energy reconstruction.
+            # No energy ledger field is used to calculate E_duct or E_B0.
+            wave_E=cfg_dt*np.sum(
+                (waves[:,0,:,:]**2+waves[:,1,:,:]**2)
+                 /impedances[None,:,None],axis=(1,2))
+            radius=math.sqrt(float(areas[-1])/math.pi)
+            M=8*RHO*radius/(3*math.pi*float(areas[-1]))
+            tau=3*math.pi*radius/(16*C)
+            R=M/tau
+            b0_E=(0.5*M*q*q if term=="b0" else np.zeros(len(q)))
+            np.testing.assert_allclose(raw[:,9],wave_E,rtol=1e-11,atol=1e-20)
+            np.testing.assert_allclose(raw[:,10],b0_E,rtol=1e-11,atol=1e-20)
+            # Derive original passive termination loss ONLY from raw mouth waves.
+            lip_incident=raw[:,4];lip_reflected=raw[:,5]
+            lip_pressure=lip_incident+lip_reflected
+            zlip=impedances[-1]
+            if term=="matched":
+                expected_D=cfg_dt*lip_incident**2/zlip
+                assert np.array_equal(lip_reflected,np.zeros(len(raw)))
+            elif term=="b0":
+                expected_D=cfg_dt*lip_pressure**2/R
+            else:
+                expected_D=np.zeros(len(raw))
+                if term=="closed":
+                    np.testing.assert_array_equal(lip_reflected,lip_incident)
+                else:
+                    np.testing.assert_array_equal(lip_reflected,-lip_incident)
+            np.testing.assert_allclose(raw[:,12],expected_D,rtol=1e-11,atol=1e-20)
+            # Validate spatial FIFO support AND junction scattering against the
+            # original recorded states, not only reported pressures/energies.
+            before=np.concatenate((np.zeros((1,2,16,2)),waves[:-1]),axis=0)
+            np.testing.assert_array_equal(waves[:,:,:,0],before[:,:,:,1])
+            np.testing.assert_array_equal(waves[:,0,0,1],raw[:,2])
+            np.testing.assert_array_equal(waves[:,1,-1,1],raw[:,5])
+            np.testing.assert_array_equal(before[:,0,-1,0],raw[:,4])
+            np.testing.assert_array_equal(before[:,1,0,0],raw[:,3])
+            for j in range(15):
+                zl,zr=impedances[j:j+2]
+                rr=(zr-zl)/(zr+zl)
+                a=before[:,0,j,0]
+                b=before[:,1,j+1,0]
+                predicted_b=rr*a+(1-rr)*b
+                predicted_a=(1+rr)*a-rr*b
+                np.testing.assert_allclose(waves[:,1,j,1],predicted_b,
+                                           rtol=1e-12,atol=1e-14)
+                np.testing.assert_allclose(waves[:,0,j+1,1],predicted_a,
+                                           rtol=1e-12,atol=1e-14)
+            np.testing.assert_allclose(raw[:,2],raw[:,3]+impedances[0]*raw[:,1],
+                                       rtol=1e-12,atol=1e-14)
+            np.testing.assert_allclose(raw[:,6],raw[:,2]+raw[:,3],
+                                       rtol=1e-12,atol=1e-14)
+            np.testing.assert_allclose(raw[:,7],lip_pressure,rtol=1e-12,atol=1e-14)
+            np.testing.assert_allclose(raw[:,8],(lip_incident-lip_reflected)/zlip,
+                                       rtol=1e-12,atol=1e-18)
+            if term=="b0":
+                oldq=np.r_[0.,q[:-1]]
+                np.testing.assert_allclose(q,oldq+cfg_dt*lip_pressure/M,
+                                           rtol=1e-12,atol=1e-16)
+                np.testing.assert_allclose(raw[:,8],(oldq+q)/2+lip_pressure/R,
+                                           rtol=1e-11,atol=1e-16)
+            else:
+                assert np.array_equal(q,np.zeros_like(q))
+            # Reconstruct whole-system signed power from independent state.
+            current=wave_E+b0_E
+            previous=np.r_[0.,current[:-1]]
+            srcwork=cfg_dt*(raw[:,2]+raw[:,3])*raw[:,1]
+            de=current-previous
+            residual=de-srcwork+expected_D
             bound=np.maximum(
-               1e-9*np.maximum.reduce((abs(de),abs(srcwork),loss,np.full(len(raw),1e-20))),
-               1e-12*np.maximum.reduce((prev,current,np.full(len(raw),1e-20))))
-            assert np.all(abs(residual)<=bound),(body,term,"energy mismatch")
-            if term in ("closed","pressure_release"):
-                assert np.array_equal(loss,np.zeros(len(loss)))
-            if term=="pressure_release":
-                assert np.array_equal(raw[:,7],np.zeros(len(raw)))
+               1e-9*np.maximum.reduce((abs(de),abs(srcwork),expected_D,np.full(len(raw),1e-20))),
+               1e-12*np.maximum.reduce((previous,current,np.full(len(raw),1e-20))))
+            assert np.all(abs(residual)<=bound),(body,term,"physical energy mismatch")
+            np.testing.assert_allclose(raw[:,11],srcwork,rtol=1e-11,atol=1e-19)
+            np.testing.assert_allclose(raw[:,13],de,rtol=1e-11,atol=1e-20)
+            np.testing.assert_allclose(raw[:,14],residual,rtol=1e-10,atol=1e-20)
         report[body]={"complex_continuum_relative_errors":{str(n):stored_errors[n] for n in NS},
                       "one_way_s":float(sum(lengths)/C)}
     assert abs(report["M1"]["one_way_s"]/report["M0"]["one_way_s"]-1.1)<1e-12
