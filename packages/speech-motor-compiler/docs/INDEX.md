@@ -86,3 +86,11 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 - [SMC4 Gate B-R CanonicalRequestBoundary design candidate](SMC4_GATE_BR_CANONICAL_REQUEST_DESIGN.md) — finite UTF-8 JSON wire ingress, typed acyclic validated request snapshot, independent raw-submission vs canonical-experiment hashes, malformed-input rejection semantics, resource ceilings and BR01–BR14 prospective falsifiers.
 - [Design Issue #185](https://github.com/ryonakayama234/morphoacoustics/issues/185) and [stopped Gate B Draft #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). This is a **prospective semantic-contract amendment**, not a retroactive cure or adoption of the intentionally RED Gate B software branch.
 - **Status:** `PROPOSED / DESIGN_ONLY / NO_EXECUTABLE_CODE / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`. Requires independent GitHub Codex design review and a recorded design verdict before implementation.
+
+## SMC-4 Gate B-R implementation research (2026-10-25)
+
+- [Frozen ingress-only test protocol](SMC4_GATE_BR_PROTOCOL.md): exact typed UTF-8 JSON wire schema, finite resource ceilings, raw vs canonical SHA, prospective BR01–BR14 fixtures.
+- [Design-only proposal](SMC4_GATE_BR_CANONICAL_REQUEST_DESIGN.md) from stacked [design PR #186](https://github.com/ryonakayama234/morphoacoustics/pull/186).
+- [Research PR #189](https://github.com/ryonakayama234/morphoacoustics/pull/189) and [test-only RED PR #190](https://github.com/ryonakayama234/morphoacoustics/pull/190). Source `../src/morphoacoustics_smc/canonical_ingress.py`; prereg and Codex tests in `../tests/test_smc4_br_*.py`.
+- [SYSTEM ingress-only boundary](SYSTEM.md), [DATA receipt/typed shape](DATA.md), [EXPERIMENTS negative vs green exact-SHA evidence](EXPERIMENTS.md).
+- **`REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`**. Historical [Gate B REVISE](https://github.com/ryonakayama234/morphoacoustics/pull/180) intact; no TaskLexicon plan compiler bridge, Studio or physical audio.
