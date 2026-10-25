@@ -10,6 +10,8 @@ import argparse
 import hashlib
 import importlib.util
 import io
+import os
+import traceback
 import json
 import math
 from pathlib import Path
@@ -232,14 +234,25 @@ def npy_bytes(a):
     stream=io.BytesIO();np.save(stream,np.asarray(a),allow_pickle=False)
     return stream.getvalue()
 
-def run(out):
-    if out.exists():raise FileExistsError(out)
+def _run_science(out):
     bodies=prepared_bodies()
     rng=np.random.default_rng(20261025)
-    saved={};manifest={"schema":"sa2b.b2a.v0","prereg_sha":PREREG,
+    manifest={"schema":"sa2b.b2a.v0","prereg_sha":PREREG,
         "decision":"AWAITING_INDEPENDENT_REVIEW",
         "production":"NOT_ADOPTED","source_sha":"VERIFY_CI_EVIDENCE",
         "bodies":{},"arrival":{},"energy":{},"sha256":{}}
+    def archive(key,array):
+        if key in manifest["sha256"]:raise FileExistsError("duplicate archive key "+key)
+        binary=npy_bytes(array)
+        # Write DURABLY before validating the resulting evidence. Any later
+        # failure leaves source/port states for falsifiable investigation.
+        with (out/key).open("xb") as stream:
+            stream.write(binary)
+            stream.flush()
+            os.fsync(stream.fileno())
+        manifest["sha256"][key]=hashlib.sha256(binary).hexdigest()
+        (out/"PARTIAL_EVIDENCE.json").write_text(
+            json.dumps(manifest,sort_keys=True,indent=2,allow_nan=False)+"\n")
     for name,body in bodies.items():
         manifest["bodies"][name]={
             "preset_id":body["preset_id"],"revision":body["preset_revision"],
@@ -248,7 +261,7 @@ def run(out):
         for n in (2,4,8):
             cfg=config_for(body,n)
             impulse=StaticMultisection(cfg).impulse(int(math.ceil(2*cfg.fs)))
-            saved[f"{name}_n{n}_b0_full_impulse.npy"]=impulse
+            archive(f"{name}_n{n}_b0_full_impulse.npy",impulse)
             # The source-to-mouth first nonzero must reflect actual one-way
             # physical distance despite different impedance junctions.
             first=int(np.flatnonzero(impulse)[0])
@@ -274,16 +287,34 @@ def run(out):
                     waves[tick,0,cell,:]=model.f[cell]
                     waves[tick,1,cell,:]=model.b[cell]
                 inertance_q[tick]=(model.port.q_m3_s if model.port else 0.)
-            saved[f"{name}_{term}_signed_trace.npy"]=tr
-            saved[f"{name}_{term}_wave_states.npy"]=waves
-            saved[f"{name}_{term}_b0_q.npy"]=inertance_q
+            archive(f"{name}_{term}_signed_trace.npy",tr)
+            archive(f"{name}_{term}_wave_states.npy",waves)
+            archive(f"{name}_{term}_b0_q.npy",inertance_q)
             manifest["energy"][f"{name}_{term}"]=energy_gate(tr)
-    out.mkdir(parents=True)
-    for key,arr in sorted(saved.items()):
-        binary=npy_bytes(arr);(out/key).write_bytes(binary)
-        manifest["sha256"][key]=hashlib.sha256(binary).hexdigest()
     (out/"manifest.json").write_text(json.dumps(manifest,indent=2,sort_keys=True,allow_nan=False)+"\n")
     return manifest
+
+
+def run(out):
+    if out.exists():raise FileExistsError(out)
+    out.mkdir(parents=True)
+    (out/"CI_EVIDENCE.txt").write_text(
+        "EXACT_GITHUB_SHA="+os.getenv("GITHUB_SHA","LOCAL_UNVERIFIED")+"\n"
+        "GITHUB_REF="+os.getenv("GITHUB_REF","LOCAL_UNVERIFIED")+"\n"
+        "GITHUB_RUN_ID="+os.getenv("GITHUB_RUN_ID","LOCAL_UNVERIFIED")+"\n")
+    try:
+        return _run_science(out)
+    except BaseException as exc:
+        (out/"FAILED_GATE.json").write_text(json.dumps({
+            "status":"B2A_HOLD_FAILURE_EVIDENCE_PRESERVED",
+            "reason_type":type(exc).__name__,
+            "reason_message":str(exc),
+            "traceback":traceback.format_exc(),
+            "prereg_sha":PREREG,
+            "source_sha":os.getenv("GITHUB_SHA","LOCAL_UNVERIFIED"),
+        },indent=2,sort_keys=True)+"\n")
+        raise
+
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser();parser.add_argument("--out",required=True,type=Path)
