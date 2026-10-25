@@ -117,3 +117,20 @@ def test_out_of_range_and_corrupt_reference_never_fake_physical_validation(
     monkeypatch.setattr(V, "BODY", bad_body)
     with pytest.raises(ValueError, match="FROZEN_BODY_SHA_MISMATCH"):
         V.verified_inputs()
+
+
+def test_zero_or_nonfinite_calibration_cannot_falsely_pass_power_gate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # This deliberately nonconserving two-port is *not* a real duct.
+    # It exposes the zero-source false-PASS identified in Codex review.
+    bad_matrix = np.array([[2.+0j, 0j], [0j, 1.+0j]])
+    bad_load = complex(1e6, 1e5)
+    real_flow = V.tube_load(bad_matrix, bad_load)
+    assert real_flow["power_balance_relative_error"] > .1
+    for invalid_flow in (0.0, -1e-6, float("nan"), float("inf")):
+        monkeypatch.setattr(V, "U_IN", invalid_flow)
+        with pytest.raises(ValueError, match="INVALID_CALIBRATION_SOURCE_FLOW"):
+            V.tube_load(bad_matrix, bad_load)
+    monkeypatch.setattr(V, "U_IN", 1e-6)
+    assert V.tube_load(bad_matrix, bad_load)["power_balance_relative_error"] > .1
