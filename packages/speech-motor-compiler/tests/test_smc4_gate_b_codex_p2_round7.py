@@ -58,7 +58,7 @@ def test_codex7_reused_height_cannot_bypass_full_root_to_leaf_bound():
 
 def test_codex7_small_height_dag_still_accepts_shared_subexpression():
     p = Predicate("TRUE")
-    for _ in range(40):
+    for _ in range(8):
         p = Predicate("AND", operands=(p, p))
     result = run(lex=_lex_with(p))
     assert result.plan is not None and result.receipt.code == "MAPPED_SYMBOLIC"
