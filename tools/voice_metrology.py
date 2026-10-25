@@ -148,7 +148,7 @@ def _pcm_data(wav_bytes: bytes, frames: int) -> np.ndarray:
     return np.frombuffer(pcm, dtype="<i2")
 
 
-def analyze_body(archive: zipfile.ZipFile, body: str) -> dict[str, object]:
+def analyze_body(archive: zipfile.ZipFile, body: str, *, historical_fixture: bool = True) -> dict[str, object]:
     if body not in ("M0", "M1"):
         raise ValueError("UNSUPPORTED_BODY_LABEL")
     header = _limited_read(archive, body + "/manifest.json")
@@ -161,19 +161,25 @@ def analyze_body(archive: zipfile.ZipFile, body: str) -> dict[str, object]:
     source = manifest.get("source", {})
     if (manifest.get("schema_version") != "wg2-creator-static-a-sustain/v0"
             or manifest.get("status") != "SUCCEEDED"
-            or manifest.get("core_commit") != REFERENCE_CORE_SHA
             or b.get("preset_id") != "v3b-axial-" + body
             or b.get("revision") != 1
-            or b.get("preparation_digest") != REFERENCE_BODIES[body][2]
             or not isclose(b.get("length_m", -1), REFERENCE_BODIES[body][1], rel_tol=0, abs_tol=1e-12)
             or source.get("id") != "sv1-prescribed-100hz-lf-rd1"
-            or source.get("sha256_f64") != REFERENCE_SOURCE_SHA
             or o.get("observation_point") != "mouth-port-pressure-not-external-microphone"
             or o.get("sample_rate_hz") != SAMPLE_RATE_HZ
             or o.get("output_samples") not in (12000, 24000)
             or o.get("termination") != "b0"
             or o.get("observation_version") != "wg2-mouth-port-causal-kaiser129/v1"):
         raise ValueError("UNSUPPORTED_FIXTURE_OR_SENSOR")
+    # Historical identity is separate from instrumental signal measurement.
+    # The public CLI ALWAYS uses this pinned identity check. Synthetic tests
+    # may explicitly elect an untrusted control fixture and are labelled so.
+    if historical_fixture and (
+        manifest.get("core_commit") != REFERENCE_CORE_SHA
+        or b.get("preparation_digest") != REFERENCE_BODIES[body][2]
+        or source.get("sha256_f64") != REFERENCE_SOURCE_SHA
+    ):
+        raise ValueError("HISTORICAL_FIXTURE_IDENTITY_MISMATCH")
     sample_count = o["output_samples"]
     native_count = o.get("physics_ticks")
     full_scale = o.get("playback_full_scale_pa")
@@ -242,14 +248,14 @@ def analyze_body(archive: zipfile.ZipFile, body: str) -> dict[str, object]:
     }
 
 
-def analyze_zip(path: Path) -> dict[str, object]:
+def analyze_zip(path: Path, *, historical_fixture: bool = True) -> dict[str, object]:
     with zipfile.ZipFile(path) as archive:
-        bodies = {name: analyze_body(archive, name) for name in ("M0", "M1")}
+        bodies = {name: analyze_body(archive, name, historical_fixture=historical_fixture) for name in ("M0", "M1")}
     sources_equal = bodies["M0"]["source_sha256"] == bodies["M1"]["source_sha256"]
     return {
         "schema_version": SCHEMA,
         "method": "fixed-15-cycle-100hz-dft-50to200ms-mouth-port",
-        "reference_artifact": REFERENCE_ARTIFACT,
+        "reference_artifact": REFERENCE_ARTIFACT if historical_fixture else "SYNTHETIC_TEST_UNTRUSTED",
         "quality_conclusion": "NONE_DIAGNOSTIC_ONLY",
         "comparator_type": (
             "ANATOMY_SENSITIVITY_NOT_OLD_NEW_VOICE"
