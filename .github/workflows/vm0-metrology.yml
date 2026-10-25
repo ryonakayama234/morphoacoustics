@@ -1,0 +1,66 @@
+name: vm0-audited-voice-metrology
+
+on:
+  pull_request:
+    paths:
+      - tools/voice_metrology.py
+      - tests/test_voice_metrology.py
+      - docs/research/voice-metrology/**
+      - .github/workflows/vm0-metrology.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  measure-archived-m0-m1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install reproducible instrument dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Independent synthetic-tone and receipt controls
+        run: python -m pytest -q tests/test_voice_metrology.py
+      - name: Fetch exact historical real M0/M1 physical evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: wg2-prepared-m0-m1-native-physics
+          run-id: 40181810529
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/archived-physical
+      - name: Re-analyze immutable historical pressure/source/WAV
+        run: |
+          cd "$RUNNER_TEMP/archived-physical"
+          zip -qr "$RUNNER_TEMP/vm0-input.zip" M0 M1
+          cd "$GITHUB_WORKSPACE"
+          python tools/voice_metrology.py --zip "$RUNNER_TEMP/vm0-input.zip" --output-json "$RUNNER_TEMP/vm0-report.json"
+          python - <<'PY'
+          import json, math, os
+          p=os.path.join(os.environ['RUNNER_TEMP'], 'vm0-report.json')
+          r=json.load(open(p,encoding='utf8'))
+          assert r['same_source_both_bodies'] is True
+          assert r['quality_conclusion']=='NONE_DIAGNOSTIC_ONLY'
+          m0=r['bodies']['M0']['mouth_monitor_harmonics']['sixth_fraction']
+          m1=r['bodies']['M1']['mouth_monitor_harmonics']['sixth_fraction']
+          assert math.isclose(m0,0.2178818104203,rel_tol=1e-8)
+          assert math.isclose(m1,0.9687061643342,rel_tol=1e-8)
+          assert r['bodies']['M1']['voice_candidacy']=='HOLD_NO_REFERENCE'
+          print('VM0 archive+SHA+PCM+100Hz harmonic calibration PASS, NO voice-quality claim')
+          PY
+      - name: Publish only numeric instrumentation result
+        uses: actions/upload-artifact@v4
+        with:
+          name: vm0-historical-m0-m1-diagnostics
+          path: ${{ runner.temp }}/vm0-report.json
+          retention-days: 90
+          if-no-files-found: error
+
+# Note: the source GH Actions run artifact expires under its retention policy.
+# Before expiry, preserve a permanent immutable fixture in a separately
+# reviewed source-evidence store; this workflow intentionally fails closed
+# rather than silently substituting a different M0/M1 recording.
