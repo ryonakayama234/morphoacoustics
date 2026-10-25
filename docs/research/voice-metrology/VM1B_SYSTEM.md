@@ -21,3 +21,22 @@ flowchart LR
 Physical port `p_mouth,U_mouth` is the 1D mouth-boundary effort/flow pair, **not** a receiver pressure, sample-rate postprocessor, audience audio or listener sound. The source is a **prescribed physical flow**, not self-sustained vocal-fold oscillation. No gain/F0/formant quality inference.
 
 Future extension principle: typed p/U ports and matched provenance are needed for an eventual swappable organ model, but no generic graph-to-WAV solver or universal model ABI is being introduced by this research. The accepted Studio Character/Motion/Scene canvas layout is protected; when UI expansion is necessary, **stop and submit an explicit proposal first**.
+
+## Evidence durability / failure-path contract (2026-10-26)
+
+The instrument computes exact executed-commit/tree identity and source-file SHA-256 **before physics execution**. Missing/dirty code provenance refuses evidence creation rather than mislabeling historical base SHA as the executed engine.
+
+```mermaid
+flowchart LR
+  X["Actual clean git checkout + source hashes"] --> V["Provenance gate"]
+  V --> N["Native model + independent analytic model"]
+  N --> J["Full complex transfer errors and diagnostics"]
+  J --> P{"Measured scientific gates pass?"}
+  P -->|yes| A["Research PASS JSON"]
+  P -->|no| F["Measured scientific FAIL JSON + nonzero exit"]
+  A --> U["Artifact upload: always()"]
+  F --> U
+  Z["Explicit synthetic failure-step control"] --> U
+```
+
+An **execution/system failure before report creation** cannot yield a truthful physical report and must fail visibly; the artifact upload cannot invent lost observations. The synthetic failure artifact is distinctly flagged and is never a real physical verdict. Normal workflow output artifacts remain subject to the 90-day GitHub retention; long-term permanence remains a separate task, [#197](https://github.com/ryonakayama234/morphoacoustics/issues/197).
