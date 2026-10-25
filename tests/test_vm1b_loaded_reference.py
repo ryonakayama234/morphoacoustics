@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from importlib.util import module_from_spec, spec_from_file_location
+from hashlib import sha256
+import json
+import sys
 from math import pi
 from pathlib import Path
 
@@ -115,3 +118,52 @@ def test_invalid_inputs_refuse_without_silent_fallback(tmp_path: Path, monkeypat
     cfg = PassiveWaveguideConfig(tube(2))
     with pytest.raises(ValueError, match="INVALID_PULSE_SCALE"):
         V.impulse_trace(cfg, 0.002, amplitude_scale=float("nan"))
+
+
+def test_executed_checkout_and_source_bytes_are_in_report_provenance() -> None:
+    provenance = V.execution_provenance()
+    assert len(provenance["executed_checkout_git_sha"]) == 40
+    assert len(provenance["executed_git_tree_sha"]) == 40
+    assert provenance["tracked_tree_clean"] is True
+    recorded = provenance["executed_implementation_files_sha256"]
+    assert set(recorded) == set(V.IMPLEMENTATION_PATHS)
+    for path, digest in recorded.items():
+        assert digest == sha256((V.ROOT / path).read_bytes()).hexdigest()
+
+
+def test_mismatched_github_checkout_and_dirty_worktree_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provenance = V.execution_provenance()
+    monkeypatch.setenv("GITHUB_SHA", "0" * 40)
+    with pytest.raises(RuntimeError, match="GITHUB_SHA_CHECKOUT_MISMATCH"):
+        V.execution_provenance()
+    monkeypatch.delenv("GITHUB_SHA")
+    real_git = V._git_output
+    monkeypatch.setattr(
+        V, "_git_output", lambda *args: " M tools/vm1b_loaded_reference.py"
+        if args and args[0] == "status" else real_git(*args)
+    )
+    with pytest.raises(RuntimeError, match="DIRTY_TRACKED_EXECUTED_IMPLEMENTATION"):
+        V.execution_provenance()
+    assert provenance["tracked_tree_clean"]
+
+
+def test_failed_gate_main_persists_json_before_refusing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    output = tmp_path / "gate-failed-report.json"
+    # Dedicated failure injection: preserve the exact scientific failure
+    # verdict and diagnostic values on disk before exiting nonzero.
+    negative = {
+        "gates_pass": False,
+        "scientific_result": "FAIL_NUMERICAL_REFERENCE",
+        "scope": "RESEARCH_ONLY",
+        "numerical_error": {"HpU": 1.5, "Zin": 0.4},
+        "execution_provenance": V.execution_provenance(),
+    }
+    monkeypatch.setattr(V, "run", lambda: negative)
+    monkeypatch.setattr(sys, "argv", ["vm1b", "--out", str(output)])
+    with pytest.raises(SystemExit, match="VM1B_GATE_FAILED"):
+        V.main()
+    assert json.loads(output.read_text(encoding="utf-8")) == negative
