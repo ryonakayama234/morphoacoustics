@@ -49,9 +49,50 @@ jobs:
           assert all(v["improves_every_point"] for v in x["truncation"])
           print("VM-1B numerical consistency passed; B0 physical radiation and voice remain UNVALIDATED")
           PY
-      - uses: actions/upload-artifact@v4
+      - name: Deliberate failed-gate evidence retention control (NOT scientific data)
+        id: expected_failure
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          report=json.loads(Path("vm1b-loaded-transfer.json").read_text(encoding="utf-8"))
+          report["scientific_result"]="SYNTHETIC_FAILED_GATE_ARTIFACT_CONTROL"
+          report["gates_pass"]=False
+          report["synthetic_negative_control"]={
+              "purpose":"TEST_ARTIFACT_RETAINED_WHEN_PRIOR_STEP_FAILS",
+              "science_claim":"NONE",
+              "underlying_physical_measurements_unchanged":True,
+          }
+          Path("vm1b-expected-failure-control.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+              encoding="utf-8"
+          )
+          raise SystemExit("EXPECTED_FAILURE_CONTROL")
+          PY
+      - name: Assert the intentional failure did not destroy diagnostic evidence
+        if: always()
+        env:
+          EXPECTED_OUTCOME: ${{ steps.expected_failure.outcome }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          assert os.environ["EXPECTED_OUTCOME"] == "failure", os.environ["EXPECTED_OUTCOME"]
+          x=json.loads(Path("vm1b-expected-failure-control.json").read_text(encoding="utf-8"))
+          assert x["gates_pass"] is False
+          assert x["scientific_result"] == "SYNTHETIC_FAILED_GATE_ARTIFACT_CONTROL"
+          assert x["synthetic_negative_control"]["science_claim"] == "NONE"
+          assert x["execution_provenance"]["tracked_tree_clean"] is True
+          print("Retained detailed synthetic fail-gate JSON after a real failed CI step")
+          PY
+      - name: Upload numerical evidence even after failed scientific gates
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: vm1b-loaded-transfer-m0-m1
-          path: vm1b-loaded-transfer.json
+          path: |
+            vm1b-loaded-transfer.json
+            vm1b-expected-failure-control.json
           retention-days: 90
-          if-no-files-found: error
+          if-no-files-found: warn
