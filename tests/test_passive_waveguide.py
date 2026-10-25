@@ -6,7 +6,7 @@ from math import isclose, pi, sqrt
 import numpy as np
 import pytest
 
-from morphoacoustics.acoustics.passive_waveguide import (
+from morphoacoustics_waveguide import (
     PassiveWaveguideConfig,
     PassiveWaveguideSession,
     scatter_pressures,
