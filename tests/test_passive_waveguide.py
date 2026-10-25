@@ -180,10 +180,19 @@ def test_archival_differential_identity_rejects_wrong_revision_and_dirty_tree(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Evidence may claim the audited SHA only after revision and tree verification."""
+    from importlib.util import module_from_spec, spec_from_file_location
     from subprocess import CompletedProcess
-    from tools.core_wg1_differential import REFERENCE_SHA, verify_archival_source
 
-    response = {"head": REFERENCE_SHA, "dirty": ""}
+    # CI invokes the `pytest` console entrypoint: repository-root `tools/`
+    # is not a Python package import path, even with an editable src install.
+    script = Path(__file__).resolve().parents[1] / "tools" / "core_wg1_differential.py"
+    spec = spec_from_file_location("core_wg1_differential_under_test", script)
+    assert spec is not None and spec.loader is not None
+    differential = module_from_spec(spec)
+    spec.loader.exec_module(differential)
+    reference_sha = differential.REFERENCE_SHA
+
+    response = {"head": reference_sha, "dirty": ""}
 
     def git_probe(argv: list[str], **kwargs: object) -> CompletedProcess[str]:
         assert argv[:3] == ["git", "-C", str(tmp_path.resolve())]
@@ -193,11 +202,11 @@ def test_archival_differential_identity_rejects_wrong_revision_and_dirty_tree(
         return CompletedProcess(argv, 0, response["dirty"], "")
 
     monkeypatch.setattr("subprocess.run", git_probe)
-    assert verify_archival_source(tmp_path) == REFERENCE_SHA
+    assert differential.verify_archival_source(tmp_path) == reference_sha
     response["head"] = "0" * 40
     with pytest.raises(RuntimeError, match="revision mismatch"):
         verify_archival_source(tmp_path)
-    response["head"] = REFERENCE_SHA
+    response["head"] = reference_sha
     response["dirty"] = " M experiments/053_b2a_static_multisection/run.py"
     with pytest.raises(RuntimeError, match="modified or untracked"):
         verify_archival_source(tmp_path)
