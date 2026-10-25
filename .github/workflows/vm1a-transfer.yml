@@ -38,6 +38,9 @@ jobs:
               assert r['energy_residual_fraction_max']<=1.0
               assert r['measurement']['df_hz']<3.5
               assert len(r['measurement']['points'])==2
+          for name in ('M0-matched','M0-b0','M1-matched','M1-b0'):
+              r=x['runs'][name]
+              print(name,'clock_hz=',r['physics_clock_hz'],'bin_hz=',[round(p['actual_hz'],5) for p in r['measurement']['points']],'H600/H100_dB=',r['measurement']['H600_to_H100_db'])
           print('VM1A bounded physical/measurement gates passed; no voice-quality claim')
           PY
       - uses: actions/upload-artifact@v4
