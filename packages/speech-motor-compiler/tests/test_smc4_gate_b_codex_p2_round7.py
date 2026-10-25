@@ -37,7 +37,7 @@ def test_codex7_shared_predicate_dag_evaluation_must_be_linear_not_exponential()
         assert False, "unmemoized immutable DAG evaluation exceeded bounded runtime"
     assert child.exitcode == 0
     code, mapped = queue.get(timeout=2)
-    assert code == "MAPPED_SYMBOLIC" and mapped
+    assert code == "OK" and mapped
 
 
 def test_codex7_reused_height_cannot_bypass_full_root_to_leaf_bound():
@@ -61,7 +61,7 @@ def test_codex7_small_height_dag_still_accepts_shared_subexpression():
     for _ in range(8):
         p = Predicate("AND", operands=(p, p))
     result = run(lex=_lex_with(p))
-    assert result.plan is not None and result.receipt.code == "MAPPED_SYMBOLIC"
+    assert result.plan is not None and result.receipt.status == "MAPPED_SYMBOLIC"
 
 
 def test_codex7_cyclic_and_operand_permutation_have_same_rejected_fingerprint():
