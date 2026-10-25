@@ -117,3 +117,7 @@ The finite TaskLexicon selector evaluates validated, synthetically declared Klee
 ### Eighth Codex review: the trusted symbolic input boundary
 
 Before generating the unchanged SMC-3 `SymbolicPlan`, Task definitions and timing declarations are validated as explicit, typed, canonicalized requests. Ill-shaped definitions or invalid temporal occurrence coordinates never get to dictionary lookup or event construction. Rejected cyclic predicates receive a deterministic, full-reachable-graph fingerprint, not a 64-step local projection. This is limited **software** semantics for a finite synthetic lexicon only, not proof of a body executing those tasks. [Codex evidence and design limitations](SMC4_GATE_B_CODEX_REVIEW.md).
+
+### Ninth-review generalized ingress integrity
+
+A single general nonrecursive structural fingerprint is computed for all requested lexical, source, context and time inputs **before** untrusted declarations are interpreted. The compiler then performs typed gatekeeping of pronunciation path, finite task lexicon and complete template identifiers, goal-slot candidates, and timing occurrence coordinates before unsafe graph/hash operations. Malformed requests return explicit stage-aware receipts, never a partially executable SymbolicPlan; missing temporal references are diagnosed as a canonically sorted set. See the ninth [external GitHub AI review evidence](SMC4_GATE_B_CODEX_REVIEW.md) for limitations and adopted finite synthetic coverage.
