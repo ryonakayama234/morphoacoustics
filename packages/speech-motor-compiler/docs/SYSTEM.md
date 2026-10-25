@@ -113,3 +113,7 @@ Implemented experimental modules: `src/morphoacoustics_smc/smc4_types.py` (typed
 ### SMC-4 predicate semantics and resource boundary (2026-10-25)
 
 The finite TaskLexicon selector evaluates validated, synthetically declared Kleene conditions through **one shared predicate DAG semantics**: iterative height-bounded validation, cached evaluation of each distinct immutable node, and structurally deterministic request fingerprints for both acyclic supported inputs and rejected cyclic inputs. Caller-supplied malformed or computationally out-of-bounds declarations produce a non-executable rejected receipt; they are **not** converted to false predicates or inferred speech actions. This is a bounded research compiler distinct from Core motor realization and acoustics. See [seventh-round adversarial software review](SMC4_GATE_B_CODEX_REVIEW.md).
+
+### Eighth Codex review: the trusted symbolic input boundary
+
+Before generating the unchanged SMC-3 `SymbolicPlan`, Task definitions and timing declarations are validated as explicit, typed, canonicalized requests. Ill-shaped definitions or invalid temporal occurrence coordinates never get to dictionary lookup or event construction. Rejected cyclic predicates receive a deterministic, full-reachable-graph fingerprint, not a 64-step local projection. This is limited **software** semantics for a finite synthetic lexicon only, not proof of a body executing those tasks. [Codex evidence and design limitations](SMC4_GATE_B_CODEX_REVIEW.md).
