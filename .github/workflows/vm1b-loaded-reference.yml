@@ -1,0 +1,57 @@
+name: vm1b-independent-loaded-transfer-research
+
+on:
+  pull_request:
+    paths:
+      - src/morphoacoustics_waveguide/**
+      - src/morphoacoustics/physical/**
+      - tools/vm1b_loaded_reference.py
+      - tests/test_vm1b_loaded_reference.py
+      - experiments/028_task_field_morphology_transfer/frozen_reference.json
+      - docs/research/voice-metrology/VM1B_**
+      - .github/workflows/vm1b-loaded-reference.yml
+      - pyproject.toml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vm1b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e '.[dev]'
+      - name: Independent analytic laws, negative controls and limited native reference
+        run: python -m pytest -q tests/test_vm1b_loaded_reference.py
+      - name: Original frozen M0/M1 independent full complex transfer vs native physical traces
+        run: |
+          python tools/vm1b_loaded_reference.py --out vm1b-loaded-transfer.json
+          python - <<'PY'
+          import json
+          x=json.load(open("vm1b-loaded-transfer.json", encoding="utf-8"))
+          assert x["schema_version"] == "voice-metrology-loaded-transfer/vm1b"
+          assert x["gates_pass"] is True
+          assert x["physical_validity"] == "INDETERMINATE_REAL_RADIATION"
+          assert x["voice_quality"] == "VOICE_NO_GO_UNCHANGED"
+          assert len(x["cases"]) == 6 and len(x["refinement"]) == 4
+          for name, case in x["cases"].items():
+              assert case["pass"] and case["energy_residual_to_tolerance_max"] <= 1.0
+              assert len(case["point_checks"]) == 2
+              for point in case["point_checks"]:
+                  assert set(point["analytic"]) == {"HpU", "Zin", "HU"}
+                  assert set(point["native"]) == {"HpU", "Zin", "HU"}
+              print(name, "max_complex_rel_error", case["max_complex_relative_error"])
+          assert all(v["improves_every_point"] for v in x["truncation"])
+          print("VM-1B numerical consistency passed; B0 physical radiation and voice remain UNVALIDATED")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vm1b-loaded-transfer-m0-m1
+          path: vm1b-loaded-transfer.json
+          retention-days: 90
+          if-no-files-found: error
