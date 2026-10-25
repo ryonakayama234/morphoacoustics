@@ -15,3 +15,23 @@
 **Status at preregistration:** no GitHub code or CI results are claimed. Results must be appended after actual execution with exact-head CI run, artifact SHA and review status. Preliminary **local** mathematics / prototype was used to assess prospective engineering tolerances; confirmatory CI is not independent of that exploratory tuning. No listener WAV and no quality GO, no renderer acceptance, no Studio change.
 
 **Candidate outcome labels (not predecided):** `NUMERICALLY_CONSISTENT_WITH_DECLARED_B0`, `FAIL_NUMERICAL_REFERENCE`, `INDETERMINATE_REAL_RADIATION`. All accepted calculations remain research-only until Gate C and independent review.
+
+## Actual CI measurement — 2026-10-25 16:25 UTC (after preregistration)
+
+**Exact instrument+test head tested:** `33b95b7570a3eeaa68738b92b4cda4096497a24a`.
+[VM-1B science CI run #40211570360](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40211570360) **SUCCESS**: focused 14 parametrized tests passed, full authentic frozen-M0/M1 standalone six-case instrument reported `NUMERICALLY_CONSISTENT_WITH_DECLARED_B0`, **all three complex physical-port transfers** at nearest 100/600 Hz passed their prospectively stated bounds. Actual research artifact [#12605627758](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40211570360/artifacts/12605627758) stores full real/imag references, native values, per-port relative errors, physics clocks, source/geometry hashes, SI model limitations and n=2/4/8 checks. Retention 90 days; separate permanence task [#197](https://github.com/ryonakayama234/morphoacoustics/issues/197).
+
+| frozen body | boundary | finite impulse time | largest observed complex relative error (HpU/Zin/HU, both frequencies) | preregistered cap |
+|---|---|---:|---:|---:|
+| M0 | matched | 0.30s | 1.1688175779594876e-15 | 1e-9 |
+| M1 | matched | 0.30s | 1.995472778451747e-14 | 1e-9 |
+| M0 | discrete B0 | 0.30s | 4.949774467330014e-05 | 2e-3 |
+| M1 | discrete B0 | 0.30s | 0.0007794892838775678 | 2e-3 |
+| M0 | discrete B0 | 0.60s | 7.748369360739949e-11 | 1e-5 |
+| M1 | discrete B0 | 0.60s | 1.3157280707760298e-08 | 1e-5 |
+
+M0/M1 extension to 0.60s decreases each tested point/physical port's complex error. All four M0/M1×100/600 refinement cases reported monotonic n=2→4→8 approach to the specified continuous-time B0 shunt-law reference. Wrong load cannot masquerade as B0 at the preregistered M0/100Hz control; silence yields no native sound. Separate **general regression, VM-0, SV-1, OG-3 and OG-4** pull-request CI runs passed at this exact head.
+
+**Bounded scientific disposition:** `NUMERICALLY_CONSISTENT_WITH_DECLARED_B0` (same assumed load, independent mathematics and discrete simulator), `INDETERMINATE_REAL_RADIATION` (no independent empirical/higher-fidelity mouth measurement), `VOICE_NO_GO_UNCHANGED` (no external received sound or user audition). This does not mean natural 600Hz resonance, physical Q, viable universal organ connection or species flexibility was validated. Finite-window relative error is not an estimate of uncertainty of the underlying physical law.
+
+**Review/adoption:** Draft PR #201, no release/merge/quality approval. Pending independent Codex review of final amended head; exact-head CI after this evidence commit must be reported separately. No Studio/default UI edits.
