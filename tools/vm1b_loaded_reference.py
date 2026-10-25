@@ -63,7 +63,19 @@ def execution_provenance() -> dict:
     """
     head = _git_output("rev-parse", "--verify", "HEAD")
     tree = _git_output("rev-parse", "--verify", "HEAD^{tree}")
-    parents = _git_output("show", "-s", "--format=%P", "HEAD").split()
+    # --format=%P in a depth-one clone can omit actual parents; raw Git
+    # commit objects retain parent headers even if ancestors are unavailable.
+    raw_commit = _git_output("cat-file", "-p", "HEAD")
+    parent_lines = [line[7:] for line in raw_commit.splitlines()
+                    if line.startswith("parent ")]
+    tree_headers = [line[5:] for line in raw_commit.splitlines()
+                    if line.startswith("tree ")]
+    if tree_headers != [tree] or not all(
+        len(parent) == 40 and all(c in "0123456789abcdef" for c in parent)
+        for parent in parent_lines
+    ):
+        raise RuntimeError("INVALID_RAW_GIT_COMMIT_PROVENANCE")
+    parents = parent_lines
     if len(head) != 40 or len(tree) != 40:
         raise RuntimeError("INVALID_EXECUTED_GIT_REVISION")
     if _git_output("status", "--porcelain=v1", "--untracked-files=no"):
@@ -200,6 +212,7 @@ def impulse_trace(
     pressure_out = np.empty(sample_count, dtype=np.float64)
     flow_out = np.empty(sample_count, dtype=np.float64)
     max_scaled_energy_residual = 0.0
+    energy_failures = []
     session = PassiveWaveguideSession(config)
     prev_energy = 0.0
     for k, u in enumerate(flow):
@@ -216,14 +229,26 @@ def impulse_trace(
         max_scaled_energy_residual = max(
             max_scaled_energy_residual, abs(s.energy_residual_j) / tol
         )
+        if abs(s.energy_residual_j) > tol and len(energy_failures) < 8:
+            energy_failures.append({
+                "tick": k, "energy_residual_j": float(s.energy_residual_j),
+                "energy_tolerance_j": float(tol),
+                "source_work_j": float(s.source_work_j),
+                "delta_stored_energy_j": float(s.delta_stored_energy_j),
+                "outlet_dissipation_j": float(s.outlet_dissipation_j),
+            })
         prev_energy = energy
-    if max_scaled_energy_residual > 1 or not all(
+    # A *finite measured* energy violation must be reported, not lost to an
+    # exception before main() writes JSON. Nonfinite traces remain unmeasurable.
+    if not all(
         np.isfinite(x).all() for x in (pressure_in, pressure_out, flow_out)
     ):
         raise ArithmeticError("NATIVE_ENERGY_OR_FINITE_GATE_FAILED")
     return {
         "U_in": flow, "p_in": pressure_in, "p_mouth": pressure_out,
         "U_mouth": flow_out, "energy_error_to_tolerance_max": max_scaled_energy_residual,
+        "energy_gate_pass": max_scaled_energy_residual <= 1.0,
+        "energy_failure_samples": energy_failures,
     }
 
 
@@ -312,8 +337,11 @@ def measure_case(
         ).hexdigest(),
         "source_volume_m3": float(np.sum(trace["U_in"]) * cfg.timestep_s),
         "energy_residual_to_tolerance_max": trace["energy_error_to_tolerance_max"],
+        "energy_gate_pass": trace["energy_gate_pass"],
+        "energy_failure_samples": trace["energy_failure_samples"],
         "point_checks": checks, "max_complex_relative_error": max_error,
-        "tolerance": tolerance, "pass": max_error <= tolerance,
+        "tolerance": tolerance,
+        "pass": max_error <= tolerance and trace["energy_gate_pass"],
     }
 
 
