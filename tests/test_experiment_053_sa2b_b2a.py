@@ -133,3 +133,45 @@ def test_reversed_anatomy_changes_causal_response(bodies):
     assert not np.array_equal(s.StaticMultisection(cfg).impulse(256),
                               s.StaticMultisection(reverse).impulse(256))
     assert s.junction(1.,0.,1.,10.)[0]!=s.junction(1.,0.,10.,1.)[0]
+
+
+def test_frozen_a_vs_i_is_anatomy_difference_not_a_faked_filter():
+    a=np.asarray(FROZEN["M0"]["a_areas_m2"],float)
+    i=np.asarray(FROZEN["M0"]["i_areas_m2"],float)
+    lengths=(.01,)*16
+    assert not np.array_equal(a,i)
+    ca=s.Config(tuple(a),lengths,2,"b0")
+    ci=s.Config(tuple(i),lengths,2,"b0")
+    # Frozen /i/ is a research geometry control, NOT a CC-A2 prepared identity.
+    wa=s.StaticMultisection(ca).impulse(1024)
+    wi=s.StaticMultisection(ci).impulse(1024)
+    assert not np.allclose(wa,wi,rtol=1e-5,atol=1e-10)
+    assert ca.areas[-1]!=ci.areas[-1]
+    assert s._b0().parameters_from_area(ca.areas[-1],fs=ca.fs).inertance_pa_s2_m3 != (
+           s._b0().parameters_from_area(ci.areas[-1],fs=ci.fs).inertance_pa_s2_m3)
+
+
+def test_pressure_and_volume_flow_continuity_at_every_junction():
+    rng=np.random.default_rng(20261025)
+    for zleft,zright in ((1.,2.),(3.,1.),(1e5,1e7)):
+        for _ in range(30):
+            a,b=rng.normal(size=2)
+            reflected,transmitted=s.junction(a,b,zleft,zright)
+            assert a+reflected==pytest.approx(transmitted+b,rel=1e-12,abs=1e-11)
+            assert (a-reflected)/zleft==pytest.approx(
+                (transmitted-b)/zright,rel=1e-12,abs=1e-11)
+
+
+def test_equal_area_junction_sign_and_wrong_lip_are_detectable():
+    left,right=1.,3.
+    a,b=1.,0.
+    refl,trans=s.junction(a,b,left,right)
+    correct=(right-left)/(right+left)
+    assert refl==pytest.approx(correct)
+    assert -correct!=pytest.approx(correct)
+    assert refl*refl/left+trans*trans/right==pytest.approx(a*a/left,rel=1e-12)
+    # A wrong fixed M0 /a/ lip area cannot be silently reused at /i/.
+    a_lip=float(FROZEN["M0"]["a_areas_m2"][-1])
+    i_lip=float(FROZEN["M0"]["i_areas_m2"][-1])
+    assert a_lip!=i_lip
+    assert s._b0().parameters_from_area(a_lip).zc_pa_s_m3!=s._b0().parameters_from_area(i_lip).zc_pa_s_m3
