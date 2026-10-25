@@ -101,3 +101,9 @@ The third GitHub `@codex review` of exact docs+code SHA `827c66d3a47e077e4600218
 ## SMC-4 Gate B — fourth Codex review, capability-input fail-closed proof
 
 Fourth reviewed SHA `32492597` CI was 16/16 green but Codex found P2: malformed `TaskDefinition.capabilities` strings were tokenized characterwise or raised `TypeError`. The regression suite `test_smc4_gate_b_codex_p2_round4.py` preceded repair: `e5d5948c...` isolated package **RED**. Correction `d57cddc1bb0f9a8b8620039cb695c51e2351d2c8` **16/16 exact-source-SHA SUCCESS** across package/root/SV1 checks. Details and reviewer thread in [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). A subsequent exact docs HEAD review/CI must be recorded independently. No scientific / body / audio gate was performed.
+
+## SMC-4 Gate B — fifth external AI code-review falsification (2026-10-25)
+
+GitHub Codex reviewed SHA `e321d5b71830aef8a5418496013913569b237333` and identified two P2 software bugs: malformed predicate expression can crash or silently become an ineligible alternative; malformed Task-sharing occurrence coordinates can crash hashing/sorting. **RED test-only** `4c74aa657c50983d4ca23ff9e5e079eb72820295`, independent [Python 3.12 failing CI job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40146239323/job/121028079454) (the original candidate was not modified). **Repair source** `e49ecb1ae1ad0e71ca7704e276fecd0d49191ff0`, after the isolated predicate-validation edit `75b346dc37768b306d99a7a5fc563c05ad7b7c8b`. The tests target fail-closed behavior, not Japanese articulation or body/audio truth.
+
+Exact repaired-source CI and a separate final docs-HEAD CI receipt must be recorded without using ancestor results. Details, negative evidence and next independent `@codex review`: [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). Decision remains **REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE** until exact-source green checks and fresh reviewer verdict.
