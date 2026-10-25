@@ -10,7 +10,7 @@ import argparse
 from hashlib import sha256
 import io
 import json
-from math import isfinite, log10, sqrt
+from math import ceil, isclose, isfinite, log10, sqrt
 from pathlib import Path
 import wave
 import zipfile
@@ -32,6 +32,12 @@ EXPECTED_FILES = (
     "audio.wav",
 )
 MAX_BYTES_PER_FILE = 3_000_000
+REFERENCE_CORE_SHA = "8d4a62c6a75394309ef0b18f72cc06f81f265331"
+REFERENCE_SOURCE_SHA = "15e7309ec7cce300a4d45f0c5149f6b4ac9490fc3ae0625ea4e1825b4834ea9d"
+REFERENCE_BODIES = {
+    "M0": (68600.0, 0.16, "sha256:a98d484f8740bf40a419ac117a2deb41ab659dea095577874455aec0713258de"),
+    "M1": (343.0 * 2.0 / 0.011, 0.176, "sha256:d2ec9d17ca1f9c9bdd4f01a68c1c65d3e2c4fa39a84ccd0bf0774755afae6cea"),
+}
 
 
 def f64_digest(x: np.ndarray) -> str:
@@ -73,7 +79,12 @@ def harmonic_signature(
     harmonic_bins = np.arange(1, max_harmonic + 1, dtype=np.int64) * round(cycles)
     spectrum = np.fft.rfft(segment - float(np.mean(segment)))
     powers = np.square(np.abs(spectrum))
-    ac_power = float(np.sum(powers[1:-1])) if count % 2 == 0 else float(np.sum(powers[1:]))
+    # One-sided real FFT power: the Nyquist singleton has half the
+    # weight of each positive-frequency (and negative-frequency) pair.
+    ac_power = (
+        float(np.sum(powers[1:-1]) + 0.5 * powers[-1])
+        if count % 2 == 0 else float(np.sum(powers[1:]))
+    )
     energy = powers[harmonic_bins]
     total = float(np.sum(energy))
     if total <= 1e-30 or ac_power <= 1e-30:
@@ -150,9 +161,13 @@ def analyze_body(archive: zipfile.ZipFile, body: str) -> dict[str, object]:
     source = manifest.get("source", {})
     if (manifest.get("schema_version") != "wg2-creator-static-a-sustain/v0"
             or manifest.get("status") != "SUCCEEDED"
+            or manifest.get("core_commit") != REFERENCE_CORE_SHA
             or b.get("preset_id") != "v3b-axial-" + body
             or b.get("revision") != 1
+            or b.get("preparation_digest") != REFERENCE_BODIES[body][2]
+            or not isclose(b.get("length_m", -1), REFERENCE_BODIES[body][1], rel_tol=0, abs_tol=1e-12)
             or source.get("id") != "sv1-prescribed-100hz-lf-rd1"
+            or source.get("sha256_f64") != REFERENCE_SOURCE_SHA
             or o.get("observation_point") != "mouth-port-pressure-not-external-microphone"
             or o.get("sample_rate_hz") != SAMPLE_RATE_HZ
             or o.get("output_samples") not in (12000, 24000)
@@ -165,8 +180,10 @@ def analyze_body(archive: zipfile.ZipFile, body: str) -> dict[str, object]:
     clock = o.get("physics_clock_hz")
     if (type(native_count) is not int or native_count < sample_count
             or type(full_scale) not in (int, float) or not isfinite(full_scale)
-            or full_scale <= 0 or type(clock) not in (int, float)
-            or not isfinite(clock) or not 60000 <= clock <= 75000):
+            or full_scale != 8.0 or type(clock) not in (int, float)
+            or not isfinite(clock)
+            or not isclose(clock, REFERENCE_BODIES[body][0], rel_tol=1e-12)
+            or native_count != ceil(sample_count * clock / SAMPLE_RATE_HZ)):
         raise ValueError("INVALID_OBSERVER_UNITS_OR_CLOCK")
     files = {}
     receipts = manifest.get("artifacts", {})
@@ -234,7 +251,10 @@ def analyze_zip(path: Path) -> dict[str, object]:
         "method": "fixed-15-cycle-100hz-dft-50to200ms-mouth-port",
         "reference_artifact": REFERENCE_ARTIFACT,
         "quality_conclusion": "NONE_DIAGNOSTIC_ONLY",
-        "comparator_type": "ANATOMY_SENSITIVITY_NOT_OLD_NEW_VOICE",
+        "comparator_type": (
+            "ANATOMY_SENSITIVITY_NOT_OLD_NEW_VOICE"
+            if sources_equal else "INCOMPARABLE_DIFFERENT_SOURCE"
+        ),
         "same_source_both_bodies": sources_equal,
         "native_receiver": "MOUTH_PORT_NOT_FAR_FIELD",
         "bodies": bodies,
