@@ -19,7 +19,7 @@ from .smc4_types import (
     CompileReceipt, CompileResult, GoalSlot, Predicate, PronunciationPath,
     ShareDecision, SlotCandidate, TaskDefinition, TaskLexicon, TemplateBundle,
     TimeAnchor, TimeRelation, canonical_request_fingerprint, digest_payload,
-    evaluate, pick, stable_task_id,
+    evaluate, pick, stable_task_id, valid_predicate,
 )
 
 @dataclass(frozen=True)
@@ -169,6 +169,29 @@ def compile_lexicon(
             return reject("INVALID_PLAN", declared_definition.definition_id,
                           "invalid capability declaration")
         defs[key] = declared_definition
+    # Gate B rule declarations are caller-supplied frozen dataclasses: reject
+    # malformed predicate trees even when they belong to a losing candidate.
+    # In particular, an invalid high-priority EQ must never silently become
+    # FALSE and allow a generic fallback mapping to succeed.
+    for declared_bundle in lexicon.bundles:
+        if not isinstance(declared_bundle, TemplateBundle):
+            return reject("INVALID_PLAN", "invalid bundle declaration")
+        if not valid_predicate(declared_bundle.context):
+            return reject("INVALID_PLAN", declared_bundle.bundle_id,
+                          "invalid bundle predicate")
+        if not isinstance(declared_bundle.slots, tuple):
+            return reject("INVALID_PLAN", declared_bundle.bundle_id,
+                          "invalid slot container")
+        for declared_slot in declared_bundle.slots:
+            if (not isinstance(declared_slot, GoalSlot)
+                    or not isinstance(declared_slot.candidates, tuple)):
+                return reject("INVALID_PLAN", declared_bundle.bundle_id,
+                              "invalid required slot")
+            for declared_candidate in declared_slot.candidates:
+                if (not isinstance(declared_candidate, SlotCandidate)
+                        or not valid_predicate(declared_candidate.context)):
+                    return reject("INVALID_PLAN", declared_bundle.bundle_id,
+                                  declared_slot.slot_id, "invalid slot predicate")
     units_by_id = {u.unit_id: u for u in path.units}
     unsupported_scope_ids: set[str] = set()
     for b in lexicon.bundles:
@@ -229,6 +252,17 @@ def compile_lexicon(
 
     used: set[tuple[str, str]] = set()
     groups: list[_Group] = []
+    if (not isinstance(shares, tuple) or
+            any(not isinstance(s, ShareDecision) for s in shares)):
+        return reject("INVALID_PLAN", "invalid share-decision container")
+    for decision in shares:
+        if (not scalar(decision.episode_id)
+                or not isinstance(decision.members, tuple)
+                or len(decision.members) < 2
+                or any(not isinstance(m, tuple) or len(m) != 2
+                       or not all(scalar(part) for part in m)
+                       for m in decision.members)):
+            return reject("INVALID_PLAN", "malformed share-member coordinate")
     if len({s.episode_id for s in shares}) != len(shares):
         return reject("INVALID_PLAN", "duplicate share episode IDs")
     for decision in sorted(shares, key=lambda s: s.episode_id):
