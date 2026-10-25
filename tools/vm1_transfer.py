@@ -30,7 +30,7 @@ PORTS = ("U_in_m3_s", "p_in_pa", "p_mouth_pa", "U_mouth_m3_s")
 def frozen_bodies() -> tuple[dict[str, Tract1DGeometry], str]:
     """Load immutable Experiment028 anatomical area vector, not a hand-copied vowel."""
     data = FROZEN.read_bytes()
-    digest = sha1(b"blob " + str(len(data)).encode() + b"\\0" + data).hexdigest()
+    digest = sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
     if digest != FROZEN_BLOB_SHA1:
         raise ValueError("FROZEN_BODY_BLOB_MISMATCH")
     reference = json.loads(data)
@@ -238,7 +238,7 @@ def main() -> None:
     args = parser.parse_args()
     output = run()
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\\n", encoding="utf-8")
+    args.out.write_text(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
     print("VM-1A diagnostic created: no voice-quality approval", args.out)
 
 
