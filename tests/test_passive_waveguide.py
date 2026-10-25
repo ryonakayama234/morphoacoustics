@@ -138,7 +138,7 @@ def test_extreme_impedances_do_not_silently_overflow_scattering() -> None:
     [
         (tract(areas=(1e-310,)), 1.21, 343.0),
         (tract(), 1e-300, 1e-300),
-        (tract(1e-300), 1.21, 343.0),
+        (tract(1e-309), 1.21, 343.0),
     ],
 )
 def test_derived_physical_coefficients_must_be_finite(
