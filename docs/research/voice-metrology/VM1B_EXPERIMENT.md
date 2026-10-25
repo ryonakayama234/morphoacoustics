@@ -44,3 +44,17 @@ Exact original reviewed head `a5f6150d65e329a0a1736634b0f60158ad2a5b21` passed s
 Remediation on same VM-1B research branch: checked-out Git commit/tree + SHA256 of actual instrument, waveguide, physical/domain, test and workflow source; refuse dirty/unknown checkout; failure-case JSON written before scientific nonzero exit; unconditional artifact upload and distinct deliberately failing step to verify downstream evidence retention. Focused tests cover executable provenance identity and wrong/dirty checkout refusal as well as the report-first failure path.
 
 No numerical acceptance thresholds, B0 impedance law, source volume, M0/M1 geometry, physical results or scientific claim have been changed in this repair. The negative-control failure JSON is **synthetic test evidence only**, not a physical failure or creator audio result. Updated exact-head CI and an independent exact-head review required before final Gate C disposition. Studio UI remains explicitly frozen.
+
+## Post-Codex round 2 evidence repair — 2026-10-26
+
+Independent review of exact head `acb871a839f4f518676add84c66925c393872d57` found **three additional P2 scientific evidence omissions**, beyond the initial two addressed: shallow-checkout parent provenance; finite measured native energy-gate failure lost before JSON; and conditional diagnostic generation skipped after a failing focused pytest. They are tracked in original [VM-1B Draft #201](https://github.com/ryonakayama234/morphoacoustics/pull/201) and were **not** interpreted as physical validation passes.
+
+**Repair source head:** `4438affee6db65ac2bf4de79d3a76ce03719dd42`.
+- Commit parent list now comes from *raw* `git cat-file -p HEAD` (true parent headers in a depth-one checkout), checked against actual Git tree. A real depth-one isolated Git fetch test is included.
+- Finite energy-ledger violations become `energy_gate_pass=false`, `pass=false` plus bounded `energy_failure_samples` including exact step/residual/tolerance/work/stored energy/loss. Native p/U port traces remain available for diagnostics. Nonfinite traces still refuse non-measurable outputs and cannot be falsely reported as physical data.
+- Separate focused pytest failure cannot silently skip full scientific diagnostic execution: report step has explicit `if: always() && steps.install.outcome == 'success'`, with resulting job still red on test failure. Artifact upload remains `if: always()`.
+- An injected finite bad native energy ledger is executed through the real instrument `main()` in a negative-control test; a failed scientific gate writes an actual full six-case numeric JSON and raises nonzero **after** it is saved.
+
+**Confirmatory CI at repaired code head:** [VM-1B #40244835133](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40244835133) **SUCCESS**, [artifact #12618785603](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40244835133/artifacts/12618785603) with source/fixture provenance and measured complex port traces. At this same source head, Core general tests, VM0, SV1, OG3 and OG4 pull-request workflows also SUCCESS. Measured B0/SA-2A physical truth is **not** claimed; no change to original scientific acceptance thresholds or original frozen geometry.
+
+**Gate verdict:** software/evidence repair test PASS. Physics verdict remains `NUMERICALLY_CONSISTENT_WITH_DECLARED_B0` only; actual human mouth radiation `INDETERMINATE`; voice `NO_GO`. New exact-head independent review **requested but not yet accepted**. All historical reviews and failures remain available; Draft stays unmerged.
