@@ -175,9 +175,14 @@ def test_shallow_clone_reports_actual_raw_commit_parents(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     shallow = tmp_path / "shallow"
+    subprocess.run(["git", "init", "-q", str(shallow)], check=True)
     subprocess.run(
-        ["git", "clone", "--depth", "1", "--quiet", "file://" + str(V.ROOT), str(shallow)],
-        check=True, capture_output=True, text=True,
+        ["git", "fetch", "--quiet", "--depth=1", "file://" + str(V.ROOT), "HEAD"],
+        cwd=shallow, check=True, capture_output=True, text=True,
+    )
+    subprocess.run(
+        ["git", "checkout", "--quiet", "--detach", "FETCH_HEAD"],
+        cwd=shallow, check=True, capture_output=True, text=True,
     )
     def git_in_shallow(*args: str) -> str:
         return subprocess.run(
