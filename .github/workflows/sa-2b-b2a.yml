@@ -1,0 +1,44 @@
+name: SA-2B B2-A Static Prepared Bodies Scientific Gate
+on:
+  push:
+    branches:
+      - research/sa2b-b2a-static-multisection-20261025
+  pull_request:
+    paths:
+      - 'experiments/053_b2a_static_multisection/**'
+      - 'tests/test_experiment_053_sa2b_b2a.py'
+      - 'docs/research/sa-2b-b2a/**'
+      - '.github/workflows/sa-2b-b2a.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scientific:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research requirements
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install 'scipy>=1.11,<2'
+      - name: Independent B0/B1/B1b and B2-A regression tests
+        run: python -m pytest -q tests/test_experiment_050_sa2b_b0.py tests/test_experiment_051_sa2b_b1.py tests/test_experiment_052_sa2b_b1b.py tests/test_experiment_053_sa2b_b2a.py
+      - name: Generate immutable raw anatomy and wave data
+        run: |
+          python experiments/053_b2a_static_multisection/run.py --out "$RUNNER_TEMP/b2a"
+          echo "EXACT_GITHUB_SHA=$GITHUB_SHA" | tee "$RUNNER_TEMP/b2a/CI_EVIDENCE.txt"
+          echo "GITHUB_REF=$GITHUB_REF" | tee -a "$RUNNER_TEMP/b2a/CI_EVIDENCE.txt"
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID" | tee -a "$RUNNER_TEMP/b2a/CI_EVIDENCE.txt"
+      - name: Independent audit from raw bytes, no solver import
+        run: python experiments/053_b2a_static_multisection/independent_audit.py --dir "$RUNNER_TEMP/b2a"
+      - name: Archive raw data even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sa2b-b2a-static-m0-m1-raw
+          path: ${{ runner.temp }}/b2a/
+          if-no-files-found: warn
