@@ -373,10 +373,16 @@ def _predicate_digest(root: Predicate) -> str:
         })
         for identity, node in nodes.items()
     }
-    for _ in range(64):
+    # In an invalid cyclic graph, a changed leaf can sit arbitrarily far
+    # from the cycle (e.g. 70 nested NOT nodes). The number of reachable
+    # distinct nodes bounds every simple source-to-root path, so refine
+    # through the full graph rather than truncating at a fixed radius.
+    # Also bind the reachable graph size in the final failure fingerprint.
+    for _ in range(len(nodes) + 1):
         labels = {identity: render(node, labels)
                   for identity, node in nodes.items()}
-    return labels[id(root)]
+    return digest_payload({"cyclic_nodes": len(nodes),
+                           "refined_root": labels[id(root)]})
 
 
 def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
