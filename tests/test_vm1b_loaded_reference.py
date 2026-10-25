@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from importlib.util import module_from_spec, spec_from_file_location
 from hashlib import sha256
+from dataclasses import replace
+import subprocess
 import json
 import sys
 from math import pi
@@ -167,3 +169,59 @@ def test_failed_gate_main_persists_json_before_refusing(
     with pytest.raises(SystemExit, match="VM1B_GATE_FAILED"):
         V.main()
     assert json.loads(output.read_text(encoding="utf-8")) == negative
+
+
+def test_shallow_clone_reports_actual_raw_commit_parents(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        ["git", "clone", "--depth", "1", "--quiet", "file://" + str(V.ROOT), str(shallow)],
+        check=True, capture_output=True, text=True,
+    )
+    def git_in_shallow(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=shallow, check=True, capture_output=True,
+            text=True,
+        ).stdout.strip()
+    assert git_in_shallow("rev-parse", "--is-shallow-repository") == "true"
+    raw_parents = [line.split(" ", 1)[1]
+                   for line in git_in_shallow("cat-file", "-p", "HEAD").splitlines()
+                   if line.startswith("parent ")]
+    assert len(raw_parents) > 0
+    monkeypatch.setattr(V, "ROOT", shallow)
+    monkeypatch.setenv("GITHUB_SHA", git_in_shallow("rev-parse", "HEAD"))
+    got = V.execution_provenance()
+    assert got["executed_commit_parents"] == raw_parents
+    assert got["executed_checkout_git_sha"] == git_in_shallow("rev-parse", "HEAD")
+
+
+def test_real_energy_gate_failure_serialized_by_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Do not stub run(): inject a bad *finite native step* and retain its ledger."""
+    native = V.PassiveWaveguideSession
+
+    class BadEnergySession:
+        def __init__(self, config):
+            self.session = native(config)
+
+        def step(self, inlet_flow_m3_s):
+            measured = self.session.step(inlet_flow_m3_s)
+            # Do not alter p/U traces, only the measured passivity residual.
+            return replace(measured, energy_residual_j=measured.energy_residual_j + 1e-8)
+
+    monkeypatch.setattr(V, "PassiveWaveguideSession", BadEnergySession)
+    target = tmp_path / "real-energy-gate-failure.json"
+    monkeypatch.setattr(sys, "argv", ["vm1b", "--out", str(target)])
+    with pytest.raises(SystemExit, match="VM1B_GATE_FAILED"):
+        V.main()
+    saved = json.loads(target.read_text(encoding="utf-8"))
+    assert saved["gates_pass"] is False
+    assert saved["scientific_result"] == "FAIL_NUMERICAL_REFERENCE"
+    assert saved["execution_provenance"]["tracked_tree_clean"]
+    assert all(not case["energy_gate_pass"] and not case["pass"]
+               for case in saved["cases"].values())
+    assert all(case["energy_failure_samples"][0]["energy_residual_j"] >= 1e-8
+               for case in saved["cases"].values())
+    assert all(len(case["point_checks"]) == 2 for case in saved["cases"].values())
