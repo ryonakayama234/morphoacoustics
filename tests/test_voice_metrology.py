@@ -81,19 +81,21 @@ def _wav(monitor: np.ndarray, scale: float = 8.0) -> bytes:
     return out.getvalue()
 
 
-def make_zip(path: Path, *, corrupt_pcm: bool = False) -> None:
+def make_zip(path: Path, *, corrupt_pcm: bool = False, scale: float = 8.0,
+             wrong_m0_clock: bool = False, mismatch_sources: bool = False) -> None:
     source = synthetic({100: 1e-6, 600: 1e-8})
     with zipfile.ZipFile(path, "w") as archive:
         for label, clock, length in [("M0", 68600., 0.16), ("M1", 343 * 2 / 0.011, 0.176)]:
             native_count = int(np.ceil(len(source) * clock / 48000))
             mon = synthetic({100: 0.1, 600: 0.02}) if label == "M0" else synthetic({100: 0.01, 600: 0.2})
-            audio = _wav(mon)
+            audio = _wav(mon, scale)
             if corrupt_pcm and label == "M1":
                 patched = bytearray(audio)
                 patched[-1] ^= 1
                 audio = bytes(patched)
+            body_source = source * 2.0 if mismatch_sources and label == "M1" else source
             blobs = {
-                "source_flow_48k.npy": _npy(source),
+                "source_flow_48k.npy": _npy(body_source),
                 "mouth_pressure_native_pa.npy": _npy(np.zeros(native_count)),
                 "mouth_flow_native_m3_s.npy": _npy(np.zeros(native_count)),
                 "mouth_pressure_monitor_48k_pa.npy": _npy(mon),
@@ -106,16 +108,16 @@ def make_zip(path: Path, *, corrupt_pcm: bool = False) -> None:
                          "preparation_digest": "sha256:" + "f" * 64,
                          "length_m": length},
                 "source": {"id": "sv1-prescribed-100hz-lf-rd1",
-                           "sha256_f64": VM.f64_digest(source)},
+                           "sha256_f64": VM.f64_digest(body_source)},
                 "observer": {"observation_point": "mouth-port-pressure-not-external-microphone",
                              "observation_version": "wg2-mouth-port-causal-kaiser129/v1",
                              "sample_rate_hz": 48000,
                              "output_samples": len(source),
                              "termination": "b0",
-                             "physics_clock_hz": clock,
+                             "physics_clock_hz": (60000 if wrong_m0_clock and label == "M0" else clock),
                              "physics_ticks": native_count,
-                             "playback_full_scale_pa": 8.0,
-                             "source_flow_sha256": VM.f64_digest(source),
+                             "playback_full_scale_pa": scale,
+                             "source_flow_sha256": VM.f64_digest(body_source),
                              "physical_pressure_sha256": VM.f64_digest(np.zeros(native_count)),
                              "monitor_pressure_sha256": VM.f64_digest(mon),
                              "wav_sha256": sha256(audio).hexdigest(),
@@ -131,7 +133,7 @@ def make_zip(path: Path, *, corrupt_pcm: bool = False) -> None:
 def test_end_to_end_bundle_and_binary_receipts(tmp_path: Path) -> None:
     filepath = tmp_path / "evidence.zip"
     make_zip(filepath)
-    report = VM.analyze_zip(filepath)
+    report = VM.analyze_zip(filepath, historical_fixture=False)
     assert report["quality_conclusion"] == "NONE_DIAGNOSTIC_ONLY"
     assert report["same_source_both_bodies"] is True
     for label in ("M0", "M1"):
@@ -148,7 +150,7 @@ def test_inconsistent_wav_bytes_are_not_accepted(tmp_path: Path) -> None:
     filepath = tmp_path / "forged.zip"
     make_zip(filepath, corrupt_pcm=True)
     with pytest.raises(ValueError, match="PCM_DOES_NOT_MATCH"):
-        VM.analyze_zip(filepath)
+        VM.analyze_zip(filepath, historical_fixture=False)
 
 
 def test_zip_artifact_receipt_tampering_is_rejected(tmp_path: Path) -> None:
@@ -164,3 +166,36 @@ def test_zip_artifact_receipt_tampering_is_rejected(tmp_path: Path) -> None:
             new.writestr(key, val)
     with pytest.raises(ValueError, match="EVIDENCE_HASH_MISMATCH"):
         VM.analyze_zip(filepath)
+
+
+def test_nyquist_is_not_mislabeled_as_harmonic_coverage() -> None:
+    n = np.arange(12000)
+    mixed = synthetic({100: 1.0}) + (-1.0) ** n
+    record = VM.harmonic_signature(mixed)
+    assert record["harmonic_family_ac_fraction"] == pytest.approx(1.0/3.0, abs=1e-9)
+    assert record["fundamental_fraction"] == pytest.approx(1.0, abs=1e-11)
+
+
+def test_wrong_fullscale_or_body_clock_is_rejected_even_with_valid_hashes(tmp_path: Path) -> None:
+    for options in ({"scale": 16.0}, {"wrong_m0_clock": True}):
+        file = tmp_path / ("fixture_" + list(options)[0] + ".zip")
+        make_zip(file, **options)
+        with pytest.raises(ValueError, match="INVALID_OBSERVER"):
+            VM.analyze_zip(file, historical_fixture=False)
+
+
+def test_different_source_is_explicitly_incomparable(tmp_path: Path) -> None:
+    file = tmp_path / "noncomparable.zip"
+    make_zip(file, mismatch_sources=True)
+    report = VM.analyze_zip(file, historical_fixture=False)
+    assert report["same_source_both_bodies"] is False
+    assert report["comparator_type"] == "INCOMPARABLE_DIFFERENT_SOURCE"
+
+
+def test_historical_pinned_source_cannot_be_replaced_by_coherent_synthetic_fixture(
+    tmp_path: Path,
+) -> None:
+    file = tmp_path / "forged_historical.zip"
+    make_zip(file)
+    with pytest.raises(ValueError, match="HISTORICAL_FIXTURE_IDENTITY_MISMATCH"):
+        VM.analyze_zip(file)
