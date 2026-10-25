@@ -1,0 +1,46 @@
+name: core-wg1-differential
+
+on:
+  push:
+    paths:
+      - src/morphoacoustics_waveguide/**
+      - tools/core_wg1_differential.py
+      - tests/test_passive_waveguide.py
+      - .github/workflows/core-wg1-differential.yml
+      - docs/research/core-passive-waveguide/**
+  pull_request:
+    paths:
+      - src/morphoacoustics_waveguide/**
+      - tools/core_wg1_differential.py
+      - tests/test_passive_waveguide.py
+      - .github/workflows/core-wg1-differential.yml
+      - docs/research/core-passive-waveguide/**
+
+jobs:
+  research-source-differential:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Core candidate
+        uses: actions/checkout@v4
+      - name: Checkout exact independently audited B2-A research source
+        uses: actions/checkout@v4
+        with:
+          ref: 49d56f581036286e534e14835bede895a06327d6
+          path: reference-b2a
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install required candidate and archival science dependencies
+        run: python -m pip install -e '.[dev]' scipy
+      - name: Verify archived source identity
+        run: test "$(git -C reference-b2a rev-parse HEAD)" = "49d56f581036286e534e14835bede895a06327d6"
+      - name: Differential audit for M0/M1, four terminations and all grids
+        run: python tools/core_wg1_differential.py --reference-root reference-b2a --out core-wg1-differential-result.json
+      - name: Retain audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-wg1-differential-evidence
+          path: core-wg1-differential-result.json
+          if-no-files-found: warn
