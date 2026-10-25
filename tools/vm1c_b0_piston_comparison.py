@@ -293,6 +293,13 @@ def main() -> None:
     out.write_text(json.dumps(result, indent=2, sort_keys=True, allow_nan=False)+"\n",
                    encoding="utf-8")
     print("VM-1C", result["research_verdict"], out)
+    for p in result["calibrations"]:
+        if p["radius_m"] == 0.016:
+            print("RADIATION_MODEL_DELTA", "radius_m", p["radius_m"],
+                  "frequency_hz", p["frequency_hz"],
+                  "B0_vs_piston_rel_complex_err", p["model_complex_relative_error"],
+                  "B0_discretization_rel_complex_err", p["native_timestep_complex_relative_error"],
+                  "phase_delta_rad", p["phase_delta_B0_minus_piston_rad"])
     for s in result["port_selectivity"]:
         print(s["body"], s["law"], "H600/H100 dB", s["H600_over_H100_db"])
     if not result["gates_pass"]:
