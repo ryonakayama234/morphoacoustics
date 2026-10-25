@@ -105,3 +105,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 - [Gate B preregistration](SMC4_GATE_B_PROTOCOL.md), [GitHub Codex five-round review / RED→repair ledger](SMC4_GATE_B_CODEX_REVIEW.md), [Issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [stacked Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180).
 - Code: `../src/morphoacoustics_smc/smc4_types.py`, `../src/morphoacoustics_smc/smc4_lexicon.py`; tests: `../tests/test_smc4_gate_b_preregistered.py` and `../tests/test_smc4_gate_b_codex_p2_round5.py`.
 - [SYSTEM architecture diagram](SYSTEM.md), [DATA semantics](DATA.md), [EXPERIMENTS falsifiers/receipts](EXPERIMENTS.md). All synthetic, no Japanese phonetic validation, morphology, physics, Studio, WAV or `main` merge.
+
+### Gate B ongoing adversarial review: sixth round
+
+[Review ledger](SMC4_GATE_B_CODEX_REVIEW.md) now includes six GitHub Codex rounds / 16 material P2s with test-only RED and independent repair commits. New [round-six regression tests](../tests/test_smc4_gate_b_codex_p2_round6.py) prove deep/cyclic fingerprint fail-closed, shared-predicate DAG identity and canonical rejection diagnostics. The corrected research candidate still requires final SHA CI and another exact-HEAD `@codex review`; it is not merged to `main`.
