@@ -373,7 +373,7 @@ def _validate(doc: Any) -> None:
         _frac(x["lag_s"])
 
 
-def _collection_key(field: str, val: Any) -> tuple[str, ...]:
+def _collection_key(field: str, val: Any) -> tuple[str | int, ...]:
     """Normative schema keys, never incidental serialized-field order."""
     if field == "paths":
         return (val["path_id"],)
@@ -389,11 +389,11 @@ def _collection_key(field: str, val: Any) -> tuple[str, ...]:
         return (val["episode_id"],)
     if field == "anchors":
         return (val["unit_id"], val["slot_id"], val["event"],
-                str(val["time_s"]["numerator"]), str(val["time_s"]["denominator"]))
+                val["time_s"]["numerator"], val["time_s"]["denominator"])
     if field == "relations":
         return (val["from_unit"], val["from_slot"], val["from_event"],
                 val["to_unit"], val["to_slot"], val["to_event"],
-                str(val["lag_s"]["numerator"]), str(val["lag_s"]["denominator"]))
+                val["lag_s"]["numerator"], val["lag_s"]["denominator"])
     if field == "members":
         return (val[0], val[1])
     if field in ("capabilities", "target_unit_ids"):
