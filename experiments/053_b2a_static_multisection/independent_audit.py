@@ -14,6 +14,11 @@ RHO=1.21
 C=343.
 FREQS=(200.,400.,600.,1000.,1500.,2200.)
 NS=(2,4,8)
+EXPECTED_DIGESTS={
+    "M0":"sha256:a98d484f8740bf40a419ac117a2deb41ab659dea095577874455aec0713258de",
+    "M1":"sha256:d2ec9d17ca1f9c9bdd4f01a68c1c65d3e2c4fa39a84ccd0bf0774755afae6cea",
+}
+REFERENCE=Path(__file__).resolve().parents[2]/"experiments/028_task_field_morphology_transfer/frozen_reference.json"
 
 def h_analog(f,areas,lengths):
     # Continuum exp(+j omega t) section transfer maps lip->source.
@@ -46,6 +51,10 @@ def load(out):
         assert np.isfinite(arr).all()
         blobs[name]=arr
     assert len(blobs)==30
+    # Frozen reference is outside the experiment-generated manifest; treat it
+    # as an independent input to the provenance oracle.
+    frozen_bytes=REFERENCE.read_bytes()
+    frozen=json.loads(frozen_bytes)
     report={}
     for body in ("M0","M1"):
         spec=manifest["bodies"][body]
@@ -53,9 +62,11 @@ def load(out):
         lengths=np.asarray(spec["lengths_m"],float)
         assert len(areas)==16 and len(lengths)==16
         assert spec["preset_id"]=="v3b-axial-"+body
-        assert spec["revision"]==1 and spec["digest"].startswith("sha256:")
+        assert spec["revision"]==1 and spec["digest"]==EXPECTED_DIGESTS[body]
+        assert spec["backend"]=="fidelity0.tract1d"
         expected_section=.01 if body=="M0" else .011
-        np.testing.assert_allclose(lengths,expected_section,rtol=0,atol=1e-15)
+        np.testing.assert_array_equal(areas,np.asarray(frozen["M0"]["a_areas_m2"],float))
+        np.testing.assert_array_equal(lengths,np.full(16,expected_section,dtype=float))
         stored_errors={}
         for n in NS:
             name=f"{body}_n{n}_b0_full_impulse.npy"
