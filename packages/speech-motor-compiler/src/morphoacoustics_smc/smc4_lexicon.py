@@ -196,12 +196,16 @@ def compile_lexicon(
     # Collect a deterministic diagnostic set; never report first-in-input
     # declaration (F09 order-invariance of rejected experiments).
     invalid_rules: set[str] = set()
+    invalid_bundle_identifier = False
     for declared_bundle in lexicon.bundles:
         if not isinstance(declared_bundle, TemplateBundle):
             invalid_rules.add("malformed bundle declaration")
             continue
+        if not scalar(declared_bundle.bundle_id):
+            invalid_bundle_identifier = True
+            continue
         if (not all(scalar(s) for s in (
-                declared_bundle.bundle_id, declared_bundle.unit_id,
+                declared_bundle.unit_id,
                 declared_bundle.symbol, declared_bundle.profile,
                 declared_bundle.target_scope_kind))
                 or not isinstance(declared_bundle.target_unit_ids, tuple)
@@ -231,6 +235,8 @@ def compile_lexicon(
                             declared_candidate.status))
                         or not valid_predicate(declared_candidate.context)):
                     invalid_rules.add(declared_bundle.bundle_id + "::" + declared_slot.slot_id)
+    if invalid_bundle_identifier:
+        return reject("INVALID_INPUT", "invalid bundle identifier or Unicode scalar")
     if invalid_rules:
         return reject("INVALID_PLAN", "invalid lexicon predicate or declaration",
                       *sorted(invalid_rules))
