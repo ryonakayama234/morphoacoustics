@@ -1,0 +1,32 @@
+# Foundation Chat Program — progress ledger
+
+**Updated:** 2026-10-26 JST  
+**Parent design:** [CHAT_PROGRAM_CHARTER.md](CHAT_PROGRAM_CHARTER.md), [Issue #199](https://github.com/ryonakayama234/morphoacoustics/issues/199).  
+**Status:** S0 evidence/CI **repaired and numerically passing, scientific review pending**; S1 idealized radiation reference **comparison measured, time-domain/biological validation pending**; S2–S6 not adopted.  
+This ledger reports **what is actually measured or implemented**, not that a milestone or product has been accepted.
+
+## Active scientific tasks
+
+| Charter stage | Study & artifact | Recorded outcome | Stop conditions / unresolved |
+|---|---|---|---|
+| S0: traceable metrology | [VM-1A Draft #198](https://github.com/ryonakayama234/morphoacoustics/pull/198), [VM-1B Draft #201](https://github.com/ryonakayama234/morphoacoustics/pull/201) | Frozen M0/M1 native mouth-port impulse + independent 16-section full-complex matrices; exact original source and numeric energy references; repaired missing failed-gate evidence, code provenance, depth-one git commit-parent, pytest failure report path. [VM-1B exact-head CI #40245436112](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40245436112) and other Core checks PASS on source+ledger head `269082d51e24190209e832991ca3c9056883428a`. | Exact-head independent review of all five P2 evidence concerns requested; historical negative reviews must be reconciled, artifacts retain 90 days absent [#197](https://github.com/ryonakayama234/morphoacoustics/issues/197). Numerical B0 agreement **does not validate real lip radiation**. |
+| S1: physically grounded termination | Existing independent baffled-piston **SA-2A Draft #172** (unchanged), new [VM-1C Issue #203](https://github.com/ryonakayama234/morphoacoustics/issues/203) / **stacked** [Draft PR #204](https://github.com/ryonakayama234/morphoacoustics/pull/204) | Preserved SA-2A Bessel/Struve-vs-Rayleigh ideal-baffle reference. Frozen M0/M1: 16mm outlet, full complex Z and `HpU,HU,Zin` measured. At 600Hz, continuous B0/ideal-piston `|ΔZ|/|Zideal|≈0.2472%`; at 2500Hz ≈4.005%. At identical frozen geometries/ideal Uin, `HpU(600)/HpU(100)` ideal-piston **M0 +34.727dB / M1 +55.199dB**, actual n2 B0 **M0 +34.691dB / M1 +55.191dB**. Native-B0 approximation error alone cannot explain large 600Hz selectivity in this *idealized* 1D tube study. [Science CI #40245603466](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40245603466) PASS, with numeric [artifact #12618497145](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40245603466/artifacts/12618497145); general Core tests and OG3/OG4/SV1 PASS on source head `54658954fceb30c8baaba4330f0febe7e4a3abbf`. | This is an **ideal flanged piston reference only**, not real human/animal mouth validation. No causal time-domain passive piston load, receiver or phonation. Independent review pending, SA-2B [#173](https://github.com/ryonakayama234/morphoacoustics/issues/173) remains HOLD, *no B0 replacement committed*. |
+| S2: active self-oscillation | Not started in this work interval | None claimed | Requires causal acoustic source/load and separate preregistration |
+| S3: interchangeable causal organ ports | Not started in this work interval | Existing OG3/OG4 adopted/experimental constraints still in force | Do not freeze universal ABI before >=2 truly interchangeable models and measured body interventions |
+| S4: audibly received sound / creator GO | No new candidate | Original voice product quality still NO-GO | Mouth-port is not listener pressure; do not ask creator to listen to nonvalidated candidates |
+| S5/S6: MotorPersona/species/material/UI | Explicitly deferred | No new source/API/UI or new species support | Studio's approved grayscale Character/Motion/Scene layout is **fully frozen**; stop-and-propose before any UI work |
+
+## Failure ledger / non-successes not erased
+
+- Initial VM-1B Codex found two P2 research evidence defects (lost failure artifact, missing executed code identity); later found three more (shallow parents, finite energy-gate failures dropped, focused pytest preceding diagnostic skips). Implemented research fixes and actual failure-injection regressions; **independent exact-head re-review is still required**.
+- Initial VM-1C [general test run #40245362716](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40245362716) **FAILED** because the standard Core test installation intentionally omits optional SciPy required by SA-2A. Dedicated science run succeeded. Fixed by making the *research test module* skip when SciPy absent, while the dedicated science workflow **explicitly installs SciPy and executes the full oracle gates**. Both general and research CI subsequently green. Historical red run remains visible.
+- No present evidence proves human lip radiation, self-excited larynx, MotorPersona-acoustic identity, arbitrary graph-to-solver execution or natural voice quality. B0/piston comparisons are **not** a license to describe the retained 600Hz peak as physically natural speech.
+
+## Next technical dependency (no UI change)
+
+1. Resolve any final independent VM-1B/VM-1C review findings and preserve the measured failure and normal evidence. Keep Draft until scientific/code audit satisfies the particular gate.
+2. Reinterpret 600Hz concentration considering **inlet boundary, tract geometry, loss, source impedance** because changing B0 to ideal piston alone scarcely altered it. Do not adopt a new boundary merely to suppress a spectral peak.
+3. Before self-excited phonation, [SA-2B #173](https://github.com/ryonakayama234/morphoacoustics/issues/173) tests a causal, stable, passive radiation load against the same *declared flanged geometry* and phase/energy reference, when genuinely needed for two-way feedback.
+4. Then an isolated active source↔tract pilot with explicit airflow energy, tissue motion and load feedback. Separate physical/Bioacoustic/Product gates and require creator approval for any permanent public graph/API or Studio UI change.
+
+**Adoption rule:** `NUMERICALLY_CONSISTENT_WITH_DECLARED_MODEL` and `SA2A_IDEAL_PISTON_COMPARISON_MEASURED` are scoped scientific evidence, not universal physical truth and not creator-quality GO. No Core main merge, no Studio UI edit, no changes to existing Takes or held research code are implied by this ledger.
