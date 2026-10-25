@@ -165,7 +165,7 @@ def test_zip_artifact_receipt_tampering_is_rejected(tmp_path: Path) -> None:
         for key, val in contents.items():
             new.writestr(key, val)
     with pytest.raises(ValueError, match="EVIDENCE_HASH_MISMATCH"):
-        VM.analyze_zip(filepath)
+        VM.analyze_zip(filepath, historical_fixture=False)
 
 
 def test_nyquist_is_not_mislabeled_as_harmonic_coverage() -> None:
