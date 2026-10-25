@@ -205,8 +205,8 @@ def test_archival_differential_identity_rejects_wrong_revision_and_dirty_tree(
     assert differential.verify_archival_source(tmp_path) == reference_sha
     response["head"] = "0" * 40
     with pytest.raises(RuntimeError, match="revision mismatch"):
-        verify_archival_source(tmp_path)
+        differential.verify_archival_source(tmp_path)
     response["head"] = reference_sha
     response["dirty"] = " M experiments/053_b2a_static_multisection/run.py"
     with pytest.raises(RuntimeError, match="modified or untracked"):
-        verify_archival_source(tmp_path)
+        differential.verify_archival_source(tmp_path)
