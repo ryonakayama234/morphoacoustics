@@ -117,3 +117,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 ### Eighth Codex review and final research status
 
 [SMC-4 Gate B Codex review ledger](SMC4_GATE_B_CODEX_REVIEW.md): eight completed GitHub AI software review rounds, 22 material P2, all source failures and repairs preserved. [Round-eight regression tests](../tests/test_smc4_gate_b_codex_p2_round8.py) exercise distant cyclic input identity, malformed time declarations and order-independent invalid-definition receipts. [DATA](DATA.md) describes the corrected boundaries. **Gate B disposition remains reviewer/CI pending, scientific phonetics and physical speech not adopted; no main merge.**
+
+### Ninth Codex audit: generalized caller trust boundary
+
+[Complete review ledger](SMC4_GATE_B_CODEX_REVIEW.md): nine GitHub Codex AI software rounds, 26 P2 findings, original RED test evidence and separate repaired research-only commits. [Round-nine regression tests](../tests/test_smc4_gate_b_codex_p2_round9.py), [DATA](DATA.md) for nonrecursive request fingerprint and identifier/timing guards, and [EXPERIMENTS](EXPERIMENTS.md) for per-SHA results. `REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE` until exact-source/doc CI and clean Codex review.
