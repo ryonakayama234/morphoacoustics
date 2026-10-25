@@ -1,7 +1,7 @@
 """SMC-4 Gate B synthetic research types. No physical or phonetic assertions."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, dataclass, fields, is_dataclass
 from fractions import Fraction
 from hashlib import sha256
 from json import dumps
@@ -128,22 +128,28 @@ class CompileResult:
 
 
 def valid_predicate(predicate: object) -> bool:
-    """Check a caller-built predicate tree before *any* eligibility evaluation.
+    """Validate a finite Strong-Kleene tree by structure, not object identity.
 
-    Dataclass annotations are not runtime guards. Malformed operands, unhashable
-    keys, boolean expected values, unknown operators and cycles must never be
-    treated as FALSE or trigger an uncaught exception. Bounded traversal also
-    rejects adversarially deep or self-referential predicate objects.
+    An immutable Predicate object may be reused as a DAG subtree; only a node
+    that reappears on the active path is cyclic. Depth and node count are bounded
+    so eligibility cannot recurse indefinitely even for a well-typed input.
     """
-    pending: list[object] = [predicate]
-    seen: set[int] = set()
+    pending: list[tuple[object, bool, int]] = [(predicate, False, 0)]
+    active: set[int] = set()
+    validated: set[int] = set()
     while pending:
-        if len(seen) >= 1024:
+        node, leaving, depth = pending.pop()
+        if not isinstance(node, Predicate):
             return False
-        node = pending.pop()
-        if not isinstance(node, Predicate) or id(node) in seen:
+        identity = id(node)
+        if leaving:
+            active.remove(identity)
+            validated.add(identity)
+            continue
+        if identity in validated:
+            continue
+        if identity in active or depth >= 128 or len(validated) + len(active) >= 1024:
             return False
-        seen.add(id(node))
         if not isinstance(node.op, str) or not isinstance(node.key, str) or not isinstance(node.expected, str):
             return False
         if any(0xD800 <= ord(ch) <= 0xDFFF
@@ -160,13 +166,15 @@ def valid_predicate(predicate: object) -> bool:
         elif node.op == "NOT":
             if node.key or node.expected or len(node.operands) != 1:
                 return False
-            pending.extend(node.operands)
         elif node.op in ("AND", "OR"):
             if node.key or node.expected or not node.operands:
                 return False
-            pending.extend(node.operands)
         else:
             return False
+        active.add(identity)
+        pending.append((node, True, depth))
+        pending.extend((child, False, depth + 1)
+                       for child in reversed(node.operands))
     return True
 
 
@@ -256,6 +264,53 @@ _UNORDERED_FIELDS = frozenset({
 })
 
 
+
+def _predicate_digest(root: Predicate) -> str:
+    """Canonical, nonrecursive Predicate DAG fingerprint; cycles stay representable.
+
+    This runs BEFORE declaration validation to bind rejected experiments to
+    their attempted inputs, including invalid deep/cyclic predicate graphs.
+    A reused immutable child and two equal independent children hash alike.
+    """
+    pending: list[tuple[Predicate, bool]] = [(root, False)]
+    active: set[int] = set()
+    hashes: dict[int, str] = {}
+    def atom(value: object) -> object:
+        if value is None or isinstance(value, (str, int, bool)):
+            return value
+        return {"invalid_type": type(value).__name__, "repr": repr(value)}
+    while pending:
+        node, leaving = pending.pop()
+        ident = id(node)
+        if leaving:
+            raw = node.operands
+            if isinstance(raw, tuple):
+                children = [hashes.get(id(child), "CYCLE_OR_INVALID_OPERAND")
+                            if isinstance(child, Predicate)
+                            else digest_payload({"malformed_operand": atom(child)})
+                            for child in raw]
+                if node.op in ("AND", "OR"):
+                    children.sort()
+                operand_repr: object = children
+            else:
+                operand_repr = {"malformed_operands": atom(raw)}
+            hashes[ident] = digest_payload({
+                "op": atom(node.op), "key": atom(node.key),
+                "expected": atom(node.expected), "operands": operand_repr,
+            })
+            active.remove(ident)
+            continue
+        if ident in hashes or ident in active:
+            continue
+        active.add(ident)
+        pending.append((node, True))
+        if isinstance(node.operands, tuple):
+            for child in reversed(node.operands):
+                if isinstance(child, Predicate) and id(child) not in active and id(child) not in hashes:
+                    pending.append((child, False))
+    return hashes[id(root)]
+
+
 def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
     """Deterministic safe fingerprint even for malformed Unicode/runtime data.
 
@@ -266,9 +321,15 @@ def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
     def normalized(value: object, field_name: str = "") -> object:
         if isinstance(value, Fraction):
             return {"rational": [value.numerator, value.denominator]}
+        if isinstance(value, Predicate):
+            return {"predicate_digest": _predicate_digest(value)}
         if is_dataclass(value) and not isinstance(value, type):
+            # asdict() recursively expands arbitrary caller data before we
+            # can validate it, and crashes on deep/cyclic Predicate graphs.
+            shallow = {field.name: getattr(value, field.name)
+                       for field in fields(value)}
             return {"dataclass": type(value).__name__,
-                    "fields": normalized(asdict(value))}
+                    "fields": normalized(shallow)}
         if isinstance(value, Mapping):
             entries = [(str(k), normalized(v, str(k))) for k, v in value.items()]
             return {"entries": sorted(entries, key=lambda entry: entry[0])}
