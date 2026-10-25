@@ -35,3 +35,12 @@ M0/M1 extension to 0.60s decreases each tested point/physical port's complex err
 **Bounded scientific disposition:** `NUMERICALLY_CONSISTENT_WITH_DECLARED_B0` (same assumed load, independent mathematics and discrete simulator), `INDETERMINATE_REAL_RADIATION` (no independent empirical/higher-fidelity mouth measurement), `VOICE_NO_GO_UNCHANGED` (no external received sound or user audition). This does not mean natural 600Hz resonance, physical Q, viable universal organ connection or species flexibility was validated. Finite-window relative error is not an estimate of uncertainty of the underlying physical law.
 
 **Review/adoption:** Draft PR #201, no release/merge/quality approval. Pending independent Codex review of final amended head; exact-head CI after this evidence commit must be reported separately. No Studio/default UI edits.
+
+
+## Codex review findings and evidence-gate repair (2026-10-26; not a scientific amendment)
+
+Exact original reviewed head `a5f6150d65e329a0a1736634b0f60158ad2a5b21` passed six scientific CI groups but **Codex returned two unresolved P2 points**: (1) the workflow discarded report upload on numerical failure, (2) the JSON contained historical `base_main_sha` and frozen-body hashes but did not identify the code that actually executed. Both are evidence integrity failures, **not** new radiation-physics reference measurements.
+
+Remediation on same VM-1B research branch: checked-out Git commit/tree + SHA256 of actual instrument, waveguide, physical/domain, test and workflow source; refuse dirty/unknown checkout; failure-case JSON written before scientific nonzero exit; unconditional artifact upload and distinct deliberately failing step to verify downstream evidence retention. Focused tests cover executable provenance identity and wrong/dirty checkout refusal as well as the report-first failure path.
+
+No numerical acceptance thresholds, B0 impedance law, source volume, M0/M1 geometry, physical results or scientific claim have been changed in this repair. The negative-control failure JSON is **synthetic test evidence only**, not a physical failure or creator audio result. Updated exact-head CI and an independent exact-head review required before final Gate C disposition. Studio UI remains explicitly frozen.
