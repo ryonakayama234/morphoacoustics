@@ -8,6 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+# SA-2A requires experiment-local SciPy, not a new Core runtime dependency.
+# Dedicated VM-1C CI explicitly installs it and runs these tests; the normal
+# Core matrix may omit it and must not fail on a research-only dependency.
+pytest.importorskip("scipy", reason="research-only SA-2A oracle requires scipy")
+
 SCRIPT = Path(__file__).resolve().parents[1] / "tools/vm1c_b0_piston_comparison.py"
 SPEC = spec_from_file_location("vm1c_compare", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
