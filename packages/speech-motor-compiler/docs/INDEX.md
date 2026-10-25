@@ -80,3 +80,9 @@ Second Codex review of `947805bca9ea4615c1027db0745fab4eaddf8c95` found an addit
 Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` found another P2: simultaneous per-unit and multi-unit TemplateBundles could overlap selected pronunciation units without a defined coverage/exclusivity rule. **Original Gate A protocol and Amendments 01/02 are preserved unchanged.**
 
 [SMC4_GATE_A_AMENDMENT_03.md](SMC4_GATE_A_AMENDMENT_03.md) at initial commit `7a80f8b0b016cb51ad5b9c3225cd919acc2cbfbc` narrows first Gate B mapping scope to exactly one selected pronunciation unit per TemplateBundle; multi-unit/overlapping bundles in the requested profile are rejected as `UNSUPPORTED_MAPPING_SCOPE`, not silently accepted or discarded. Context predicates may inspect neighbors without owning their mapping scope. F28–F32 prospective fixtures specify covered/overlapping/missing/ambiguous cases. No SMC-4 code, no scientific adoption or main merge.
+
+## SMC-4 Gate B-R canonical ingress — proposed design only (2026-10-25)
+
+- [SMC4 Gate B-R CanonicalRequestBoundary design candidate](SMC4_GATE_BR_CANONICAL_REQUEST_DESIGN.md) — finite UTF-8 JSON wire ingress, typed acyclic validated request snapshot, independent raw-submission vs canonical-experiment hashes, malformed-input rejection semantics, resource ceilings and BR01–BR14 prospective falsifiers.
+- [Design Issue #185](https://github.com/ryonakayama234/morphoacoustics/issues/185) and [stopped Gate B Draft #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). This is a **prospective semantic-contract amendment**, not a retroactive cure or adoption of the intentionally RED Gate B software branch.
+- **Status:** `PROPOSED / DESIGN_ONLY / NO_EXECUTABLE_CODE / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`. Requires independent GitHub Codex design review and a recorded design verdict before implementation.
