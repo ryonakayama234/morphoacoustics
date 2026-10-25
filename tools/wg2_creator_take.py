@@ -47,6 +47,32 @@ def _core_commit() -> str:
                           check=True, capture_output=True, text=True).stdout.strip()
     if not re.fullmatch(r"[a-f0-9]{40}", head):
         raise RuntimeError("invalid Core source revision")
+    # The Git commit alone does NOT attest local source bytes. In particular
+    # SV1, CC-A2 and the new waveguide can change without changing HEAD.
+    dirty = subprocess.run(
+        ["git", "-C", str(ROOT), "status", "--porcelain=v1",
+         "--untracked-files=all", "--"],
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    if dirty:
+        raise RuntimeError("WG2_CORE_SOURCE_DIRTY: refuses modified or untracked files")
+    flags = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-v", "-z"],
+        check=True, capture_output=True,
+    ).stdout.split(b"\\x00")
+    if any(entry and entry[:1] != b"H" for entry in flags):
+        raise RuntimeError("WG2_CORE_UNSAFE_GIT_INDEX_FLAGS")
+    # Ignored executable source may not show in status; empty bytecode caches
+    # from the present run are not a new source module.
+    ignored = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "--others", "--ignored",
+         "--exclude-standard", "-z", "--", "src", "tools", "experiments"],
+        check=True, capture_output=True,
+    ).stdout.decode("utf-8").split("\\x00")
+    for filename in ignored:
+        if (re.search(r"\\.(py|pyw|pyc|pyo|pth|so|pyd|dll|dylib)$", filename, re.I)
+                and not re.search(r"(^|/)__pycache__/[^/]+\\.pyc$", filename)):
+            raise RuntimeError("WG2_CORE_IGNORED_EXECUTABLE_SOURCE")
     return head
 
 
@@ -97,7 +123,8 @@ def generate(output_dir: Path, *, preset_id: str,
         raise FileExistsError("new exclusive WG2 Take directory required")
     if not output_dir.parent.is_dir():
         raise FileNotFoundError("WG2 parent directory does not exist")
-    # Force inherited source and body audits, before creating any output.
+    # Refuse local changes BEFORE any executable source is imported.
+    authenticated_head = _core_commit()
     sv1 = runpy.run_path(str(SV1_PATH))
     exp, resolution = _prepared_body(preset_id, revision, character_id, sv1)
     source, cycles, envelope = sv1["_source_for_duration"](exp, duration_s)
@@ -149,6 +176,8 @@ def generate(output_dir: Path, *, preset_id: str,
         "observer": fresh.provenance(),
         "artifacts": artifact_receipts,
     }
+    if result["core_commit"] != authenticated_head:
+        raise RuntimeError("WG2_CORE_REVISION_CHANGED_DURING_RENDER")
     # Reuse SV1's reviewed exclusive/no-follow, fsync-before-final-marker publisher.
     sv1["_publish_new_bundle"](output_dir, contents, result)
     return result
