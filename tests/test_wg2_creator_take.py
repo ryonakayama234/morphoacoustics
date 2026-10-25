@@ -91,3 +91,36 @@ def test_fresh_cc_a2_m0_m1_static_physical_takes(tmp_path: Path) -> None:
     with pytest.raises(FileExistsError):
         GENERATE(tmp_path / "v3b-axial-M0", preset_id="v3b-axial-M0",
                  revision=1, character_id="creator-test", duration_s=0.25)
+
+
+def test_source_identity_does_not_accept_dirty_or_hidden_executable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from subprocess import CompletedProcess
+    state = {"dirty": "", "flags": b"H tools/wg2_creator_take.py\x00",
+             "ignored": b""}
+
+    def fake_run(argv: list[str], **kwargs: object) -> CompletedProcess:
+        if "rev-parse" in argv:
+            return CompletedProcess(argv, 0, "f" * 40 + "\n", "")
+        if "status" in argv:
+            return CompletedProcess(argv, 0, state["dirty"], "")
+        if "-v" in argv and "ls-files" in argv:
+            return CompletedProcess(argv, 0, state["flags"], b"")
+        if "--ignored" in argv:
+            return CompletedProcess(argv, 0, state["ignored"], b"")
+        raise AssertionError(argv)
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    assert CLI["_core_commit"]() == "f" * 40
+    state["dirty"] = " M experiments/042_sv1_sustained_vowel/run.py"
+    with pytest.raises(RuntimeError, match="SOURCE_DIRTY"):
+        CLI["_core_commit"]()
+    state["dirty"] = ""
+    state["flags"] = b"S tools/wg2_creator_take.py\x00"
+    with pytest.raises(RuntimeError, match="UNSAFE_GIT_INDEX"):
+        CLI["_core_commit"]()
+    state["flags"] = b"H tools/wg2_creator_take.py\x00"
+    state["ignored"] = b"src/morphoacoustics_waveguide/sitecustomize.py\x00"
+    with pytest.raises(RuntimeError, match="IGNORED_EXECUTABLE"):
+        CLI["_core_commit"]()
