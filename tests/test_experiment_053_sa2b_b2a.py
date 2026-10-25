@@ -175,3 +175,32 @@ def test_equal_area_junction_sign_and_wrong_lip_are_detectable():
     i_lip=float(FROZEN["M0"]["i_areas_m2"][-1])
     assert a_lip!=i_lip
     assert s._b0().parameters_from_area(a_lip).zc_pa_s_m3!=s._b0().parameters_from_area(i_lip).zc_pa_s_m3
+
+
+def test_failed_gate_retains_source_receipt_and_signed_raw_physical_states(tmp_path,bodies,monkeypatch):
+    # Cheap purposeful fault injection: skip long frequency campaign, then fail
+    # the FIRST physical energy gate only AFTER signed wave/q trace publication.
+    def fast_fake_impulse(self,ticks,amplitude=1e-6):
+        result=np.zeros(self.cfg.n+1)
+        result[-1]=1.0
+        return result
+    monkeypatch.setattr(s.StaticMultisection,"impulse",fast_fake_impulse)
+    monkeypatch.setattr(s,"prepared_bodies",lambda:bodies)
+    monkeypatch.setattr(s,"energy_gate",lambda tr: (_ for _ in ()).throw(
+        AssertionError("intentional physical gate failure for evidence retention")))
+    dest=tmp_path/"failed-evidence"
+    with pytest.raises(AssertionError,match="intentional physical gate failure"):
+        s.run(dest)
+    assert (dest/"CI_EVIDENCE.txt").is_file()
+    assert (dest/"FAILED_GATE.json").is_file()
+    failure=json.loads((dest/"FAILED_GATE.json").read_text())
+    assert failure["status"]=="B2A_HOLD_FAILURE_EVIDENCE_PRESERVED"
+    assert "intentional physical gate failure" in failure["reason_message"]
+    partial=json.loads((dest/"PARTIAL_EVIDENCE.json").read_text())
+    for label in ("M0_n2_b0_full_impulse.npy","M0_b0_signed_trace.npy",
+                  "M0_b0_wave_states.npy","M0_b0_b0_q.npy"):
+        assert (dest/label).is_file()
+        assert label in partial["sha256"]
+        import hashlib
+        assert hashlib.sha256((dest/label).read_bytes()).hexdigest()==partial["sha256"][label]
+    assert not (dest/"manifest.json").exists()
