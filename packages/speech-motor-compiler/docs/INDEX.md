@@ -121,3 +121,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 ### Ninth Codex audit: generalized caller trust boundary
 
 [Complete review ledger](SMC4_GATE_B_CODEX_REVIEW.md): nine GitHub Codex AI software rounds, 26 P2 findings, original RED test evidence and separate repaired research-only commits. [Round-nine regression tests](../tests/test_smc4_gate_b_codex_p2_round9.py), [DATA](DATA.md) for nonrecursive request fingerprint and identifier/timing guards, and [EXPERIMENTS](EXPERIMENTS.md) for per-SHA results. `REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE` until exact-source/doc CI and clean Codex review.
+
+### Gate B STOP — formal REVISE decision (2026-10-25)
+
+[**SMC4_GATE_B_DECISION_20261025.md**](SMC4_GATE_B_DECISION_20261025.md): ten Codex AI software review rounds, **28 P2 total / two unresolved**, source-unmodified intentionally RED final falsifiers, failed F09/provenance integrity on malformed runtime object graphs. Candidate Draft PR #180 remains unmerged; **`REVISE / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`**. No new implementation may proceed under the existing general Python-container contract until a versioned canonical ingress design amendment is agreed and preregistered. [Full review ledger](SMC4_GATE_B_CODEX_REVIEW.md), [EXPERIMENTS](EXPERIMENTS.md).
