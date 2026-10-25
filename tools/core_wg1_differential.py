@@ -10,6 +10,7 @@ import argparse
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -22,7 +23,33 @@ from morphoacoustics_waveguide import (
 REFERENCE_SHA = "49d56f581036286e534e14835bede895a06327d6"
 
 
+def verify_archival_source(reference_root: Path) -> str:
+    """Fail closed on wrong revision, local edits and added source files.
+
+    Identity must be checked before importing archival Python code, since
+    importing it may legitimately create ignored bytecode caches.
+    """
+    root = reference_root.resolve()
+    try:
+        head = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--verify", "HEAD"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        dirty = subprocess.run(
+            ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=all"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError("archival B2-A reference is not a verifiable git checkout") from exc
+    if head != REFERENCE_SHA:
+        raise RuntimeError(f"archival B2-A reference revision mismatch: {head}")
+    if dirty:
+        raise RuntimeError("archival B2-A reference has modified or untracked files")
+    return head
+
+
 def run(reference_root: Path) -> dict[str, object]:
+    verified_reference_sha = verify_archival_source(reference_root)
     src = reference_root / "experiments" / "053_b2a_static_multisection" / "run.py"
     if not src.is_file():
         raise FileNotFoundError("the pinned B2-A source checkout is missing")
@@ -114,7 +141,7 @@ def run(reference_root: Path) -> dict[str, object]:
                         counts["ticks"] += 1
                     counts["cases"] += 1
     return {
-        "reference_exact_sha": REFERENCE_SHA,
+        "reference_exact_sha": verified_reference_sha,
         "subject": "CORE-WG-1 branch under workflow checkout",
         "bodies": ["M0", "M1"],
         "cells_per_section": [2, 4, 8],
