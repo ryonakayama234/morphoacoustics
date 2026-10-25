@@ -109,3 +109,7 @@ flowchart LR
 ```
 
 Implemented experimental modules: `src/morphoacoustics_smc/smc4_types.py` (typed lexicon predicates and receipt) and `smc4_lexicon.py` (compile into unchanged SMC-3 SymbolicPlan). New Gate B candidate stays strictly **synthetic-only**, *not* a phonetics, movement, sound or Studio layer. External AI reviewer: GitHub Codex, [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Fifth-round fail-closed review details: [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). No main merge.
+
+### SMC-4 predicate semantics and resource boundary (2026-10-25)
+
+The finite TaskLexicon selector evaluates validated, synthetically declared Kleene conditions through **one shared predicate DAG semantics**: iterative height-bounded validation, cached evaluation of each distinct immutable node, and structurally deterministic request fingerprints for both acyclic supported inputs and rejected cyclic inputs. Caller-supplied malformed or computationally out-of-bounds declarations produce a non-executable rejected receipt; they are **not** converted to false predicates or inferred speech actions. This is a bounded research compiler distinct from Core motor realization and acoustics. See [seventh-round adversarial software review](SMC4_GATE_B_CODEX_REVIEW.md).
