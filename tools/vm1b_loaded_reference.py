@@ -32,7 +32,7 @@ SCHEMA = "voice-metrology-loaded-transfer/vm1b"
 
 def load_bodies() -> tuple[dict[str, Tract1DGeometry], str]:
     data = FROZEN.read_bytes()
-    digest = sha1(b"blob " + str(len(data)).encode() + b"\\0" + data).hexdigest()
+    digest = sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
     if digest != BLOB_SHA1:
         raise ValueError("FROZEN_BODY_BLOB_MISMATCH")
     j = json.loads(data)
@@ -354,7 +354,7 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(
         json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
-        + "\\n", encoding="utf-8"
+        + "\n", encoding="utf-8"
     )
     print("VM-1B", report["scientific_result"], args.out)
     if not report["gates_pass"]:
