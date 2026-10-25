@@ -386,39 +386,79 @@ def _predicate_digest(root: Predicate) -> str:
 
 
 def canonical_request_fingerprint(request: Mapping[str, object]) -> str:
-    """Deterministic safe fingerprint even for malformed Unicode/runtime data.
+    """Cycle-safe, nonrecursive, canonical hash of the FULL attempted input.
 
-    Sort genuinely unordered declarations; preserve ordered pairs and
-    direction-sensitive tuples. Do not use Python repr of the entire lexicon,
-    since it is ordering-sensitive and not stable under source reordering.
+    The fingerprint is calculated before any caller input is validated so
+    malformed nested containers must be serializable without arbitrary
+    recursion or dataclass expansion. Each child hashes bottom-up, preserving
+    all depths; non-predicate cycles receive an explicit back-edge token.
+    Actual Predicate graphs have a stronger independent canonical digest.
+    Semantically unordered field collections are sorted by child content.
     """
-    def normalized(value: object, field_name: str = "") -> object:
+    def leaf(value: object) -> str | None:
         if isinstance(value, Fraction):
-            return {"rational": [value.numerator, value.denominator]}
+            return digest_payload({"rational": [value.numerator, value.denominator]})
         if isinstance(value, Predicate):
-            return {"predicate_digest": _predicate_digest(value)}
-        if is_dataclass(value) and not isinstance(value, type):
-            # asdict() recursively expands arbitrary caller data before we
-            # can validate it, and crashes on deep/cyclic Predicate graphs.
-            shallow = {field.name: getattr(value, field.name)
-                       for field in fields(value)}
-            return {"dataclass": type(value).__name__,
-                    "fields": normalized(shallow)}
-        if isinstance(value, Mapping):
-            entries = [(str(k), normalized(v, str(k))) for k, v in value.items()]
-            return {"entries": sorted(entries, key=lambda entry: entry[0])}
-        if isinstance(value, (tuple, list, set, frozenset)):
-            values = [normalized(item) for item in value]
-            if field_name in _UNORDERED_FIELDS or isinstance(value, (set, frozenset)):
-                values.sort(key=lambda item: dumps(item, sort_keys=True,
-                                                  ensure_ascii=True))
-            return values
+            return digest_payload({"predicate_digest": _predicate_digest(value)})
         if value is None or isinstance(value, (str, bool, int)):
-            return value
-        # Nonfinite/unsupported values are fingerprinted, not executed as
-        # valid script input; their public validation remains separate.
-        return {"unrecognized_type": type(value).__name__, "repr": repr(value)}
+            return digest_payload({"atomic_type": type(value).__name__, "value": value})
+        if not (is_dataclass(value) or isinstance(
+                value, (Mapping, tuple, list, set, frozenset))):
+            return digest_payload({"unknown_type": type(value).__name__,
+                                   "repr": repr(value)})
+        return None
 
-    encoded = dumps(normalized(request), sort_keys=True, ensure_ascii=True,
-                    separators=(",", ":"), allow_nan=False)
-    return sha256(encoded.encode("utf-8")).hexdigest()
+    def children(value: object) -> list[tuple[str, object, str]]:
+        if is_dataclass(value) and not isinstance(value, type):
+            return [(field.name, getattr(value, field.name), field.name)
+                    for field in fields(value)]
+        if isinstance(value, Mapping):
+            return sorted(((str(k), v, str(k)) for k, v in value.items()),
+                          key=lambda entry: entry[0])
+        if isinstance(value, (tuple, list, set, frozenset)):
+            return [("", item, "") for item in value]
+        return []
+
+    done: dict[tuple[int, str], str] = {}
+    active: set[int] = set()
+    pending: list[tuple[object, str, bool]] = [(request, "", False)]
+    while pending:
+        value, field_name, leaving = pending.pop()
+        key = (id(value), field_name)
+        if not leaving:
+            if key in done:
+                continue
+            atomic = leaf(value)
+            if atomic is not None:
+                done[key] = atomic
+                continue
+            if id(value) in active:
+                done[key] = digest_payload({"cycle_backedge": type(value).__name__})
+                continue
+            active.add(id(value))
+            pending.append((value, field_name, True))
+            pending.extend((child, label, False) for _, child, label
+                           in reversed(children(value)))
+            continue
+        items = children(value)
+        if is_dataclass(value) and not isinstance(value, type):
+            parts: object = [
+                (name, done[(id(child), child_name)])
+                for name, child, child_name in items]
+            kind = "dataclass:" + type(value).__name__
+        elif isinstance(value, Mapping):
+            parts = [(name, done[(id(child), child_name)])
+                     for name, child, child_name in items]
+            kind = "mapping"
+        else:
+            elements = [done[(id(child), child_name)]
+                        for _, child, child_name in items]
+            if field_name in _UNORDERED_FIELDS or isinstance(
+                    value, (set, frozenset)):
+                elements.sort()
+            parts = elements
+            kind = type(value).__name__
+        done[key] = digest_payload({"kind": kind, "children": parts})
+        active.remove(id(value))
+    return digest_payload({"schema": "smc4-request-structural/v1",
+                           "root": done[(id(request), "")]})
