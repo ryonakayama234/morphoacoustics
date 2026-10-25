@@ -14,7 +14,7 @@ import sys
 
 import numpy as np
 
-from morphoacoustics.acoustics.passive_waveguide import (
+from morphoacoustics_waveguide import (
     PassiveWaveguideConfig,
     PassiveWaveguideSession,
 )
