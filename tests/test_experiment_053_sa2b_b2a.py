@@ -197,8 +197,8 @@ def test_failed_gate_retains_source_receipt_and_signed_raw_physical_states(tmp_p
     assert failure["status"]=="B2A_HOLD_FAILURE_EVIDENCE_PRESERVED"
     assert "intentional physical gate failure" in failure["reason_message"]
     partial=json.loads((dest/"PARTIAL_EVIDENCE.json").read_text())
-    for label in ("M0_n2_b0_full_impulse.npy","M0_b0_signed_trace.npy",
-                  "M0_b0_wave_states.npy","M0_b0_b0_q.npy"):
+    for label in ("M0_n2_b0_full_impulse.npy","M0_closed_signed_trace.npy",
+                  "M0_closed_wave_states.npy","M0_closed_b0_q.npy"):
         assert (dest/label).is_file()
         assert label in partial["sha256"]
         import hashlib
