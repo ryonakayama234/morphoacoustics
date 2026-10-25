@@ -155,20 +155,30 @@ def compile_lexicon(
         return reject("UNSUPPORTED_MAPPING_SCOPE", "overlapping selected occurrences")
 
     defs: dict[tuple[str, str], TaskDefinition] = {}
+    invalid_definitions: set[str] = set()
     for declared_definition in lexicon.definitions:
+        if not isinstance(declared_definition, TaskDefinition):
+            invalid_definitions.add("malformed TaskDefinition declaration")
+            continue
+        declaration_valid = all(scalar(s) for s in (
+            declared_definition.definition_id, declared_definition.semantic_revision,
+            declared_definition.variable, declared_definition.value_domain,
+            declared_definition.goal_kind, declared_definition.applicability_domain))
+        if not declaration_valid:
+            invalid_definitions.add("malformed TaskDefinition declaration")
+            continue
         key = (declared_definition.definition_id, declared_definition.semantic_revision)
-        if (not all(scalar(s) for s in (
-                declared_definition.definition_id, declared_definition.semantic_revision,
-                declared_definition.variable, declared_definition.value_domain,
-                declared_definition.goal_kind, declared_definition.applicability_domain))
-                or key in defs):
-            return reject("INVALID_PLAN", "duplicate or malformed TaskDefinition")
+        if key in defs:
+            invalid_definitions.add(declared_definition.definition_id)
+            continue
         caps = declared_definition.capabilities
         if (not isinstance(caps, tuple) or any(not scalar(cap) for cap in caps)
                 or len(set(caps)) != len(caps)):
-            return reject("INVALID_PLAN", declared_definition.definition_id,
-                          "invalid capability declaration")
+            invalid_definitions.add(declared_definition.definition_id)
+            continue
         defs[key] = declared_definition
+    if invalid_definitions:
+        return reject("INVALID_PLAN", *sorted(invalid_definitions))
     # Every malformed rule is rejected, including losing competitors.
     # Collect a deterministic diagnostic set; never report first-in-input
     # declaration (F09 order-invariance of rejected experiments).
@@ -315,20 +325,36 @@ def compile_lexicon(
                                  for g in groups for o in g.members}))
     if coordination_kind != "EXACT_EVENTS":
         return reject("UNSUPPORTED_COORDINATION", coordination_kind)
+    # Frozen dataclass hints are not runtime input validation. Validate the
+    # entire timing declaration shape BEFORE hashing/sorting coordinates or
+    # looking them up in the graph. No partial SymbolicPlan on any failure.
+    if (not isinstance(anchors, tuple) or
+            any(not isinstance(a, TimeAnchor)
+                or not scalar(a.unit_id) or not scalar(a.slot_id)
+                or not isinstance(a.event, Event)
+                or not isinstance(a.time_s, Fraction)
+                for a in anchors)):
+        return reject("INVALID_PLAN", "invalid time anchor declaration")
+    if (not isinstance(relations, tuple) or
+            any(not isinstance(q, TimeRelation)
+                or not all(scalar(v) for v in
+                           (q.from_unit, q.from_slot, q.to_unit, q.to_slot))
+                or not isinstance(q.from_event, Event)
+                or not isinstance(q.to_event, Event)
+                or not isinstance(q.lag_s, Fraction)
+                for q in relations)):
+        return reject("INVALID_PLAN", "invalid time relation declaration")
     prepared_anchors: list[EventAnchor] = []
     prepared_relations: list[CouplingConstraint] = []
     for a in anchors:
         key = (a.unit_id, a.slot_id)
-        if key not in by_occ or not isinstance(a.event, Event) or not isinstance(a.time_s, Fraction):
+        if key not in by_occ:
             return reject("INVALID_PLAN", "invalid anchor", str(key))
         prepared_anchors.append(EventAnchor(by_occ[key], a.event, a.time_s))
     for relation in relations:
         first_key = (relation.from_unit, relation.from_slot)
         last_key = (relation.to_unit, relation.to_slot)
-        if (first_key not in by_occ or last_key not in by_occ
-                or not isinstance(relation.from_event, Event)
-                or not isinstance(relation.to_event, Event)
-                or not isinstance(relation.lag_s, Fraction)):
+        if first_key not in by_occ or last_key not in by_occ:
             return reject("INVALID_PLAN", "invalid coupling", str(first_key), str(last_key))
         prepared_relations.append(CouplingConstraint(
             by_occ[first_key], relation.from_event, by_occ[last_key],
