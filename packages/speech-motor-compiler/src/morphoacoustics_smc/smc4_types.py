@@ -126,6 +126,50 @@ class CompileResult:
     receipt: CompileReceipt
 
 
+
+def valid_predicate(predicate: object) -> bool:
+    """Check a caller-built predicate tree before *any* eligibility evaluation.
+
+    Dataclass annotations are not runtime guards. Malformed operands, unhashable
+    keys, boolean expected values, unknown operators and cycles must never be
+    treated as FALSE or trigger an uncaught exception. Bounded traversal also
+    rejects adversarially deep or self-referential predicate objects.
+    """
+    pending: list[object] = [predicate]
+    seen: set[int] = set()
+    while pending:
+        if len(seen) >= 1024:
+            return False
+        node = pending.pop()
+        if not isinstance(node, Predicate) or id(node) in seen:
+            return False
+        seen.add(id(node))
+        if not isinstance(node.op, str) or not isinstance(node.key, str) or not isinstance(node.expected, str):
+            return False
+        if any(0xD800 <= ord(ch) <= 0xDFFF
+               for part in (node.op, node.key, node.expected) for ch in part):
+            return False
+        if not isinstance(node.operands, tuple):
+            return False
+        if node.op in ("TRUE", "FALSE"):
+            if node.key or node.expected or node.operands:
+                return False
+        elif node.op == "EQ":
+            if not node.key or node.operands:
+                return False
+        elif node.op == "NOT":
+            if node.key or node.expected or len(node.operands) != 1:
+                return False
+            pending.extend(node.operands)
+        elif node.op in ("AND", "OR"):
+            if node.key or node.expected or not node.operands:
+                return False
+            pending.extend(node.operands)
+        else:
+            return False
+    return True
+
+
 def evaluate(predicate: Predicate, facts: Mapping[str, str]) -> str:
     """Strong Kleene three-valued logic with no guessed context facts."""
     if predicate.op == "TRUE":
