@@ -37,14 +37,14 @@ jobs:
         run: python -m pytest -v tests/test_wg2_creator_take.py
       - name: Publish replayable evidence (no false passing marker)
         run: |
-          mkdir wg2-evidence
-          PYTHONPATH=src python tools/wg2_creator_take.py --body v3b-axial-M0 --revision 1 --character-id ci_creator --duration 0.25 --output-dir wg2-evidence/M0 > wg2-evidence/M0-summary.json
-          PYTHONPATH=src python tools/wg2_creator_take.py --body v3b-axial-M1 --revision 1 --character-id ci_creator --duration 0.25 --output-dir wg2-evidence/M1 > wg2-evidence/M1-summary.json
-          PYTHONPATH=src python tools/wg2_creator_take.py --verify --output-dir wg2-evidence/M0
-          PYTHONPATH=src python tools/wg2_creator_take.py --verify --output-dir wg2-evidence/M1
+          mkdir -p "$RUNNER_TEMP/wg2-evidence"
+          PYTHONPATH=src python tools/wg2_creator_take.py --body v3b-axial-M0 --revision 1 --character-id ci_creator --duration 0.25 --output-dir "$RUNNER_TEMP/wg2-evidence/M0" > "$RUNNER_TEMP/wg2-evidence/M0-summary.json"
+          PYTHONPATH=src python tools/wg2_creator_take.py --body v3b-axial-M1 --revision 1 --character-id ci_creator --duration 0.25 --output-dir "$RUNNER_TEMP/wg2-evidence/M1" > "$RUNNER_TEMP/wg2-evidence/M1-summary.json"
+          PYTHONPATH=src python tools/wg2_creator_take.py --verify --output-dir "$RUNNER_TEMP/wg2-evidence/M0"
+          PYTHONPATH=src python tools/wg2_creator_take.py --verify --output-dir "$RUNNER_TEMP/wg2-evidence/M1"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: wg2-prepared-m0-m1-native-physics
-          path: wg2-evidence/
+          path: ${{ runner.temp }}/wg2-evidence/
           retention-days: 90
           if-no-files-found: error
