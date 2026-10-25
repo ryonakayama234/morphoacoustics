@@ -3,6 +3,7 @@
 This separate import namespace keeps frozen legacy Core scientific evidence immutable.
 """ 
 
+from .observations import MouthPortMonitorTake, render_mouth_port_monitor
 from .passive_waveguide import (
     PassiveWaveguideConfig,
     PassiveWaveguideSession,
@@ -11,6 +12,8 @@ from .passive_waveguide import (
 )
 
 __all__ = [
+    "MouthPortMonitorTake",
+    "render_mouth_port_monitor",
     "PassiveWaveguideConfig",
     "PassiveWaveguideSession",
     "WaveguideStep",
