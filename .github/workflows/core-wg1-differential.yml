@@ -3,14 +3,14 @@ name: core-wg1-differential
 on:
   push:
     paths:
-      - src/morphoacoustics/acoustics/passive_waveguide.py
+      - src/morphoacoustics_waveguide/**
       - tools/core_wg1_differential.py
       - tests/test_passive_waveguide.py
       - .github/workflows/core-wg1-differential.yml
       - docs/research/core-passive-waveguide/**
   pull_request:
     paths:
-      - src/morphoacoustics/acoustics/passive_waveguide.py
+      - src/morphoacoustics_waveguide/**
       - tools/core_wg1_differential.py
       - tests/test_passive_waveguide.py
       - .github/workflows/core-wg1-differential.yml
