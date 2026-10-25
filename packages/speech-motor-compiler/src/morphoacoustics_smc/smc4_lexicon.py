@@ -104,6 +104,13 @@ def compile_lexicon(
         return isinstance(s, str) and bool(s) and not any(
             0xD800 <= ord(ch) <= 0xDFFF for ch in s)
 
+    # Canonical request fingerprint above handles malformed arbitrary runtime
+    # containers; NOW validate the complete trust boundary before any access
+    # that assumes dataclass members or hashable identifiers.
+    if (not isinstance(lexicon, TaskLexicon)
+            or not isinstance(lexicon.definitions, tuple)
+            or not isinstance(lexicon.bundles, tuple)):
+        return reject("INVALID_INPUT", "malformed TaskLexicon container")
     if not all(scalar(s) for s in
                (segment_id, source_text, language, profile, source_revision,
                 lexicon.revision, lexicon.rule_revision)):
@@ -112,8 +119,14 @@ def compile_lexicon(
             any(not scalar(k) or not isinstance(v, str) or not scalar(v)
                 for k, v in context.items())):
         return reject("INVALID_INPUT", "malformed context")
-    if not paths or len({p.path_id for p in paths}) != len(paths):
-        return reject("INVALID_INPUT", "missing/duplicate pronunciation paths")
+    if (not isinstance(paths, (tuple, list)) or not paths
+            or any(not isinstance(p, PronunciationPath)
+                   or not scalar(p.path_id) for p in paths)):
+        return reject("INVALID_INPUT", "malformed pronunciation paths")
+    if len({p.path_id for p in paths}) != len(paths):
+        return reject("INVALID_INPUT", "duplicate pronunciation paths")
+    if selected_path_id is not None and not scalar(selected_path_id):
+        return reject("INVALID_INPUT", "malformed selected pronunciation path ID")
     if selected_path_id is None:
         return reject("AMBIGUOUS_PRONUNCIATION_PATH" if len(paths) > 1
                       else "INVALID_INPUT", *(p.path_id for p in paths))
@@ -187,6 +200,14 @@ def compile_lexicon(
         if not isinstance(declared_bundle, TemplateBundle):
             invalid_rules.add("malformed bundle declaration")
             continue
+        if (not all(scalar(s) for s in (
+                declared_bundle.bundle_id, declared_bundle.unit_id,
+                declared_bundle.symbol, declared_bundle.profile,
+                declared_bundle.target_scope_kind))
+                or not isinstance(declared_bundle.target_unit_ids, tuple)
+                or any(not scalar(u) for u in declared_bundle.target_unit_ids)):
+            invalid_rules.add("invalid bundle identifier or mapping scope")
+            continue
         if not valid_predicate(declared_bundle.context):
             invalid_rules.add(declared_bundle.bundle_id)
         if not isinstance(declared_bundle.slots, tuple):
@@ -196,11 +217,18 @@ def compile_lexicon(
             if not isinstance(declared_slot, GoalSlot):
                 invalid_rules.add(declared_bundle.bundle_id)
                 continue
-            if not isinstance(declared_slot.candidates, tuple):
-                invalid_rules.add(declared_bundle.bundle_id + "::" + declared_slot.slot_id)
+            if (not scalar(declared_slot.slot_id)
+                    or not isinstance(declared_slot.candidates, tuple)):
+                invalid_rules.add(declared_bundle.bundle_id)
                 continue
             for declared_candidate in declared_slot.candidates:
                 if (not isinstance(declared_candidate, SlotCandidate)
+                        or not all(scalar(s) for s in (
+                            declared_candidate.template_id,
+                            declared_candidate.definition_id,
+                            declared_candidate.semantic_revision,
+                            declared_candidate.evidence_id,
+                            declared_candidate.status))
                         or not valid_predicate(declared_candidate.context)):
                     invalid_rules.add(declared_bundle.bundle_id + "::" + declared_slot.slot_id)
     if invalid_rules:
@@ -344,21 +372,29 @@ def compile_lexicon(
                 or not isinstance(q.lag_s, Fraction)
                 for q in relations)):
         return reject("INVALID_PLAN", "invalid time relation declaration")
-    prepared_anchors: list[EventAnchor] = []
-    prepared_relations: list[CouplingConstraint] = []
+    # Proven dangling references are errors independent of caller declaration
+    # ordering (F09). Reject ALL stage-local failures in a canonical set.
+    dangling: set[str] = set()
     for a in anchors:
-        key = (a.unit_id, a.slot_id)
-        if key not in by_occ:
-            return reject("INVALID_PLAN", "invalid anchor", str(key))
-        prepared_anchors.append(EventAnchor(by_occ[key], a.event, a.time_s))
-    for relation in relations:
-        first_key = (relation.from_unit, relation.from_slot)
-        last_key = (relation.to_unit, relation.to_slot)
-        if first_key not in by_occ or last_key not in by_occ:
-            return reject("INVALID_PLAN", "invalid coupling", str(first_key), str(last_key))
-        prepared_relations.append(CouplingConstraint(
-            by_occ[first_key], relation.from_event, by_occ[last_key],
-            relation.to_event, relation.lag_s))
+        if (a.unit_id, a.slot_id) not in by_occ:
+            dangling.add("anchor:" + a.unit_id + ":" + a.slot_id)
+    for q in relations:
+        if (q.from_unit, q.from_slot) not in by_occ:
+            dangling.add("relation-from:" + q.from_unit + ":" + q.from_slot)
+        if (q.to_unit, q.to_slot) not in by_occ:
+            dangling.add("relation-to:" + q.to_unit + ":" + q.to_slot)
+    if dangling:
+        return reject("INVALID_PLAN", *sorted(dangling))
+    prepared_anchors: list[EventAnchor] = [
+        EventAnchor(by_occ[(a.unit_id, a.slot_id)], a.event, a.time_s)
+        for a in anchors
+    ]
+    prepared_relations: list[CouplingConstraint] = [
+        CouplingConstraint(
+            by_occ[(q.from_unit, q.from_slot)], q.from_event,
+            by_occ[(q.to_unit, q.to_slot)], q.to_event, q.lag_s)
+        for q in relations
+    ]
     plan = SymbolicPlan(
         segment_id, source_text,
         tuple(sorted(path.units, key=lambda u: u.unit_id)), tasks, associations,
