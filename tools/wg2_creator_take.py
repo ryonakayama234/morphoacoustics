@@ -18,8 +18,6 @@ import sys
 
 import numpy as np
 
-from morphoacoustics.integration.body_presets import CharacterBodyBinding, BindingStatus
-from morphoacoustics_waveguide import PassiveWaveguideConfig, render_mouth_port_monitor
 
 ROOT = Path(__file__).resolve().parents[1]
 SV1_PATH = ROOT / "experiments" / "042_sv1_sustained_vowel" / "run.py"
@@ -87,6 +85,8 @@ def validate_request(preset_id: str, revision: int, character_id: str,
 
 def _prepared_body(preset_id: str, revision: int, character_id: str,
                    sv1: dict[str, object]) -> tuple[object, object]:
+    # Authentication in generate() must precede ANY local Core source import.
+    from morphoacoustics.integration.body_presets import CharacterBodyBinding, BindingStatus
     # This inherited adapter independently pins its transitive audited
     # Experiment028/029 frozen source; do not reimplement the registry.
     cc = runpy.run_path(str(ROOT / "tools" / "cc_a2_live.py"))
@@ -125,6 +125,7 @@ def generate(output_dir: Path, *, preset_id: str,
         raise FileNotFoundError("WG2 parent directory does not exist")
     # Refuse local changes BEFORE any executable source is imported.
     authenticated_head = _core_commit()
+    from morphoacoustics_waveguide import PassiveWaveguideConfig, render_mouth_port_monitor
     sv1 = runpy.run_path(str(SV1_PATH))
     exp, resolution = _prepared_body(preset_id, revision, character_id, sv1)
     source, cycles, envelope = sv1["_source_for_duration"](exp, duration_s)
