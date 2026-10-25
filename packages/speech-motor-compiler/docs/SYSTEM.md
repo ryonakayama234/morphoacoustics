@@ -69,3 +69,59 @@ Exact source HEAD **`9c9ac9539ae1798ed27ef5cd751562e4b2c9b469`**: GitHub API rep
 See [GATE_C_CODEX_REVIEW.md](GATE_C_CODEX_REVIEW.md). Original implementation PR #164 received **two Codex P2 software findings** at SHA `7d5c405fee1b2469b11bbe6d68b9e0d18e4dab05`: malformed Unicode scalar data could be accepted then break the UTF-8 research receipt, and inconsistent anchors could cause input-order-dependent follow-on diagnostics. This is an independently executed **AI code review**, not human or scientific validation.
 
 The first post-review regression commit `08e2a47c8fd34017b6a52cacaef3485779515617` failed 8 fixture invocations before any new validator patch. Separate fix `a3f876fcaef3b63e2612807fab288a7e36e7e54a` rejects surrogate code points across caller strings used in the receipt and suppresses time/duration derivations when equalities conflict. Its exact code SHA passed **16/16** GitHub check-runs, including package tests/mypy on 3.11–3.13. Fresh Codex review and final documentation-HEAD CI are separate future receipts. No physical semantics, no Studio, no main merge.
+
+
+## SMC-4 Gate B — bounded compiler research topology (2026-10-24)
+
+**Authorization:** [Gate A design-only PR #175](https://github.com/ryonakayama234/morphoacoustics/pull/175) final SHA `9f7a8d1` (owner-delegated `GO_DESIGN_ONLY`); separate [Gate B issue #179](https://github.com/ryonakayama234/morphoacoustics/issues/179), [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). The existing SMC-3 frozen `model.py`/`validation.py` are unchanged.
+
+```mermaid
+flowchart LR
+  TXT["Creator Script"] -. "external reading provider; NOT built here" .-> H["PronunciationHypothesisSet"]
+  H --> P["ONE explicit complete PronunciationPath"]
+  L["Versioned finite TaskLexicon: TaskDefinitions, Bundles, Slots, Candidates"] --> C["SMC-4 synthetic compiler"]
+  F["Typed context and explicit share/timing declarations"] --> C
+  P --> C
+  C --> R["SMC-4 provenance + refusal receipt"]
+  C --> V["SMC-3 unchanged SymbolicPlan validator"]
+  V --> T["Unverified body-independent MotorTask graph"]
+  T -. "future V3 body adapter" .-> B["Body motion"]
+  B -. "future Core physics" .-> A["Sound from moving physical system"]
+```
+
+Only finite per-unit `EXACT_ONE_SELECTED_UNIT` bundles can map a selected path. For every selected unit choose one exclusive bundle, then one exclusive candidate for **each** additive REQUIRED GoalSlot. UNKNOWN contextual applicability and unknown source readings cannot be coerced into a plan. Shared task IDs require an explicitly named episode and compatible semantic revision, variable and target-intersection algebra; a matching label alone never causes sharing. Conditional exact-rational goal conflict checking and ordinary SMC-3 structural validation form separate gates.
+
+The graph is not body-bound and does **not** output organ positions, pressure/F0, waveform or Studio changes. The chosen functional goals are `SYNTHETIC_ONLY`, with no validated Japanese articulatory TaskLexicon. Public `TaskScore` wire schema remains undecided. GitHub `@codex review` is an AI software review, not human scientific peer review. **SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE.**
+
+## SMC-4 Gate B bounded compiler — 2026-10-25 research architecture
+
+```mermaid
+flowchart LR
+  P["Caller-supplied complete selected PronunciationPath"] --> L["Versioned finite TaskLexicon"]
+  L --> V["Strict rule / input validation"]
+  V --> S["Required GoalSlots + exclusive candidate selection"]
+  S --> G["Explicit Task-sharing + scalar-goal intersection"]
+  G --> I["SMC-3 SymbolicPlan + exact timing checks"]
+  I --> R["Separate full-input provenance CompileReceipt"]
+  V -->|malformed| X["Fail-closed rejection receipt; no partial plan"]
+  S -->|ambiguous / unknown| X
+  G -->|incompatible share| X
+```
+
+Implemented experimental modules: `src/morphoacoustics_smc/smc4_types.py` (typed lexicon predicates and receipt) and `smc4_lexicon.py` (compile into unchanged SMC-3 SymbolicPlan). New Gate B candidate stays strictly **synthetic-only**, *not* a phonetics, movement, sound or Studio layer. External AI reviewer: GitHub Codex, [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Fifth-round fail-closed review details: [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). No main merge.
+
+### SMC-4 predicate semantics and resource boundary (2026-10-25)
+
+The finite TaskLexicon selector evaluates validated, synthetically declared Kleene conditions through **one shared predicate DAG semantics**: iterative height-bounded validation, cached evaluation of each distinct immutable node, and structurally deterministic request fingerprints for both acyclic supported inputs and rejected cyclic inputs. Caller-supplied malformed or computationally out-of-bounds declarations produce a non-executable rejected receipt; they are **not** converted to false predicates or inferred speech actions. This is a bounded research compiler distinct from Core motor realization and acoustics. See [seventh-round adversarial software review](SMC4_GATE_B_CODEX_REVIEW.md).
+
+### Eighth Codex review: the trusted symbolic input boundary
+
+Before generating the unchanged SMC-3 `SymbolicPlan`, Task definitions and timing declarations are validated as explicit, typed, canonicalized requests. Ill-shaped definitions or invalid temporal occurrence coordinates never get to dictionary lookup or event construction. Rejected cyclic predicates receive a deterministic, full-reachable-graph fingerprint, not a 64-step local projection. This is limited **software** semantics for a finite synthetic lexicon only, not proof of a body executing those tasks. [Codex evidence and design limitations](SMC4_GATE_B_CODEX_REVIEW.md).
+
+### Ninth-review generalized ingress integrity
+
+A single general nonrecursive structural fingerprint is computed for all requested lexical, source, context and time inputs **before** untrusted declarations are interpreted. The compiler then performs typed gatekeeping of pronunciation path, finite task lexicon and complete template identifiers, goal-slot candidates, and timing occurrence coordinates before unsafe graph/hash operations. Malformed requests return explicit stage-aware receipts, never a partially executable SymbolicPlan; missing temporal references are diagnosed as a canonically sorted set. See the ninth [external GitHub AI review evidence](SMC4_GATE_B_CODEX_REVIEW.md) for limitations and adopted finite synthetic coverage.
+
+### Gate B final disposition: REVISE (2026-10-25)
+
+The bounded lexical/Task prototype exists but the general arbitrary-runtime-object ingress and provenance boundary **is not accepted**. Two remaining Codex P2 counterexamples concern typed mapping-key identity and canonical cyclic failure receipts. Ten external GitHub AI software-review rounds did not converge to zero material findings. Do **not** promote the symbolic candidate into `main`, Core, Studio or production. A new versioned finite/acyclic canonical input grammar and out-of-domain rejection semantics require a separately approved design amendment and adversarial tests. See [decision and unresolved red evidence](SMC4_GATE_B_DECISION_20261025.md).
