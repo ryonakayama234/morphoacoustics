@@ -113,3 +113,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 ### Seventh independent AI software review — DAG complexity and invalid-input reproducibility
 
 [SMC-4 Gate B Codex review ledger](SMC4_GATE_B_CODEX_REVIEW.md) now retains seven rounds / 19 material P2 findings with immutable test-first RED evidence, code fixes and SHA distinction. [Round-seven tests](../tests/test_smc4_gate_b_codex_p2_round7.py) validate bounded DAG evaluation, subtree-height enforcement and cyclic request fingerprint equivalence. [DATA](DATA.md) describes canonical predicate graph semantics; [EXPERIMENTS](EXPERIMENTS.md) records test-authored corrections separately from compiler repairs. Final exact-SHA verification and next `@codex review` remain adoption prerequisites.
+
+### Eighth Codex review and final research status
+
+[SMC-4 Gate B Codex review ledger](SMC4_GATE_B_CODEX_REVIEW.md): eight completed GitHub AI software review rounds, 22 material P2, all source failures and repairs preserved. [Round-eight regression tests](../tests/test_smc4_gate_b_codex_p2_round8.py) exercise distant cyclic input identity, malformed time declarations and order-independent invalid-definition receipts. [DATA](DATA.md) describes the corrected boundaries. **Gate B disposition remains reviewer/CI pending, scientific phonetics and physical speech not adopted; no main merge.**
