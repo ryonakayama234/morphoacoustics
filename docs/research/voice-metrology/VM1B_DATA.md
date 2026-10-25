@@ -33,3 +33,31 @@ VM1BReport {
 - Data `H_pU` means boundary **pressure** transfer, `H_U` boundary **volume-flow** transfer, `Z_in` input impedance. Never substitute particle velocity or radiated pressure.
 - DFT complex values stored with real/imag components, actual target-nearest bin, rather than amplitude and 'formant' alone. Case labels are historical frozen body/termination references, not user-local Take UUID mappings.
 - Physics state, body blueprint, prepared rest state, analysis output, Take and Studio UI selection are separately owned. This instrument reads the original Core physical waveguide; nothing in this report owns Studio panels or data.
+
+
+## Executed-code identity amendment (2026-10-26; Codex P2 remediation)
+
+The original candidate report did not disclose the **actual** checkout that executed the physics. The implementation now emits:
+
+```text
+execution_provenance:
+  executed_checkout_git_sha: 40-hex exact `git rev-parse HEAD`
+  executed_git_tree_sha: 40-hex exact tree
+  executed_commit_parents: [] or [parents] (PR Actions often check out a synthetic merge commit)
+  tracked_tree_clean: true (refuse dirty tracked worktree)
+  is_pull_request_merge_commit: boolean
+  executed_implementation_files_sha256:
+    tools/vm1b_loaded_reference.py
+    tests/test_vm1b_loaded_reference.py
+    src/morphoacoustics_waveguide/passive_waveguide.py
+    src/morphoacoustics_waveguide/__init__.py
+    src/morphoacoustics/physical/tract1d.py
+    src/morphoacoustics/physical/__init__.py
+    .github/workflows/vm1b-loaded-reference.yml
+    pyproject.toml
+historical_base_main_sha_not_executed_sha: fixed historical reference only
+```
+
+The run refuses a non-identifiable git checkout, dirty tracked files, or a mismatch between actual `git HEAD` and GitHub Actions `GITHUB_SHA` (if supplied). **The merge checkout SHA is not automatically the feature-branch HEAD**; preserve exact evidence coordinates instead of mislabeling them. This is traceability of the executed code, not proof of biological validity.
+
+The CI now uploads whatever JSON is present **even if previous numerical steps failed**, and produces a separately labeled `SYNTHETIC_FAILED_GATE_ARTIFACT_CONTROL` JSON after an intentionally failing CI step. Synthetic controls must never be counted as physical measurements, scientific PASS or genuine measured failures. The ordinary full report still has unchanged measured physics ports and gate outcomes; the negative-control file is explicitly annotated.
