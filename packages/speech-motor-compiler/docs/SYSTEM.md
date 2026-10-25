@@ -92,3 +92,20 @@ flowchart LR
 Only finite per-unit `EXACT_ONE_SELECTED_UNIT` bundles can map a selected path. For every selected unit choose one exclusive bundle, then one exclusive candidate for **each** additive REQUIRED GoalSlot. UNKNOWN contextual applicability and unknown source readings cannot be coerced into a plan. Shared task IDs require an explicitly named episode and compatible semantic revision, variable and target-intersection algebra; a matching label alone never causes sharing. Conditional exact-rational goal conflict checking and ordinary SMC-3 structural validation form separate gates.
 
 The graph is not body-bound and does **not** output organ positions, pressure/F0, waveform or Studio changes. The chosen functional goals are `SYNTHETIC_ONLY`, with no validated Japanese articulatory TaskLexicon. Public `TaskScore` wire schema remains undecided. GitHub `@codex review` is an AI software review, not human scientific peer review. **SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE.**
+
+## SMC-4 Gate B bounded compiler — 2026-10-25 research architecture
+
+```mermaid
+flowchart LR
+  P["Caller-supplied complete selected PronunciationPath"] --> L["Versioned finite TaskLexicon"]
+  L --> V["Strict rule / input validation"]
+  V --> S["Required GoalSlots + exclusive candidate selection"]
+  S --> G["Explicit Task-sharing + scalar-goal intersection"]
+  G --> I["SMC-3 SymbolicPlan + exact timing checks"]
+  I --> R["Separate full-input provenance CompileReceipt"]
+  V -->|malformed| X["Fail-closed rejection receipt; no partial plan"]
+  S -->|ambiguous / unknown| X
+  G -->|incompatible share| X
+```
+
+Implemented experimental modules: `src/morphoacoustics_smc/smc4_types.py` (typed lexicon predicates and receipt) and `smc4_lexicon.py` (compile into unchanged SMC-3 SymbolicPlan). New Gate B candidate stays strictly **synthetic-only**, *not* a phonetics, movement, sound or Studio layer. External AI reviewer: GitHub Codex, [Draft PR #180](https://github.com/ryonakayama234/morphoacoustics/pull/180). Fifth-round fail-closed review details: [SMC4_GATE_B_CODEX_REVIEW.md](SMC4_GATE_B_CODEX_REVIEW.md). No main merge.
