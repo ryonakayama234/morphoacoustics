@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 from hashlib import sha1, sha256
 import json
+import os
+import subprocess
 from math import ceil, cos, isfinite, pi, sin, sqrt, tan
 from pathlib import Path
 
@@ -28,6 +30,62 @@ C = 343.0
 TARGETS_HZ = (100.0, 600.0)
 PORTS = ("HpU", "Zin", "HU")
 SCHEMA = "voice-metrology-loaded-transfer/vm1b"
+
+# Hash the actual code and workflow that produced this research report, rather
+# than assuming BASE_MAIN_SHA or a PR branch name identifies executed bytes.
+IMPLEMENTATION_PATHS = (
+    "tools/vm1b_loaded_reference.py",
+    "tests/test_vm1b_loaded_reference.py",
+    "src/morphoacoustics_waveguide/passive_waveguide.py",
+    "src/morphoacoustics_waveguide/__init__.py",
+    "src/morphoacoustics/physical/tract1d.py",
+    "src/morphoacoustics/physical/__init__.py",
+    ".github/workflows/vm1b-loaded-reference.yml",
+    "pyproject.toml",
+)
+
+
+def _git_output(*args: str) -> str:
+    try:
+        return subprocess.run(
+            ["git", *args], cwd=ROOT, check=True, capture_output=True,
+            text=True, timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError("UNVERIFIABLE_GIT_EXECUTION_PROVENANCE") from exc
+
+
+def execution_provenance() -> dict:
+    """Refuse evidence generation without a clean, identified checkout.
+
+    Pull-request Actions usually check out the *merge commit*, not the branch
+    head; record actual HEAD and parents, never mislabel a historical base SHA.
+    """
+    head = _git_output("rev-parse", "--verify", "HEAD")
+    tree = _git_output("rev-parse", "--verify", "HEAD^{tree}")
+    parents = _git_output("show", "-s", "--format=%P", "HEAD").split()
+    if len(head) != 40 or len(tree) != 40:
+        raise RuntimeError("INVALID_EXECUTED_GIT_REVISION")
+    if _git_output("status", "--porcelain=v1", "--untracked-files=no"):
+        raise RuntimeError("DIRTY_TRACKED_EXECUTED_IMPLEMENTATION")
+    expected_checkout = os.environ.get("GITHUB_SHA")
+    if expected_checkout and head != expected_checkout:
+        raise RuntimeError("GITHUB_SHA_CHECKOUT_MISMATCH")
+    files = {}
+    for path in IMPLEMENTATION_PATHS:
+        source = ROOT / path
+        if not source.is_file():
+            raise RuntimeError("MISSING_EXECUTED_IMPLEMENTATION_FILE:" + path)
+        files[path] = sha256(source.read_bytes()).hexdigest()
+    return {
+        "executed_checkout_git_sha": head,
+        "executed_git_tree_sha": tree,
+        "executed_commit_parents": parents,
+        "tracked_tree_clean": True,
+        "is_pull_request_merge_commit": len(parents) == 2,
+        "executed_implementation_files_sha256": files,
+        "code_identity_scope": "tracked checkout plus byte hashes of research and native physical code",
+    }
 
 
 def load_bodies() -> tuple[dict[str, Tract1DGeometry], str]:
@@ -285,6 +343,7 @@ def refinements(body_name: str, geometry: Tract1DGeometry) -> list[dict]:
 
 
 def run() -> dict:
+    provenance = execution_provenance()
     bodies, sha256_bytes = load_bodies()
     cases: dict[str, dict] = {}
     refines = []
@@ -326,7 +385,8 @@ def run() -> dict:
         "physical_validity": "INDETERMINATE_REAL_RADIATION",
         "voice_quality": "VOICE_NO_GO_UNCHANGED",
         "creator_listening_requested": False,
-        "base_main_sha": BASE_MAIN_SHA,
+        "historical_base_main_sha_not_executed_sha": BASE_MAIN_SHA,
+        "execution_provenance": provenance,
         "frozen_exp028_blob_sha1": BLOB_SHA1,
         "frozen_exp028_content_sha256": sha256_bytes,
         "model": {"air_density_kg_m3": RHO, "sound_speed_m_s": C,
