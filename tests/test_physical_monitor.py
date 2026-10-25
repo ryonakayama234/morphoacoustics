@@ -88,8 +88,8 @@ def test_physical_take_is_reproducible_with_fixed_playback_scale() -> None:
     )) < 1e-14
 
 
-def test_causal_filter_low_frequency_pass_and_reject_aliased_tone() -> None:
-    hz = 68_600.0
+@pytest.mark.parametrize("hz", [60_000.0, 62_363.63636, 68_600.0, 75_000.0])
+def test_causal_filter_low_frequency_pass_and_reject_aliased_tone(hz: float) -> None:
     count_native = 20_000
     native_times = (np.arange(count_native) + 1) / hz
     out_count = 10_000
@@ -128,6 +128,9 @@ def test_reject_source_errors_and_clipping() -> None:
         [float("nan"), 0.0],
         [float("inf"), 0.0],
         [True, False],
+        [complex(1e-7, float("nan")), 0j],
+        [complex(1e-7, 1e-8), 0j],
+        ["1e-7", "0"],
     ):
         with pytest.raises(ValueError):
             render_mouth_port_monitor(cfg, source)
@@ -145,3 +148,26 @@ def test_no_implicit_physical_clock_rounding() -> None:
         assert t.physics_clock_hz == pytest.approx(343 * 2 / length)
         assert t.physics_ticks == ceil(240 * t.physics_clock_hz / SAMPLE_RATE_HZ)
         assert t.output_samples == 240
+
+
+def test_pilot_rejects_unverified_clocks_and_large_geometry() -> None:
+    input_flow = np.zeros(240)
+    for cfg in (
+        PassiveWaveguideConfig(geometry(0.001), cells_per_section=2),
+        PassiveWaveguideConfig(geometry(0.012), cells_per_section=2),
+        PassiveWaveguideConfig(geometry(0.01), cells_per_section=4),
+        PassiveWaveguideConfig(
+            Tract1DGeometry(
+                "oversized",
+                tuple(TubeSection(0.01, 0.0008) for _ in range(1600)),
+            ),
+            cells_per_section=2,
+        ),
+    ):
+        with pytest.raises(ValueError, match="pilot"):
+            render_mouth_port_monitor(cfg, input_flow)
+
+
+def test_antialias_helper_rejects_unsupported_high_clock() -> None:
+    with pytest.raises(ValueError, match="verified only"):
+        _causal_48k_monitor(np.zeros(2000), 2_744_000.0, 500)
