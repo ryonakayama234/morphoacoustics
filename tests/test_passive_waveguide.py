@@ -122,3 +122,54 @@ def test_reject_unsupported_length_and_invalid_flow_without_mutation() -> None:
     assert (tuple(tuple(q) for q in session.forward),
             tuple(tuple(q) for q in session.backward), session.energies_j()) == before
     assert session.ticks == 0
+
+
+def test_extreme_impedances_do_not_silently_overflow_scattering() -> None:
+    reflected, transmitted = scatter_pressures(1.0, 0.0, 1e308, 1.5e308)
+    assert reflected == pytest.approx(0.2, abs=1e-15)
+    assert transmitted == pytest.approx(1.2, abs=1e-15)
+    r1 = scatter_pressures(-1.5, 0.25, 1e200, 1.5e200)
+    r2 = scatter_pressures(-1.5, 0.25, 1e300, 1.5e300)
+    assert r1 == pytest.approx(r2, rel=1e-13)
+
+
+@pytest.mark.parametrize(
+    "geometry,rho,c",
+    [
+        (tract(areas=(1e-310,)), 1.21, 343.0),
+        (tract(), 1e-300, 1e-300),
+        (tract(1e-300), 1.21, 343.0),
+    ],
+)
+def test_derived_physical_coefficients_must_be_finite(
+    geometry: Tract1DGeometry, rho: float, c: float,
+) -> None:
+    with pytest.raises(ValueError):
+        PassiveWaveguideConfig(
+            geometry, air_density_kg_m3=rho, sound_speed_m_s=c
+        )
+
+
+def test_large_finite_input_failure_is_atomic_for_waves_and_b0() -> None:
+    session = PassiveWaveguideSession(PassiveWaveguideConfig(tract()))
+    session.step(1e-6)
+    initial_forward = tuple(tuple(q) for q in session.forward)
+    initial_backward = tuple(tuple(q) for q in session.backward)
+    initial_energy = session.energies_j()
+    tick = session.ticks
+    with pytest.raises(FloatingPointError):
+        session.step(1e308)
+    assert tuple(tuple(q) for q in session.forward) == initial_forward
+    assert tuple(tuple(q) for q in session.backward) == initial_backward
+    assert session.energies_j() == initial_energy
+    assert session.ticks == tick
+    # A failed call cannot poison the next ordinary physical tick.
+    assert np.isfinite(session.step(0.0).mouth_pressure_pa)
+
+
+def test_failed_nonfinite_initial_wave_is_rejected() -> None:
+    with pytest.raises(ValueError, match="nonfinite initial wave"):
+        PassiveWaveguideSession(
+            PassiveWaveguideConfig(tract(areas=(0.0008,))),
+            initial_forward_pa=((0.0, float("inf")),),
+        )
