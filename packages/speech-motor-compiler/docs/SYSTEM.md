@@ -121,3 +121,7 @@ Before generating the unchanged SMC-3 `SymbolicPlan`, Task definitions and timin
 ### Ninth-review generalized ingress integrity
 
 A single general nonrecursive structural fingerprint is computed for all requested lexical, source, context and time inputs **before** untrusted declarations are interpreted. The compiler then performs typed gatekeeping of pronunciation path, finite task lexicon and complete template identifiers, goal-slot candidates, and timing occurrence coordinates before unsafe graph/hash operations. Malformed requests return explicit stage-aware receipts, never a partially executable SymbolicPlan; missing temporal references are diagnosed as a canonically sorted set. See the ninth [external GitHub AI review evidence](SMC4_GATE_B_CODEX_REVIEW.md) for limitations and adopted finite synthetic coverage.
+
+### Gate B final disposition: REVISE (2026-10-25)
+
+The bounded lexical/Task prototype exists but the general arbitrary-runtime-object ingress and provenance boundary **is not accepted**. Two remaining Codex P2 counterexamples concern typed mapping-key identity and canonical cyclic failure receipts. Ten external GitHub AI software-review rounds did not converge to zero material findings. Do **not** promote the symbolic candidate into `main`, Core, Studio or production. A new versioned finite/acyclic canonical input grammar and out-of-domain rejection semantics require a separately approved design amendment and adversarial tests. See [decision and unresolved red evidence](SMC4_GATE_B_DECISION_20261025.md).
