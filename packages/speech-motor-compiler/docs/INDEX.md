@@ -94,3 +94,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 - [Research PR #189](https://github.com/ryonakayama234/morphoacoustics/pull/189) and [test-only RED PR #190](https://github.com/ryonakayama234/morphoacoustics/pull/190). Source `../src/morphoacoustics_smc/canonical_ingress.py`; prereg and Codex tests in `../tests/test_smc4_br_*.py`.
 - [SYSTEM ingress-only boundary](SYSTEM.md), [DATA receipt/typed shape](DATA.md), [EXPERIMENTS negative vs green exact-SHA evidence](EXPERIMENTS.md).
 - **`REVIEW_PENDING / SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`**. Historical [Gate B REVISE](https://github.com/ryonakayama234/morphoacoustics/pull/180) intact; no TaskLexicon plan compiler bridge, Studio or physical audio.
+
+### Independent review round two
+
+Second GitHub AI software review found typed rational timing sort-key P2; `../tests/test_smc4_br_codex_round2.py` was added test-first and `../src/morphoacoustics_smc/canonical_ingress.py` fixed separately. [EXPERIMENTS evidence](EXPERIMENTS.md), [DATA exact key semantics](DATA.md). The design #186 reviewer status and exact fixed docs HEAD CI remain open; **NO_MAIN_MERGE**.
