@@ -65,7 +65,7 @@ def test_amplitude_linearity_and_b0_no_fake_sound() -> None:
 
 def test_boundary_intervention_does_not_mask_physical_port() -> None:
     matched, b0 = uniform("matched"), uniform("b0")
-    flow = VM.make_pulse(matched, 128, VM.VOLUME_M3)
+    flow = VM.make_pulse(matched, 512, VM.VOLUME_M3)
     a = VM.native_trace(matched, flow)
     b = VM.native_trace(b0, flow)
     assert np.max(np.abs(a["p_mouth_pa"] - b["p_mouth_pa"])) > 1e-10
