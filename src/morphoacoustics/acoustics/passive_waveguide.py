@@ -35,8 +35,28 @@ class PassiveWaveguideConfig:
         if any(not isclose(section.length_m, first, rel_tol=0, abs_tol=1e-14)
                for section in self.geometry.sections):
             raise ValueError("unequal section lengths require a different verified solver")
-        if not isfinite(self.physics_clock_hz):
-            raise ValueError("nonfinite physical clock")
+        clock = self.physics_clock_hz
+        if not isfinite(clock) or clock <= 0:
+            raise ValueError("invalid derived physical clock")
+        h = 1.0 / clock
+        impedances = self.characteristic_impedances_pa_s_m3
+        if not isfinite(h) or h <= 0 or not all(
+            isfinite(z) and z > 0 for z in impedances
+        ):
+            raise ValueError("invalid derived physical timestep or impedance")
+        if self.termination == "b0":
+            area = self.geometry.sections[-1].area_m2
+            radius = sqrt(area / pi)
+            m = 8.0 * self.air_density_kg_m3 * radius / (3.0 * pi * area)
+            tau = 3.0 * pi * radius / (16.0 * self.sound_speed_m_s)
+            resistance = m / tau if tau != 0 else float("inf")
+            denom = (
+                1.0 + impedances[-1] / resistance
+                + impedances[-1] * h / (2.0 * m)
+            ) if m != 0 and resistance != 0 else float("inf")
+            if not all(isfinite(x) and x > 0
+                       for x in (radius, m, tau, resistance, denom)):
+                raise ValueError("invalid derived passive B0 coefficients")
 
     @property
     def physics_clock_hz(self) -> float:
@@ -78,9 +98,14 @@ def scatter_pressures(
     if not all(isfinite(v) for v in
                (left_incident_pa, right_incident_pa, zl, zr)) or zl <= 0 or zr <= 0:
         raise ValueError("finite pressures and positive finite impedances required")
-    r = (zr - zl) / (zr + zl)
+    scale = max(zl, zr)
+    left_scaled, right_scaled = zl / scale, zr / scale
+    r = (right_scaled - left_scaled) / (right_scaled + left_scaled)
     a, b = left_incident_pa, right_incident_pa
-    return r * a + (1.0 - r) * b, (1.0 + r) * a - r * b
+    outgoing = (r * a + (1.0 - r) * b, (1.0 + r) * a - r * b)
+    if not all(isfinite(v) for v in outgoing):
+        raise FloatingPointError("nonfinite passive junction scattering")
+    return outgoing
 
 
 class _B0Radiation:
@@ -169,6 +194,7 @@ class PassiveWaveguideSession:
         return duct, radiation
 
     def step(self, inlet_flow_m3_s: float) -> WaveguideStep:
+        """Validate a full local tick before committing any mutable state."""
         if isinstance(inlet_flow_m3_s, bool) or not isfinite(inlet_flow_m3_s):
             raise ValueError("inlet flow must be finite")
         cfg = self.config
@@ -176,11 +202,21 @@ class PassiveWaveguideSession:
         impedances = cfg.characteristic_impedances_pa_s_m3
         old_energy = sum(self.energies_j())
 
-        incident_forward = [q.popleft() for q in self.forward]
-        incident_backward = [q.popleft() for q in self.backward]
+        # Failure atomicity: no popleft, B0 q update, or tick count change on
+        # live session until the entire candidate energy ledger is finite.
+        forward = [deque(queue) for queue in self.forward]
+        backward = [deque(queue) for queue in self.backward]
+        radiation = (
+            _B0Radiation(cfg, self._radiation.q)
+            if self._radiation is not None else None
+        )
+        incident_forward = [q.popleft() for q in forward]
+        incident_backward = [q.popleft() for q in backward]
         next_forward = [0.0] * len(incident_forward)
         next_backward = [0.0] * len(incident_backward)
         next_forward[0] = incident_backward[0] + impedances[0] * inlet_flow_m3_s
+        if not isfinite(next_forward[0]):
+            raise FloatingPointError("nonfinite source boundary")
         for j in range(len(incident_forward) - 1):
             next_backward[j], next_forward[j + 1] = scatter_pressures(
                 incident_forward[j], incident_backward[j + 1], impedances[j], impedances[j + 1]
@@ -193,28 +229,36 @@ class PassiveWaveguideSession:
         elif cfg.termination == "matched":
             mouth_reflected, loss = 0.0, h * mouth_incident**2 / impedances[-1]
         else:
-            assert self._radiation is not None
-            mouth_reflected, loss = self._radiation.step(mouth_incident)
+            assert radiation is not None
+            mouth_reflected, loss = radiation.step(mouth_incident)
         next_backward[-1] = mouth_reflected
 
-        for queue, value in zip(self.forward, next_forward, strict=True):
+        for queue, value in zip(forward, next_forward, strict=True):
             queue.append(value)
-        for queue, value in zip(self.backward, next_backward, strict=True):
+        for queue, value in zip(backward, next_backward, strict=True):
             queue.append(value)
         pressure_in = next_forward[0] + incident_backward[0]
         pressure_out = mouth_incident + mouth_reflected
         flow_out = (mouth_incident - mouth_reflected) / impedances[-1]
-        duct, radiation = self.energies_j()
-        delta_e = duct + radiation - old_energy
+        duct = h * sum(
+            (sum(x * x for x in forward[j]) + sum(x * x for x in backward[j]))
+            / z for j, z in enumerate(impedances)
+        )
+        stored_b0 = radiation.energy_j if radiation is not None else 0.0
+        delta_e = duct + stored_b0 - old_energy
         source_work = h * pressure_in * inlet_flow_m3_s
         residual = delta_e - source_work + loss
-        if not all(isfinite(v) for v in
-                   (pressure_in, pressure_out, flow_out, duct, radiation,
-                    delta_e, source_work, residual)):
+        if not all(isfinite(v) for v in (
+            pressure_in, pressure_out, flow_out, duct, stored_b0,
+            delta_e, source_work, loss, residual
+        )):
             raise FloatingPointError("nonfinite waveguide state")
         tick = self.ticks
+        self.forward = forward
+        self.backward = backward
+        self._radiation = radiation
         self.ticks += 1
         return WaveguideStep(
             tick, inlet_flow_m3_s, pressure_in, pressure_out, flow_out,
-            duct, radiation, source_work, loss, delta_e, residual
+            duct, stored_b0, source_work, loss, delta_e, residual
         )
