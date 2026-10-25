@@ -23,6 +23,10 @@ FIR_TAPS = 129
 FIR_CUTOFF_HZ = 19_200.0
 FIR_KAISER_BETA = 8.6
 MAX_DURATION_S = 0.5
+# Only the currently verified 16x2 CC-A2 M0/M1-sized pilot geometry.
+MIN_VERIFIED_CLOCK_HZ = 60_000.0
+MAX_VERIFIED_CLOCK_HZ = 75_000.0
+MAX_PHYSICAL_WORK_CELLS = 1_200_000
 MONITOR_VERSION = "wg2-mouth-port-causal-kaiser129/v1"
 
 
@@ -85,8 +89,9 @@ def _causal_48k_monitor(native_pa: np.ndarray, clock_hz: float, count: int) -> n
     most recent fully available filtered physical tick (ZOH), avoiding the
     usual half-tick early lookahead of `np.interp`.
     """
-    if not isfinite(clock_hz) or clock_hz <= SAMPLE_RATE_HZ:
-        raise ValueError("WG2 monitor requires physical clock strictly above 48 kHz")
+    if (not isfinite(clock_hz) or not
+            MIN_VERIFIED_CLOCK_HZ <= clock_hz <= MAX_VERIFIED_CLOCK_HZ):
+        raise ValueError("WG2 antialias kernel verified only for 60–75 kHz physical clocks")
     if native_pa.ndim != 1 or not np.isfinite(native_pa).all():
         raise ValueError("nonfinite/invalid physical pressure")
     if type(count) is not int or count <= 0:
@@ -143,8 +148,8 @@ def render_mouth_port_monitor(
     Each invocation creates one state-contiguous acoustic session.
     """
     raw_input = np.asarray(prescribed_flow_48k_m3_s)
-    if raw_input.dtype.kind == "b" or raw_input.ndim != 1:
-        raise ValueError("source must be a one-dimensional numeric flow sequence")
+    if raw_input.ndim != 1 or raw_input.dtype.kind not in ("i", "u", "f"):
+        raise ValueError("source must be a one-dimensional real numeric flow sequence")
     if not 2 <= raw_input.size <= round(MAX_DURATION_S * SAMPLE_RATE_HZ):
         raise ValueError("WG2 first pilot supports at least two and at most 0.5s of source samples")
     source = np.asarray(raw_input, dtype=np.float64)
@@ -153,12 +158,14 @@ def render_mouth_port_monitor(
     if isinstance(playback_full_scale_pa, bool) or not isfinite(playback_full_scale_pa) or playback_full_scale_pa <= 0:
         raise ValueError("invalid playback full-scale pressure")
     physics_hz = config.physics_clock_hz
-    if not isfinite(physics_hz) or physics_hz <= SAMPLE_RATE_HZ:
-        raise ValueError("unsupported native physics clock for WG2 48k monitor")
+    if (len(config.geometry.sections) != 16 or config.cells_per_section != 2
+            or not isfinite(physics_hz) or not
+            MIN_VERIFIED_CLOCK_HZ <= physics_hz <= MAX_VERIFIED_CLOCK_HZ):
+        raise ValueError("WG2 first pilot supports only 16 sections, 2 cells, and 60–75 kHz")
     duration_s = len(source) / SAMPLE_RATE_HZ
     count = int(ceil(duration_s * physics_hz))
-    if count <= 0 or count > 1_000_000:
-        raise ValueError("unsupported physical tick count")
+    if count <= 0 or count * len(config.geometry.sections) * config.cells_per_section > MAX_PHYSICAL_WORK_CELLS:
+        raise ValueError("WG2 physical work budget exceeded")
     session = PassiveWaveguideSession(config)
     native_pressure = np.empty(count, dtype=np.float64)
     native_flow = np.empty(count, dtype=np.float64)
