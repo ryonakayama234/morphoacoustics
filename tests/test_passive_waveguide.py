@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from math import isclose, pi, sqrt
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -173,3 +174,30 @@ def test_failed_nonfinite_initial_wave_is_rejected() -> None:
             PassiveWaveguideConfig(tract(areas=(0.0008,))),
             initial_forward_pa=((0.0, float("inf")),),
         )
+
+
+def test_archival_differential_identity_rejects_wrong_revision_and_dirty_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Evidence may claim the audited SHA only after revision and tree verification."""
+    from subprocess import CompletedProcess
+    from tools.core_wg1_differential import REFERENCE_SHA, verify_archival_source
+
+    response = {"head": REFERENCE_SHA, "dirty": ""}
+
+    def git_probe(argv: list[str], **kwargs: object) -> CompletedProcess[str]:
+        assert argv[:3] == ["git", "-C", str(tmp_path.resolve())]
+        if argv[3:] == ["rev-parse", "--verify", "HEAD"]:
+            return CompletedProcess(argv, 0, response["head"] + "\n", "")
+        assert argv[3:] == ["status", "--porcelain", "--untracked-files=all"]
+        return CompletedProcess(argv, 0, response["dirty"], "")
+
+    monkeypatch.setattr("subprocess.run", git_probe)
+    assert verify_archival_source(tmp_path) == REFERENCE_SHA
+    response["head"] = "0" * 40
+    with pytest.raises(RuntimeError, match="revision mismatch"):
+        verify_archival_source(tmp_path)
+    response["head"] = REFERENCE_SHA
+    response["dirty"] = " M experiments/053_b2a_static_multisection/run.py"
+    with pytest.raises(RuntimeError, match="modified or untracked"):
+        verify_archival_source(tmp_path)
