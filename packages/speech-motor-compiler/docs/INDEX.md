@@ -109,3 +109,7 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 ### Gate B ongoing adversarial review: sixth round
 
 [Review ledger](SMC4_GATE_B_CODEX_REVIEW.md) now includes six GitHub Codex rounds / 16 material P2s with test-only RED and independent repair commits. New [round-six regression tests](../tests/test_smc4_gate_b_codex_p2_round6.py) prove deep/cyclic fingerprint fail-closed, shared-predicate DAG identity and canonical rejection diagnostics. The corrected research candidate still requires final SHA CI and another exact-HEAD `@codex review`; it is not merged to `main`.
+
+### Seventh independent AI software review — DAG complexity and invalid-input reproducibility
+
+[SMC-4 Gate B Codex review ledger](SMC4_GATE_B_CODEX_REVIEW.md) now retains seven rounds / 19 material P2 findings with immutable test-first RED evidence, code fixes and SHA distinction. [Round-seven tests](../tests/test_smc4_gate_b_codex_p2_round7.py) validate bounded DAG evaluation, subtree-height enforcement and cyclic request fingerprint equivalence. [DATA](DATA.md) describes canonical predicate graph semantics; [EXPERIMENTS](EXPERIMENTS.md) records test-authored corrections separately from compiler repairs. Final exact-SHA verification and next `@codex review` remain adoption prerequisites.
