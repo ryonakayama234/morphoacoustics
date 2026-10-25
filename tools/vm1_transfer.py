@@ -181,6 +181,19 @@ def one_run(name: str, geometry: Tract1DGeometry, termination: str) -> dict:
     flow = make_pulse(config, n, VOLUME_M3)
     trace = native_trace(config, flow)
     spectrum = transfer(config, trace)
+    # Exact frozen M0/M1 B0 model small-signal linearity: one-variable
+    # amplitude intervention, all native physical ports and same geometry.
+    linearity_relative = None
+    if termination == "b0":
+        twice = native_trace(config, 2.0 * flow)
+        linearity_relative = 0.0
+        for port in ("p_in_pa", "p_mouth_pa", "U_mouth_m3_s"):
+            reference = 2.0 * trace[port]
+            scale = max(float(np.max(np.abs(reference))), 1e-30)
+            err = float(np.max(np.abs(twice[port] - reference))) / scale
+            linearity_relative = max(linearity_relative, err)
+        if linearity_relative > 1e-10:
+            raise ArithmeticError("FROZEN_BODY_AMPLITUDE_LINEARITY_FAILED")
     if trace["max_energy_residual_fraction_of_tolerance"] > 1.0:
         raise ArithmeticError("ENERGY_GATE_FAILED")
     return {
@@ -199,6 +212,7 @@ def one_run(name: str, geometry: Tract1DGeometry, termination: str) -> dict:
         "N": n, "source_flow_sha256": sha256(flow.astype("<f8").tobytes()).hexdigest(),
         "integrated_injected_volume_m3": float(np.sum(flow) * config.timestep_s),
         "energy_residual_fraction_max": trace["max_energy_residual_fraction_of_tolerance"],
+        "two_x_linearity_relative_max": linearity_relative,
         "measurement": spectrum,
     }
 
