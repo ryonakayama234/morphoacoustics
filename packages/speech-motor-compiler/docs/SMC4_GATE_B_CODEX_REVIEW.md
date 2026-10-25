@@ -52,3 +52,16 @@ Fourth manual GitHub `@codex review` reviewed complete HEAD `3249259704aeebac3b8
 - **Separate repair:** source SHA `d57cddc1bb0f9a8b8620039cb695c51e2351d2c8` validates the capability declaration as a tuple of distinct, nonempty, UTF-8-safe string tokens *before* sorting. Reject malformed values `INVALID_PLAN`, never silently split a string. This exact SHA received **16/16 completed SUCCESS** from GitHub check-runs including package Python3.11–3.13 pytest/mypy, root tests/typecheck and bounded SV1. No SMC-3 IR/Core/Studio modification.
 
 **Four external AI software-review rounds produced 11 P2 findings.** No expert human phonetics review, physical listening test or `main` merge. A fresh Codex inspection and final docs-HEAD CI are separate outstanding receipts. The implementation remains research-only until explicitly gated.
+
+## Fifth Codex review: SHA e321d5b — two further P2; regression and repair
+
+The [fifth manual @codex review](https://github.com/ryonakayama234/morphoacoustics/pull/180) inspected exact implementation+docs SHA `e321d5b71830aef8a5418496013913569b237333`, reporting two additional defects. This makes **13 P2 findings over five review rounds**, none of which is empirical phonetic/physical evidence:
+
+1. [P2 malformed predicate trees](https://github.com/ryonakayama234/morphoacoustics/pull/180#discussion_r4367560227): an EQ list-valued key raised `unhashable type: list`, a malformed NOT/AND operand raised, and a bool-valued EQ could silently be treated as FALSE in a higher-priority competitor. Rejection must occur *before eligibility*, not as a generic fallback.
+2. [P2 malformed share-member coordinates](https://github.com/ryonakayama234/morphoacoustics/pull/180#discussion_r4367560231): list-valued / irregular coordinates caused a hash/sort exception before a rejected receipt could be produced.
+
+**Test-before-fix:** new `tests/test_smc4_gate_b_codex_p2_round5.py` committed alone at `4c74aa657c50983d4ca23ff9e5e079eb72820295`; [isolated Python 3.12 CI job](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40146239323/job/121028079454) was RED with both crash and silent-ineligible failure witnesses. Negative outcome retained.
+
+**Separate remediation:** `75b346dc37768b306d99a7a5fc563c05ad7b7c8b` added a bounded, strictly typed Kleene predicate-tree validator (node/operator/operand/Unicode shape, no cycles). Source SHA `e49ecb1ae1ad0e71ca7704e276fecd0d49191ff0` validates every lexicon rule tree before selection, plus well-formed tuple-of-two-string share coordinates before sort/hash. A nonselected malformed competitor is not treated as false. No frozen Gate A or B preregistered expectation was edited. **Exact repaired-source and final documentation HEAD CI are separate checks; do not extrapolate success from earlier SHAs.**
+
+**Review request:** ask for a *fresh* GitHub `@codex review` at the final documentation HEAD after exact-SHA verification. The code review is the only available external AI adversarial audit, not human scientific peer review. `SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE`.
