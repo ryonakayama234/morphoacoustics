@@ -304,6 +304,8 @@ def _validate(doc: Any) -> None:
             y = _obj(slot, {"slot_id", "candidates"})
             slots.append(_str(y["slot_id"]))
             total_slots += 1
+            if total_slots > 1024:
+                raise _Invalid("SLOT_LIMIT")
             templates: list[str] = []
             for candidate in _list(y["candidates"], 1024):
                 z = _obj(candidate, {
@@ -371,14 +373,41 @@ def _validate(doc: Any) -> None:
         _frac(x["lag_s"])
 
 
+def _collection_key(field: str, val: Any) -> tuple[str, ...]:
+    """Normative schema keys, never incidental serialized-field order."""
+    if field == "paths":
+        return (val["path_id"],)
+    if field == "definitions":
+        return (val["definition_id"], val["semantic_revision"])
+    if field == "bundles":
+        return (val["bundle_id"],)
+    if field == "slots":
+        return (val["slot_id"],)
+    if field == "candidates":
+        return (val["template_id"],)
+    if field == "shares":
+        return (val["episode_id"],)
+    if field == "anchors":
+        return (val["unit_id"], val["slot_id"], val["event"],
+                str(val["time_s"]["numerator"]), str(val["time_s"]["denominator"]))
+    if field == "relations":
+        return (val["from_unit"], val["from_slot"], val["from_event"],
+                val["to_unit"], val["to_slot"], val["to_event"],
+                str(val["lag_s"]["numerator"]), str(val["lag_s"]["denominator"]))
+    if field == "members":
+        return (val[0], val[1])
+    if field in ("capabilities", "target_unit_ids"):
+        return (val,)
+    raise AssertionError("unregistered canonical ordering field")
+
+
 def _canonical(value: Any, field_name: str = "") -> Any:
     if type(value) is dict:
         return {k: _canonical(v, k) for k, v in value.items()}
     if type(value) is list:
         items = [_canonical(v) for v in value]
         if field_name in _UNORDERED:
-            items.sort(key=lambda v: json.dumps(
-                v, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+            items.sort(key=lambda item: _collection_key(field_name, item))
         return items
     return value
 
