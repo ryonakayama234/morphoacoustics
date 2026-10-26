@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
 import json
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 from .canonical_ingress import (
     CanonicalCompileRequest, IngressReceipt, parse_canonical_request,
@@ -70,7 +70,7 @@ class _Refusal(Exception):
         self.detail = detail
 
 
-def _fail(code: str, detail: str = "") -> None:
+def _fail(code: str, detail: str = "") -> NoReturn:
     raise _Refusal(code, detail)
 
 
@@ -174,6 +174,7 @@ def _compile_accepted(
         ("rule_revision", lex["rule_revision"]),
     )))
     trace: list[str] = []
+    phase = "MAPPING"
 
     try:
         path = next(
@@ -293,6 +294,7 @@ def _compile_accepted(
             for member in members:
                 member_to_task[member] = task_id
 
+        phase = "COORDINATION"
         if coord["coordination_kind"] != "EXACT_EVENTS":
             _fail("UNSUPPORTED_COORDINATION", coord["coordination_kind"])
         anchors: list[EventAnchor] = []
@@ -339,10 +341,17 @@ def _compile_accepted(
                 a.task_id, str(a.event), a.time_s,
             ))),
         )
+        phase = "GRAPH"
         validation = validate_plan(plan)
         if validation.status != ReportStatus.STRUCTURALLY_VALID:
             code = validation.diagnostics[0].code if validation.diagnostics else "INVALID_PLAN"
+            if code in {
+                "CONTRADICTORY_TIMING", "NONPOSITIVE_DURATION",
+                "NEGATIVE_ANCHORED_TIME",
+            }:
+                phase = "TIMING"
             _fail(code, "; ".join(x.code + ":" + x.subject_id for x in validation.diagnostics))
+        phase = "TIMING"
         timing = resolve_timing(plan)
         if timing.status != ReportStatus.RESOLVED:
             _fail("UNRESOLVED_TIMING", "; ".join(x.subject_id for x in timing.diagnostics))
@@ -366,28 +375,11 @@ def _compile_accepted(
             ),
         )
     except _Refusal as error:
-        # Preserve failure stage: lexical selection is not event coordination.
-        if error.code in {
-            "CONTRADICTORY_TIMING", "NONPOSITIVE_DURATION",
-            "NEGATIVE_ANCHORED_TIME", "UNRESOLVED_TIMING",
-        }:
-            stage = "TIMING"
-        elif error.code in {
-            "UNSUPPORTED_COORDINATION", "UNKNOWN_TIMING_MEMBER",
-            "DUPLICATE_COORDINATION",
-        }:
-            stage = "COORDINATION"
-        elif error.code in {
-            "INVALID_PLAN", "DUPLICATE_ASSOCIATION",
-            "UNKNOWN_ASSOCIATION_ENDPOINT", "UNASSOCIATED_UNIT",
-            "ORPHAN_TASK", "DUPLICATE_COUPLING",
-        }:
-            stage = "GRAPH"
-        else:
-            stage = "MAPPING"
+        # Failure stages are derived from the active pipeline phase rather than
+        # a brittle allowlist of errors; future SMC3 diagnostics remain GRAPH.
         return CompileResult(
             None, (), None, _receipt(
-                "REJECTED", stage, error.code, raw_sha, semantic_sha,
+                "REJECTED", phase, error.code, raw_sha, semantic_sha,
                 provenance, tuple(sorted(trace)), (error.detail,),
             ),
         )
