@@ -189,7 +189,6 @@ def _compile_accepted(
         }
         context = cast(dict[str, str], mapping["context"])
         occurrences: dict[tuple[str, str], dict[str, Any]] = {}
-        selected_ids = {u.unit_id for u in units}
 
         for unit in units:
             matching: list[dict[str, Any]] = []
@@ -234,7 +233,8 @@ def _compile_accepted(
         groups: list[tuple[str, tuple[tuple[str, str], ...]]] = []
         assigned: set[tuple[str, str]] = set()
         for share in coord["shares"]:
-            members = tuple(sorted(tuple(member) for member in share["members"]))
+            members = tuple(sorted((cast(str, member[0]), cast(str, member[1]))
+                                   for member in share["members"]))
             if len({u for u, _ in members}) < 2:
                 _fail("INCOMPATIBLE_SHARE", share["episode_id"])
             for member in members:
@@ -366,9 +366,28 @@ def _compile_accepted(
             ),
         )
     except _Refusal as error:
+        # Preserve failure stage: lexical selection is not event coordination.
+        if error.code in {
+            "CONTRADICTORY_TIMING", "NONPOSITIVE_DURATION",
+            "NEGATIVE_ANCHORED_TIME", "UNRESOLVED_TIMING",
+        }:
+            stage = "TIMING"
+        elif error.code in {
+            "UNSUPPORTED_COORDINATION", "UNKNOWN_TIMING_MEMBER",
+            "DUPLICATE_COORDINATION",
+        }:
+            stage = "COORDINATION"
+        elif error.code in {
+            "INVALID_PLAN", "DUPLICATE_ASSOCIATION",
+            "UNKNOWN_ASSOCIATION_ENDPOINT", "UNASSOCIATED_UNIT",
+            "ORPHAN_TASK", "DUPLICATE_COUPLING",
+        }:
+            stage = "GRAPH"
+        else:
+            stage = "MAPPING"
         return CompileResult(
             None, (), None, _receipt(
-                "REJECTED", "MAPPING", error.code, raw_sha, semantic_sha,
+                "REJECTED", stage, error.code, raw_sha, semantic_sha,
                 provenance, tuple(sorted(trace)), (error.detail,),
             ),
         )
