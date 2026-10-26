@@ -80,3 +80,24 @@ def test_report_is_strict_json_and_can_be_archived_after_test_failures():
     encoded = json.dumps(report, allow_nan=False, sort_keys=True)
     assert '"uniform_matched_tube_oracle"' in encoded
     assert '"g4": "VOICE_NO_GO_UNCHANGED"' in encoded
+
+
+def test_duct_power_error_cannot_hide_behind_large_source_dissipation():
+    # Exact independent-review counterexample: high Rs suppresses duct power.
+    # A 1e-7 perturbation to outlet pressure violates the FROZEN 1e-9 duct
+    # closure despite a source-resistor term ~1e5 times the inlet power.
+    bodies, _ = vm.fixture()
+    length, areas = bodies["M0"]
+    m = vm.cascade(areas, length, 100.0)
+    zc = vm.RHO * vm.SPEED / float(areas[0])
+    rs = 10.0 * zc
+    d = vm.drive(m, vm.b0_load(float(areas[-1]), 100.0),
+                 p_drive=vm.P_DRIVE, source_r=rs)
+    assert d["power"]["pass"]
+    compromised = vm.power_residual(
+        d["p_in"], d["U_in"], d["p_mouth"] * (1.0 + 1e-7),
+        d["U_mouth"], p_drive=vm.P_DRIVE, source_r=rs,
+    )
+    assert compromised["duct_relative_residual"] >= 5e-8
+    assert compromised["source_relative_residual"] < 1e-9
+    assert not compromised["pass"]
