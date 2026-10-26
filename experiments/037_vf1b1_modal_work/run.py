@@ -68,13 +68,13 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
     sim=make_pilot(pressure_shape=shape,sample_rate_hz=rate)
     duration=0.5
     n=int(round(duration*rate))
-    state=np.empty((n,12),dtype=np.float64)
+    state=np.empty((n,13),dtype=np.float64)
     # columns: time, plus_x, minus_x, plus_v, minus_v,
-    # Es, Ea, full source work, full tissue damping, anti oracle error,
-    # mouth inlet p, valve flow.
+    # Es, Ea, full source work, full tissue damping, anti analytic
+    # position error [m], anti velocity error [m/s], inlet p, valve flow.
     cum_work=np.zeros(2)
     cum_loss=np.zeros(2)
-    maxima=np.zeros(4)
+    maxima=np.zeros(5)
     status="SUCCESS"
     error=None
     recorded=0
@@ -83,7 +83,8 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
     predicted_am=np.array((0.5**0.5*(sim.x[0]-sim.x[1]),
                            0.5**0.5*(sim.v[0]-sim.v[1])))
     midpoint=midpoint_transition(sim.tissue,sim.dt)
-    max_absolute_analytic_error=0.
+    max_analytic_position_error_m=0.
+    max_analytic_velocity_error_m_s=0.
     try:
         for k in range(n):
             x0=sim.x.copy()
@@ -92,19 +93,25 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
             o=observe_step(sim.tissue,sim.dt,x0,v0,out)
             w=independent_work_identity(sim.tissue,sim.dt,x0,v0,out)
             predicted_am=midpoint@predicted_am
-            max_absolute_analytic_error=max(
-                max_absolute_analytic_error,
-                abs(predicted_am[0]-o.coordinate_after_m[1]),
+            max_analytic_position_error_m=max(
+                max_analytic_position_error_m,
+                abs(predicted_am[0]-o.coordinate_after_m[1]))
+            max_analytic_velocity_error_m_s=max(
+                max_analytic_velocity_error_m_s,
                 abs(predicted_am[1]-o.velocity_after_m_s[1]))
             cum_work+=np.asarray(o.pressure_work_j)
             cum_loss+=np.asarray(o.damping_loss_j)
             maxima=np.maximum(maxima, np.abs((
                 o.residual_j[0],o.residual_j[1],
-                w["full_identity_residual_j"],o.antisym_midpoint_oracle_error)))
+                w["full_identity_residual_j"],
+                o.antisym_midpoint_position_error_m,
+                o.antisym_midpoint_velocity_error_m_s)))
             state[k]=(
                 out.time_s,*o.coordinate_after_m,*o.velocity_after_m_s,
                 *o.energy_after_j,w["full_pressure_work_j"],
-                w["full_damping_loss_j"],o.antisym_midpoint_oracle_error,
+                w["full_damping_loss_j"],
+                o.antisym_midpoint_position_error_m,
+                o.antisym_midpoint_velocity_error_m_s,
                 out.pressure_mid_pa,out.flow_valve_m3_s)
             recorded=k+1
     except Exception as exc:
@@ -116,7 +123,8 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
                         column_names=np.asarray((
                          "t_s","x_plus_m","x_minus_m","v_plus_m_s","v_minus_m_s",
                          "E_plus_j","E_minus_j","full_work_j_step",
-                         "full_damping_j_step","oracle_error_step",
+                         "full_damping_j_step","oracle_position_error_m",
+                         "oracle_velocity_error_m_s",
                          "inlet_pressure_pa","q_valve_m3_s")))
     if recorded:
         full=state[:recorded]
@@ -141,8 +149,10 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
             "modal_damping_total_j":cum_loss.tolist(),
             "max_modal_energy_residual_j":maxima[:2].tolist(),
             "max_full_tissue_energy_residual_j":float(maxima[2]),
-            "max_step_midpoint_oracle_error":float(maxima[3]),
-            "max_full_trajectory_oracle_error":float(max_absolute_analytic_error),
+            "max_step_oracle_position_error_m":float(maxima[3]),
+            "max_step_oracle_velocity_error_m_s":float(maxima[4]),
+            "max_trajectory_oracle_position_error_m":float(max_analytic_position_error_m),
+            "max_trajectory_oracle_velocity_error_m_s":float(max_analytic_velocity_error_m_s),
             "initial_modal_energies_j":initial_modal_energy.tolist(),
             "final_modal_energies_j":state[recorded-1,5:7].tolist() if recorded else None,
             "modal_energy_change_j":(state[recorded-1,5:7]-initial_modal_energy).tolist() if recorded else None,
@@ -169,7 +179,8 @@ def run(outdir:Path,tests:Path|None) -> dict:
         and all(v["status"]=="SUCCESS" and v["n_recorded"]==v["n_requested"]
                 and max(v["max_modal_energy_residual_j"])<1e-10
                 and v["max_full_tissue_energy_residual_j"]<1e-10
-                and v["max_full_trajectory_oracle_error"]<1e-9
+                and v["max_trajectory_oracle_position_error_m"]<1e-9
+                and v["max_trajectory_oracle_velocity_error_m_s"]<1e-9
                 and abs(v["modal_work_total_j"][1])<1e-15
                 for v in results.values()))
     # A comparative convergence diagnostic on the SAME physical 0.5s horizon.
@@ -223,7 +234,8 @@ def main():
                 "status":r["status"],
                 "modal_work_j":r["modal_work_total_j"],
                 "modal_damping_j":r["modal_damping_total_j"],
-                "max_analytic_err":r["max_full_trajectory_oracle_error"],
+                "max_oracle_error_m":r["max_trajectory_oracle_position_error_m"],
+                "max_oracle_error_m_s":r["max_trajectory_oracle_velocity_error_m_s"],
                 "windows":r["windows"]},sort_keys=True))
     if report["verdict"]!="MODAL_WORK_NUMERICAL_PASS_NOT_A_PHONATOR":
         raise SystemExit(1)
