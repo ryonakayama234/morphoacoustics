@@ -52,7 +52,8 @@ def test_antisymmetric_midpoint_oracle_independent_of_driving_flow_and_tract():
             x0,v0=sim.x.copy(),sim.v.copy()
             out=sim.step(subglottal_pressure_pa=drive)
             got=observe_step(sim.tissue,sim.dt,x0,v0,out)
-            assert got.antisym_midpoint_oracle_error<2e-14
+            assert got.antisym_midpoint_position_error_m<2e-14
+            assert got.antisym_midpoint_velocity_error_m_s<2e-12
             assert got.pressure_work_j[1]==0
             assert got.damping_loss_j[1]>=0
             assert got.residual_j[1]==pytest.approx(0,abs=2e-13)
@@ -112,7 +113,7 @@ def test_false_mechanical_trace_is_not_certified():
     tampered=replace(out,x_m=(out.x_m[0]+1e-4,out.x_m[1]))
     corrupt=observe_step(sim.tissue,sim.dt,x0,v0,tampered)
     assert max(map(abs,corrupt.residual_j))>1e-10
-    assert corrupt.antisym_midpoint_oracle_error>1e-9
+    assert corrupt.antisym_midpoint_position_error_m>1e-9
 
 
 def test_tests_are_required_for_aggregate_scientific_pass(tmp_path):
