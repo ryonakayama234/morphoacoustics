@@ -176,3 +176,18 @@ def test_scientific_gate_blocks_false_pass_from_failed_or_missing_pytest(tmp_pat
     assert ok["eligible"]
     assert runner.scientific_gate_eligible(True,ok)
     assert not runner.scientific_gate_eligible(False,ok)
+
+
+def test_measured_pressure_to_tissue_work_balances_mechanical_energy():
+    sim=make_pilot()
+    for _ in range(30):
+        old_tissue_energy=sim.energy()[0]
+        old_v=sim.v.copy()
+        out=sim.step(subglottal_pressure_pa=800.)
+        mid_v=0.5*(old_v+sim.v)
+        independent_tissue_pressure_work=(sim.dt*out.pressure_mid_pa*
+                                          float(np.dot(sim.g,mid_v)))
+        energy_change=sim.energy()[0]-old_tissue_energy
+        assert (energy_change-independent_tissue_pressure_work+
+                out.tissue_damping_loss_j) == pytest.approx(
+                    out.tissue_energy_residual_j,abs=1e-14)
