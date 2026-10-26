@@ -1,0 +1,49 @@
+name: vf1b1-modal-work-research
+on:
+  pull_request:
+    paths:
+      - "experiments/037_vf1b1_modal_work/**"
+      - "docs/research/vf1b/**"
+      - ".github/workflows/vf1b1-modal-work.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install frozen numerical dependencies
+        run: python -m pip install -e . "numpy==2.4.6" "pytest==9.1.1"
+      - name: Preregistered independent modal mechanics and adversarial tests
+        run: |
+          mkdir -p evidence
+          set +e
+          python -m pytest -q experiments/036_vf1a_two_mass/test_two_mass.py experiments/037_vf1b1_modal_work/test_modal.py > evidence/pytest.log 2>&1
+          code=$?
+          cat evidence/pytest.log
+          if [ "$code" -eq 0 ]; then passed=true; else passed=false; fi
+          printf '{"schema":"vf1b1.independent-pytest.v1","passed":%s,"exit_code":%s}\n' "$passed" "$code" > evidence/test_status.json
+          exit "$code"
+      - name: Execute unchanged VF-1A 0.5s physical models and modal readout
+        if: always()
+        run: |
+          mkdir -p evidence
+          set +e
+          python experiments/037_vf1b1_modal_work/run.py --output-dir evidence --test-status-file evidence/test_status.json > evidence/run.log 2>&1
+          code=$?
+          cat evidence/run.log
+          exit "$code"
+      - name: Archive physical evidence, including failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1b1-modal-evidence
+          path: evidence/
+          retention-days: 90
+          if-no-files-found: error
