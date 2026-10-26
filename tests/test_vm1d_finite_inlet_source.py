@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import numpy as np
@@ -72,3 +73,10 @@ def test_finite_source_is_not_mislabeled_prescribed_flow():
             assert "HpU_pa_s_m3" in v["ideal_prescribed_flow"]
             assert "p_mouth_per_drive" in v["finite_source"]["1.0"]
             assert "WAV" not in str(v)
+
+
+def test_report_is_strict_json_and_can_be_archived_after_test_failures():
+    report = vm.run()
+    encoded = json.dumps(report, allow_nan=False, sort_keys=True)
+    assert '"uniform_matched_tube_oracle"' in encoded
+    assert '"g4": "VOICE_NO_GO_UNCHANGED"' in encoded
