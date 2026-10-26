@@ -16,3 +16,10 @@
 - `SELF_OSCILLATION_FOUND` requires reproducible nondecaying periodic tissue motion driven by steady pressure, not 1–2 damped transient cycles. **Not an assumed gate outcome**.
 - `G2_INDETERMINATE_PHYSIOLOGY`, `G3_RECEIVER_NOT_TESTED`, `G4_VOICE_NO_GO` always.
 - No public graph module or Character Creator UI before later owner's explicit review.
+
+## Post-registration evidence 2026-10-26 — symbolic oracle only (numeric CI pending)
+
+- Preregistration was committed `a40222f` before source `a88c63f`. This entry was added later; it does not revise thresholds or fixture.
+- **Independent Wolfram evaluation completed:** using `Uin=q-g1*v1-g2*v2`, symbolic difference between the three discrete midpoint subsystem work identities and the declared total work identity is exactly **0**. Symmetric and antisymmetric free natural modes under `m1=m2=1.2e-4kg,k1=k2=30N/m,kc=8N/m`: **79.57747154594769Hz**, **98.53906213133976Hz**; midpoint 48k antisymmetric phase **0.01289855423655888rad/step**. Source and numeric output in `experiments/036_vf1a_two_mass/wolfram/`; Python tests verify both mode numbers as an independent oracle.
+- These values establish **mathematical consistency of the stated reduced system only**; they do not demonstrate transient numerical execution, physically validated phonatory tissue, source self-oscillation, or actual voiced sound.
+- Research implementation `experiments/036_vf1a_two_mass/two_mass.py`, tests, run traces and scientific artifact workflow exist on stacked Draft #209. GitHub Actions is presently QUEUED. **No G0/G1 implemented-system PASS** has yet been certified; independent source reviewer request is active. Preserve this status until exact-head evidence is returned.
