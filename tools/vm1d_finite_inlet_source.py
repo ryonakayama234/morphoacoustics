@@ -96,19 +96,29 @@ def power_residual(p_in: complex, u_in: complex, p_out: complex,
     residual_duct_w = p_in_w - p_out_w
     residual_source_w = (drive_w - p_in_w - source_loss_w
                          if drive_w is not None else 0.0)
-    denom = max(abs(p_in_w), abs(p_out_w), abs(source_loss_w),
-                abs(drive_w) if drive_w is not None else 0, 1e-25)
-    relative = max(abs(residual_duct_w), abs(residual_source_w)) / denom
+    # Distinct power identities need DISTINCT local scales. A large source
+    # resistor can dissipate >100,000x the acoustic power reaching the duct.
+    # Dividing duct mismatch by drive power would hide a real duct violation.
+    duct_scale = max(abs(p_in_w), abs(p_out_w), 1e-25)
+    source_scale = max(abs(drive_w) if drive_w is not None else 0.0,
+                       abs(p_in_w), abs(source_loss_w), 1e-25)
+    duct_relative = abs(residual_duct_w) / duct_scale
+    source_relative = abs(residual_source_w) / source_scale
+    relative = max(duct_relative, source_relative)
     valid = (all(math.isfinite(v) for v in
-                 (p_in_w, p_out_w, source_loss_w, relative))
+                 (p_in_w, p_out_w, source_loss_w,
+                  duct_relative, source_relative))
              and p_in_w > 0 and p_out_w > 0
              and (drive_w is None or drive_w > 0)
-             and source_loss_w >= 0 and relative <= 1e-9)
+             and source_loss_w >= 0
+             and duct_relative <= 1e-9 and source_relative <= 1e-9)
     return {
         "inlet_w": p_in_w, "mouth_w": p_out_w,
         "source_resistor_w": source_loss_w,
         "drive_w": drive_w, "duct_residual_w": residual_duct_w,
         "source_residual_w": residual_source_w,
+        "duct_relative_residual": duct_relative,
+        "source_relative_residual": source_relative,
         "relative_residual": relative, "pass": bool(valid),
     }
 
