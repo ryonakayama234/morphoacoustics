@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import json
 import math
 import pathlib
 import sys
@@ -129,3 +130,15 @@ def test_bad_pressure_input_rejected():
     for bad in (float("nan"), float("inf"), float("-inf"), True):
         with pytest.raises(ValueError):
             sim.step(subglottal_pressure_pa=bad)
+
+
+def test_independently_executed_wolfram_oracle_is_preserved_and_used():
+    path = pathlib.Path(__file__).parent / "wolfram/oracle.json"
+    ref = json.loads(path.read_text(encoding="utf-8"))
+    assert ref["midpoint_full_power_identity_residual"] == 0
+    assert math.sqrt(30/1.2e-4)/(2*math.pi) == pytest.approx(
+        ref["symmetric_free_mode_hz"],abs=1e-12)
+    w=math.sqrt((30+2*8)/1.2e-4)
+    assert w/(2*math.pi) == pytest.approx(ref["antisymmetric_free_mode_hz"],abs=1e-12)
+    assert 2*math.atan(w/(2*48000)) == pytest.approx(
+        ref["midpoint_antisymmetric_48k_rad_per_step"],abs=1e-12)
