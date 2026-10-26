@@ -141,11 +141,12 @@ Take                                  = 一意の身体・演技・場・物理�
 
 - Core main は固定ベース `e05e3274ad69bfb9202816049f6661a18ba39ec0`。既存全体アーキテクチャは `docs/architecture.md`・`docs/invariants.md`・OG3/OG4研究を参照。
 - [VM-1A Draft #198](https://github.com/ryonakayama234/morphoacoustics/pull/198): **口端**の静的インパルス伝達は科学的な診断ができた。声の品質は未認定。
-- [VM-1B Draft #201](https://github.com/ryonakayama234/morphoacoustics/pull/201): 同じB0仮定を用いた独立数式と時間領域の**数値整合**、証拠保存改善。最近の実行CIはPASSだが、2026-10-26のCodex最終レビューには**未解決の証拠・CI面のP2指摘が残る**（浅いGit checkoutでのparent記録、エネルギー異常時のレポート保持、先行テスト失敗時の計測データ保持を含む）。**全指摘を精査・修正・再監査するまで科学研究PRの昇格を保留**。
+- [VM-1B Draft #201](https://github.com/ryonakayama234/morphoacoustics/pull/201): B0の共有仮定の下で、独立数式と時間領域の**数値整合**を測定。**履歴（修正済み）**：浅いGit checkoutでのparent記録、エネルギー異常時の失敗レポート、先行テスト失敗後の測定についてP2指摘があった。**現行判定**：これらを含む5件の証拠・CI指摘を修正し、厳密に `269082d51e24190209e832991ca3c9056883428a` に対するCI成功とCodex再レビューで新規重大指摘なし（詳細は [PROGRESS_LEDGER.md](PROGRESS_LEDGER.md)）。**ただし研究Draftは未マージ**。この結果は数値整合であり、実際の生物の音響放射・声品質の物理検証ではない。
 - [SA-2A Draft #172](https://github.com/ryonakayama234/morphoacoustics/pull/172): 厳密に定義した**バッフル付き円形ピストン**の解析参照は研究CIで検証済み。これは実際の人間・動物の口の測定ではない。
 - [SA-2B Issue #173](https://github.com/ryonakayama234/morphoacoustics/issues/173): この参照とB0の差、時間領域で因果・受動な放射負荷、必要な場合の改良モデル。**二重研究を避け既存SA-2A参照を再利用**。
 - [Evidence durability #197](https://github.com/ryonakayama234/morphoacoustics/issues/197): Artifact保存期間を越えて証拠を再検証できる構成は未完。並行して設計する。
-- 次のゲート順：**VM-1BレビューのP2整理 → SA-2A対B0の物理偏差・受動境界の検証 → 能動発声器官+声道の双方向連成 → 2種器官の交換と身体介入 → 放射受音点と初めての声品質候補**。順に合否を判定し、不合格時は代替モデルを実験する。
+- [VM-1C Draft #204](https://github.com/ryonakayama234/morphoacoustics/pull/204): `7113758a7bea2806c378da6f76aa9f278e09371d` で理想バッフル付き円形ピストンとB0の複素比較を実施し、CI成功とCodex再レビューで新規指摘なし。凍結M0/M1で600/100Hzの口端圧力選択性は双方で大きく、**B0近似誤差のみが原因という仮説は支持されない**。実口腔・受音点の物理的妥当性は未確定、研究Draftは未マージ。
+- 次のゲート順（現在）：**入口流量固定の仮定・声道共鳴・壁損失・有限源インピーダンスの分離 → 必要な因果受動放射負荷 → 能動発声器官+声道の双方向連成 → 2種器官交換と身体介入 → 放射受音点と初めての声品質候補**。各段階の合否・適用範囲を別々に判定する。
 
 Studioは [Workspace v2 Draft #33](https://github.com/ryonakayama234/morphoacoustics-studio/pull/33) の受け入れ済みビジュアル・三モード構成を保護し、現在は一切実装しない。MotorPersonaは [現行の仮説文書](https://github.com/ryonakayama234/morphoacoustics/blob/main/docs/research/motor-skill-persona-hypotheses-v0.md) のH1–H4という**未検証**地位を維持する。
 
