@@ -34,3 +34,6 @@ Exact tested source head `ba7bededaa5baba5fd407b1b88dc8af202639d51`; [scientific
 Under **equal** m,k,d and pressure coupling g=(g,g), the orthonormal symmetric (+) and antisymmetric (−) tissue coordinates are decoupled mechanically. The tract, glottal flow and instantaneous acoustic pressure drive only the symmetric coordinate; the anti coordinate follows `m x_minus'' + d x_minus' + (k+2kc) x_minus = 0`. This is an exact property of the stipulated model, **NOT a biological generalization**. Asymmetric organ parameters reject this proof.
 
 Aero work into + feeds static deformation and loss in the tested case; its positive value does not imply ongoing mode energy growth. A later distinct asymmetric pressure/flow-separation law would have to supply rigorously accounted signed work without inventing a periodic signal. This work does **not** yet authorize a different law.
+
+### Metrology correction (2026-10-26, no physical-law change)
+Analytic midpoint oracle comparisons now track displacement error [m] and velocity error [m/s] as **separate typed quantities**, not a norm of mixed physical units. Source/force equations and Studio panel ownership unchanged. This is a dimensional-consistency refinement only.
