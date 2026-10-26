@@ -116,9 +116,39 @@ def one_case(outdir: Path, name: str, shape: str, drive: float,
             }
 
 
-def run(outdir:Path)->dict:
+
+def independent_test_receipt(path: Path | None) -> dict:
+    """An archived scientific trace is NOT evidence the independent suite passed."""
+    if path is None or not path.is_file():
+        return {"eligible": False, "status": "MISSING_TEST_RESULT",
+                "status_file_sha256": None}
+    raw = path.read_bytes()
+    try:
+        record = json.loads(raw)
+    except (ValueError, UnicodeDecodeError):
+        return {"eligible": False, "status": "INVALID_TEST_RESULT",
+                "status_file_sha256": sha256(raw).hexdigest()}
+    if not isinstance(record, dict):
+        return {"eligible": False, "status": "INVALID_TEST_RESULT",
+                "status_file_sha256": sha256(raw).hexdigest()}
+    eligible = (record.get("schema") == "vf1a.science-pytest.v1"
+                and record.get("passed") is True
+                and type(record.get("exit_code")) is int
+                and record["exit_code"] == 0)
+    return {"eligible": bool(eligible),
+            "status": "PASS" if eligible else "FAILED_OR_UNVERIFIED_TESTS",
+            "exit_code": record.get("exit_code"),
+            "status_file_sha256": sha256(raw).hexdigest()}
+
+
+def scientific_gate_eligible(physical_numerics_ok: bool, test_evidence: dict) -> bool:
+    return physical_numerics_ok is True and test_evidence.get("eligible") is True
+
+
+def run(outdir:Path, test_status_path:Path | None = None)->dict:
     outdir.mkdir(parents=True,exist_ok=True)
     prov=provenance()
+    suite=independent_test_receipt(test_status_path)
     results={}
     for name,shape,drive,k in (
         ("zero_uniform","uniform",0.,1.),
@@ -133,11 +163,12 @@ def run(outdir:Path)->dict:
     dx=float(np.sqrt(np.mean((a["x1_m"]-b["x1_m"])**2)))
     dq=float(np.sqrt(np.mean((a["q_m3_s"]-b["q_m3_s"])**2)))
     # Report observed values; do not manufacture a future loudness/pitch gain.
-    numeric_ok=(prov["verified"] and
+    diagnostics_ok=bool(prov["verified"] and
         all(v["max_total_energy_residual_j"]<=1e-10 for v in results.values())
         and all(v["max_valve_equation_residual_pa"]<1e-4 for v in results.values())
         and all(v["zero_drive_positive_energy_steps"]==0 for v in results.values()
                 if v["Psub_pa"]==0))
+    numeric_ok=scientific_gate_eligible(diagnostics_ok,suite)
     return {"schema":VERSION,"research":"VF1_A_GENERIC_COMPLIANT_APERTURE",
             "provenance":prov,"simulator":"pinned SFI-3 / SFI-2 1D tract",
             "model":"two mass + pressure-compliant volume + nonlinear Bernoulli resistance",
@@ -148,6 +179,8 @@ def run(outdir:Path)->dict:
                                         "upstream_q_rms_difference_m3_s":dq,
                                         "observed":dx>1e-12 and dq>1e-12},
             "cases":results,
+            "independent_scientific_suite":suite,
+            "trace_only_numerical_diagnostics_pass":diagnostics_ok,
             "g0_g1_research_numerics":"PASS" if numeric_ok else "NUMERICALLY_UNRESOLVED",
             "g2":"INDETERMINATE_PHYSIOLOGY",
             "g3":"SUSTAINED_SELF_OSCILLATION_NOT_ESTABLISHED",
@@ -160,9 +193,12 @@ def run(outdir:Path)->dict:
 def main()->None:
     cli=argparse.ArgumentParser()
     cli.add_argument("--output-dir",type=Path,required=True)
-    target=cli.parse_args().output_dir
+    cli.add_argument("--test-status-file",type=Path,default=None,
+                     help="Required to certify G0/G1; absent or failed => trace-only")
+    args=cli.parse_args()
+    target=args.output_dir
     try:
-        report=run(target)
+        report=run(target,args.test_status_file)
     except Exception as exc:
         report={"schema":VERSION,"verdict":"NUMERICALLY_UNRESOLVED",
                 "failure_type":type(exc).__name__,"failure":str(exc),
