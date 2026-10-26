@@ -335,6 +335,17 @@ def main() -> None:
         serialized = json.dumps(report, indent=2, sort_keys=True, allow_nan=False)
     path.write_text(serialized + "\n", encoding="utf-8")
     print("VM-1D:", report["research_verdict"])
+    if "source_loading_sensitivity" in report:
+        print("VM1D_PORT_SELECTIVITY_SI_CALIBRATED",
+              json.dumps(report["source_loading_sensitivity"],
+                         sort_keys=True, allow_nan=False))
+        print("VM1D_NUMERICAL_GATES",
+              json.dumps({"uniform_oracle": report["uniform_matched_tube_oracle"],
+                          "max_matrix_det_error": report["max_abs_matrix_det_minus_one"],
+                          "max_relative_power_residual": report["max_relative_power_residual"],
+                          "negative_controls": report["negative_controls"],
+                          "executed_sha": report["provenance"]["executed_checkout_sha"]},
+                         sort_keys=True, allow_nan=False))
     if report["research_verdict"] != "G0_G1_PASS_SOURCE_LOADING_SENSITIVITY":
         raise SystemExit(1)
 
