@@ -60,7 +60,8 @@ class ModalReceipt:
     residual_j: tuple[float, float]
     coordinate_after_m: tuple[float, float]
     velocity_after_m_s: tuple[float, float]
-    antisym_midpoint_oracle_error: float
+    antisym_midpoint_position_error_m: float
+    antisym_midpoint_velocity_error_m_s: float
 
 
 def observe_step(tissue, dt_s: float, x_before, v_before, output) -> ModalReceipt:
@@ -77,11 +78,13 @@ def observe_step(tissue, dt_s: float, x_before, v_before, output) -> ModalReceip
     damping = dt_s*d*velocity_mid**2
     residual = (ea-eb)-work+damping
     predicted = midpoint_transition(tissue, dt_s) @ np.array((xb[1],vb[1]))
-    oracle_error = float(np.linalg.norm(predicted-np.array((xa[1],va[1]))))
+    oracle_position_error_m = abs(float(predicted[0]-xa[1]))
+    oracle_velocity_error_m_s = abs(float(predicted[1]-va[1]))
     def pair(a):
         return (float(a[0]),float(a[1]))
     return ModalReceipt(pair(eb),pair(ea),pair(work),pair(damping),
-                        pair(residual),pair(xa),pair(va),oracle_error)
+                        pair(residual),pair(xa),pair(va),
+                        oracle_position_error_m,oracle_velocity_error_m_s)
 
 
 def independent_work_identity(tissue, dt_s, x_before, v_before, output) -> dict:
