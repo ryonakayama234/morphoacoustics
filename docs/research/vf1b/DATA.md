@@ -38,3 +38,9 @@ ResearchRun
 
 ## Implementation authorization amendment (2026-10-26)
 Creator delegated technical experiments and research PR management. This is the **VF-1B1** independent modal-work audit only; underlying VF-1A equations remain byte-for-byte unchanged. The first comparison is the exact symmetric tissue parameters and equal pressure areas of VF-1A; symmetric and antisymmetric modal coordinates use orthonormal unit vectors. Discrete per-step modal work and damping are compared to stored mechanical energy, plus the exact damped midpoint recurrence for the antisymmetric homogeneous mode. Later intraglottal pressure laws remain **outside scope** pending this evidence. New numeric tests/measurements follow this pre-source amendment. Source parent: VF-1A candidate 2b33bc69835170639fb9127c01dab7b523eff4f3; scientific results not yet run.
+
+
+## Captured physical evidence (2026-10-26)
+The implementation serializes 0.5s physical-time traces (NPZ) for 800 Pa uniform at 24k/48k/96k, 800 Pa constricted at 48k and zero-drive uniform at 48k. Each record has SI columns `t_s, x_plus_m, x_minus_m, v_plus_m_s, v_minus_m_s, E_plus_j, E_minus_j, full_work_j_step, full_damping_j_step, oracle_error_step, inlet_pressure_pa, q_valve_m3_s` and a SHA-256 receipt. All raw experiment evidence lives in [CI #40323754160](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40323754160) artifact `vf1b1-modal-evidence` (expires 2027-01-24; permanent archival remains separately unresolved).
+
+Gates: `G0/G1=NUMERICALLY_CONSISTENT_WITH_SYMMETRIC_MODAL_MODEL` in the tested case, `G2=BIOPHYSICAL_MODEL_INDETERMINATE`, `G3=SELF_OSCILLATION_NOT_ESTABLISHED`, `G4=CREATOR_AUDIO_NO_GO`. This record is an experiment-local measurement format; no Core published data schema, biological material, Studio interface or external Take revision is adopted.
