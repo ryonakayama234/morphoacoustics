@@ -229,3 +229,49 @@ def test_s12_ingress_required_and_no_python_graph_ingress():
     assert r.plan is not None
     bad = compile_wire(valid())
     assert bad.plan is None and bad.receipt.stage == "INGRESS"
+
+def test_s12a_stage_specific_timing_and_mapping_failure_receipts():
+    d = valid()
+    d["coordination"]["anchors"][1]["time_s"] = f(0)
+    r = rejected(d, "NONPOSITIVE_DURATION")
+    assert r.receipt.stage == "TIMING"
+    d = valid()
+    d["motor_mapping"]["lexicon"]["bundles"] = []
+    r = rejected(d, "UNMAPPED")
+    assert r.receipt.stage == "MAPPING"
+    d = valid()
+    d["coordination"]["relations"].append({
+        "from_unit": "P1", "from_slot": "tract", "from_event": "ONSET",
+        "to_unit": "P9", "to_slot": "tract", "to_event": "ONSET",
+        "lag_s": f(0),
+    })
+    r = rejected(d, "UNKNOWN_TIMING_MEMBER")
+    assert r.receipt.stage == "COORDINATION"
+
+
+def test_s12b_share_duplicate_resolved_anchor_refused():
+    d = valid()
+    d["coordination"]["shares"] = [
+        {"episode_id": "shared", "members": [["P1", "tract"], ["P2", "tract"]]}
+    ]
+    r = rejected(d, "DUPLICATE_COORDINATION")
+    assert r.receipt.stage == "COORDINATION"
+
+
+def test_s12c_strong_kleene_context_false_overrides_missing():
+    d = valid()
+    d["motor_mapping"]["lexicon"]["bundles"][0]["context"] = {
+        "op": "AND", "key": "", "expected": "", "operands": [
+            {"op": "FALSE", "key": "", "expected": "", "operands": []},
+            {"op": "EQ", "key": "missing", "expected": "value", "operands": []},
+        ],
+    }
+    rejected(d, "UNMAPPED")
+    d = valid()
+    d["motor_mapping"]["lexicon"]["bundles"][0]["context"] = {
+        "op": "OR", "key": "", "expected": "", "operands": [
+            {"op": "TRUE", "key": "", "expected": "", "operands": []},
+            {"op": "EQ", "key": "missing", "expected": "value", "operands": []},
+        ],
+    }
+    assert run(d).plan is not None
