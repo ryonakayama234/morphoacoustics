@@ -21,12 +21,22 @@ jobs:
       - name: Install declared Core dependencies (no SciPy required)
         run: python -m pip install -e . pytest
       - name: Preregistered independent and adversarial tests
-        run: python -m pytest -q experiments/036_vf1a_two_mass/test_two_mass.py
+        run: |
+          mkdir -p evidence
+          set +e
+          python -m pytest -q experiments/036_vf1a_two_mass/test_two_mass.py > evidence/pytest.log 2>&1
+          status=$?
+          cat evidence/pytest.log
+          exit "$status"
       - name: Run experiment even if upstream test fails
         if: always()
         run: |
           mkdir -p evidence
-          python experiments/036_vf1a_two_mass/run.py --output-dir evidence
+          set +e
+          python experiments/036_vf1a_two_mass/run.py --output-dir evidence > evidence/runner.log 2>&1
+          status=$?
+          cat evidence/runner.log
+          exit "$status"
       - name: Preserve all successful and failing research traces
         if: always()
         uses: actions/upload-artifact@v4
