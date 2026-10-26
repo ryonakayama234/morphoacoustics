@@ -26,3 +26,11 @@ I. R. Titze, JASA 1988 DOI 10.1121/1.395910; Titze, JASA Express Lett 2022 DOI 1
 
 ## Implementation authorization amendment (2026-10-26)
 Creator delegated technical experiments and research PR management. This is the **VF-1B1** independent modal-work audit only; underlying VF-1A equations remain byte-for-byte unchanged. The first comparison is the exact symmetric tissue parameters and equal pressure areas of VF-1A; symmetric and antisymmetric modal coordinates use orthonormal unit vectors. Discrete per-step modal work and damping are compared to stored mechanical energy, plus the exact damped midpoint recurrence for the antisymmetric homogeneous mode. Later intraglottal pressure laws remain **outside scope** pending this evidence. New numeric tests/measurements follow this pre-source amendment. Source parent: VF-1A candidate 2b33bc69835170639fb9127c01dab7b523eff4f3; scientific results not yet run.
+
+
+## Verified executed system (2026-10-26; VF-1B1 run, no source-force change)
+Exact tested source head `ba7bededaa5baba5fd407b1b88dc8af202639d51`; [scientific CI #40323754160](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40323754160) SUCCESS, [general CI #40323754127](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40323754127) SUCCESS. Experiment-only `experiments/037_vf1b1_modal_work/` observes **unchanged** VF-1A oscillator; existing Core graph, Studio, SMC/ASMR and Takes untouched. Review awaiting independent exact-head verdict.
+
+Under **equal** m,k,d and pressure coupling g=(g,g), the orthonormal symmetric (+) and antisymmetric (−) tissue coordinates are decoupled mechanically. The tract, glottal flow and instantaneous acoustic pressure drive only the symmetric coordinate; the anti coordinate follows `m x_minus'' + d x_minus' + (k+2kc) x_minus = 0`. This is an exact property of the stipulated model, **NOT a biological generalization**. Asymmetric organ parameters reject this proof.
+
+Aero work into + feeds static deformation and loss in the tested case; its positive value does not imply ongoing mode energy growth. A later distinct asymmetric pressure/flow-separation law would have to supply rigorously accounted signed work without inventing a periodic signal. This work does **not** yet authorize a different law.
