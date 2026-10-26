@@ -142,3 +142,37 @@ def test_independently_executed_wolfram_oracle_is_preserved_and_used():
     assert w/(2*math.pi) == pytest.approx(ref["antisymmetric_free_mode_hz"],abs=1e-12)
     assert 2*math.atan(w/(2*48000)) == pytest.approx(
         ref["midpoint_antisymmetric_48k_rad_per_step"],abs=1e-12)
+
+
+def test_scientific_gate_blocks_false_pass_from_failed_or_missing_pytest(tmp_path):
+    # Exact Codex P2 regression: scientifically valid traces must NOT trump
+    # a failed independent suite, even when the runner continues for diagnostics.
+    import importlib.util
+    spec=importlib.util.spec_from_file_location(
+        "vf1a_runner_gate",pathlib.Path(__file__).parent/"run.py")
+    assert spec is not None and spec.loader is not None
+    runner=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    absent=runner.independent_test_receipt(tmp_path/"missing.json")
+    assert not absent["eligible"]
+    assert not runner.scientific_gate_eligible(True,absent)
+    path=tmp_path/"status.json"
+    for record in (
+        {"schema":"vf1a.science-pytest.v1","passed":False,"exit_code":1},
+        {"schema":"vf1a.science-pytest.v1","passed":True,"exit_code":1},
+        {"schema":"vf1a.science-pytest.v1","passed":1,"exit_code":0},
+        {"schema":"vf1a.science-pytest.v1","passed":True,"exit_code":False},
+        {"schema":"forged.other","passed":True,"exit_code":0},
+    ):
+        path.write_text(json.dumps(record),encoding="utf-8")
+        result=runner.independent_test_receipt(path)
+        assert not result["eligible"]
+        assert not runner.scientific_gate_eligible(True,result)
+    path.write_text("{malformed",encoding="utf-8")
+    assert not runner.independent_test_receipt(path)["eligible"]
+    path.write_text(json.dumps({"schema":"vf1a.science-pytest.v1",
+                                "passed":True,"exit_code":0}),encoding="utf-8")
+    ok=runner.independent_test_receipt(path)
+    assert ok["eligible"]
+    assert runner.scientific_gate_eligible(True,ok)
+    assert not runner.scientific_gate_eligible(False,ok)
