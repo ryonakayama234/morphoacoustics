@@ -29,3 +29,7 @@ python -m pytest packages/speech-motor-compiler/tests -q
 python -m mypy packages/speech-motor-compiler/src/morphoacoustics_smc
 ```
 Workflow `.github/workflows/smc3-independent-package-research.yml` runs Python 3.11/3.12/3.13 plus strict mypy. Root CI and SV1 run independently by their existing workflows. Record exact-HEAD checks, not green status from an earlier source revision. Do not infer phonetic, physical, acoustic or subjective evidence from CI. Negative fixtures are first-class results; do not delete them to achieve green.
+
+## Test-first diagnostic-stage follow-up (2026-10-26)
+- Additional adversaries for distinct TIMING/MAPPING/COORDINATION failure stage, shared-member duplicate resolved anchors and Kleene TRUE/FALSE/UNKNOWN: **test-first SHA `23638c99a953346c6e89e6d4ca0fa7737d29a935`**.
+- Separate code repair SHA `2fb620e57a4a9ff96215188e42b2fed9df127d99` changes stage handling; preserves earlier experimental record. Exact-SHA CI and independent review are pending. A test-first commit and intentionally red test are **not equivalent** to an observed completed failing GitHub run while Actions remains queued.
