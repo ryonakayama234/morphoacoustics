@@ -116,7 +116,11 @@ def test_false_mechanical_trace_is_not_certified():
 
 
 def test_tests_are_required_for_aggregate_scientific_pass(tmp_path):
-    import run
+    import importlib.util
+    spec=importlib.util.spec_from_file_location("vf1b1_runner_gate",HERE/"run.py")
+    assert spec is not None and spec.loader is not None
+    run=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(run)
     assert not run.test_status(None)["eligible"]
     p=tmp_path/"test_status.json"
     for bad in (
