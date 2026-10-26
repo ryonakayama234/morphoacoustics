@@ -98,3 +98,13 @@ Third Codex review of second-amended `36737a0f9fe7537a735586759ccbee23d2c0337a` 
 ### Independent review round two
 
 Second GitHub AI software review found typed rational timing sort-key P2; `../tests/test_smc4_br_codex_round2.py` was added test-first and `../src/morphoacoustics_smc/canonical_ingress.py` fixed separately. [EXPERIMENTS evidence](EXPERIMENTS.md), [DATA exact key semantics](DATA.md). The design #186 reviewer status and exact fixed docs HEAD CI remain open; **NO_MAIN_MERGE**.
+
+## SMC-5 synthetic canonical-to-symbolic research bridge (2026-10-26)
+
+- [SMC5_GATE_A_PROTOCOL.md](SMC5_GATE_A_PROTOCOL.md): frozen S01–S12 research hypotheses, falsifiers and code/test order (pre-source SHA `0cbd9171b53c16402644750018858cc8967b1377`).
+- [SMC5_SYSTEM.md](SMC5_SYSTEM.md): request → finite Task selection → SMC-3 graph validation → candidate, without Core/Studio execution.
+- [SMC5_DATA.md](SMC5_DATA.md): typed TaskGoal interval metadata distinct from frozen SMC-3 plan graph, exact digests and selection provenance.
+- [SMC5_EXPERIMENT.md](SMC5_EXPERIMENT.md): artificial fixtures, test-first RED and exact-SHA CI plan.
+- [SMC5_RESULTS.md](SMC5_RESULTS.md): append-only execution evidence and explicit MORE_DATA until independent review.
+- [SMC5_DECISIONS.md](SMC5_DECISIONS.md): bounded adoption and STOP/owner-agreement conditions.
+- Research Issue [#210](https://github.com/ryonakayama234/morphoacoustics/issues/210) / stacked [Draft PR #211](https://github.com/ryonakayama234/morphoacoustics/pull/211). Inherited Draft #189/#186/#175/#164 remain unmerged; historical Draft #180 remains REVISE/RED. **No accepted phonetic, physics, audio or production API claim.**
