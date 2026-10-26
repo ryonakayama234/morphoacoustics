@@ -13,7 +13,7 @@ Status **PROVISIONAL / PRIVATE RESEARCH MODEL**. Do not promote as a public Perf
 
 `TaskGoal` retains task_id, definition ID/revision, functional goal kind, capability requirements, exact rational lower/upper target, source slot members, selected template IDs and evidence references. **Physical body feasibility is not inferred**. For a share episode, require strict same functional definition semantics; choose goal interval intersection only if nonempty.
 
-`CompileReceipt` carries compiler_version, status RESOLVED|REJECTED, stage INGRESS|MAPPING|GRAPH|TIMING|SYMBOLIC, refusal code, submission SHA-256 if bounded raw bytes were admitted, schema-validated canonical request SHA-256, plan graph digest when validated, `candidate_digest` when fully resolved, versioned provenance and selection/share trace. No fake digest for missing candidate.
+`CompileReceipt` carries compiler_version, status RESOLVED|REJECTED, stage INGRESS|MAPPING|COORDINATION|GRAPH|TIMING|SYMBOLIC, refusal code, submission SHA-256 if bounded raw bytes were admitted, schema-validated canonical request SHA-256, plan graph digest when validated, `candidate_digest` when fully resolved, versioned provenance and selection/share trace. No fake digest for missing candidate.
 
 ```mermaid
 erDiagram
