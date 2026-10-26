@@ -1,0 +1,18 @@
+{
+  "schema": "vf1a-independent-wolfram-20261026",
+  "scope": "abstract two-mass midpoint analytic oracle, not biology",
+  "independently_evaluated_wolfram": true,
+  "midpoint_full_power_identity_residual": 0,
+  "symmetric_free_mode_hz": 79.57747154594769,
+  "antisymmetric_free_mode_hz": 98.53906213133976,
+  "midpoint_antisymmetric_48k_rad_per_step": 0.01289855423655888,
+  "assumptions": [
+    "m1=m2=1.2e-4kg",
+    "k1=k2=30 N/m",
+    "kc=8 N/m",
+    "d=0 for mode oracle",
+    "U_in=q-g1*v1-g2*v2",
+    "pressure–volume work port matches tract"
+  ],
+  "experiment_only": true
+}
