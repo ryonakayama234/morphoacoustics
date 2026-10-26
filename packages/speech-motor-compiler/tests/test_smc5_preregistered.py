@@ -16,7 +16,8 @@ from morphoacoustics_smc.symbolic_bridge import compile_wire, compile_canonical,
 
 
 def f(n, d=1):
-    return {"numerator": n, "denominator": d}
+    r = Fraction(n, d)
+    return {"numerator": r.numerator, "denominator": r.denominator}
 
 
 def c(template, definition, lo=0, hi=1, pred=None):
