@@ -23,7 +23,9 @@ FILES=("experiments/032_passive_time_domain_tract/waveguide.py",
        "experiments/036_vf1a_two_mass/test_two_mass.py",
        "experiments/036_vf1a_two_mass/run.py",
        ".github/workflows/vf1a-two-mass.yml",
-       "docs/research/vf1/GATE_A.md")
+       "docs/research/vf1/GATE_A.md",
+       "experiments/036_vf1a_two_mass/wolfram/independent_oracle.wl",
+       "experiments/036_vf1a_two_mass/wolfram/oracle.json")
 
 
 def provenance() -> dict:
