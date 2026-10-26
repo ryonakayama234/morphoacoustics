@@ -31,3 +31,9 @@ python -m pytest packages/speech-motor-compiler/tests -q
 ```
 
 All adoption decisions require separate exact-HEAD CI, independent reviewer and later real physical validation. See `docs/INDEX.md`.
+
+## SMC-5 prototype (research-only; stacked Draft PR #211)
+
+`morphoacoustics_smc.symbolic_bridge.compile_wire(payload: bytes)` accepts a finite versioned JSON request through the SMC-4 B-R canonical boundary and attempts to emit an **in-process, synthetic-only** `SymbolicPlan` + explicit `TaskGoal` scalar interval metadata + exact rational resolved timeline and provenance receipt. Direct snapshot entry `compile_canonical` revalidates immutable bytes/hash. No implicit Japanese reading, no waveform concatenation, no body/organ binding, no voice-quality claim, and no public stable MotorScore schema. See [SMC5_GATE_A_PROTOCOL.md](docs/SMC5_GATE_A_PROTOCOL.md), [SYSTEM](docs/SMC5_SYSTEM.md), [DATA](docs/SMC5_DATA.md), [EXPERIMENT](docs/SMC5_EXPERIMENT.md), [RESULTS](docs/SMC5_RESULTS.md), [DECISIONS](docs/SMC5_DECISIONS.md).
+
+This candidate relies on unmerged research parent branches and remains `SCIENCE_NOT_ADOPTED / NO_MAIN_MERGE` until exact-HEAD CI and `@codex review` are documented.
