@@ -201,8 +201,8 @@ def uniform_oracle() -> dict:
             expected = (zc / (zc + mult * zc) *
                         np.exp(-1j * 2 * math.pi * f * 0.16 / SPEED))
             errors.append(abs(observed - expected) / abs(expected))
-    return {"max_complex_relative_error": max(errors),
-            "pass": max(errors) <= 1e-10}
+    return {"max_complex_relative_error": float(max(errors)),
+            "pass": bool(max(errors) <= 1e-10)}
 
 
 def negative_controls() -> dict:
@@ -326,7 +326,14 @@ def main() -> None:
         report = {"schema": SCHEMA, "research_verdict": "NUMERICALLY_UNRESOLVED",
                   "failure_type": type(exc).__name__, "failure": str(exc)}
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    try:
+        serialized = json.dumps(report, indent=2, sort_keys=True, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        report = {"schema": SCHEMA, "research_verdict": "NUMERICALLY_UNRESOLVED",
+                  "failure_type": "REPORT_SERIALIZATION_FAILED",
+                  "failure": str(exc), "provenance": provenance()}
+        serialized = json.dumps(report, indent=2, sort_keys=True, allow_nan=False)
+    path.write_text(serialized + "\n", encoding="utf-8")
     print("VM-1D:", report["research_verdict"])
     if report["research_verdict"] != "G0_G1_PASS_SOURCE_LOADING_SENSITIVITY":
         raise SystemExit(1)
