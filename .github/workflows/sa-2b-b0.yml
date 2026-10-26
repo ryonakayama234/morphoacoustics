@@ -1,0 +1,80 @@
+name: SA-2B B0 passive causal radiation port
+on:
+  push:
+    branches:
+      - research/sa2b-b0-**
+  pull_request:
+    paths:
+      - 'experiments/050_b0_passive_radiation/**'
+      - 'tests/test_experiment_050_sa2b_b0.py'
+      - 'docs/research/sa-2b-b0/**'
+      - '.github/workflows/sa-2b-b0.yml'
+  workflow_dispatch:
+
+jobs:
+  isolated-physical-port:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research-only physical reference
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install 'scipy>=1.11,<2'
+      - name: Test independent pre-registered B0 physical/energy gates
+        run: |
+          python -m pytest -q tests/test_experiment_050_sa2b_b0.py
+      - name: Execute isolated B0 research with authentic frozen M0 anatomy
+        run: |
+          python experiments/050_b0_passive_radiation/run.py --out "$RUNNER_TEMP/sa2b-b0" > "$RUNNER_TEMP/sa2b-b0-console.json"
+      - name: Verify gate criteria plus raw evidence SHA256 and source provenance
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/sa2b-b0
+        run: |
+          python - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          root=Path(os.environ["OUTPUT_DIR"])
+          m=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+          assert m["schema"]=="research.sa2b_b0.v0"
+          assert m["decision"]=="SA2B_BOUNDARY_VERIFIED_DUCT_PENDING"
+          assert m["adoption"]=="NOT_ADOPTED"
+          assert m["b1_b2_b3"]=="NOT_RUN" and m["vf1"]=="NOT_READY"
+          assert m["preregistration_commit"]=="64a116950117a161f69b1b9831c733b9343db444"
+          assert m["base_main_sha"]=="6869cfec04041393eae44485ce2fc91f002114f5"
+          assert m["m0_section_count"]==16
+          assert abs(m["m0_area_m2"]/0.000804247719318987-1)<=1e-12
+          assert m["model_error"]["max_complex_relative"]<=0.055
+          assert m["model_error"]["max_resistance_relative"]<=0.11
+          assert m["continuous_min_Re_Z_pa_s_m3"]>=-1e-10
+          assert abs(m["scattering_discrete_pole"])<1
+          assert m["clock_convergence"]["error_ratio"]<=0.35
+          assert m["excluded_3000Hz"]["ka"]>0.8
+          assert len(m["artifact_sha256"])>=10
+          assert len(m["frequency_transfer"])==3
+          assert all(v["empirical_abs_error"]<=0.002 and
+                     v["independent_analytic_abs_error"]<=1e-11
+                     for v in m["frequency_transfer"])
+          for name,expected in m["artifact_sha256"].items():
+            assert hashlib.sha256((root/name).read_bytes()).hexdigest()==expected,name
+          for metric in m["energy_gates"].values():
+            assert metric["max_step_normalized_residual"]<=1+1e-6
+            assert metric["total_resistance_dissipation_j"]>=0
+          (root/"CI_EVIDENCE.txt").write_text(
+            "exact_executed_sha="+os.environ["GITHUB_SHA"]+
+            "\nexact_ref="+os.environ["GITHUB_REF"]+
+            "\nB0=SA2B_BOUNDARY_VERIFIED_DUCT_PENDING\n"
+            "B1_B2_B3=NOT_RUN\nVF1=NOT_READY\n",encoding="utf-8")
+          print("B0 PHYSICAL PASS only: duct B1/B2 and VF1 remain unverified")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sa-2b-b0-passive-port-evidence
+          path: |
+            ${{ runner.temp }}/sa2b-b0
+            ${{ runner.temp }}/sa2b-b0-console.json
+          retention-days: 30
