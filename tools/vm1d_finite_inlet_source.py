@@ -38,7 +38,7 @@ def positive(name: str, value: float) -> float:
 
 def fixture() -> tuple[dict[str, tuple[float, np.ndarray]], str]:
     raw = FROZEN.read_bytes()
-    blob = sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+    blob = sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
     if blob != BODY_BLOB_SHA1:
         raise ValueError("FROZEN_BODY_BLOB_MISMATCH")
     body = json.loads(raw)["M0"]
@@ -326,7 +326,7 @@ def main() -> None:
         report = {"schema": SCHEMA, "research_verdict": "NUMERICALLY_UNRESOLVED",
                   "failure_type": type(exc).__name__, "failure": str(exc)}
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\\n")
+    path.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
     print("VM-1D:", report["research_verdict"])
     if report["research_verdict"] != "G0_G1_PASS_SOURCE_LOADING_SENSITIVITY":
         raise SystemExit(1)
