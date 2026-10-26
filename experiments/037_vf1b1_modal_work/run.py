@@ -20,7 +20,7 @@ ROOT=HERE.parents[1]
 sys.path.insert(0,str(HERE))
 sys.path.insert(0,str(ROOT/"experiments/036_vf1a_two_mass"))
 from two_mass import make_pilot
-from modal import observe_step, independent_work_identity, coordinates, midpoint_transition
+from modal import observe_step, independent_work_identity, coordinates, midpoint_transition, energy
 
 VERSION="vf1b1-modal-phase-work-research/v1"
 FILES=(
@@ -79,6 +79,7 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
     error=None
     recorded=0
     initial_energy=float(sum(sim.energy()))
+    initial_modal_energy=energy(sim.x,sim.v,sim.tissue)
     predicted_am=np.array((0.5**0.5*(sim.x[0]-sim.x[1]),
                            0.5**0.5*(sim.v[0]-sim.v[1])))
     midpoint=midpoint_transition(sim.tissue,sim.dt)
@@ -142,7 +143,10 @@ def case(outdir:Path, name:str, drive_pa:float, shape:str, rate:int)->dict:
             "max_full_tissue_energy_residual_j":float(maxima[2]),
             "max_step_midpoint_oracle_error":float(maxima[3]),
             "max_full_trajectory_oracle_error":float(max_absolute_analytic_error),
+            "initial_modal_energies_j":initial_modal_energy.tolist(),
             "final_modal_energies_j":state[recorded-1,5:7].tolist() if recorded else None,
+            "modal_energy_change_j":(state[recorded-1,5:7]-initial_modal_energy).tolist() if recorded else None,
+            "modal_work_minus_damping_j":(cum_work-cum_loss).tolist(),
             "windows":windows,
             "self_oscillation_verdict":"NOT_ESTABLISHED_NO_PER_CYCLE_ONSET_TEST"}
 
@@ -170,9 +174,17 @@ def run(outdir:Path,tests:Path|None) -> dict:
                 for v in results.values()))
     # A comparative convergence diagnostic on the SAME physical 0.5s horizon.
     a,b,c=(results[f"uniform_800pa_{rate}k"] for rate in (24,48,96))
-    convergence_note=(
-      "Recorded 24/48/96 kHz as separate exact 0.5s physical trajectories; "
-      "an actual monotonic refinement order is not presumed from three raw runs.")
+    # Observed convergence trend is diagnostic only: no post hoc science
+    # threshold added after seeing measurements from the first failed CI.
+    diffs=[abs(b["modal_work_total_j"][0]-a["modal_work_total_j"][0]),
+           abs(c["modal_work_total_j"][0]-b["modal_work_total_j"][0])]
+    convergence_note={
+        "quantity":"symmetric cumulative pressure work at identical 0.5s horizon",
+        "absolute_diff_24k_48k_j":diffs[0],
+        "absolute_diff_48k_96k_j":diffs[1],
+        "refinement_ratio_observed":diffs[1]/diffs[0] if diffs[0] else None,
+        "gate":"DIAGNOSTIC_ONLY_NO_POSTHOC_PASS_CUTOFF",
+    }
     return {"schema":VERSION,"provenance":provenance,
             "independent_tests":evidence,"cases":results,
             "refinement_note":convergence_note,
