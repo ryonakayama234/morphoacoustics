@@ -275,3 +275,23 @@ def test_s12c_strong_kleene_context_false_overrides_missing():
         ],
     }
     assert run(d).plan is not None
+
+
+def test_codex_p2_graph_stage_for_wellformed_wire_bad_symbolic_id():
+    """Codex review #211 P2: graph error must never masquerade as mapping."""
+    d = valid()
+    d["segment"]["segment_id"] = " "
+    result = rejected(d, "INVALID_SEGMENT_ID")
+    assert result.receipt.stage == "GRAPH"
+    assert result.receipt.plan_digest is None
+    d = valid()
+    selected = d["pronunciation"]["paths"][0]["units"][0]
+    selected["unit_id"] = " "
+    b = d["motor_mapping"]["lexicon"]["bundles"][0]
+    b["unit_id"] = " "
+    b["target_unit_ids"] = [" "]
+    for a in d["coordination"]["anchors"]:
+        if a["unit_id"] == "P1":
+            a["unit_id"] = " "
+    result = rejected(d, "INVALID_OR_DUPLICATE_UNIT_ID")
+    assert result.receipt.stage == "GRAPH"
