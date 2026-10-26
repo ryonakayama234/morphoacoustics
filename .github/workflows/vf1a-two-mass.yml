@@ -1,0 +1,37 @@
+name: vf1a-two-mass-research
+on:
+  pull_request:
+    paths:
+      - "experiments/036_vf1a_two_mass/**"
+      - "docs/research/vf1/**"
+      - ".github/workflows/vf1a-two-mass.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical-science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install declared Core dependencies (no SciPy required)
+        run: python -m pip install -e . pytest
+      - name: Preregistered independent and adversarial tests
+        run: python -m pytest -q experiments/036_vf1a_two_mass/test_two_mass.py
+      - name: Run experiment even if upstream test fails
+        if: always()
+        run: |
+          mkdir -p evidence
+          python experiments/036_vf1a_two_mass/run.py --output-dir evidence
+      - name: Preserve all successful and failing research traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1a-research-evidence
+          path: evidence/
+          retention-days: 90
+          if-no-files-found: error
