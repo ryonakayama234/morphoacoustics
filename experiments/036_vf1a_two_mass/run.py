@@ -57,6 +57,11 @@ def one_case(outdir: Path, name: str, shape: str, drive: float,
     max_r=0.
     positive_errors=0
     source_total=loss_total=0.
+    # Independently reconstructed midpoint force work, in three frozen 20ms
+    # windows. This is diagnostic instrumentation, not a new model equation.
+    tissue_pressure_work_by_window=[0.,0.,0.]
+    tissue_damping_loss_by_window=[0.,0.,0.]
+    prior_velocity=np.array(sim.v,copy=True)
     with path.open("w",newline="",encoding="utf-8") as f:
         w=csv.writer(f)
         w.writerow(("t_s","x1_m","x2_m","v1_m_s","v2_m_s",
@@ -65,9 +70,18 @@ def one_case(outdir: Path, name: str, shape: str, drive: float,
                     "Psub_work_J","Rflow_loss_J","Bflow_loss_J",
                     "damping_loss_J","outlet_loss_J",
                     "tissue_energy_err_J","valve_energy_err_J",
-                    "tract_energy_err_J","total_energy_err_J"))
+                    "tract_energy_err_J","total_energy_err_J",
+                    "pressure_to_tissue_work_J"))
         for k in range(steps):
             r=sim.step(subglottal_pressure_pa=drive)
+            current_velocity=np.array(r.v_m_s,dtype=float)
+            midpoint_velocity=0.5*(prior_velocity+current_velocity)
+            tissue_pressure_work=(sim.dt*r.pressure_mid_pa*
+                                  float(np.dot(sim.g,midpoint_velocity)))
+            prior_velocity=current_velocity
+            window=min(2,(3*k)//steps)
+            tissue_pressure_work_by_window[window]+=tissue_pressure_work
+            tissue_damping_loss_by_window[window]+=r.tissue_damping_loss_j
             w.writerow((r.time_s,*r.x_m,*r.v_m_s,r.area_m2,
                         r.flow_valve_m3_s,r.flow_tract_mid_m3_s,
                         r.pressure_mid_pa,r.outlet_flow_mid_m3_s,
@@ -75,7 +89,8 @@ def one_case(outdir: Path, name: str, shape: str, drive: float,
                         r.source_work_j,r.linear_flow_loss_j,r.nonlinear_flow_loss_j,
                         r.tissue_damping_loss_j,r.outlet_loss_j,
                         r.tissue_energy_residual_j,r.flow_energy_residual_j,
-                        r.tract_energy_residual_j,r.total_energy_residual_j))
+                        r.tract_energy_residual_j,r.total_energy_residual_j,
+                        tissue_pressure_work))
             x_history.append(r.x_m[0])
             q_history.append(r.flow_valve_m3_s)
             total_e=r.stored_tissue_j+r.stored_flow_j+r.stored_tract_j
@@ -103,6 +118,11 @@ def one_case(outdir: Path, name: str, shape: str, drive: float,
             "zero_drive_positive_energy_steps":positive_errors,
             "source_work_total_j":source_total,
             "modeled_losses_total_j":loss_total,
+            "tissue_pressure_work_j_by_20ms_window":tissue_pressure_work_by_window,
+            "tissue_damping_loss_j_by_20ms_window":tissue_damping_loss_by_window,
+            "tissue_net_work_j_by_20ms_window":[
+                p-d for p,d in zip(tissue_pressure_work_by_window,
+                                 tissue_damping_loss_by_window)],
             "final_total_energy_j":e_history[-1],
             "x1_mean_last_20ms_m":float(np.mean(last)),
             "x1_rms_deviation_20_40ms_m":mid_rms,
@@ -213,7 +233,10 @@ def main()->None:
             k:{"tail_ratio":v["tail_to_middle_rms_ratio"],
                "max_Eerr_J":v["max_total_energy_residual_j"],
                "x_rms_tail_m":v["x1_rms_deviation_40_60ms_m"],
-               "q_rms_tail_m3_s":v["q_rms_last_20ms_m3_s"]}
+               "q_rms_tail_m3_s":v["q_rms_last_20ms_m3_s"],
+               "tissue_pressure_work_20ms_j":v["tissue_pressure_work_j_by_20ms_window"],
+               "tissue_damping_loss_20ms_j":v["tissue_damping_loss_j_by_20ms_window"],
+               "tissue_net_work_20ms_j":v["tissue_net_work_j_by_20ms_window"]}
             for k,v in report["cases"].items()},sort_keys=True))
     if report["verdict"] != "RESEARCH_NUMERICAL_PASS_NOT_A_PHONATOR":
         raise SystemExit(1)
