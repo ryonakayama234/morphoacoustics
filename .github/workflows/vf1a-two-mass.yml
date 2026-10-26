@@ -1,0 +1,49 @@
+name: vf1a-two-mass-research
+on:
+  pull_request:
+    paths:
+      - "experiments/036_vf1a_two_mass/**"
+      - "docs/research/vf1/**"
+      - ".github/workflows/vf1a-two-mass.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical-science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install declared Core dependencies (no SciPy required)
+        run: python -m pip install -e . pytest
+      - name: Preregistered independent and adversarial tests
+        run: |
+          mkdir -p evidence
+          set +e
+          python -m pytest -q experiments/036_vf1a_two_mass/test_two_mass.py > evidence/pytest.log 2>&1
+          status=$?
+          cat evidence/pytest.log
+          if [ "$status" -eq 0 ]; then passed=true; else passed=false; fi
+          printf '{"schema":"vf1a.science-pytest.v1","passed":%s,"exit_code":%s}\n' "$passed" "$status" > evidence/test_status.json
+          exit "$status"
+      - name: Run experiment even if upstream test fails
+        if: always()
+        run: |
+          mkdir -p evidence
+          set +e
+          python experiments/036_vf1a_two_mass/run.py --output-dir evidence --test-status-file evidence/test_status.json > evidence/runner.log 2>&1
+          status=$?
+          cat evidence/runner.log
+          exit "$status"
+      - name: Preserve all successful and failing research traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1a-research-evidence
+          path: evidence/
+          retention-days: 90
+          if-no-files-found: error
