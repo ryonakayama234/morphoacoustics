@@ -186,3 +186,28 @@ flowchart TB
 Symbolic `ONSET/OFFSET` events are *planned* times. Actual onset/attainment of a tissue/tract state must be observed and may differ, without mutating that SMC receipt. The planned coordination is SMC-owned; Core actuation response is Core-owned; Studio V2 fixed Character/Motion/Scene slots only reference both. UI must remain unchanged until separate creator approval.
 
 SMC source currently belongs to an **unmerged stacked Draft lineage**, not Core main. Any future disposable integration checkout must pin explicit SMC ancestry, exact source/TaskLexicon SHAs, Core base and adapter hash; no product import, cherry-pick or main merge is implied. Source: SMC `symbolic_bridge.py`, `temporal_stn.py`, Draft #211/#225; Core `src/morphoacoustics/domain/gesture.py`; CVI Draft #224.
+
+## 2026-10-27 — Gate B decision: measured task first, minimum controller audit in parallel
+
+**Decision:** choose **physical-task-definition-first, not controller-first**, but build one short **observable-goal → capability → actual-state** vertical slice; avoid an unbounded task ontology. Follow-up [Issue #227](https://github.com/ryonakayama234/morphoacoustics/issues/227). This amendment is design-only, does not change frozen Exp019–022 or Exp027–029 sources, and is not a new public Core/SMC contract.
+
+Repository evidence: the SMC preflight [Draft #226](https://github.com/ryonakayama234/morphoacoustics/pull/226) authenticated 3 synthetic goals / 6 exact symbolic events, but independently supported **0/3** Core physical task bindings. SMC's synthetic `tract/open_closed` is not automatically Core `CONSTRICT`. Core Fidelity-0 `Tract1DRealizer` already accepts a dimensioned `target_area` parameter (`m2`) and a normalized location; Exp019/022 provide a *separate 10-section* reduced minimum-energy/shared-state realization, and Exp020 reports finite-time state without muscle claims. Exp027–029 use a distinct *16-section* calibrated task-field / morphology path; no implicit 10→16 mechanical bridge.
+
+**Chosen Stage-B research candidate:** `G_area`: the measured cross-sectional area `A_j(x)` (m²) of a named prepared 1D tract section (located via dimensionless ξ, resolved to metric s and integer j **on that body**), constrained by explicitly dimensioned positive target bounds. Audit the existing Exp019 single-target fixture `A_rest=3.0e-4 m²`, `A_target=5.0e-5 m²`, `ξ=0.65`, `j=6` / 10-section model **as candidate existing evidence**, not a silently adopted universal task. `G_area` describes the **model's geometric goal**; it does **not** specify a tongue, lip, gap distance, biological constriction degree, muscle activation, contact or phoneme. Geometry is measurable from existing state; physical *actuation* is a separate proof.
+
+Proposed ordering:
+
+```mermaid
+flowchart LR
+ A["A: authentic SMC5/6 fixed Task IDs + exact time"] --> B["B1: one dimensioned model goal G_area; observer + independent oracle"]
+ B --> C["B2: native Core validity / reach / R0 vs R1 state audit"]
+ C --> D{"Model target physically realized with meaningful provenance?"}
+ D -->|no| STOP["STOP; record precise evidence gap"]
+ D -->|yes| E["B3: separately versioned research-only SMC TaskDefinition/binding"]
+ E -. "after new prereg + separate gate" .-> F["C: H_EXEC dynamical controllers on same target"]
+ F -. "later" .-> G["M×H sound/voice study"]
+```
+
+SMC remains the sole motor *planning* lineage; this stage may not backfill a physical result onto its original synthetic lexicon or alter its SMC6 COMPATIBILITY events. Test the target and existing model capabilities first, then describe a **new, explicitly qualified research mapping**. Core remains the authority for bodily motion. Stage-C H_EXEC controllers cannot be selected until Stage-B demonstrates an actual usable task measure. Studio V2 and production ABI remain frozen.
+
+**Immediate integrity debt before B outcome:** Codex's independent review on Draft #226 final source head `ef151632` found a P2 gap: the A09 no-physics/no-output claim had no source-import scanner or execution/side-effect negative test. Closing and rerunning that guard is a separate prerequisite, not a reinterpretation of the 0/3 semantic STOP. No completed fix is claimed by this design.
