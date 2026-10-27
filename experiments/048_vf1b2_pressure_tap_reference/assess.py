@@ -23,6 +23,18 @@ FLAGS = (
 SOURCE = Path(__file__).with_name("sources.json")
 
 
+import hashlib
+
+INVENTORY_GIT_BLOB_SHA = "1c1751a11430386497789f9955a7e64e733550bc"  # exact audited source catalog version
+
+
+def read_inventory(content: bytes | None = None) -> dict:
+    raw = SOURCE.read_bytes() if content is None else content
+    blob = b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw
+    if hashlib.sha1(blob).hexdigest() != INVENTORY_GIT_BLOB_SHA:
+        raise ValueError("published-source inventory tampered / unreviewed change")
+    return json.loads(raw.decode("utf-8", errors="strict"))
+
 def _check_samples(samples: object) -> None:
     if not isinstance(samples, list):
         raise ValueError("measured_pressure_samples must be a list")
@@ -99,7 +111,7 @@ def assess_inventory(data: dict) -> dict:
 
 
 def main() -> None:
-    inventory = json.loads(SOURCE.read_text(encoding="utf-8"))
+    inventory = read_inventory()
     print(json.dumps(assess_inventory(inventory), indent=2, sort_keys=True))
 
 
