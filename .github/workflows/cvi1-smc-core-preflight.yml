@@ -1,0 +1,29 @@
+name: cvi1-smc-core-preflight
+
+on:
+  push:
+    paths:
+      - 'experiments/040_smc_core_binding_preflight/**'
+      - '.github/workflows/cvi1-smc-core-preflight.yml'
+  pull_request:
+    paths:
+      - 'experiments/040_smc_core_binding_preflight/**'
+      - '.github/workflows/cvi1-smc-core-preflight.yml'
+
+jobs:
+  bounded-preflight:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install isolated SMC research package and Core (no UI)
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install -e './packages/speech-motor-compiler[dev]'
+      - name: Run frozen CVI Gate A/semantic STOP tests
+        run: python -m pytest experiments/040_smc_core_binding_preflight/test_preflight.py -q
