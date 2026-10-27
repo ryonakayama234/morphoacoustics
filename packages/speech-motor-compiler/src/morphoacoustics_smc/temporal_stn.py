@@ -186,7 +186,7 @@ def _graph(nodes: tuple[Node, ...], edges: list[Edge]) -> tuple[
                 before = dist[i][j]
                 if before is None or candidate < before:
                     dist[i][j] = candidate
-    if any(dist[i][i] is not None and dist[i][i] < 0 for i in range(n)):
+    if any(value is not None and value < 0 for value in (dist[i][i] for i in range(n))):
         raise RuntimeError("Floyd/Bellman contradiction")
     return dist, (), None
 
@@ -255,7 +255,7 @@ def _scenario_edges(
         raise _BadScenario("INVALID_COMPATIBILITY_OVERRIDE")
     permitted = set(task_ids)
     edges: list[Edge] = []
-    canonical: list[object] = []
+    canonical: list[tuple[str, Node, Node, tuple[int, int], tuple[int, int]]] = []
     seen: set[str] = set()
     for con in scenario.constraints:
         if not isinstance(con, TemporalConstraint):
@@ -329,9 +329,9 @@ def analyze_temporal_wire(raw: object, scenario: TemporalScenario) -> TemporalAn
                                         start, start, "SMC5_EXACT_ONSET"))
                 edges.extend(_edge_pair(Origin, (tid, Event.OFFSET.value),
                                         end, end, "SMC5_EXACT_OFFSET"))
-            for a in legacy.plan.anchors:
-                edges.extend(_edge_pair(Origin, (a.task_id, a.event.value),
-                                        a.time_s, a.time_s, "SMC5_ANCHOR"))
+            for anchor in legacy.plan.anchors:
+                edges.extend(_edge_pair(Origin, (anchor.task_id, anchor.event.value),
+                                        anchor.time_s, anchor.time_s, "SMC5_ANCHOR"))
             for c in legacy.plan.couplings:
                 edges.extend(_edge_pair(
                     (c.source_task_id, c.source_event.value),
