@@ -1,0 +1,50 @@
+{
+  "schema": "vf1b2-pressure-atlas/gate0-inventory-v1",
+  "sources": [
+    {
+      "id": "m5_uniform_2011",
+      "doi": "10.1121/1.3514424",
+      "citation": "Fulcher, Scherer, Powell (2011), JASA 129, 1548-1553, Fig. 2",
+      "model": "M5 uniform static glottis",
+      "tap_axis": "axial",
+      "tap_layout": "model M5; entrance tap 6 at 0.211 cm; exit tap 13 at 0.511 cm (life-size)",
+      "pressure_uncertainty_note": "Paper: taps 6-14 less than 1% upper bound for Fig. 2; not 1sigma",
+      "source_kind": "published_measured_pressure_figure",
+      "measured_pressure_samples": [],
+      "tap_coordinate_map_audited": false,
+      "reference_and_sign_audited": false,
+      "geometry_and_boundary_matched_to_candidate": false,
+      "uncertainty_and_digitization_audited": false
+    },
+    {
+      "id": "m6_nonrectangular_2010",
+      "doi": "10.1121/1.3455838",
+      "citation": "Scherer et al. (2010), JASA 128, 828-838; published Table 2 flow",
+      "model": "M6 nonrectangular static 3D glottis",
+      "tap_axis": "transverse",
+      "tap_layout": "three cross-width arrays each with 14 taps, not an M5 axial tap profile",
+      "pressure_uncertainty_note": "M6 Table 2 +/-6 cm^3/s concerns FLOW, not pressure; no transfer",
+      "source_kind": "published_flow_table_and_measured_pressure_figures",
+      "measured_pressure_samples": [],
+      "tap_coordinate_map_audited": false,
+      "reference_and_sign_audited": false,
+      "geometry_and_boundary_matched_to_candidate": false,
+      "uncertainty_and_digitization_audited": false
+    },
+    {
+      "id": "m5_hemilarynx_2008",
+      "doi": "10.1016/j.jvoice.2008.04.004",
+      "citation": "Scherer et al., Pressure distributions in a static physical model of the hemilarynx: measurements and computations, Fig. 3",
+      "model": "M5 static hemilarynx with opposing wall measurements",
+      "tap_axis": "axial",
+      "tap_layout": "opposing walls reported; flow-wall and non-flow-wall must remain distinct",
+      "pressure_uncertainty_note": "Paper describes approx 1% upper limit for plotted experimental pressures; not 1sigma",
+      "source_kind": "published_measured_pressure_figure",
+      "measured_pressure_samples": [],
+      "tap_coordinate_map_audited": false,
+      "reference_and_sign_audited": false,
+      "geometry_and_boundary_matched_to_candidate": false,
+      "uncertainty_and_digitization_audited": false
+    }
+  ]
+}
