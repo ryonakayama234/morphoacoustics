@@ -156,9 +156,20 @@ def audit_comparison(result: dict) -> bool:
         return False
     if result.get("source", {}).get("input_table_sha256") != TABLE_SHA256:
         return False
+    src = result.get("source", {})
+    if (src.get("doi") != DOI or src.get("table") != "Table 2, experimental Q only"
+            or src.get("real_life_equivalent") is not True
+            or src.get("accuracy_is_one_sigma") is not False):
+        return False
+    assum = result["assumptions"]
+    if (assum.get("assumed_cd") != CD_ASSUMED
+            or assum.get("min_projected_area_m2") != A_MIN_M2
+            or assum.get("rho_kg_m3") != RHO_KG_M3):
+        return False
     rows = result.get("cases", [])
     if len(rows) != 12:
         return False
+    observed_mismatches = {s: 0 for s in SHAPES}
     known = read_m6_table()
     for i, case in enumerate(rows):
         reference = known[i // 3]
@@ -180,4 +191,14 @@ def audit_comparison(result: dict) -> bool:
         )
         if not all(checks):
             return False
-    return result.get("g2") == "INDETERMINATE_NO_MATCHED_PRESSURE_TAP_PROFILE_OR_GEOMETRY"
+        observed_mismatches[shape] += int(expected_ratio < lo or expected_ratio > hi)
+    return (
+        result.get("mismatch_counts_out_of_four") == observed_mismatches
+        and result.get("transfer_sentinel") == (
+            "M6_SHAPE_TRANSFER_DISCREPANCY"
+            if observed_mismatches["divergent_10"] >= 2
+            else "NO_M6_DIVERGENT_DISCREPANCY_DETECTED")
+        and result.get("g2") == "INDETERMINATE_NO_MATCHED_PRESSURE_TAP_PROFILE_OR_GEOMETRY"
+        and result.get("g3") == "NOT_APPLICABLE_NO_MOVING_WALL"
+        and result.get("g4") == "VOICE_NO_GO"
+    )
