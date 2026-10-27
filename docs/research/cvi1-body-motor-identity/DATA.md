@@ -192,3 +192,23 @@ Executed rows must contain complete identity evidence and native status; null pl
 **Do not confuse coverage populations:** manually selected SMC synthetic pronunciation fixtures establish bounded compiler/adapter compatibility only. Arbitrary free-script coverage requires a separately sampled input population, pronunciation-selection/ambiguity policy, complete failure denominator and linguistic validity evidence. A successful TaskGoal-to-Core mapping cannot be used to claim automatic Japanese reading or natural speech.
 
 Required raw audit distinction: `requested_event_trace` (SMC exact events), `requested_physical_goal_trace` (explicit Core conversion), `achieved_state_trace` and `task_residual` (measured physical output), followed only conditionally by `acoustic_port_trace` and `qualified_take_ref`. Hash each independently.
+
+## 2026-10-27 — candidate G_area metrology record, not an accepted task schema
+
+Follow-up [Gate B Issue #227](https://github.com/ryonakayama234/morphoacoustics/issues/227). The evidence below is a **prospective design over already published in-repo experiment fixtures**, not a new observation or SMC vocabulary acceptance.
+
+| Layer | Field / quantity | Owner / unit / identity | Unknown or forbidden assumption |
+| --- | --- | --- | --- |
+| Upstream | original Script, selected pronunciation, canonical SHA, TaskGoal and SMC6 exact event table | SMC5/6 identity, exact Fraction seconds | no inferred Japanese pronunciation; no TaskGoal scalar-as-meters |
+| Research new meaning | `model_goal_id=G_area`, semantic revision, model applicability `tract1d.section_area` | independent research TaskDefinition + binding proof | not existing SMC `tract/open_closed/synthetic` |
+| Body | prepared body digest, rest `A_rest,j`, cavity, n, section lengths, coordinate convention | Core; `A` m², `s` m, `ξ` dimensionless, `j` section index | do not equate ξ and a metric distance or import Exp022's 10-section equations into Exp028's 16 sections |
+| Target | `A_target,j` or bounds `[A_low,A_high]` with positivity/reference | independently frozen SI m² | `degree` or activation ∈ [0,1] is not an SI area |
+| Observation | actual model state area `A_j(x(t))` and declared residual | SI m², time s, separate requested vs achieved events | not measured anatomical tongue–palate gap in mm |
+| Execution | realizer/constitutive-law digest, native feasibility, physical state and any supported velocity | Core R0 hard projector vs experiment-local R1/R2, separately labeled | no force, biological mass or acoustic pressure if not modeled |
+| Evidence | observer digest, independent oracle and numerical floor, negative controls and full backend ancestry | raw state/receipt SHA, exact code/CI | no fake pass for unknown units, nonpositive area or missing mapping |
+
+**Frozen candidate fixture from Exp019** (not a new result): 10 sections, rest area `3e-4 m²`, target `5e-5 m²` at ξ=0.65, section index 6. The *existing* experiment also uses dimensionless relative stiffness; that coefficient is not newtons/meters or a validated tissue material parameter. A ratio `ρ=A_target/A_rest` may be derived **after** checking a prepared body; its physical area conversion and whether the intended goal is *absolute area* or *body-relative ratio* must be prespecified, never changed between M bodies to rescue a comparison.
+
+**Audit scope:** First Stage B tests one prepared-body/target record and its null/infeasible cases. The eventual M0/M1 factorial is **NOT_YET_ELIGIBLE** until topology/representation and transferable physical state law are separately verified. For Stage C, store a separate recurring controller revision H_EXEC; H is not a redefined TaskDefinition, target adjustment or playback gain.
+
+**Provenance quarantine:** Physically interpretable `G_area` is still a *reduced 1D geometric model goal*. Papers using constriction gap distance from anatomical contours show that anatomy-calibrated distance is a distinct measurand. Do not promote this provisional binding to measured physiology or natural-voice semantics.
