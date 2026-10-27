@@ -137,3 +137,8 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 
 ## SMC-7 A0 design-review amendment (2026-10-28)
 - [SMC7_A0_REVIEW_AMENDMENT_01.md](SMC7_A0_REVIEW_AMENDMENT_01.md): Codex P2 exact temporal-scenario input and stage-specific SMC5 digest retention on SMC6 UNSAT. Supersedes only conflicting A0 clauses; review required.
+
+## SMC-7 L0 preregistered execution evidence (2026-10-28)
+- [Gate A frozen protocol](SMC7_GATE_A_PROTOCOL.md), prior to test-only RED 1579f332 and source e5b9985.
+- [SMC7_GATE_B_RESULTS.md](SMC7_GATE_B_RESULTS.md): exact source and CI, root pytest nested-approx blocker, independent review state and stage-wise limits.
+- [SMC7_GATE_B_DECISIONS.md](SMC7_GATE_B_DECISIONS.md): HOLD_FULL_GATE / MORE_DATA, no main merge; L1/physical/audio not claimed.
