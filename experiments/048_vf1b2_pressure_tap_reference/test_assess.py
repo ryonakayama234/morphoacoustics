@@ -27,10 +27,10 @@ class PressureReferenceGate0Tests(unittest.TestCase):
                             for row in results["results"]))
         self.assertIn("INDETERMINATE", results["g2"])
 
-    def test_m6_flow_accuracy_cannot_be_pressure_profile(self):
+    def test_m6_axial_ap_rows_cannot_be_mislabeled_transverse(self):
         source = copy.deepcopy(self.inventory["sources"][1])
-        self.assertEqual("transverse", source["tap_axis"])
-        source["tap_axis"] = "axial"  # would silently conflate M6 with M5
+        self.assertEqual("axial_rows_at_three_ap_positions", source["tap_axis"])
+        source["tap_axis"] = "transverse"  # false: rows run axially, grouped by AP position
         with self.assertRaises(ValueError):
             assess_source(source)
 
