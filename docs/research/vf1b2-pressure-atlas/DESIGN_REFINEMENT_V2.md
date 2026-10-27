@@ -76,6 +76,20 @@ Require `(run, wall_surface, jet_state, tap_group, tap_id)` identity, not a bare
 
 **H-VOICE (future G4; out of scope):** embodied body+gesture→sound improves voice clarity, voice identity and quality. Requires separate acoustics and listening evidence, not pressure-fit CI.
 
+## 3.1 Explicit decision observables and provisional engineering thresholds
+
+These thresholds are **our research design targets**, not numbers quoted from the papers, not probabilistic confidence intervals and not claims that any solver has passed. They must be frozen in the case-specific acquisition preregistration **before looking at transcribed numeric tap values**; revision after seeing failures requires a new separately versioned study and cannot rewrite the first result.
+
+For an independently audited matched held-out case of `N` measured taps and measured `Delta p_T>0`:
+
+- `e_j=(p_hat_j-p_meas_j)/Delta_p_T`; `E_MAE=mean(|e_j|)`, `E_MAX=max(|e_j|)`. The initial **engineering acceptance proposal** is `E_MAE <= 0.05` **and** `E_MAX <= 0.15` across *all eligible held-out tap IDs*, with no opportunistic deletion. A result with missing full tap mapping, reference, or digitization budget remains **INDETERMINATE**, regardless of E.
+- Separately report `E_RMS=sqrt(mean(e_j^2))` and a per-tap table containing predicted p, observed p, instrument uncertainty bound, digitization bound, numerical discretization error and residual sign. Experimental uncertainty is not the same as tolerated model discrepancy. Reconcile instrument+digitization/coordinate ambiguity; do not falsely declare every residual a statistical outlier from a quoted 1% upper bound.
+- **Physical features:** preregister the axial tap interval for straight-channel pressure drop and exit pressure recovery from source geometry **before running the model**. Record predicted/observed slope and recovery **sign** and amplitude in units of `Delta p_T`. A model cannot pass on global MAE if it reverses a resolved feature's sign. The d=0.005 cm control must not acquire artificial positive recovery merely because a correction was tuned on d=0.02 cm.
+- **State-conditioned prediction:** never average FW and NFW *before* the primary comparison. If the source only distinguishes them qualitatively or cannot resolve both, label branch conclusion `INDETERMINATE`.
+- **M6 AP contrast:** at the same audited axial `x_j`, define `C_j=(p_mid,j - (p_ant,j+p_post,j)/2)/Delta p_T`. The conservatively bounded contrast uncertainty `U_C,j=(U_mid,j+(U_ant,j+U_post,j)/2)/Delta p_T` assumes no unwarranted cancellation of correlated errors. Only call an observed AP contrast **resolved** when `|C_j|>2*U_C,j`; otherwise **INDETERMINATE**, never "1D confirmed." Contrast is separate from averaged profile agreement and from the paper's reported approximate 4%/2% effects.
+- **Numerical floor:** show at least two spatial/time-step refinements appropriate to the fixed-wall candidate and ensure their estimated pressure differences are smaller than its observed-versus-predicted discrepancy. No model convergence evidence = `G2_NUMERICALLY_UNRESOLVED`. Repeated pressure measurements, digitization and model discretization use separate provenance.
+- **Scope of claim:** even success under these research thresholds can only support `G2_RIGID_WALL_PRESSURE_MATCH_FOR_TESTED_CASES`, not a universal fluid solver, a valid moving-wall power law, sustained voice or a creator-ready Take.
+
 ## 4. Architecture ownership, discriminability and interfaces
 
 ```mermaid
