@@ -162,3 +162,27 @@ SMC-5's event equalities/anchors and `CouplingConstraint.lag_s` are hard exact t
 **Branch and dependency policy:** keep CVI #224 docs on main-derived branch. SMC-4 B-R -> SMC-5 -> SMC-6 remain an unmerged stacked research family. A future disposable integration research branch must explicitly pin/check all required parent source SHAs and its change manifest, with no production import or Studio bridge until independent compatibility, semantic and creator gates. Do not call the presence of the `packages/` path on SMC's Draft branch a feature on Core main.
 
 **Open decision before code:** Can any currently supported Core realizer accept SMC TaskGoal semantics with independent physical meaning and a second *feasible* recurring control policy? If no, STOP at `NOT_TESTABLE_BACKEND_CAPABILITY`; the first later task is a separately proposed and measured realizer/bridge, **not** a fake custom H slider.
+
+## D2 refinement — SMC-first motor ownership and typed Core handoff (2026-10-27)
+
+**Research architecture, not implemented integration or UI authorization.** Interpret the earlier "SMC optional" only as "not imported by the then-unexecuted Core experiment". For the intended Script-to-Motion workflow, SMC is the authoritative **motor-planning lineage**. Core remains responsible for actual moving material, feasibility, physical state and sound, not a rival text compiler.
+
+There are two distinct *future* habit locations. **H_EXEC** is a recurring, physically defined Core execution/control law, changing the achieved movement under the *same* SMC5 TaskGoal and SMC6 COMPATIBILITY exact event table; it is the **first CVI comparison**. **H_PLAN** is a later SMC-owned coordination preference selecting among legitimately flexible temporal solutions, and needs a separately authorized new timing contract. SMC6 RESEARCH_OVERRIDE does not count as faithful H_PLAN because it explicitly replaces original SMC5 exact timing for synthetic research. Per-take Direction is neither persistent habit. A future combined style reference may name separate H_PLAN and H_EXEC revisions, but **no public MotorPersona type is adopted**.
+
+```mermaid
+flowchart TB
+  SCRIPT["Studio Motion: Script + explicitly selected pronunciation"] --> SMC5["SMC5: authenticated TaskGoal, shared IDs, exact time"]
+  SMC5 --> SMC6["SMC6 COMPATIBILITY: original schedule unchanged"]
+  SMC6 --> MAP{"Research binding: TaskDefinition to dimensioned Core function"}
+  M["Character: prepared morphology M"] --> MAP
+  MAP -->|unknown / unsupported| STOP["STOP, no physical or acoustic fallback"]
+  MAP -->|evidenced and lawful| EXEC["Core: recurring H_EXEC + state dynamics / feasibility"]
+  EXEC --> OBS["Observed state, task residuals, acoustic port"]
+  OBS -. "only after source / listening qualification" .-> TAKE["Immutable Take"]
+```
+
+**Semantic trap confirmed by source:** SMC5 `TaskGoal` itself has `definition_id`, `semantic_revision`, `goal_kind`, `capabilities` and scalar `lower/upper`; it does **not** expose the TaskDefinition's `variable`, `value_domain` or `applicability_domain` fields directly. An adapter must re-authenticate the exact canonical request/lexicon, join through immutable definition identities and explicitly document physical target, coordinate frame, dimensional conversion and capability predicates. Matching string `CONSTRICT` to a Core `Gesture` or mapping a unitless SMC bound to a length is **not** a scientific binding.
+
+Symbolic `ONSET/OFFSET` events are *planned* times. Actual onset/attainment of a tissue/tract state must be observed and may differ, without mutating that SMC receipt. The planned coordination is SMC-owned; Core actuation response is Core-owned; Studio V2 fixed Character/Motion/Scene slots only reference both. UI must remain unchanged until separate creator approval.
+
+SMC source currently belongs to an **unmerged stacked Draft lineage**, not Core main. Any future disposable integration checkout must pin explicit SMC ancestry, exact source/TaskLexicon SHAs, Core base and adapter hash; no product import, cherry-pick or main merge is implied. Source: SMC `symbolic_bridge.py`, `temporal_stn.py`, Draft #211/#225; Core `src/morphoacoustics/domain/gesture.py`; CVI Draft #224.
