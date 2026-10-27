@@ -15,3 +15,9 @@ Measurements are written as CSV plus `vf1b2a_receipt.json` with SHA256 of exact 
 Full commit SHA and tracked-clean Git state, source/tests/docs/workflow SHA256, independently run unittest result receipt with schema `vf1b2a.unittest.v1`, bool `passed=true`, exact integer `exit_code=0` are required for model numeric PASS; missing/failing status => `NUMERICALLY_UNRESOLVED` regardless of good traces.
 
 `G0`: trace completeness and refusal, `G1`: analytic and model consistency, **`G2=INDETERMINATE_NO_INDEPENDENT_NUMERIC_PRESSURE_DATA`** (published qualitative mechanisms are NOT a quantified error fit), `G3=NOT_APPLICABLE_RIGID_GEOMETRY`, `G4=NO_GO`. Output `NUMERICALLY_CONSISTENT_RIGID_FLOW_PROXY` is not a biological phonation claim.
+
+
+## Actual recorded v1 evidence (2026-10-27)
+Source head `ee7f5224596dd2cf47dc6996b2b4365801e49867`; exact [successful CI #40425929420](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40425929420), artifact `vf1b2a-rigid-flow-evidence` ID `12699682538` (8,166 bytes, expires 2027-01-25). Contains 7 CSV numerical traces, status, unittest log, runner log and JSON receipt/source file hashes. All 16 independent stdlib tests passed in this source checkpoint; 7/7 analytic case audits and 7/7 scalar controls true. Units in CSV/JSON are physical SI, though the predictions are **not experimentally calibrated**. The source code has no current public output ABI.
+
+The first RED run [#40425826631](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40425826631) is intentionally kept and archived (artifact `12699513144`). It generated all seven physical-model trajectories but a *test only* falsely expected the valid `Pup=0` case to raise ValueError. The science receipt correctly returned `NUMERICALLY_UNRESOLVED` and the workflow failed. Latest test source commit `ee7f522` restores the valid zero-drive control; it does **not change** physical equations or post-hoc thresholds.
