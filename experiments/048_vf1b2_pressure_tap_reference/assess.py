@@ -12,7 +12,7 @@ from pathlib import Path
 CATALOG = {
     "m5_uniform_2011": ("10.1121/1.3514424", "axial"),
     "m6_nonrectangular_2010": ("10.1121/1.3455838", "transverse"),
-    "m5_hemilarynx_2008": ("10.1016/j.jvoice.2008.04.004", "axial"),
+    "m5_hemilarynx_2008": ("10.1016/j.jvoice.2008.02.005", "axial"),
 }
 FLAGS = (
     "tap_coordinate_map_audited",
