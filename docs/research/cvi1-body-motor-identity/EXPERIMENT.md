@@ -151,3 +151,22 @@ Where a proposed Core physical target `g_i` has valid lower/upper bounds `[l_i,u
 N1 same SMC5 exact bytes/semantic permutation -> unchanged original candidate/timing digest; N2 COMPATIBILITY attempt to move an exact event -> UNSAT/refusal; N3 untrusted `RESEARCH_OVERRIDE` displayed as original SMC5 performance -> reject; N4 SMC shared Task appears once even with two pronunciation owners; N5 absent/ambiguous unit / unknown Task mapping -> no Core execution; N6 wrong physical units/capability / unreachable task -> no acoustic fallback; N7 same H0/H0 and label-only/canvas-only -> zero physical contrast; N8 waveform gain/EQ/source-only change -> forbidden as H; N9 distorted source/receiver clocks -> no acoustic contrast; N10 same-step solver refinement or independently measured floor fails -> `NUMERICALLY_UNRESOLVED`; N11 inconsistent 10-vs-16 shared-state shapes -> refuse before computation; N12 invalid schedule/constraint digest or changed Code SHA -> fail-closed.
 
 **Owner/process interface:** SMC #219 remains its independent temporal-formal project and may continue without CVI implementation. CVI #223 / Draft #224 owns this *integration* research plan. Core #199 owns physical law and measured feasibility. Studio V2 ADR remains frozen; Studio #32 acoustic creator-quality HOLD remains authoritative. New technical work requires a specifically reviewed integration task, not stacking unmerged SMC research onto Core main by implication.
+
+
+### Causal contrast and non-identifiable shortcuts (design diagram)
+
+```mermaid
+flowchart TB
+  S["Frozen SMC5 task goals + COMPATIBILITY exact schedule"] --> G["Semantic mapping + capability Gate"]
+  B["Body M0 / M1"] --> G
+  G --> P["Core realizable controller H0 / H1"]
+  P --> X["Observed physical state / task residual"]
+  X --> A["Same acoustic source + same port / receiver"]
+  A --> Q["Prespecified Q with independent numerical floor"]
+  Q --> C["Body effect, H effect, M×H interaction by held-out Task T"]
+  F["Mutated source / replay gain / altered text / labels"] -. "negative control: not a valid habit intervention" .-> C
+  G -->|NO real mapper/controller| H["STOP: NOT_TESTABLE_BACKEND_CAPABILITY"]
+  C -. "after physical+acoustic gates only" .-> L["Blind A/A and A/B with verified Takes"]
+```
+
+Keep SMC schedule and requested task fixed in the **first** H0/H1 contrast. A later SMC flexible-schedule policy study uses distinct source identities and a different experiment. This diagram defines what a causal contrast would need to isolate; it is not a record of observed correlations or generated audio.
