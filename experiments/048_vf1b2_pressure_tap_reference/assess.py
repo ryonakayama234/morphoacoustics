@@ -11,7 +11,7 @@ from pathlib import Path
 
 CATALOG = {
     "m5_uniform_2011": ("10.1121/1.3514424", "axial"),
-    "m6_nonrectangular_2010": ("10.1121/1.3455838", "transverse"),
+    "m6_nonrectangular_2010": ("10.1121/1.3455838", "axial_rows_at_three_ap_positions"),
     "m5_hemilarynx_2008": ("10.1016/j.jvoice.2008.02.005", "axial"),
 }
 FLAGS = (
@@ -25,7 +25,7 @@ SOURCE = Path(__file__).with_name("sources.json")
 
 import hashlib
 
-INVENTORY_GIT_BLOB_SHA = "1c1751a11430386497789f9955a7e64e733550bc"  # exact audited source catalog version
+INVENTORY_GIT_BLOB_SHA = "dac9a678afc0c86ec27a1df041d5dcc81eca3fe0"  # exact audited source catalog version
 
 
 def read_inventory(content: bytes | None = None) -> dict:
