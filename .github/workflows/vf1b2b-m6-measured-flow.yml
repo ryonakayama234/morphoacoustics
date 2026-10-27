@@ -33,12 +33,18 @@ jobs:
           set -e
           cat evidence/vf1b2b/test.log
           VF1B2B_TEST_RC="$suite_rc" python - <<'PY'
-          import json, os, pathlib
+          import hashlib, json, os, pathlib, subprocess, sys
+          sys.path.insert(0,"experiments/047_vf1b2b_m6_flow_reference")
+          from run import TRACKED
           code=int(os.environ["VF1B2B_TEST_RC"])
+          checked_sha=subprocess.run(["git","rev-parse","HEAD"],check=True,
+                                      capture_output=True,text=True).stdout.strip()
+          tested_files={name:hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()
+                        for name in TRACKED}
+          status={"schema":"vf1b2b.unittest.v2","passed":code==0,"exit_code":code,
+                  "tested_commit_sha":checked_sha,"tested_source_sha256":tested_files}
           pathlib.Path("evidence/vf1b2b/test_status.json").write_text(
-              json.dumps({"schema":"vf1b2b.unittest.v1",
-                          "passed":code==0,"exit_code":code},
-                         sort_keys=True)+"\n", encoding="utf-8")
+              json.dumps(status,sort_keys=True)+"\n",encoding="utf-8")
           PY
       - name: Run empirical-ratio transfer comparison (gated on actual tests)
         if: always()
