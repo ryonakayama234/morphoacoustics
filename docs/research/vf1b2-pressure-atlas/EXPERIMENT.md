@@ -1,6 +1,9 @@
 # VF-1B2 Pressure Atlas / EXPERIMENT — preregistered Gate 0
 Date: 2026-10-27. These criteria precede experimental source code.
 
+## Geometry correction / scientific integrity
+This Gate-0 preregistration predates an independent original-paper recheck that discovered a **wrong M6 tap-axis label**. The correction and new falsifiable pressure/flow hypotheses are registered in [Design Refinement v2](DESIGN_REFINEMENT_V2.md), **before any numeric tap recovery, candidate pressure fitting, moving-wall simulation or voice testing**. Do not retroactively treat the previous CI as pressure-source verification.
+
 ## Research hypothesis and falsification
 Hypothesis H0: the currently identified sources have genuine rigid-glottis measured pressure profiles, but our repository **does not yet possess a complete qualified numeric, spatially registered wall-pressure dataset** appropriate for a geometry-matched simulation comparison. The Gate-0 result is an *availability and qualification audit*, not proof or rejection of any aerodynamic solver.
 
@@ -15,7 +18,7 @@ Falsify H0 only by recovering the full attributable numerical measurements, tap 
 - G2 external physical agreement INDETERMINATE; G3 moving-wall pressure-work N/A; G4 voice quality NO-GO until separately established.
 
 ## Adversarial controls
-1. Reject nonexistent article identifier, or falsely label M6 transverse arrays as M5 axial taps.
+1. Reject nonexistent article identifiers; falsely assign M6 pressure rows to transverse tap sequences; discard the AP quarter/middle/three-quarter row identity; or treat M5 tap 0 (upstream) and M6 tap 0 (downstream) as equivalent.
 2. Changing `figure_only` to numeric-ready without actual measured samples must fail.
 3. No geometry match, no pressure-reference/sign, no uncertainty specification => not comparable.
 4. Nonfinite p values, nonpositive uncertainty bounds, missing/duplicate tap coordinates or invented calibration => reject/quarantine.
