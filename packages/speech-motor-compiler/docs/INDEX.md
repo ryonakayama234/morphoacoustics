@@ -135,3 +135,5 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [SMC7_A0_DECISIONS.md](SMC7_A0_DECISIONS.md): D01–D11 provisional decisions, open design questions, prerequisites for future separate Gate A and testing.
 - Stack directly upon exact SMC6 research Draft #225 head 0caa70f6; **NOT upon CVI experiment #226**, which remains independent Core research with an actual semantic STOP. No source/test/public schema, Core, Studio or ASMR changes.
 
+## SMC-7 A0 design-review amendment (2026-10-28)
+- [SMC7_A0_REVIEW_AMENDMENT_01.md](SMC7_A0_REVIEW_AMENDMENT_01.md): Codex P2 exact temporal-scenario input and stage-specific SMC5 digest retention on SMC6 UNSAT. Supersedes only conflicting A0 clauses; review required.
