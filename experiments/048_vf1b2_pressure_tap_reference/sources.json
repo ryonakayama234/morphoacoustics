@@ -33,7 +33,7 @@
     },
     {
       "id": "m5_hemilarynx_2008",
-      "doi": "10.1016/j.jvoice.2008.04.004",
+      "doi": "10.1016/j.jvoice.2008.02.005",
       "citation": "Scherer et al., Pressure distributions in a static physical model of the hemilarynx: measurements and computations, Fig. 3",
       "model": "M5 static hemilarynx with opposing wall measurements",
       "tap_axis": "axial",
