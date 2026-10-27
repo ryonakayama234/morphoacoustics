@@ -1,0 +1,42 @@
+name: VF-1B2 pressure atlas Gate 0
+on:
+  push:
+    branches: ["research/vf1b2-pressure-atlas-*"]
+    paths:
+      - "experiments/048_vf1b2_pressure_tap_reference/**"
+      - "docs/research/vf1b2-pressure-atlas/**"
+      - ".github/workflows/vf1b2-pressure-atlas.yml"
+  pull_request:
+    paths:
+      - "experiments/048_vf1b2_pressure_tap_reference/**"
+      - "docs/research/vf1b2-pressure-atlas/**"
+      - ".github/workflows/vf1b2-pressure-atlas.yml"
+jobs:
+  pressure-source-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exact source inventory and all research negative cases
+        run: python -m unittest discover -s experiments/048_vf1b2_pressure_tap_reference -p 'test_assess.py' -v
+      - name: Write honest SOURCE ONLY scientific verdict
+        run: |
+          python experiments/048_vf1b2_pressure_tap_reference/assess.py | tee pressure-atlas-gate0.json
+          python - <<'PY'
+          import json
+          with open("pressure-atlas-gate0.json", encoding="utf-8") as f:
+              r = json.load(f)
+          assert r["gate0"] == "SOURCE_INVENTORY_ONLY"
+          assert r["g2"].startswith("INDETERMINATE")
+          assert r["g4"] == "VOICE_NO_GO"
+          assert all(x["gate0_status"].startswith("HOLD") for x in r["results"])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pressure-atlas-gate0-${{ github.sha }}
+          path: pressure-atlas-gate0.json
+          if-no-files-found: ignore
