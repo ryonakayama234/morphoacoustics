@@ -155,16 +155,45 @@ class NegativeReceiptControls(unittest.TestCase):
         r["source"]["accuracy_is_one_sigma"] = True
         self.assertFalse(audit_comparison(r))
 
-    def test_missing_or_forged_tests_never_certified(self):
+    def test_codex_p2_corrupted_accuracy_ratio_and_residual_are_rejected(self):
+        for field, corrupted in (
+            ("measurement_accuracy_abs_m3_s", 1.),
+            ("measured_flow_ratio_to_uniform", 999.),
+            ("q_toy_minus_measured_m3_s", 999.),
+        ):
+            with self.subTest(field=field):
+                r = compare()
+                r["cases"][7][field] = corrupted
+                self.assertFalse(audit_comparison(r))
+
+    def test_model_endpoint_geometry_poison_rejected(self):
+        r = compare()
+        r["assumptions"]["toy_endpoint_area_ramps"]["divergent_10"][1] = 9e-6
+        self.assertFalse(audit_comparison(r))
+
+    def test_missing_stale_or_forged_tests_never_certified(self):
+        import json
         from run import suite_status
-        self.assertFalse(suite_status(None)["eligible"])
+        expected = {"reference.py": "sha-abc", "test_reference.py": "sha-def"}
+        self.assertFalse(suite_status(None, "new-head", expected)["eligible"])
         from tempfile import TemporaryDirectory
         with TemporaryDirectory() as folder:
             status = Path(folder) / "test_status.json"
-            status.write_text('{"schema":"vf1b2b.unittest.v1","passed":true,"exit_code":1}')
-            self.assertFalse(suite_status(status)["eligible"])
-            status.write_text('{"schema":"vf1b2b.unittest.v1","passed":true,"exit_code":true}')
-            self.assertFalse(suite_status(status)["eligible"])
+            def eligibility(data, head="new-head"):
+                status.write_text(json.dumps(data))
+                return suite_status(status, head, expected)["eligible"]
+            sample = {
+                "schema": "vf1b2b.unittest.v2", "passed": True,
+                "exit_code": 0, "tested_commit_sha": "new-head",
+                "tested_source_sha256": expected,
+            }
+            self.assertTrue(eligibility(sample))
+            self.assertFalse(eligibility(sample, "later-head"))
+            self.assertFalse(eligibility({**sample, "tested_source_sha256":
+                                          {**expected, "reference.py": "stale"}}))
+            self.assertFalse(eligibility({**sample, "tested_commit_sha": "old-head"}))
+            self.assertFalse(eligibility({**sample, "exit_code": True}))
+            self.assertFalse(eligibility({**sample, "schema": "vf1b2b.unittest.v1"}))
 
 
 if __name__ == "__main__":
