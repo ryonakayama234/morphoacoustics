@@ -79,3 +79,30 @@ If creator accepts research framing and G0 identifies a real compatible implemen
 - explicit decision; only then consider a separate Core API and Studio creator proposal.
 
 Reference: [Issue #223](https://github.com/ryonakayama234/morphoacoustics/issues/223), [Exp022](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/022_shared_body_multigesture/RESULTS.md), [Exp028](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/028_task_field_morphology_transfer/RESULTS.md), [Exp025](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/025_smooth_source_spectrum_vowel_cue/RESULTS.md).
+
+
+## 2026-10-27 Gate 0 source-level compatibility audit receipt
+
+**Decision:** `NOT_TESTABLE_BACKEND_CAPABILITY` for the *currently demonstrated* CVI-1 factorial pipeline; full `G0_READY_FOR_PREREGISTRATION = false`. This updates the earlier “G0 NOT EXECUTED” statement by distinguishing a newly completed **static source preflight** from a **not executed** same-backend experimental run. There are **no new numerical/CI, G1–G4, sound-quality or creator-listening results**.
+
+| Preflight condition | Exact code evidence | Outcome |
+| --- | --- | --- |
+| Two H policies with invariant goal semantics | Exp027 `CandidateTask` contains onset/offset; `task_activations_at_time` uses fixed `TASKS`; helper takes explicit activations but not validated H | NOT ESTABLISHED |
+| M0/M1 on same backend | Exp028 frozen 16-section, 0.160/0.176m task-field transfer | YES for original fixed task, NOT for H0/H1 |
+| Shared state interaction reusable on that backend | Exp022 custom 10-section KKT and modal dynamics, not Exp028 16-section realizer | NO VERIFIED BRIDGE |
+| Refuse infeasible/no-fallback | Exp029 `LOCATION_UNREACHABLE` with no acoustic call | LIMITED PRECEDENT only |
+| Genuine voice and calibrated receiver | Exp028 frame-rendered frequency-domain transfer; sound/perception not qualified | NOT ESTABLISHED |
+
+Audited source links: [Exp022](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/022_shared_body_multigesture/run.py), [Exp027](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/027_task_field_vowel_transition/run.py), [Exp028](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/028_task_field_morphology_transfer/run.py), [Exp029](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/029_task_field_embodied_infeasibility/RESULTS.md).
+
+**Falsifiable next hypothesis, not an approval:** a separately reviewed experiment-local split of goals and lawful activation/controller schedules may permit genuinely nonidentical H0/H1 on both frozen M0/M1 bodies, with goal targets and physical state checks intact. It must not modify the old frozen V3 identity, relabel transient Direction as persistent H, or claim shared-body dynamics merely by adding independent log-area fields.
+
+**Gate B prerequisite proposal — no code yet:**
+1. Freeze a new goal-semantic identity and retained historical task+timing hash. Test that tampering with either fails.
+2. Register two explicit lawful recurring controller equations H0/H1 with bounds; freeze one independent trial Direction; null H0/H0 must match.
+3. Validate *actual* 16-section state, task residual and feasibility on both exact bodies, and a no-fallback impossible-task negative case. Reject any undocumented 10-to-16 conversion.
+4. Freeze source, port, units, timebase and independent numeric/observer floor before comparing acoustic metrics; reject gain-only/label-only interventions.
+5. If no common physically meaningful realization exists, **STOP** rather than simulate plausible voice.
+6. Only then run preregistered acoustic and held-out-context trials. Studio interface changes and creator audition require separate explicit approval for the already frozen V2 slots; preserve immutable Takes.
+
+This audit removes a deceptive shortcut: a selectable “voice personality” that only changes source signal, mixing or labels. It makes the actual missing causal-control seam explicit while leaving VF/VM sound-quality investigations independent.
