@@ -20,7 +20,7 @@ H-CAUSAL-LIMIT (negative control): Even if the four source hypotheses are suppor
 
 ## Case selection and exclusion frozen NOW
 - Primary: M5 uniform **Fig 2B**, d=0.02cm, 10cmH2O; pressure-drop samples attributed to taps 6–13 on the FW side. NFW side independently recorded only where the symbol is actually distinguishable, otherwise ambiguous. Tap0 is the pressure reference. Bring tap16 only as a contextual downstream boundary if its original marker is verifiable.
-- Table I same-case checks: Q=64.7cm3/s and k_ent=1.378. Do not interpolate Q from another condition or repurpose k_ent as a fit parameter.
+- Table I same-case checks: Q=64.7cm3/s and k_ent=1.447. Do not interpolate Q from another condition or repurpose k_ent as a fit parameter.
 - Secondary NON-EXTRACTION sanity checks: Figure2A narrow d=0.005cm and Figure2C d=0.16cm are different phenomena; M6 3D pressure/flow is a separate reference. No claim of multi-diameter validation from one-case Gate1.
 - Exclude all Figure4 computed model curves, Eq4–6 interpolated points, and samples from other P/d panels as measured primary observations. Refuse case substitution unless a new documented preregistration is explicitly approved BEFORE looking at candidate outputs.
 
