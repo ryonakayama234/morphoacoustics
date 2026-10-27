@@ -65,3 +65,42 @@ SMC lives independently in `packages/speech-motor-compiler/`, and ASMR in `asmr/
 5. Separate creator-approved public Core/Studio contract gate before any UI implementation.
 
 Reference: [Core #223](https://github.com/ryonakayama234/morphoacoustics/issues/223), [Studio ADR](https://github.com/ryonakayama234/morphoacoustics-studio/blob/main/docs/product/STUDIO_WORKSPACE_V2_DECISION.md), [CVI conceptual hypothesis](https://github.com/ryonakayama234/morphoacoustics/blob/main/docs/research/motor-skill-persona-hypotheses-v0.md).
+
+
+## Gate 0 source audit — 2026-10-27 (static inspection only)
+
+This is **not** a solver implementation, experiment execution, or adoption. Core main baseline: `e05e3274ad69bfb9202816049f6661a18ba39ec0`.
+
+```mermaid
+flowchart TB
+  T["Exp027 fixed Task tuple includes onset/offset"] --> A["Exp027 sampled activation"]
+  A --> R["16-section kinematic task-field realizer"]
+  M["Exp028 M0 0.160m / M1 0.176m"] --> R
+  R --> Q["Frequency-transfer / research renderer"]
+  H["H0/H1 recurring habit controller"] -. "no verified binding" .-> A
+  X["Exp022 10-section KKT + modal state"] -. "unmapped, incompatible state" .-> R
+  Q -. "not certified biological voice" .-> S["Studio Take / Research Drawer"]
+```
+
+**Observed method boundaries:**
+- Exp027 `TASKS` fixes all three onset/offset values at 0.150/0.350 s. `task_activations_at_time(time_s, control_step_s)` derives activation from these frozen tasks, not from a controller argument.
+- Exp027 `realize_task_geometry_from_activations(start, activations, cavity_id)` does accept three finite [0,1] activation values and returns positive area sections by additive log-diameter fields. This is a kinematic surface, **not** an established H0/H1 habitual strategy or a force-based biomechanical response.
+- Exp028 audits and binds 16-section M0/M1 on the *same frozen* task/transfer path, but has no independently controlled H factor. Exp029 provides a narrow no-fallback `INFEASIBLE` precedent only.
+- Exp022's 10-section custom KKT/modal physical state, velocity and constraint equations cannot be silently grafted onto Exp028's 16-section task-field geometry.
+
+**Candidate narrow future interface (research-local; NOT an API):**
+
+```text
+Frozen research GoalSet (task/location/degree; own digest)
+        + ControllerStrategy H (lawful motor schedule, own digest)
+        + PerformanceContext T (independent transient direction)
+        + PreparedMorphology M (exact source revision)
+                    |
+       One explicitly verified 16-section realizer
+       -> task residual / feasibility / geometry trace
+       -> declared acoustic source and observation port
+```
+
+The existing Exp027 task plan includes timing in its identity. Separating goal semantics from timing **must create a new research-local identifier**, not rewrite the audited historical hash or pretend those hashes mean the same thing. H0/H1 need declared independent motor laws and legal feasible domains; a different interpolation curve alone does not certify a persistent biological motor habit.
+
+**G0 disposition:** no demonstrated same-backend M0/M1 × H0/H1 path on current interfaces: `NOT_TESTABLE_BACKEND_CAPABILITY` for the full proposed factorial, **not** a claim that such motor habits are impossible in nature. No Core public contract or Studio panel modified.
