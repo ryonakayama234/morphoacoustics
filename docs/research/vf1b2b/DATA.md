@@ -36,3 +36,12 @@ Measured rows: 12/12 from Scherer et al. 2010 M6 **experimental** columns. Input
 These are *descriptive* flow-rate ratios, not an independently matched M6 pressure-tap experiment. Because the ±6 figure is an estimated measurement accuracy rather than a statistically defined standard uncertainty, do not derive a confidence interval, p value, or formal physical accuracy PASS. The toy's arbitrary twofold area ramp is not the real 10° three-dimensional sinusoidal M6 contour.
 
 Archivable raw evidence is the GitHub Actions artifact `vf1b2b-m6-flow-reference-evidence` containing test log, test-status JSON, 12-row comparison CSV and independent result JSON. After this append-only documentation update, the exact final branch head needs another Actions check. Core main/Studio/Takes were not changed.
+
+## Review-amended evidence schema / provenance integrity (2026-10-27)
+First Codex review at `421bba61` reproduced two P2 issues: stale passing suite receipts were not revision-bound, and `measurement_accuracy_abs_m3_s`, `measured_flow_ratio_to_uniform`, `q_toy_minus_measured_m3_s` were unaudited on exported CSV. These findings are historical review evidence, not suppressed by the corrected HEAD.
+
+Replacement `test_status.json` requires schema `vf1b2b.unittest.v2`, exact `tested_commit_sha`, exact `tested_source_sha256` mapping for all eight tracked files (including docs and CI), `passed=true`, integer `exit_code=0`. Comparison driver G0/G1 must reject any stale/wrong-HEAD, altered-source, missing, or RED receipt. A hash of the status bytes alone is insufficient; the independently archived Actions `test.log` is the run evidence, not the receipt's self-assertion.
+
+New audit independently reconstructs measured and modeled Q, declared ±6 cm³/s accuracy, measured Q ratios, toy-minus-measured residuals, modeled shape area ramp and aggregate mismatch flags. Negative controls directly corrupt each such field and ensure rejection.
+
+New code exact source head `9969d15745301ab0003e9effcc555dc5a30d7736`, [dedicated scientific CI #40433796176](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40433796176) **SUCCESS**, 22/22 tests; G0/G1 numeric/fixture pass, G2 remains INDETERMINATE; physical model not altered. This append-only documentation revision is separately subject to exact-head CI.
