@@ -127,8 +127,11 @@ class RigidGlottisTests(unittest.TestCase):
                 solve(RigidGeometry(A,A),rho_kg_m3=invalid)
             with self.assertRaises(ValueError):
                 solve(RigidGeometry(A,A),discharge_coefficient=invalid)
+        for invalid in (-1.,float("nan"),float("inf"),True,False):
             with self.assertRaises(ValueError):
                 solve(RigidGeometry(A,A),p_up_pa=invalid)
+        # Zero reservoir pressure is a VALID control; never reject it.
+        self.assertEqual(solve(RigidGeometry(A,A),p_up_pa=0).volume_flow_m3_s,0)
         for invalid in (1.1,2.):
             with self.assertRaises(ValueError):
                 solve(RigidGeometry(A,A),discharge_coefficient=invalid)
