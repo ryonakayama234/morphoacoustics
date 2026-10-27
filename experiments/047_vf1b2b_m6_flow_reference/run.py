@@ -44,21 +44,31 @@ def git(*argv: str) -> str:
                           text=True, capture_output=True, timeout=12).stdout.strip()
 
 
-def suite_status(path: Path | None) -> dict:
+def suite_status(path: Path | None, checkout_sha: str,
+                 source_hashes: dict[str, str]) -> dict:
+    """Require actual CI test receipt to name this checkout AND every relevant file.
+
+    Not a hostile-repackaging cryptographic signature: Actions is the issuer and
+    independently archived test.log proves that the suite was actually run.
+    """
     if path is None or not path.is_file():
-        return {"eligible": False, "reason": "MISSING_UNITTTEST_RECEIPT"}
+        return {"eligible": False, "reason": "MISSING_UNITTEST_RECEIPT"}
     blob = path.read_bytes()
     try:
         record = json.loads(blob)
         ok = (type(record) is dict
-              and record.get("schema") == "vf1b2b.unittest.v1"
+              and record.get("schema") == "vf1b2b.unittest.v2"
               and record.get("passed") is True
               and type(record.get("exit_code")) is int
-              and record["exit_code"] == 0)
+              and record["exit_code"] == 0
+              and record.get("tested_commit_sha") == checkout_sha
+              and record.get("tested_source_sha256") == source_hashes)
     except (ValueError, UnicodeError):
         ok = False
     return {"eligible": ok,
-            "reason": "UNITTEST_PASS" if ok else "UNITTEST_FAIL_OR_INVALID",
+            "reason": "TESTS_EXACT_CHECKOUT_PASS" if ok
+                      else "FAILED_OR_STALE_OR_INVALID_TEST_RECEIPT",
+            "tested_checkout": checkout_sha if ok else None,
             "test_receipt_sha256": hashlib.sha256(blob).hexdigest()}
 
 
@@ -75,7 +85,7 @@ def run(out: Path, suite: Path | None) -> dict:
         "github_sha_matches": not pinned or pinned == head,
         "source_sha256": {path: sha(ROOT / path) for path in TRACKED},
     }
-    suite_rec = suite_status(suite)
+    suite_rec = suite_status(suite, head, prov["source_sha256"])
     out.mkdir(parents=True, exist_ok=True)
     cases_path = out / "m6_measured_vs_toy_flow.csv"
     with cases_path.open("w", newline="", encoding="utf-8") as file:
