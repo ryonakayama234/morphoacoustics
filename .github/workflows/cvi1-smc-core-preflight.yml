@@ -27,3 +27,5 @@ jobs:
           python -m pip install -e './packages/speech-motor-compiler[dev]'
       - name: Run frozen CVI Gate A/semantic STOP tests
         run: python -m pytest experiments/040_smc_core_binding_preflight/test_preflight.py -q
+      - name: Emit reproducible data receipt (formal only, no physics)
+        run: python experiments/040_smc_core_binding_preflight/run.py
