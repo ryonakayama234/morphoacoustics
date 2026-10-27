@@ -32,3 +32,11 @@ Standalone `experiments/038_vf1b2a_rigid_glottis/` code and tests, `docs/researc
 - [Flow-induced oscillations of vocal-fold replicas (2023)](https://www.nature.com/articles/s41598-023-48080-x) — discusses semiempirical `Asep≈1.2*Amin` criterion (alternative to boundary-layer model).
 - [Pressure distributions in a static physical model of the hemilarynx (2010)](https://pmc.ncbi.nlm.nih.gov/articles/PMC4804921/) — measured real flow is often asymmetrical/bistable, outside this 1D symmetric model.
 - [Bernoulli versus Navier–Stokes comparison (2007)](https://pubmed.ncbi.nlm.nih.gov/16504473/) — separation closure accuracy is consequential.
+
+
+## Executed rigid proxy checkpoint — 2026-10-27 (SOURCE-ONLY validation)
+Implementation head `ee7f5224596dd2cf47dc6996b2b4365801e49867`, dedicated [scientific CI #40425929420](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40425929420) **SUCCESS**. Model is STILL strictly rigid: no moving-wall force, no vocal fold material, no airflow→tissue work, no acoustic port, no source audio. System diagram above remains a *surrogate reference*, not an FSI system.
+
+Under the declared heuristic and air density, geometry strongly affects the *assumed* static pressure distribution and nominal flow. At 800 Pa, Cd 0.7, `Aentry=3e-5, Aexit=6e-5 m²`, analytical separation at `z=0.0012m`, nominal q `9.163636e-4 m³/s`, predicted entry static pressure `-172.48 Pa` relative to outlet. Opposite convergent `Aentry=6e-5, Aexit=3e-5` gives entry pressure `+294 Pa`, nominal q `7.636364e-4 m³/s`. These are **model outputs** and only *qualitatively related to the physical mechanisms* described by rigid-glottis literature.
+
+Do not use this pseudo-pressure as a validated pressure-force distribution on two moving masses. Such a step demands an independent fluid force/moving-wall storage and transport work derivation; otherwise a formally green flow calculation can generate unphysical energy at the tissue/air interface.
