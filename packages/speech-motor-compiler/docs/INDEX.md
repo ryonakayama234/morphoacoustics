@@ -108,3 +108,13 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [SMC5_RESULTS.md](SMC5_RESULTS.md): append-only execution evidence and explicit MORE_DATA until independent review.
 - [SMC5_DECISIONS.md](SMC5_DECISIONS.md): bounded adoption and STOP/owner-agreement conditions.
 - Research Issue [#210](https://github.com/ryonakayama234/morphoacoustics/issues/210) / stacked [Draft PR #211](https://github.com/ryonakayama234/morphoacoustics/pull/211). Inherited Draft #189/#186/#175/#164 remain unmerged; historical Draft #180 remains REVISE/RED. **No accepted phonetic, physics, audio or production API claim.**
+
+
+## SMC-6 Gate A0 — 2026-10-27 DESIGN ONLY (next proposed research; not adopted)
+- [Issue #219](https://github.com/ryonakayama234/morphoacoustics/issues/219): scientific measurands, explicit falsifiers and two-lane coordination boundary. **Design refinement only**, no code, no Gate A freeze, no Core/Studio/ABI.
+- [SMC6_A0_SYSTEM.md](SMC6_A0_SYSTEM.md): system architecture and exact-SMC5 versus experimental timing lanes, diagrams.
+- [SMC6_A0_DATA.md](SMC6_A0_DATA.md): proposed private sidecar data, identity/provenance and entity diagram.
+- [SMC6_A0_METROLOGY.md](SMC6_A0_METROLOGY.md): L0-L3 evidence taxonomy; formal measures M01-M12, error/uncertainty and independent oracle.
+- [SMC6_A0_EXPERIMENT.md](SMC6_A0_EXPERIMENT.md): H0-H6 falsifiers, T01-T15 candidate fixtures, controls and unresolved design choices.
+- [SMC6_A0_DECISIONS.md](SMC6_A0_DECISIONS.md): provisional decisions D01-D09 and explicit STOP/approval boundaries.
+- SMC5 [Draft #211](https://github.com/ryonakayama234/morphoacoustics/pull/211), source SHA `894d2f0d68169e7f794d78be729057b3b31d6017`, is only `GO_LIMITED_SYMBOLIC` synthetic software; SMC6 design is **not** a new scientific adoption or main merge.
