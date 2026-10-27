@@ -17,6 +17,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact source branch HEAD (never PR synthetic merge)
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -37,6 +41,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: pressure-atlas-gate0-${{ github.sha }}
+          name: pressure-atlas-gate0-${{ github.event.pull_request.head.sha || github.sha }}
           path: pressure-atlas-gate0.json
           if-no-files-found: ignore
