@@ -125,3 +125,15 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [Protocol first, exact frozen T01–T15](SMC6_GATE_A_PROTOCOL.md) precedes tests/code; [as-built SYSTEM / DATA / metrology](SMC6_GATE_B_IMPLEMENTATION.md) has Mermaid charts and L0–L3 meaning separation.
 - [Append-only RESULTS](SMC6_GATE_B_RESULTS.md) records actual test-only RED `7084b339`, first mypy RED `28b996c2`, repair `21ef0748`, independent exact grid oracle `a2622da1`, exact-sha green CI and review/adoption limitations.
 - Private `../src/morphoacoustics_smc/temporal_stn.py`, test-first `../tests/test_smc6_stn_preregistered.py`, independent reference `../tests/test_smc6_independent_oracle.py`. SMC-3/5 and `__init__.py` untouched. Hard STN and mathematical witness **do not** imply phonetic/natural/body/acoustic correctness; **NO_PUBLIC_MOTORSCORE_ABI / NO_STUDIO_UI / NO_CORE_PHYSICS / NO_MAIN_MERGE**.
+
+## SMC-7 Gate A0 — linguistic-to-motor evidence / design refinement (2026-10-27)
+- [Design Issue #229](https://github.com/ryonakayama234/morphoacoustics/issues/229): new measured hypotheses, data separation and refusal/acceptance boundary; **DESIGN_ONLY / NOT_PREREG_FROZEN / NO_CODE / NO_MAIN_MERGE**.
+- [SMC7_A0_SYSTEM.md](SMC7_A0_SYSTEM.md): two front-end lanes, authenticated SMC5/6 legacy bridge, Core/Studio authority; system Mermaid.
+- [SMC7_A0_DATA.md](SMC7_A0_DATA.md): original source spans, whole-utterance reading paths, selections, evidence, digests, staged refusal, ER diagram.
+- [SMC7_A0_METROLOGY.md](SMC7_A0_METROLOGY.md): L0/L1/L2/L3 evidence taxonomy, L01–L16 proposed measures, independent corpus/oracles, candidate recall vs burden and selective risk.
+- [SMC7_A0_EXPERIMENT.md](SMC7_A0_EXPERIMENT.md): prospective H0–H8 / F01–F16, comparative baselines and negative experiments, **not frozen and not executed**.
+- [SMC7_A0_DECISIONS.md](SMC7_A0_DECISIONS.md): D01–D11 provisional decisions, open design questions, prerequisites for future separate Gate A and testing.
+- Stack directly upon exact SMC6 research Draft #225 head 0caa70f6; **NOT upon CVI experiment #226**, which remains independent Core research with an actual semantic STOP. No source/test/public schema, Core, Studio or ASMR changes.
+
+## SMC-7 A0 design-review amendment (2026-10-28)
+- [SMC7_A0_REVIEW_AMENDMENT_01.md](SMC7_A0_REVIEW_AMENDMENT_01.md): Codex P2 exact temporal-scenario input and stage-specific SMC5 digest retention on SMC6 UNSAT. Supersedes only conflicting A0 clauses; review required.
