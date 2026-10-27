@@ -1,0 +1,49 @@
+name: VF-1B2 M5 published exit-scalar Gate 0
+on:
+  push:
+    branches: ["research/vf1b2-m5-exit-scalar-*"]
+    paths:
+      - "experiments/049_vf1b2_m5_exit_scalar/**"
+      - "docs/research/vf1b2-m5-exit-scalar/**"
+      - ".github/workflows/vf1b2-m5-exit-scalar.yml"
+  pull_request:
+    paths:
+      - "experiments/049_vf1b2_m5_exit_scalar/**"
+      - "docs/research/vf1b2-m5-exit-scalar/**"
+      - ".github/workflows/vf1b2-m5-exit-scalar.yml"
+jobs:
+  measured-scalar-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact PR source SHA (not synthetic merge)
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run source-integrity and deliberately adverse tests
+        run: python -m unittest discover -s experiments/049_vf1b2_m5_exit_scalar -p 'test_evaluate.py' -v
+      - name: Emit scalar results without claiming a measured tap profile
+        run: |
+          python experiments/049_vf1b2_m5_exit_scalar/evaluate.py > m5-exit-scalar-evidence.json
+          python - <<'PY'
+          import json
+          with open("m5-exit-scalar-evidence.json", encoding="utf-8") as f:
+              r = json.load(f)
+          assert r["case_count"] == 35
+          assert r["blank_source_cells"] == 13
+          assert r["im_wrong_sign_cases_all_35"] == 7
+          assert all(r["hypotheses"].values())
+          assert r["g2"].startswith("INDETERMINATE")
+          assert r["g3"].startswith("HOLD")
+          assert r["g4"] == "VOICE_NO_GO"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vf1b2-m5-exit-scalar-${{ github.event.pull_request.head.sha || github.sha }}
+          path: m5-exit-scalar-evidence.json
+          if-no-files-found: ignore
