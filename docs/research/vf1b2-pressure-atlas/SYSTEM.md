@@ -5,7 +5,7 @@ Parent: [Issue #215](https://github.com/ryonakayama234/morphoacoustics/issues/21
 Previous measured-flow reference: [Draft #217](https://github.com/ryonakayama234/morphoacoustics/pull/217) at `d50f0f2` (unmerged; no code imported).
 
 ## Goal
-Before permitting rigid-flow pressure predictions to drive a moving vocal-fold wall, qualify a published **spatially registered measured wall-pressure profile**, its actual 3D/2D geometry, boundary conditions, scaling, and uncertainty. First audit the M5 uniform-glottis axial tap reference; track M6's cross-width taps separately. No hand-tuned separation factor, no fitted Cd, no extrapolated force, no constructed voice.
+Before permitting rigid-flow pressure predictions to drive a moving vocal-fold wall, qualify a published **spatially registered measured wall-pressure profile**, its actual 3D/2D geometry, boundary conditions, scaling, and uncertainty. First audit the M5 uniform-glottis axial tap reference; track M6's THREE AXIAL pressure-tap rows at distinct anterior-posterior positions separately. No hand-tuned separation factor, no fitted Cd, no extrapolated force, no constructed voice. **Geometry erratum (2026-10-27):** original M6 'cross-width' wording was incorrect; original paper specifies 14 upstream-downstream taps at each of three AP positions. See [Design Refinement v2](DESIGN_REFINEMENT_V2.md).
 
 ```mermaid
 flowchart TD
