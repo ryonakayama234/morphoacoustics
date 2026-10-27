@@ -118,3 +118,10 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [SMC6_A0_EXPERIMENT.md](SMC6_A0_EXPERIMENT.md): H0-H6 falsifiers, T01-T15 candidate fixtures, controls and unresolved design choices.
 - [SMC6_A0_DECISIONS.md](SMC6_A0_DECISIONS.md): provisional decisions D01-D09 and explicit STOP/approval boundaries.
 - SMC5 [Draft #211](https://github.com/ryonakayama234/morphoacoustics/pull/211), source SHA `894d2f0d68169e7f794d78be729057b3b31d6017`, is only `GO_LIMITED_SYMBOLIC` synthetic software; SMC6 design is **not** a new scientific adoption or main merge.
+
+
+## SMC-6 Gate B — bounded exact temporal-reasoning research, test-first (2026-10-27)
+- [Owner Issue #219](https://github.com/ryonakayama234/morphoacoustics/issues/219), design-only [Draft #221](https://github.com/ryonakayama234/morphoacoustics/pull/221) and separate implementation research [Draft #225](https://github.com/ryonakayama234/morphoacoustics/pull/225). Implementation stacks on design A0 → verified SMC5 SHA `894d2f0d...` → unmerged SMC4-BR; **not main-ready**.
+- [Protocol first, exact frozen T01–T15](SMC6_GATE_A_PROTOCOL.md) precedes tests/code; [as-built SYSTEM / DATA / metrology](SMC6_GATE_B_IMPLEMENTATION.md) has Mermaid charts and L0–L3 meaning separation.
+- [Append-only RESULTS](SMC6_GATE_B_RESULTS.md) records actual test-only RED `7084b339`, first mypy RED `28b996c2`, repair `21ef0748`, independent exact grid oracle `a2622da1`, exact-sha green CI and review/adoption limitations.
+- Private `../src/morphoacoustics_smc/temporal_stn.py`, test-first `../tests/test_smc6_stn_preregistered.py`, independent reference `../tests/test_smc6_independent_oracle.py`. SMC-3/5 and `__init__.py` untouched. Hard STN and mathematical witness **do not** imply phonetic/natural/body/acoustic correctness; **NO_PUBLIC_MOTORSCORE_ABI / NO_STUDIO_UI / NO_CORE_PHYSICS / NO_MAIN_MERGE**.
