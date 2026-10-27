@@ -30,7 +30,7 @@ INVENTORY_GIT_BLOB_SHA = "1c1751a11430386497789f9955a7e64e733550bc"  # exact aud
 
 def read_inventory(content: bytes | None = None) -> dict:
     raw = SOURCE.read_bytes() if content is None else content
-    blob = b"blob " + str(len(raw)).encode("ascii") + b"\\0" + raw
+    blob = b"blob " + str(len(raw)).encode("ascii") + bytes([0]) + raw
     if hashlib.sha1(blob).hexdigest() != INVENTORY_GIT_BLOB_SHA:
         raise ValueError("published-source inventory tampered / unreviewed change")
     return json.loads(raw.decode("utf-8", errors="strict"))
