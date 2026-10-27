@@ -162,9 +162,15 @@ def audit_comparison(result: dict) -> bool:
             or src.get("accuracy_is_one_sigma") is not False):
         return False
     assum = result["assumptions"]
+    expected_ramps = {
+        "convergent_10": [2 * A_MIN_M2, A_MIN_M2],
+        "uniform_0": [A_MIN_M2, A_MIN_M2],
+        "divergent_10": [A_MIN_M2, 2 * A_MIN_M2],
+    }
     if (assum.get("assumed_cd") != CD_ASSUMED
             or assum.get("min_projected_area_m2") != A_MIN_M2
-            or assum.get("rho_kg_m3") != RHO_KG_M3):
+            or assum.get("rho_kg_m3") != RHO_KG_M3
+            or assum.get("toy_endpoint_area_ramps") != expected_ramps):
         return False
     rows = result.get("cases", [])
     if len(rows) != 12:
@@ -182,6 +188,12 @@ def audit_comparison(result: dict) -> bool:
         checks = (
             case.get("delta_p_pa") == dp, case.get("shape") == shape,
             abs(case.get("q_measured_m3_s", float("inf")) - measured) < 1e-15,
+            abs(case.get("measurement_accuracy_abs_m3_s", float("inf"))
+                - FLOW_ACCURACY_CM3_S * 1e-6) < 1e-15,
+            abs(case.get("measured_flow_ratio_to_uniform", float("inf"))
+                - measured / unif) < 1e-12,
+            abs(case.get("q_toy_minus_measured_m3_s", float("inf"))
+                - (toy_flow(dp, shape) - measured)) < 1e-15,
             abs(case.get("ratio_min_from_accuracy", float("inf")) - lo) < 1e-12,
             abs(case.get("ratio_max_from_accuracy", float("inf")) - hi) < 1e-12,
             abs(case.get("toy_flow_ratio_to_uniform", float("inf")) - expected_ratio) < 1e-12,
