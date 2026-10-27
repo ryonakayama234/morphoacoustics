@@ -8,7 +8,7 @@ These record shapes are intended as future **research file formats**, not adopte
 primary_case_id: M5_UNIFORM_FIG2B_D002CM_DP10CMH2O
 Source: Fulcher, Scherer, Powell, JASA (2011), DOI 10.1121/1.3514424, PMC3078031.
 Figure 2B: measured pressure **drop** for a uniform M5 static larynx with minimal glottal diameter d=0.02 cm, transglottal drive 10 cmH2O.
-Table I: volume flow Q=64.7 cm3/s, entrance loss coefficient 1.378 for the same d and pressure. These table quantities are contextual measurements/derived coefficients, not substitutes for plotted per-tap pressure values.
+Table I: volume flow Q=64.7 cm3/s, entrance loss coefficient 1.447 for the same d and pressure. These table quantities are contextual measurements/derived coefficients, not substitutes for plotted per-tap pressure values.
 
 Life-size equivalents:
 - d=0.0002 m.
