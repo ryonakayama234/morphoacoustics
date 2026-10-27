@@ -92,3 +92,29 @@ A factorial contrast `I_Q` is defined only for a scalar Q that is comparable in 
 These are **experiment log labels**, not new Core public exception codes. Translate only documented native backend failure statuses; do not conflate `INFEASIBLE` body/task with `UNSUPPORTED` implementation.
 
 Reference: [CVI-1 #223](https://github.com/ryonakayama234/morphoacoustics/issues/223).
+
+
+## Gate 0 evidence/data inventory — 2026-10-27
+
+**Static source review only; no CVI-1 numerical rows, sound files or new observations were produced.** Core main baseline `e05e3274ad69bfb9202816049f6661a18ba39ec0`.
+
+| Existing reference | Actually represented | Missing for CVI-1 |
+| --- | --- | --- |
+| `experiments/022_shared_body_multigesture/run.py` | 10-section shared KKT / modal state dynamics | validated same 16-section M0/M1 realization path |
+| `experiments/027_task_field_vowel_transition/run.py` | 3 fixed timed tasks, an activation-vector geometry helper | independently versioned recurring H0/H1 controller and invariant goal identity |
+| `experiments/028_task_field_morphology_transfer/run.py` | 16-section prepared M0=0.160m/M1=0.176m, physical shape and research acoustic transfer | a tested motor-habit axis |
+| `experiments/029_task_field_embodied_infeasibility/run.py` | narrow capability refusal with no synthetic fallback | H-specific physiological feasibility |
+| Studio `docs/product/STUDIO_WORKSPACE_V2_DECISION.md` | frozen Character/Motion/Scene canvas ownership and Take dock | new UI-binding approval, which is absent |
+
+**Result status:** the originally proposed M0/M1 × H0/H1 × T0/T1 dataset remains **absent**. `NOT_TESTABLE_BACKEND_CAPABILITY` describes the currently demonstrated interface, *not* the native body/task status `INFEASIBLE`. G1–G4 remain `NOT_RUN`.
+
+If a future new experiment is separately approved, its record must distinguish:
+- `upstream_task_plan_hash` (the original Exp027 task+timing hash, unchanged);
+- `research_goal_set_hash` (new, separately frozen task/location/degree semantics, if timing separated);
+- `context_hash` (per-performance direction, not habit);
+- `controller_law_hash` (H0/H1 equations, SI quantities, bounds, exact version);
+- `body_preparation_hash` and `capability_policy_hash` (M0/M1 binding);
+- `solver_hash`, `source_boundary_hash`, `observation_port_hash`, `clock_hash`;
+- `physical_trace_hash` / `acoustic_trace_hash` / `take_ref` **only after genuinely executing and qualifying them**.
+
+Keep unknown values null; never fabricate reference IDs. An edited gain/EQ/recorded-WAV selector cannot be stored as a valid habitual motor strategy. Existing UI mode/viewport/label state never enters the physical body hash.
