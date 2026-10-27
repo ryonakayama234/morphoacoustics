@@ -140,6 +140,32 @@ class NegativeReceiptControls(unittest.TestCase):
         r["g2"] = "PASS"
         self.assertFalse(audit_comparison(r))
 
+    def test_aggregate_mismatch_count_poison_rejected(self):
+        r = compare()
+        r["mismatch_counts_out_of_four"]["divergent_10"] = 0
+        self.assertFalse(audit_comparison(r))
+
+    def test_aggregate_verdict_poison_rejected(self):
+        r = compare()
+        r["transfer_sentinel"] = "NO_M6_DIVERGENT_DISCREPANCY_DETECTED"
+        self.assertFalse(audit_comparison(r))
+
+    def test_source_uncertainty_claim_poison_rejected(self):
+        r = compare()
+        r["source"]["accuracy_is_one_sigma"] = True
+        self.assertFalse(audit_comparison(r))
+
+    def test_missing_or_forged_tests_never_certified(self):
+        from run import suite_status
+        self.assertFalse(suite_status(None)["eligible"])
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as folder:
+            status = Path(folder) / "test_status.json"
+            status.write_text('{"schema":"vf1b2b.unittest.v1","passed":true,"exit_code":1}')
+            self.assertFalse(suite_status(status)["eligible"])
+            status.write_text('{"schema":"vf1b2b.unittest.v1","passed":true,"exit_code":true}')
+            self.assertFalse(suite_status(status)["eligible"])
+
 
 if __name__ == "__main__":
     unittest.main()
