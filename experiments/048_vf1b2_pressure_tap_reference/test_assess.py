@@ -3,13 +3,20 @@ import copy
 import json
 import unittest
 
-from assess import SOURCE, assess_inventory, assess_source
+from assess import SOURCE, assess_inventory, assess_source, read_inventory
 
 
 class PressureReferenceGate0Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.inventory = json.loads(SOURCE.read_text(encoding="utf-8"))
+        cls.inventory = read_inventory()
+
+    def test_changed_source_inventory_fails_hash_gate(self):
+        original = SOURCE.read_bytes()
+        corrupted = original.replace(b"M5 uniform static", b"M5 fabricated static")
+        self.assertNotEqual(original, corrupted)
+        with self.assertRaises(ValueError):
+            read_inventory(corrupted)
 
     def test_known_sources_all_remain_unqualified(self):
         results = assess_inventory(self.inventory)
