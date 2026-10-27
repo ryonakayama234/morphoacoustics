@@ -108,13 +108,13 @@ The existing Exp027 task plan includes timing in its identity. Separating goal s
 
 ## 2026-10-27 — SMC-first integration architecture / pre-implementation decision D1
 
-**Status: DESIGN REFINEMENT ONLY.** Core main baseline \`e05e3274\`; independently reviewed SMC-6 Gate B research [PR #225](https://github.com/ryonakayama234/morphoacoustics/pull/225) (software-accepted bounded formal math only, **unmerged stacked branch**). SMC-5 [PR #211](https://github.com/ryonakayama234/morphoacoustics/pull/211) is **GO_LIMITED_SYMBOLIC** only. This CVI Draft remains based on Core main, **does not cherry-pick/import/merge any SMC source**, and changes neither SMC nor Core's public APIs.
+**Status: DESIGN REFINEMENT ONLY.** Core main baseline `e05e3274`; independently reviewed SMC-6 Gate B research [PR #225](https://github.com/ryonakayama234/morphoacoustics/pull/225) (software-accepted bounded formal math only, **unmerged stacked branch**). SMC-5 [PR #211](https://github.com/ryonakayama234/morphoacoustics/pull/211) is **GO_LIMITED_SYMBOLIC** only. This CVI Draft remains based on Core main, **does not cherry-pick/import/merge any SMC source**, and changes neither SMC nor Core's public APIs.
 
 ### Architectural decision: SMC is the planned motor *planning* entrypoint, not an optional decoration
 
 The previous diagram's "SMC optional" meant only *not a prerequisite for source-only science at that time*. For the **planned Studio Script -> Motion -> Perform workflow**, adopt the following *research architecture direction* without pretending it exists:
 
-\`\`\`mermaid
+```mermaid
 flowchart TB
   subgraph Studio["Studio V2 — fixed slots / no UI implementation authorization"]
     L["project.library: immutable asset references"]
@@ -142,23 +142,23 @@ flowchart TB
   R --> E
   A --> E
   L -. "asset refs only" .-> M
-\`\`\`
+```
 
 **Authority boundaries:**
 
-1. **SMC (independent Python package)** owns canonical selected pronunciation, Task identity/many-to-many sharing, symbolic goal interval, temporal constraints, feasible set and explicitly identified schedule. It does **not** generate a physical actuator, speaker identity, acoustic waveform, or body \`INFEASIBLE\`.
-2. **CVI-1** is a *testable hypothesis about stable motor-policy variation*, not an alternate Script compiler, new tone-renderer or public \`MotorPersona\` API. A proposed recurring habit can influence **(a)** the choice among permitted symbolic schedules (future SMC policy gate, *not yet supported*), and **(b)** Core's physical-control strategy for an **unchanged selected schedule** (preferred first CVI causal test). These two interventions must be tested separately; never attribute planner timing selection to physical motor skill.
+1. **SMC (independent Python package)** owns canonical selected pronunciation, Task identity/many-to-many sharing, symbolic goal interval, temporal constraints, feasible set and explicitly identified schedule. It does **not** generate a physical actuator, speaker identity, acoustic waveform, or body `INFEASIBLE`.
+2. **CVI-1** is a *testable hypothesis about stable motor-policy variation*, not an alternate Script compiler, new tone-renderer or public `MotorPersona` API. A proposed recurring habit can influence **(a)** the choice among permitted symbolic schedules (future SMC policy gate, *not yet supported*), and **(b)** Core's physical-control strategy for an **unchanged selected schedule** (preferred first CVI causal test). These two interventions must be tested separately; never attribute planner timing selection to physical motor skill.
 3. **A narrow research-only integration adapter** must authenticate SMC identities, declare exact symbolic-to-Core task/capability mapping, map seconds/units/coordinates with an independent witness, and return fail-closed statuses. It must not silently reinterpret SMC5 scalar intervals as Exp027 constriction degrees, physical actuator force or target area.
-4. **Core** owns \`PreparedMorphology\`, realizability, constraints, actual motor state/dynamics, source-tract/organ-graph physics and acoustic observation. Existing Exp027/028 provide a bounded *kinematic* surface, not proven motor-habit dynamics. Exp022's 10-section modal state is not the same backend as Exp028's 16 sections.
+4. **Core** owns `PreparedMorphology`, realizability, constraints, actual motor state/dynamics, source-tract/organ-graph physics and acoustic observation. Existing Exp027/028 provide a bounded *kinematic* surface, not proven motor-habit dynamics. Exp022's 10-section modal state is not the same backend as Exp028's 16 sections.
 5. **Studio** owns only creator actions and references in the **already frozen** V2 slots. For Python SMC, Studio would call a versioned **local backend service**, never import Python into TypeScript or add a fourth mode. No Studio UI change is authorized in this Draft.
 6. **ASMR** remains an independently gated physical/scene capability at the Scene boundary. It is not a compiler dependency or a fourth tab.
 
 ### The critical timing-integrity problem
 
-SMC-5's event equalities/anchors and \`CouplingConstraint.lag_s\` are hard exact timing. SMC-6 \`COMPATIBILITY\` faithfully retains them, and so has **no H0/H1 timing degrees of freedom** to choose from. SMC-6 \`RESEARCH_OVERRIDE\` deliberately *replaces* those exact source timing constraints for a labeled synthetic study; its witness **cannot** be sold as faithful reading/performance of the original SMC-5 candidate. A later SMC goal-vs-temporal-contract revision requires its *own* decision, proof and ABI gate.
+SMC-5's event equalities/anchors and `CouplingConstraint.lag_s` are hard exact timing. SMC-6 `COMPATIBILITY` faithfully retains them, and so has **no H0/H1 timing degrees of freedom** to choose from. SMC-6 `RESEARCH_OVERRIDE` deliberately *replaces* those exact source timing constraints for a labeled synthetic study; its witness **cannot** be sold as faithful reading/performance of the original SMC-5 candidate. A later SMC goal-vs-temporal-contract revision requires its *own* decision, proof and ABI gate.
 
 **Chosen narrow starting semantics:** hold the SMC-authenticated task/goal/timing identical while contrasting two lawful *body-level* motor policies; only when this is physically expressible and supported should an H test run. This preserves SMC as the motion planning origin without requiring an unapproved SMC scheduler optimization. A future timing-habit study is separate and may study selectable schedules only under a *new properly authorized flexible timing contract*, not a silent override.
 
-**Branch and dependency policy:** keep CVI #224 docs on main-derived branch. SMC-4 B-R -> SMC-5 -> SMC-6 remain an unmerged stacked research family. A future disposable integration research branch must explicitly pin/check all required parent source SHAs and its change manifest, with no production import or Studio bridge until independent compatibility, semantic and creator gates. Do not call the presence of the \`packages/\` path on SMC's Draft branch a feature on Core main.
+**Branch and dependency policy:** keep CVI #224 docs on main-derived branch. SMC-4 B-R -> SMC-5 -> SMC-6 remain an unmerged stacked research family. A future disposable integration research branch must explicitly pin/check all required parent source SHAs and its change manifest, with no production import or Studio bridge until independent compatibility, semantic and creator gates. Do not call the presence of the `packages/` path on SMC's Draft branch a feature on Core main.
 
-**Open decision before code:** Can any currently supported Core realizer accept SMC TaskGoal semantics with independent physical meaning and a second *feasible* recurring control policy? If no, STOP at \`NOT_TESTABLE_BACKEND_CAPABILITY\`; the first later task is a separately proposed and measured realizer/bridge, **not** a fake custom H slider.
+**Open decision before code:** Can any currently supported Core realizer accept SMC TaskGoal semantics with independent physical meaning and a second *feasible* recurring control policy? If no, STOP at `NOT_TESTABLE_BACKEND_CAPABILITY`; the first later task is a separately proposed and measured realizer/bridge, **not** a fake custom H slider.
