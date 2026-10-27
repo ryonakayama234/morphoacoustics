@@ -22,3 +22,17 @@ Unit conversion: 1 kPa=1000 Pa; 1 cm³/s=1e-6 m³/s; 0.122 cm²=1.22e-5 m²; 6 c
 - Calculated toy outputs must never overwrite measured entries; comparison cannot fit Cd or separation criterion to reference values.
 - Test failure, missing known-source fixture, unresolved external pressure-geometry mapping, or unavailable CI/reviewer stays visible and prevents promotion. Negative controls must fail upon tampered units, swapped shape, wrong sign, data corruption, forged geometry-match flag, and missing fixture.
 - Studio's existing `PANEL_REGISTRY.json` is an approved design reference, not a dataset to edit. UI does not acquire physical source-of-truth.
+
+## Recorded dataset and scientific CI evidence — 2026-10-27
+Measured rows: 12/12 from Scherer et al. 2010 M6 **experimental** columns. Input `m6_table2_experimental.csv` fixed SHA256 `febecab692b5eb78d2e73520d27556c368de5cff4691ff02c20baab64556b6d0`. Scientific head `d7213d70ceb49b66a12cf2be58a2c8761154fe1a`, [dedicated CI #40432872175](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40432872175): 20/20 tests passed, 12 comparison rows, and 20th-century paper data kept separate from toy computed flow. Earlier implementation head `1696937` was also 16/16 green in [CI #40432635526](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40432635526); follow-up strengthened verdict and metadata poison checks.
+
+| Δp Pa | measured M6 convergent/uniform | measured M6 divergent/uniform | worst-case M6 divergent/uniform ratio from approximate ±6 cm³/s accuracy | toy divergent/uniform |
+|---:|---:|---:|---:|---:|
+| 294 | 1.00861 | 1.08685 | [1.03899, 1.13702] | 1.20000 |
+| 491 | 1.03330 | 1.10021 | [1.06307, 1.13871] | 1.20000 |
+| 981 | 1.02323 | 1.09293 | [1.06697, 1.11954] | 1.20000 |
+| 1472 | 1.03770 | 1.07539 | [1.05446, 1.09676] | 1.20000 |
+
+These are *descriptive* flow-rate ratios, not an independently matched M6 pressure-tap experiment. Because the ±6 figure is an estimated measurement accuracy rather than a statistically defined standard uncertainty, do not derive a confidence interval, p value, or formal physical accuracy PASS. The toy's arbitrary twofold area ramp is not the real 10° three-dimensional sinusoidal M6 contour.
+
+Archivable raw evidence is the GitHub Actions artifact `vf1b2b-m6-flow-reference-evidence` containing test log, test-status JSON, 12-row comparison CSV and independent result JSON. After this append-only documentation update, the exact final branch head needs another Actions check. Core main/Studio/Takes were not changed.
