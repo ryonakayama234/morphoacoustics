@@ -118,3 +118,56 @@ If a future new experiment is separately approved, its record must distinguish:
 - `physical_trace_hash` / `acoustic_trace_hash` / `take_ref` **only after genuinely executing and qualifying them**.
 
 Keep unknown values null; never fabricate reference IDs. An edited gain/EQ/recorded-WAV selector cannot be stored as a valid habitual motor strategy. Existing UI mode/viewport/label state never enters the physical body hash.
+
+
+## 2026-10-27 — SMC × CVI data ownership and candidate handoff (design only)
+
+No stable Runtime JSON Schema, public MotorScore, production serialization, source-code change, or executable cross-package mapping is authorized. These are **research traceability fields**, not adopted model types.
+
+### Existing proven research interfaces — do not change in place
+
+- SMC-5 \`CompileResult(plan, goals, timing, receipt)\`: \`TaskGoal(task_id, definition_id, semantic_revision, goal_kind, capabilities, lower, upper, ...)\` with **exact rational dimensionless research scalar intervals**; \`CompileReceipt\` includes distinct \`canonical_request_sha256\`, \`plan_digest\`, \`candidate_digest\`. A validated symbolic TaskGoal **does not imply a physically typed Core goal**.
+- SMC-6 \`TemporalAnalysis(status, code, events, overlaps, receipt)\` produces actual hard-bound earliest/latest windows, exact rational witness and overlap extrema. \`TemporalReceipt\` retains \`canonical_request_sha256\`, \`source_plan_digest\`, \`source_candidate_digest\`, \`source_timing_digest\`, \`study_digest\`, optional \`witness_digest\`.
+- SMC-6 \`COMPATIBILITY\`: inherited exact SMC5 events; \`RESEARCH_OVERRIDE\`: distinct synthetic study with required replacement policy/reason; do not silently rewrite selected pronunciation, Goal or prior timing digest.
+- Existing Core \`Gesture\` / \`GestureScore\`, \`CreatureSpec\`, \`PreparedMorphology\`, \`FeasibilityReport\` have **different scope and semantics**. Current research lacks an accepted adapter turning arbitrary SMC TaskGoal into them.
+
+### Proposed bounded record relationships
+
+\`\`\`mermaid
+erDiagram
+  SCRIPT_REFERENCE ||--o{ SELECTED_PRONUNCIATION : "selected explicitly"
+  SELECTED_PRONUNCIATION ||--|| SMC5_CANONICAL_RECEIPT : compiles
+  SMC5_CANONICAL_RECEIPT ||--|{ TASK_GOAL : identities
+  SMC5_CANONICAL_RECEIPT ||--|| ORIGINAL_TIMING : freezes
+  ORIGINAL_TIMING ||--o| SMC6_STUDY : references
+  SMC6_STUDY ||--o| SCHEDULE_WITNESS : only_if_valid
+  TASK_GOAL ||--o| RESEARCH_HANDOFF : candidate_map
+  SCHEDULE_WITNESS ||--o| RESEARCH_HANDOFF : timing
+  BODY_REVISION ||--|| PREPARED_MORPHOLOGY : prepares
+  PREPARED_MORPHOLOGY ||--o{ MOTOR_EXECUTION : validated
+  RESEARCH_HANDOFF ||--o{ MOTOR_EXECUTION : requests
+  RECURRING_POLICY ||--o{ MOTOR_EXECUTION : controls
+  MOTOR_EXECUTION ||--o{ PHYSICAL_TRACE : causes
+  PHYSICAL_TRACE ||--o{ ACOUSTIC_OBSERVATION : measures
+  ACOUSTIC_OBSERVATION ||--o| IMMUTABLE_TAKE : if_qualified
+\`\`\`
+
+**Minimal typed handoff *proposal*, none of these values may be implicitly defaulted:**
+
+| Field/identity | Owner and physical meaning | Unit / failure |
+| --- | --- | --- |
+| \`source_ref\`, \`selected_pronunciation_id\` | Studio Script selection and SMC canonical request | exact Unicode source/codepoint span; reject missing/ambiguous reading |
+| \`smc_source_commit\`, \`smc_candidate_digest\` | SMC-5 exact code/goal identity | exact SHA, reject unmapped/unreviewed version |
+| \`smc_timing_digest\`, \`temporal_lane\`, \`scenario_digest\`, \`witness_digest\` | SMC-6 formal plan and schedule identity | exact rational s; compatibility is faithful; override is **not** |
+| \`task_mapping_revision\`, \`mapped_task_id[]\`, \`goal_semantics[]\` | future research adapter with explicit functional variable and inverse mapping | explicit SI or declared dimensionless quantity; reject \`UNMAPPED_SEMANTICS\` |
+| \`body_preparation_digest\`, \`capability_policy_hash\` | Core-owned immutable body and capability | physical SI geometry; reject unsupported body/capability |
+| \`controller_revision\`, \`habit_candidate_id\` | Core research control policy, distinct from per-take Direction | declared physically meaningful parameter units; no arbitrary style code |
+| \`requested_task_trace_ref\`, \`actual_motor_trace_ref\`, \`task_residual_ref\` | Core intended vs performed trajectory | clocked, named task variable, units, causal path; null until executed |
+| \`source_boundary_ref\`, \`acoustic_port_ref\`, \`receiver_ref\` | Core source/tract/radiation and separately validated scene | Pa, m³/s, m, s, Hz as appropriate; no assumed SPL from mouth port |
+| \`take_ref\` | Studio immutable observation record | absent if no qualified physical WAV; preserving historical Takes |
+
+**Absolute rule:** SMC planning intervals \`Task ONSET/OFFSET\` are symbolic markers and not muscle activation, time of constriction, time of sound onset or measured tissue coordinates. A full SMC-5 candidate digest can **change when timing changes**, even if a new extracted task-meaning digest is stable. Such a new goal identity needs separately versioned research semantics, not a false equivalence assertion.
+
+**Recurring policy H vs Direction D:** H is stable across at least two tasks/contexts on one body; D is a per-performance instruction. If an intervention changes SMC chosen schedule, label it \`H_PLAN_TIMING\`; if it changes only Core physical control at fixed schedule, label it \`H_PHYSICAL_POLICY\`. The first CVI factorial must not mix these. A tempo or one-off stage Direction is not a persistent MotorPersona.
+
+**Data status for this proposal:** SMC6 formal synthetic results exist *on its separate Draft branch*, but CVI handoff, Core physical controller, actor-specific habit and creator Takes are all **NOT_RUN / NOT_IMPLEMENTED**. No SMC code is present on current Core main. Record missing references as null, do not inject mock payloads into Takes.
