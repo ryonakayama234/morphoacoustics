@@ -171,3 +171,24 @@ erDiagram
 **Recurring policy H vs Direction D:** H is stable across at least two tasks/contexts on one body; D is a per-performance instruction. If an intervention changes SMC chosen schedule, label it `H_PLAN_TIMING`; if it changes only Core physical control at fixed schedule, label it `H_PHYSICAL_POLICY`. The first CVI factorial must not mix these. A tempo or one-off stage Direction is not a persistent MotorPersona.
 
 **Data status for this proposal:** SMC6 formal synthetic results exist *on its separate Draft branch*, but CVI handoff, Core physical controller, actor-specific habit and creator Takes are all **NOT_RUN / NOT_IMPLEMENTED**. No SMC code is present on current Core main. Record missing references as null, do not inject mock payloads into Takes.
+
+## D2 refinement — semantic binding proof and factor identities (2026-10-27)
+
+**Research-only candidate handoff, not a published serializer.** Every SMC-to-Core binding needs a complete, version-pinned proof row, not a best-effort guess.
+
+| Binding evidence | Must prove | Failure |
+| --- | --- | --- |
+| exact SMC5 compiler/source SHA, canonical request SHA, selected pronunciation, Task IDs, candidate digest | authenticated immutable symbolic origin, shared Task counted once | invalid/untrusted |
+| TaskGoal definition_id + semantic_revision + goal_kind and the referenced full canonical TaskDefinition | `variable`, `value_domain`, `applicability_domain`, constraints and capabilities from authenticated source; these are **not** all exposed on TaskGoal | `UNMAPPED_SEMANTICS` |
+| mapped Core functional variable and goal interval | physical units, coordinate frame, location interpretation, direction, target conversion evidence, body applicability | `UNMAPPED_SEMANTICS` |
+| SMC6 source timing digest, COMPATIBILITY lane, witness digest | strict original planned ONSET/OFFSET equality, exactly same between H_EXEC cases | timing/provenance mismatch |
+| Core body-preparation/capability/controller hashes | unchanged H0/H1 defining physical equations across M0/M1; distinguish unsupported from infeasible | no Core execution |
+| Direction/context, source-boundary, acoustic port, receiver, solver/clock hashes | controlled nuisance factors and unambiguous signal sign/units | `NOT_ESTIMABLE` |
+
+Within each task-context T, **SMC source, selected reading, goal identity, exact timing, semantic mapping, Direction, source, receiver and solver are invariant** for all M/H comparisons. Only body identity varies with M and only a physically meaningful H_EXEC-law identity varies with H. The same H law cannot silently be fitted differently for each body. Achieved geometry and physical attainment times may differ as causal outcomes.
+
+Executed rows must contain complete identity evidence and native status; null placeholders are permitted **only in design/proposal rows**. Invalid, unsupported or infeasible runs produce no substituted silence/zero acoustic metric; omit invalid contrasts as `NOT_ESTIMABLE`. `KINEMATIC_ONLY` is an experiment qualification when an imposed shape curve differs but no independent actuator/state law is demonstrated—not a native Core status.
+
+**Do not confuse coverage populations:** manually selected SMC synthetic pronunciation fixtures establish bounded compiler/adapter compatibility only. Arbitrary free-script coverage requires a separately sampled input population, pronunciation-selection/ambiguity policy, complete failure denominator and linguistic validity evidence. A successful TaskGoal-to-Core mapping cannot be used to claim automatic Japanese reading or natural speech.
+
+Required raw audit distinction: `requested_event_trace` (SMC exact events), `requested_physical_goal_trace` (explicit Core conversion), `achieved_state_trace` and `task_residual` (measured physical output), followed only conditionally by `acoustic_port_trace` and `qualified_take_ref`. Hash each independently.
