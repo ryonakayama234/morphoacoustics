@@ -21,3 +21,12 @@
 
 ## References
 - Design [#230](https://github.com/ryonakayama234/morphoacoustics/pull/230), Gate B [#232](https://github.com/ryonakayama234/morphoacoustics/pull/232), Gate A protocol [SMC7_GATE_A_PROTOCOL.md](SMC7_GATE_A_PROTOCOL.md), A0 P2 amendment [SMC7_A0_REVIEW_AMENDMENT_01.md](SMC7_A0_REVIEW_AMENDMENT_01.md).
+
+## 2026-10-28 — independent Codex review COMPLETED: blocking P1/P2
+
+**Exact reviewed SOURCE+tests SHA e5b998565908859612074dbdcf32266ca3edb9a0; latest result-ledger commit is documentation-only and DOES NOT modify reviewed source.** [Review summary](https://github.com/ryonakayama234/morphoacoustics/pull/232#issuecomment-6456120911) reports COMPLETED, has_any_findings=true, has_unresolved_findings=true.
+
+- **P1 — forged ReadingProposal trust boundary** ([review inline](https://github.com/ryonakayama234/morphoacoustics/pull/232#discussion_r4395336542)). Code only tests dataclass type and status='PROPOSED'; a caller can construct/mutate it without running make_proposal. Reviewer demonstrated substituting source '甲乙丙' and matching updated SMC5 wire still returns SYMBOLIC_READY although correct make_proposal would reject INCOMPLETE_PATH; a forged '、乙' bypasses SILENT_SPAN; a 257-character source bypasses SOURCE_LIMIT even when proposal digests are None. **This invalidates the trust-boundary guarantee; no GO, no publishing or body-facing adaptation.** Required next design: revalidate every proposal and recompute/compare source and proposal digests at compile_selected ingress, including exact provenance/coverage.
+- **P2 — limits checked after scanning** ([review inline](https://github.com/ryonakayama234/morphoacoustics/pull/232#discussion_r4395336547)). _source_error traverses all source characters through _scalar before enforcing 256 characters. Reviewer measured approximately 1.2 s to reject 10-million-character string on Python 3.12. Symbol length bound also checked after scanning. Required next design: type and length gates before potentially unbounded Unicode traversal, with adversarial performance test.
+
+**Revised disposition: STOP_REVISE_P1_AUTHENTICITY_AND_ROOT_CI; not an initial L0 adopted baseline.** No patch has been made to implementation after review. Preserve exact failing SHA, P1 forged evidence and existing root pytest.approx error; future work MUST first commit adversarial negative tests, observe RED, minimally repair, rerun all exact SHA CI and Codex review, then independently reconsider Gate decision. The earlier 'review pending' paragraph remains as historical time-local state only.
