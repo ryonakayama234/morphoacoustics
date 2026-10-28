@@ -30,7 +30,7 @@ def _record(f: Fixture, o, audit):
         "power_w":{"drive":o.power_drive_w,"entrance":o.power_entrance_w,"terminal":o.power_terminal_w,"source_loss":o.power_source_loss_w,"source_residual":o.source_residual_w,"tube_residual":o.tube_residual_w},
         "boundary_residual":{"source_pa":_pair(o.source_boundary_residual_pa),"termination_pa":_pair(o.termination_boundary_residual_pa),"core_pressure_pa":_pair(o.matrix_pressure_residual_pa),"core_flow_m3_s":_pair(o.matrix_flow_residual_m3_s),"determinant":_pair(o.matrix_determinant_residual)},
         "numerical":{"dimensionless_denominator":_pair(o.dimensionless_denominator),"denominator_discrepancy":_pair(o.dimensionless_denominator_residual)},
-        "input_status":o.input_status,"science_verdict":audit.verdict,"failures":list(audit.failures),"oracle_pressure_component_error_pa":audit.max_complex_pressure_error_pa,"oracle_power_error_w":audit.max_power_error_w,
+        "input_status":o.input_status,"undefined_transfer_reason":o.undefined_transfer_reason,"science_verdict":audit.verdict,"failures":list(audit.failures),"oracle_pressure_component_error_pa":audit.max_complex_pressure_error_pa,"oracle_power_error_w":audit.max_power_error_w,
     }
 
 
