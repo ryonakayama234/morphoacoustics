@@ -297,3 +297,53 @@ def test_r10_invalid_python_field_types_rejected_without_exceptions():
         result = compile_selected(forged, "p1", encoded(valid()), scenario())
         assert result.status == "REFUSED" and result.stage == "PROPOSAL"
         assert result.smc5 is None and result.smc6 is None
+
+# Second Codex review P2: user-provided __eq__ may lie. Frozen before repair.
+def test_r11_non_str_digest_fields_cannot_spoof_dataclass_equality():
+    from unittest.mock import ANY
+    class AlwaysTrue:
+        def __eq__(self, other):
+            return True
+    for bad in (ANY, AlwaysTrue(), 123, None):
+        for field in ("source_digest", "proposal_digest"):
+            forged = replace(proposal(), **{field: bad})
+            result = compile_selected(forged, "p1", encoded(valid()), scenario())
+            assert result.status == "REFUSED"
+            assert result.stage == "PROPOSAL"
+            assert result.smc5 is None and result.smc6 is None
+
+
+def test_r12_non_plain_metadata_string_or_status_is_rejected():
+    from unittest.mock import ANY
+    class EvilStr(str):
+        def __eq__(self, other):
+            return True
+        __hash__ = str.__hash__
+    for field, value in (
+        ("source_text", EvilStr("甲乙")),
+        ("source_revision", EvilStr("r1")),
+        ("status", ANY),
+        ("code", ANY),
+        ("source_digest", EvilStr(proposal().source_digest)),
+    ):
+        forged = replace(proposal(), **{field: value})
+        result = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert result.status == "REFUSED" and result.stage == "PROPOSAL"
+        assert result.smc5 is None and result.smc6 is None
+
+
+def test_r13_non_plain_nested_units_and_identifier_fields_rejected():
+    class EvilStr(str):
+        def __eq__(self, other):
+            return True
+        __hash__ = str.__hash__
+    p = proposal()
+    tricky_path_id = replace(p.paths[0], path_id=EvilStr("p1"))
+    tricky_unit = replace(p.paths[0].units[0], symbol=EvilStr("a"))
+    for forged in (
+        replace(p, paths=(tricky_path_id, p.paths[1])),
+        replace(p, paths=(replace(p.paths[0], units=(tricky_unit, p.paths[0].units[1])), p.paths[1])),
+    ):
+        result = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert result.status == "REFUSED" and result.stage == "PROPOSAL"
+        assert result.smc5 is None and result.smc6 is None
