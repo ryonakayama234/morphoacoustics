@@ -48,3 +48,11 @@ Dependencies in order:
 | References and revision selection | `project.library` | No duplicated physics ownership |
 
 This project task intentionally has **zero current Studio UI change**. Draft Studio #33 is the accepted visual reference but not a merged implementation. Held Studio #31 / Core #193 remain NO-GO. The only possible neural follow-up is physically constrained closure with ablation and causal intervention tests; no post-hoc waveform beautification.
+
+## G0 read-only code audit — 2026-10-28 (no solver run)
+
+Compared **actual** current-main `src/morphoacoustics_waveguide/passive_waveguide.py` to SFI-2 Draft #81 `experiments/032_passive_time_domain_tract/waveguide.py` and VF-1A Draft #209 `experiments/036_vf1a_two_mass/two_mass.py`. Main uses `PassiveWaveguideSession` traveling-wave FIFOs with per-body `dt=section_length/(c*cells_per_section)`; VF-1A expects SFI-2 `PassiveTract` implicit-midpoint pressure/face-flow state at independently specified `dt` (VF pilot 1/48k). **They are not interchangeable solver types or clock conventions.**
+
+However, in the current-main waveguide source, within one uncommitted step, the first-cell incoming reflected pressure `b` and characteristic impedance `Zc=rho*c/A0` imply the **exact discrete inlet relation** `p_in = 2*b + Zc*U_in`. The actual `step(U_in)` computes this pressure and source work `dt*p_in*U_in` and updates FIFOs/B0 once after validation. This is a **code algebra observation**, not an independently tested safe new strong-coupling interface; `b` resides in private per-session FIFO state. Any new solver must have a reviewed read-only per-tick port prediction and exactly-one atomic commit; never mutate/advance a session during nonlinear iterations or directly access private FIFOs in production. Sign, clock and moving-volume work need separate audited conventions. The SFI-2 `PassiveTract` equation and the current-main FIFO waveguide law must not be conflated.
+
+A small **new research adapter built against current main** is a possible route around stacked SFI dependencies, conditional on pinned port-law tests and exact source audits. Until then, G0 is `PARTIAL_CODE_AUDIT_ONLY`, **not** G0 PASS or an implemented coupled source.
