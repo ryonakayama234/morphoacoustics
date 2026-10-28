@@ -313,3 +313,69 @@ def test_finite_peek_then_real_core_energy_overflow_is_atomic(monkeypatch):
     obs = port.commit_once(snap, 1e-6)
     assert len(calls) == 2 and calls[-1] == 1e-6
     assert obs.tick == 0 and s.ticks == 1
+
+
+def test_failed_runner_keeps_partial_signed_measurements(monkeypatch):
+    """Injected false source pressure MUST be retained on scientific STOP."""
+    import importlib.util
+    from dataclasses import replace
+
+    path = Path(__file__).with_name("run.py")
+    spec = importlib.util.spec_from_file_location("vq1_g0_receipt_under_test", path)
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    monkeypatch.setattr(runner, "CASES", (("single_matched", 0.01, (0.0008,), "matched"),))
+    genuine_port = runner.FixedWaveguideInletPort
+
+    class CorruptObservation(genuine_port):
+        def commit_once(self, snapshot, flow):
+            actual = super().commit_once(snapshot, flow)
+            return replace(actual, source_pressure_pa=actual.source_pressure_pa + 5.0)
+
+    monkeypatch.setattr(runner, "FixedWaveguideInletPort", CorruptObservation)
+    receipt = {"outcome": "NUMERICALLY_UNRESOLVED", "fixtures": []}
+    with pytest.raises(AssertionError, match="port or energy gate"):
+        runner.run(receipt)
+    assert len(receipt["fixtures"]) == 1
+    failed = receipt["fixtures"][0]
+    assert failed["status"] == "NUMERICALLY_UNRESOLVED"
+    assert failed["failed_tick"] == 0 and failed["ticks_attempted"] == 1
+    s = failed["samples"][0]
+    assert s["status"] == "FAIL"
+    assert s["incoming_b_pa"] == 0.25
+    assert s["actual_pressure_pa"] - s["oracle_pressure_pa"] == pytest.approx(5.0)
+    assert s["flow_m3_s"] > 0
+    assert s["pre_shift_snapshot_digest"]
+    assert s["post_shift_snapshot_digest"]
+    assert s["source_work_j"] > 0
+    assert s["after_stored_energy_j"] >= 0
+    assert "failure" in s
+
+
+def test_failing_pytest_gate_cannot_turn_evidence_into_research_go(monkeypatch, tmp_path):
+    """Successful physics runner must not hide a separate RED test step."""
+    import importlib.util
+    import json
+
+    path = Path(__file__).with_name("run.py")
+    spec = importlib.util.spec_from_file_location("vq1_g0_gate_under_test", path)
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    monkeypatch.setenv("VQ1_TEST_OUTCOME", "failure")
+    monkeypatch.setattr(
+        runner.subprocess, "check_output", lambda *args, **kwargs: "f" * 40 + "\n"
+    )
+    monkeypatch.setattr(
+        runner, "run", lambda receipt: receipt.update(outcome="GO_NUMERIC_PORT_CANDIDATE")
+    )
+    dest = tmp_path / "red_receipt.json"
+    monkeypatch.setattr(
+        sys, "argv", ["run.py", "--out", str(dest)]
+    )
+    runner.main()
+    data = json.loads(dest.read_text())
+    assert data["test_step_outcome"] == "failure"
+    assert data["outcome"] == "NUMERICALLY_UNRESOLVED"
+    assert data["reason"] == "test gate not verified"
