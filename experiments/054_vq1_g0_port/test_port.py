@@ -281,3 +281,35 @@ def test_tampered_snapshot_payload_refused_even_if_digest_and_tick_match():
     # The original, valid snapshot still represents precisely one native tick.
     obs = port.commit_once(snap, 1e-6)
     assert obs.tick == 0
+
+
+def test_finite_peek_then_real_core_energy_overflow_is_atomic(monkeypatch):
+    """Reaches actual Core.step; unlike huge-1e308 rejection in peek.
+
+    U=1e150 yields finite inlet p and h*p*U, but square of the
+    launched pressure wave overflows in Core's *downstream* energy ledger.
+    """
+    s = model(termination="b0")
+    port = FixedWaveguideInletPort(s)
+    snap = port.snapshot()
+    baseline = native_state(s)
+    prediction = port.peek(snap, 1e150)
+    assert math.isfinite(prediction.pressure_pa)
+    assert math.isfinite(prediction.source_work_j)
+
+    actual_step = PassiveWaveguideSession.step
+    calls = []
+
+    def inspected_step(self, flow):
+        calls.append(flow)
+        return actual_step(self, flow)
+
+    monkeypatch.setattr(PassiveWaveguideSession, "step", inspected_step)
+    with pytest.raises(FloatingPointError, match="nonfinite waveguide state"):
+        port.commit_once(snap, 1e150)
+    assert calls == [1e150], "Core.step MUST have been reached"
+    assert native_state(s) == baseline, "failed Core candidate mutated live physics"
+    # Failed Core step does NOT consume the snapshot; retry using a finite flow.
+    obs = port.commit_once(snap, 1e-6)
+    assert len(calls) == 2 and calls[-1] == 1e-6
+    assert obs.tick == 0 and s.ticks == 1
