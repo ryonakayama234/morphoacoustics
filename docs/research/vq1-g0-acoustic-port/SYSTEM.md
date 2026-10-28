@@ -27,3 +27,7 @@ G0 tests **only** same-tick p/U port, failure atomicity, deterministic state and
 
 ## Executed implementation architecture (append-only, 2026-10-28 JST)
 At exact tested source commit `ad967d5b978097a40ab8393704ae59e8ef5f96ae`, the research adapter implements `PortSnapshot` (owner/tick/digest/b/Z/h), pure `peek` and `commit_once` around the original unchanged Core native FIFO step. Full states include both pressure-wave queues, config and B0 q. No solver class, exported package API, Studio source, waveform or motion interface is altered. Scope is single-thread and one fixed serial duct only. The API is **NOT** a generalized FSI edge. G1-S and G1-D remain separate.
+
+
+### Post-pilot adversarial audit (2026-10-28)
+A snapshot state digest alone does not prove that its cached inlet `b_pa`, `z0_pa_s_m3` or `dt_s` fields are intact. The first numerical pilot checked live state only. This was independently spotted before final adoption; `_require_live` now compares the **entire immutable snapshot** to a newly captured live snapshot, rejecting a replaced payload even if state digest and tick match. Commit uses **the single validated candidate flow**, rather than coercing caller flow twice. This adds no backend or public API change; still single-thread research-only.
