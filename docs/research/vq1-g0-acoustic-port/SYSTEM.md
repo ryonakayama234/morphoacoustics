@@ -23,3 +23,7 @@ The adapter lives in `experiments/054_vq1_g0_port/port.py` and deliberately read
 
 ## Scientific separation
 G0 tests **only** same-tick p/U port, failure atomicity, deterministic state and passive acoustic power. The port is not a tissue force. The subsequent G1-S static measured M5 pressure/geometry identification and G1-D moving-wall force/work remain separate conditional research gates. A G0 PASS gives no voice, self-oscillation or creator GO. Source and receiver are still absent.
+
+
+## Executed implementation architecture (append-only, 2026-10-28 JST)
+At exact tested source commit `ad967d5b978097a40ab8393704ae59e8ef5f96ae`, the research adapter implements `PortSnapshot` (owner/tick/digest/b/Z/h), pure `peek` and `commit_once` around the original unchanged Core native FIFO step. Full states include both pressure-wave queues, config and B0 q. No solver class, exported package API, Studio source, waveform or motion interface is altered. Scope is single-thread and one fixed serial duct only. The API is **NOT** a generalized FSI edge. G1-S and G1-D remain separate.
