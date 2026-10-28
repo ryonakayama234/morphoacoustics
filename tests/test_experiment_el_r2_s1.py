@@ -201,3 +201,65 @@ def test_research_cli_with_full_outputs(tmp_path):
     assert output["source_calibration"]=="NUMERIC_EQUIVALENT_FIXTURE_NOT_EMPIRICAL"
     assert output["rows"][0]["ports"]["p0_pa"]!=output["rows"][0]["ports"]["pL_pa"]
     assert "uL_m3_s" in output["rows"][0]["ports"]
+
+# Regression of Codex review on PR #233 at 7f3c29c:
+# https://github.com/ryonakayama234/morphoacoustics/pull/233#discussion_r4397721920
+@pytest.mark.parametrize("field", [
+    "p0_pa", "u0_m3_s", "pL_pa", "uL_m3_s", "gamma_in",
+    "h_drive", "h_canal", "h_total", "zin_pa_s_m3",
+    "source_boundary_residual_pa", "termination_boundary_residual_pa",
+    "matrix_pressure_residual_pa", "matrix_flow_residual_m3_s",
+    "matrix_determinant_residual", "dimensionless_denominator",
+    "dimensionless_denominator_residual", "zc_pa_s_m3",
+    "power_drive_w", "power_entrance_w", "power_terminal_w",
+    "power_source_loss_w", "source_residual_w", "tube_residual_w",
+])
+@pytest.mark.parametrize("invalid", [float("nan"), float("inf"), -float("inf")])
+def test_codex_review_nonfinite_observation_is_rejected(field, invalid):
+    """A cached valid residual must not cover a NaN/Inf raw or derived value."""
+    f = fixture_from(ROWS[4])
+    observation = solve(f)
+    assert audit_row(f, observation, ROWS[4]).verdict == "PASS"
+    mutated = replace(observation, **{field: invalid})
+    audited = audit_row(f, mutated, ROWS[4])
+    assert audited.verdict == "FAIL", (field, invalid)
+    assert any("nonfinite_or_missing_observation" in why for why in audited.failures)
+
+
+# https://github.com/ryonakayama234/morphoacoustics/pull/233#discussion_r4397721926
+@pytest.mark.parametrize("replacement", [0j, 1+0j])
+def test_codex_review_mutually_consistent_but_false_transfer_factors_fail(replacement):
+    f = fixture_from(ROWS[4])
+    observation = solve(f)
+    assert audit_row(f, observation, ROWS[4]).verdict == "PASS"
+    # Multiplication alone would accept all zero factors, despite nonzero p0, pL.
+    mutated = replace(observation, h_drive=replacement, h_canal=replacement,
+                      h_total=replacement * replacement)
+    audited = audit_row(f, mutated, ROWS[4])
+    assert audited.verdict == "FAIL"
+    assert "H_B6_drive_from_ports" in audited.failures
+    assert "H_B6_canal_from_ports" in audited.failures
+    assert "H_B6_total_from_ports" in audited.failures
+    # The self-consistency check is deliberately satisfied by this mutation.
+    assert "H_B6_factorization" not in audited.failures
+
+
+@pytest.mark.parametrize("field", ["h_drive", "h_canal", "h_total"])
+def test_codex_review_one_derived_transfer_mutated_is_rejected(field):
+    f = fixture_from(ROWS[4])
+    observation = solve(f)
+    mutated = replace(observation, **{field: 0j})
+    audited = audit_row(f, mutated, ROWS[4])
+    assert audited.verdict == "FAIL"
+    assert "H_B6_" + field[2:] + "_from_ports" in audited.failures
+
+
+def test_review_derived_impedances_must_match_ports_and_fixture():
+    f = fixture_from(ROWS[4])
+    o = solve(f)
+    assert "characteristic_impedance_from_fixture" in audit_row(
+        f, replace(o, zc_pa_s_m3=o.zc_pa_s_m3 * 1.1), ROWS[4]
+    ).failures
+    assert "input_impedance_from_ports" in audit_row(
+        f, replace(o, zin_pa_s_m3=o.zin_pa_s_m3 * 1.1), ROWS[4]
+    ).failures
