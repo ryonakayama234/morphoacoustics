@@ -1,0 +1,35 @@
+name: vq1-g0-acoustic-port
+
+on:
+  push:
+    paths:
+      - "experiments/054_vq1_g0_port/**"
+      - "docs/research/vq1-g0-acoustic-port/**"
+      - ".github/workflows/vq1-g0-acoustic-port.yml"
+  pull_request:
+    paths:
+      - "experiments/054_vq1_g0_port/**"
+      - "docs/research/vq1-g0-acoustic-port/**"
+      - ".github/workflows/vq1-g0-acoustic-port.yml"
+
+jobs:
+  g0-native-port:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install audited Core package and test dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Run preregistered analytic and adversarial G0 tests
+        run: python -m pytest -v experiments/054_vq1_g0_port/test_port.py
+      - name: Produce independent signed energy/port receipt
+        run: python experiments/054_vq1_g0_port/run.py --out vq1-g0-port-evidence.json
+      - name: Retain signed receipt even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vq1-g0-acoustic-port-evidence
+          path: vq1-g0-port-evidence.json
+          if-no-files-found: warn
