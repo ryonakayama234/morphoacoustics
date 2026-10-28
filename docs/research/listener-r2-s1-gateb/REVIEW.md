@@ -14,6 +14,9 @@
 9. **Are responsibilities clean?** Core UniformTube stays unchanged; research solver if separately approved lives in isolated experiments/044; no imports from unmerged EL-R1, no cloned Core solver in asmr, no Studio and no product type/API changes.
 10. **Is future Scene adoption possible without a fake promise?** Reference planes, source/load and sample/time contracts must be explicitly reconciled with measured HRTF and ear-canal termination before a causal binaural renderer is approved. Optional morphoacoustics_asmr adapter must be released/version-pinned and explicitly enabled; future Studio Scene UI changes need creator authorization.
 
+## Additional prospective operational protocol (2026-10-28)
+Review [PROTOCOL-V1.md](./PROTOCOL-V1.md) for concrete H_B6-H_B8 test tolerances, exact 10-column frozen-oracle mapping, passive denominator uniqueness, dimensionless numerical warning and zero-drive/typed refusal matrix. **These are proposed new diagnostics, not a retroactive revision of Gate A and not approved by mere documentation.** Record independent ACCEPT/REVISE/REJECT separately before any solver work.
+
 ## Blocking decisions required before coding
 - Which **secondary** H_B6-H_B8 diagnostics have testable numeric tolerances and which remain explanatory only? Freeze an additive Gate B protocol *before* source coding. Do NOT rewrite Gate A.
 - Confirm research-local input envelope and the exact interpretation of INVALID/UNSUPPORTED/NUMERICALLY_UNRESOLVED including divisions by small p0 and zero source pressure.
