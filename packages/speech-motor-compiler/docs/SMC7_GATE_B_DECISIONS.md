@@ -19,3 +19,12 @@ At code-bearing SHA e5b998565908859612074dbdcf32266ca3edb9a0, Codex review compl
 - First Gate B-R 17/17 green at SHA 3a9b5da was *not accepted*, because Codex found a new P2 spoofed digest equality via unittest.mock.ANY; review linked in Results.
 - Amendment f096aab → observed new R11-R13 RED test-only c4b5c66 → strict builtin-type repair 5b970ebb. This exact code SHA passes 18/18 GitHub checks.
 - Independent review **RUNNING at final write of this evidence entry**. Do not equate green CI with accepted software security or declare review completed. Updated **MORE_DATA_INDEPENDENT_REVIEW**, conditional L0 only, no main merge/Studio. No L1/L2/L3 science asserted.
+
+## 2026-10-28 — FINAL Gate B-R decision (supersedes review-pending only)
+**GO_LIMITED_L0_SOFTWARE at exact code-bearing SHA 5b970ebb1ddfbe08313f72116c39a5875148a78f.**
+
+Prerequisites satisfied: separately preregistered adversarial R01–R10 and R11–R14; observed test-only RED (8 + 3 failures), minimal bounded integrity repair, **18/18 GitHub checks PASS**, isolated Python 3.11/3.12/3.13, full Core 3.11/3.12/3.13, strict mypy, frozen science workflow, and independent Codex reviewer at exact code SHA completed **no findings**. The historical review P2 thread was resolved only after exact-source code review. Original vulnerable SHA and STOP stay immutable evidence.
+
+**Scope**: private SMC-7 research-only reading-path selection/consistency and faithful SMC4/5 + SMC6 COMPATIBILITY replay for bounded synthetic experiments. Proposed manual reading path is **not verified by hash or tests**. No production public ABI, natural pronunciation, phonetic timing, Core body/acoustic rendering, Studio UI, main merge or broad quality acceptance. Separate L1/L2/L3 studies remain MORE_DATA and require new preregistration and evidence.
+
+Owner Issue #231 remains open as umbrella for future separately gated adoption decisions. Current Draft #236 remains unmerged and auditable. Original Draft #232 remains frozen STOP at its historical unsafe HEAD; **do not merge it directly**.

@@ -54,3 +54,15 @@
 - A new [Codex software re-review](https://github.com/ryonakayama234/morphoacoustics/pull/236#issuecomment-6462897200) was requested for source HEAD 5b970ebb. **RUNNING at time of this writing**; this is NOT a clean review or a GO.
 
 Current decision: **MORE_DATA_INDEPENDENT_REVIEW / LIMITED_L0_CI_GREEN**, original STOP historical, both review failures and their test-only RED/repairs preserved. Keep Draft PR #236 open and do not merge into main.
+
+## 2026-10-28 JST — Gate B-R FINAL independent review and bounded L0 disposition
+
+At exact *code-bearing* source HEAD **5b970ebb1ddfbe08313f72116c39a5875148a78f**:
+- All **18 GitHub check-runs SUCCESS** across isolated SMC Python 3.11/3.12/3.13, full Core root Python 3.11/3.12/3.13, strict mypy, bounded SV1 and additional frozen science workflows. The upstream #234 nested-pytest test fix is byte-for-byte identical in research branch and has no physics source changes.
+- Independent Codex AI software review [summary](https://github.com/ryonakayama234/morphoacoustics/pull/236#issuecomment-6462802337) returned **COMPLETED** on code SHA **5b970ebb**, **has_any_findings=false**, **has_unresolved_findings=false**; [individual review receipt](https://github.com/ryonakayama234/morphoacoustics/pull/236#discussion_r4397773467) / PR #236 includes reviewer 'Didn't find any major issues' at exact code SHA. Historical P2 remained attached to prior SHA 3a9b5da, was test-first corrected via R11-R13, and the resolved review thread remains in history, not erased.
+- Frozen preregistration and RED chain, including original P1/ P2 and second P2, are preserved in prior sections. No post-review source change. Subsequent commits of RESULTS/DECISIONS only do not alter the reviewed source or earlier tests.
+
+**Decision:** `GO_LIMITED_L0_SOFTWARE` for **source SHA 5b970ebb only**, with original SMC-7 proposal-path research schema remaining private, bounded, caller-selected and synthetic-only; COMPATIBILITY temporal lane externally specified. This is a **limited research adoption**, NOT main integration, not a public API/asset, and NOT verification of actual Japanese G2P correctness, natural gestural timing, Core body semantics, WAV, speech quality or Studio. No generalization outside preregistered fixtures or size envelope. Future real linguistic L1, body L2 and acoustic L3 still require independent reference measurements/approval.
+
+## Program-level lesson
+A green software CI did not detect forged user-defined equality until independent review. Complete input normalization, exact built-in types, explicit provenance, independent adversarial negative fixtures, and positive legacy replay must all hold at the transfer from text proposals to motor plans. Digest is integrity only, not authentication or linguistic truth.
