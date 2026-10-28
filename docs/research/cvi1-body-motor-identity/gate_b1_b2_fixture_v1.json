@@ -1,6 +1,6 @@
 {
   "schema": "cvi1-gate-b1-b2-frozen-fixture/v1",
-  "status": "PREREGISTERED_NOT_EXECUTED",
+  "status": "SUPERSEDED_BEFORE_EXECUTION_BY_V1_1",
   "research_owner": "Core issue #227",
   "source_base_commit": "f1020c568c54615bc9fdc4c9804128ddbcc3ff0d",
   "source_blobs": {
@@ -101,5 +101,9 @@
     "refusals.json",
     "decision.json"
   ],
-  "evidence_boundary": "Exp019 known fixture replication only; model KKT and Wolfram are mathematics of one uncalibrated quadratic, NOT biological force/work, articulatory observation, speaker identity or a voice sound"
+  "evidence_boundary": "Exp019 known fixture replication only; model KKT and Wolfram are mathematics of one uncalibrated quadratic, NOT biological force/work, articulatory observation, speaker identity or a voice sound",
+  "superseded_by": {
+    "file": "gate_b1_b2_fixture_v1_1.json",
+    "reason": "Reviewed P2 body guard / constructor outcomes corrected prospectively; unchanged numerical thresholds"
+  }
 }
