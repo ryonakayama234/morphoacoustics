@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # On PR, checkout the proposed code, not GitHub's synthetic merge ref.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -29,6 +33,7 @@ jobs:
         if: ${{ !cancelled() && steps.g0_tests.outcome != 'skipped' }}
         env:
           VQ1_TEST_OUTCOME: ${{ steps.g0_tests.outcome }}
+          VQ1_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: python experiments/054_vq1_g0_port/run.py --out vq1-g0-port-evidence.json
       - name: Retain signed receipt even on failure
         if: always()
