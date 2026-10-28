@@ -55,3 +55,9 @@ No numeric tolerance, source calibration, measured anatomy or false voice-qualit
 4. Link Core #207/#212/#215 and Studio #32, and preserve historical Takes; request external Codex review and exact-head CI before proposing a merge.
 
 **No UI code, physics source, tests, audio or Core API is changed in this design PR.**
+
+## G0 source audit observation — 2026-10-28 (append-only)
+
+**Inspected code, not executed physics.** Current-main `src/morphoacoustics_waveguide/passive_waveguide.py` returns `source_pressure_pa`, `inlet_flow_m3_s`, `source_work_j`, and `energy_residual_j` on each checked single tick. Its first boundary uses `a_new=b_old+Zc*U`, hence `p_in=a_new+b_old=2*b_old+Zc*U`; source work is `dt*p_in*U`. It is promising for a same-tick affine passive boundary in a separate source/flow solve. **No independent energy test or new port-coupled code was run**.
+
+Draft SFI-2 #81 provides an *implicit-midpoint* duct with independently selected dt; Draft SFI-3 #84 and VF-1A #209 are stacked and unmerged. The current-main FIFO port and VF-1A's midpoint source-coupling implementation therefore cannot be joined by import or class substitution. **G0 decision: PARTIAL_CODE_AUDIT_ONLY.** Before GO, freeze a testable research port interface against current main, verify exact inlet affine prediction across nonzero pre-states, same-step p/U and work, B0/reflection controls, invalid inputs, collision/refusal atomicity and time-step stability. Compare an independent wave-scattering oracle, not merely replay the implementation under test. Do not start G1 pressure-law tuning or claim new phonation from this observation.
