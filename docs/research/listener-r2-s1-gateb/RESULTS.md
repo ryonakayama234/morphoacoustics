@@ -25,3 +25,7 @@ D2: new H_B6-H_B8 diagnostic tolerances and null definitions appropriately bound
 D3: research-local domain guards/refusal classification finalized prospectively?
 D4: independent review of oracle row mapping, reproducibility and actual empirical-claim boundary complete?
 **Current disposition:** DESIGN_PENDING_REVIEW; IMPLEMENTATION_NOT_STARTED. Record any future disagreement and decision as an additive dated entry, preserving this initial declaration rather than rewriting history.
+
+## 2026-10-28 additive design-protocol record (not a numerical result)
+- [PROTOCOL-V1.md](./PROTOCOL-V1.md) defines prospective H_B6-H_B8 numeric comparison rules, a dimensionless passive denominator check, exact 10-column frozen oracle coverage, and a zero-drive/negative-input policy.
+- Status remains **PROTOCOL_REVIEW_REQUIRED / GATE_B_SOLVER_NOT_RUN / NO_NEW_CI / NO_INDEPENDENT_APPROVAL / NO_IMPLEMENTATION_AUTHORIZED**. Proposed new tolerances have not been reviewed or executed; frozen Gate A thresholds and oracle bytes are unchanged.
