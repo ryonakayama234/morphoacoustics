@@ -28,3 +28,7 @@ No modifications to `src/morphoacoustics/`, `src/morphoacoustics_graph/`, `src/m
 ## Execution update — 2026-10-28 (research branch, after prospective protocol)
 
 The preregistered experiment-only static algebra is implemented under `experiments/055_vq1_g1s_force_guard/`. Dedicated same-head [CI #40709820069](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40709820069) on tested source SHA `fe50d3e2de29884970c9b5ccab7f4d8f1ba12db9` PASSED 13 synthetic/negative-control unittest methods, wrote and archived an explicit HOLD receipt. This is not M5 Figure 2B metrology. G1-S observed pressure, qualified force, moving-wall source and Studio voice remain absent. Research code review is independently requested; this documentation appendix does not mean adoption. Original preregistration above remains retained.
+
+## Independent review correction (after first exact-head scientific tests)
+
+Codex on Draft #239 identified a P2 **evidence atomicity** failure: if synthetic algebra threw before JSON creation, the failure receipt itself was lost. The experiment runner now creates an unresolved STOP receipt **before** analytic operations, traps calculation and runner exceptions, records them, and writes JSON before returning failure. This changes no physical equation, Core API, Studio slot, or claim. New SHA / exact-head CI and independent re-review are required to confirm the repair.
