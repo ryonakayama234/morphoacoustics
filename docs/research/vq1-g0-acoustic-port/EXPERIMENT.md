@@ -23,3 +23,14 @@ Status: PRE-IMPLEMENTATION / NO NEW TEST YET (2026-10-28 JST). Registered **befo
 - `STOP_PORT` if wrong boundary, energy deficit, impossible same-tick contract, invalid atomicity; `NUMERICALLY_UNRESOLVED` if CI or fixture uninformative. If successful, **task G0 is complete** and G1 static reference proceeds separately without an arbitrary dynamic wall force.
 
 No code has been executed at the time of this pre-source record.
+
+
+## Executed G0-P numerical pilot — append-only evidence (2026-10-28 JST)
+
+**Exact source SHA:** `ad967d5b978097a40ab8393704ae59e8ef5f96ae`; parent main SHA `727b11ecf103f5c087cfcb820bdec11f883e7c03`. The pre-registration was committed as SYSTEM `08116913`, DATA `968b8ec7`, EXPERIMENT `b5e662a4` **before** implementation `df532390`, adversarial tests `93c1d2c4` and dedicated workflow `ad967d5`.
+
+- [Dedicated G0 workflow run #40686704409](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40686704409) **SUCCESS**. Pytest output: **40 passed in 0.33s**. Independent run script reports `GO_NUMERIC_PORT_CANDIDATE`; artifact [#12814748143](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40686704409/artifacts/12814748143) stores raw signed 128-tick traces and per-case maxima, including nonzero inlet reflections.
+- Four 128-tick cases: single matched seeded incoming wave, two-section unequal-area B0, 16-section M0/M1 *surrogate* physical lengths of 0.01 / 0.011m, terminators closed/pressure_release. Max scaled inlet pressure error 0; maximum scaled energy residual **1.0339757656912846e-13**, compared to preregistered **1e-10** threshold; this is a floating-point/discrete port consistency result, not a continuum experimental accuracy.
+- [Core full test workflow #40686704428](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40686704428) **SUCCESS**: pytest Python 3.11, 3.12 and 3.13; mypy typecheck. 
+- Direct nonzero-b algebra, signed work, analytic closed/open first return and unequal-area junction, B0 termination, zero-drive silence, foreign/stale/duplicate and mutated wave/B0 rejection, nonfinite/overflow failure atomicity were tested. The artifact contains a **small set of diagnostic samples per case** plus aggregate maxima, not full wave traces for every tick; tests process every tick. Do not describe these sparse samples as full retained time histories.
+- **Code-review gate:** `@codex review` requested on Draft PR #238 for the tested source head; currently running at documentation time. **Numerical verdict = PASS / code-review verdict PENDING**, so final `GO_PORT_RESEARCH_ONLY` remains pending review. G1-S actual tap-profile data still unqualified and G1-D moving-wall reference still HOLD. No human voice claim, playback Take, Studio GO or Core main merge.
