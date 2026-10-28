@@ -72,11 +72,11 @@ A small **new research adapter built against current main** is a possible route 
 - **G1-S (static aerodynamics):** Can one spatial intraglottal pressure field be defined in **SI units** and independently checked against a *qualified actual static wall-pressure reference* with matched geometry, pressure and flow? It establishes a **static force-map candidate**, not a moving-fold force law.
 - **G1-D (dynamic work transfer):** Only if G1-S is qualified, can a moving-wall extension provide a defensible time-dependent wall-load and **fluid/solid/acoustic work balance**? This is the minimum mechanism-level prerequisite for VF-1B dynamic experiments. It is NOT passed by static fitting or a numerically conserved surrogate alone.
 
-**Key category error prohibited:** \`p_in(t)\` at the *supraglottal acoustic port* is not \`p_wall(z,t)\` over the interior glottal tissue. \`Psub * q\` is reservoir input power; \`p_in * U_in\` is acoustic power entering the tract; \`F_i * v_i\` is wall work. They cannot be equated or counted twice by convenience. M5 scalar flow / exit coefficient measurements cannot uniquely identify spatial \`p_wall\`.
+**Key category error prohibited:** `p_in(t)` at the *supraglottal acoustic port* is not `p_wall(z,t)` over the interior glottal tissue. `Psub * q` is reservoir input power; `p_in * U_in` is acoustic power entering the tract; `F_i * v_i` is wall work. They cannot be equated or counted twice by convenience. M5 scalar flow / exit coefficient measurements cannot uniquely identify spatial `p_wall`.
 
 ### Separation of responsibilities and causality
 
-\`\`\`mermaid
+```mermaid
 flowchart TB
   subgraph ST["Studio V2: unchanged approved slots"]
     CR["character.canvas + selection.inspector\nbody/material reference"]
@@ -102,9 +102,9 @@ flowchart TB
   SC -. "future qualified receiver only" .-> OB
   OB -. "after separate acoustic / creator gate" .-> TK["take.transport: immutable Take"]
   LED --> DR["research.drawer: raw evidence, hidden"]
-\`\`\`
+```
 
-The current \`src/morphoacoustics_graph/\` owns **limited passive acoustic topology/typed ports**; a \`force ↔ velocity\` mechanical port or full glottal FSI edge is **not** present, and this proposal MUST NOT pretend one exists. An experiment-local coupling graph is separate from the producer-facing \`OrganGraph\` and \`PreparedMorphology\` ABIs. Its future promotion requires explicit capability/contract adoption.
+The current `src/morphoacoustics_graph/` owns **limited passive acoustic topology/typed ports**; a `force ↔ velocity` mechanical port or full glottal FSI edge is **not** present, and this proposal MUST NOT pretend one exists. An experiment-local coupling graph is separate from the producer-facing `OrganGraph` and `PreparedMorphology` ABIs. Its future promotion requires explicit capability/contract adoption.
 
 ### G0-P discrete physical port contract (research-only candidate)
 
@@ -117,9 +117,9 @@ W_{{\rm in},n}=\Delta t\,p_n U_n.
 
 All \(\rho,c,A,L,\Delta t\) and the B0/other terminal choice are *frozen prepared-body data*, not creator-adjustable port widgets. The relation is **discrete-time**; it must not be relabeled a continuously timed midpoint pressure law.
 
-**Proposed narrow research API** (experiment-local adapter only, not public): \`peek_inlet_response(snapshot, U_n) -> {tick, p_n, U_n, work_j, version}\`; \`commit_once(snapshot_id, U_n) -> real WaveguideStep\`. A valid \`peek\` is pure/non-mutating, anchored to tick + state identity. \`commit\` advances exactly one native tick, and a stale or duplicate snapshot refuses. A solution may evaluate several candidates **without advancing live wave state**; only the chosen converged \(U_n\) commits. No fake "read-only preview" implemented by moving/restoring the production session after a failed nonlinear iteration. Existing \`PassiveWaveguideSession.step()\` is not to be changed in G0 unless an independent production ABI proposal is later approved. Research-only read access to current private FIFOs must be tightly version-pinned; a public wrapper cannot expose them.
+**Proposed narrow research API** (experiment-local adapter only, not public): `peek_inlet_response(snapshot, U_n) -> {tick, p_n, U_n, work_j, version}`; `commit_once(snapshot_id, U_n) -> real WaveguideStep`. A valid `peek` is pure/non-mutating, anchored to tick + state identity. `commit` advances exactly one native tick, and a stale or duplicate snapshot refuses. A solution may evaluate several candidates **without advancing live wave state**; only the chosen converged \(U_n\) commits. No fake "read-only preview" implemented by moving/restoring the production session after a failed nonlinear iteration. Existing `PassiveWaveguideSession.step()` is not to be changed in G0 unless an independent production ABI proposal is later approved. Research-only read access to current private FIFOs must be tightly version-pinned; a public wrapper cannot expose them.
 
-Acceptance is limited to **one fixed passive serial tract** first (matched end, optional existing B0). A graph with a mechanical/airflow edge, branching tract, moving wall, or incompatible physical clocks must refuse \`UNSUPPORTED\`, not silently truncate. G0 does **not** import unmerged SFI-2/3 (#81/#84), VF-1A (#209), or create a general \`morphoacoustics_graph\` API.
+Acceptance is limited to **one fixed passive serial tract** first (matched end, optional existing B0). A graph with a mechanical/airflow edge, branching tract, moving wall, or incompatible physical clocks must refuse `UNSUPPORTED`, not silently truncate. G0 does **not** import unmerged SFI-2/3 (#81/#84), VF-1A (#209), or create a general `morphoacoustics_graph` API.
 
 ### G1-S / G1-D physical-force contract (distinct from G0)
 
@@ -132,19 +132,19 @@ F_{{\rm aero},i}(t)=\int_{S_{\rm wet}(t)}p_{\rm wall}(\mathbf r,t)\,
 \mathbf n(\mathbf r,t)\cdot\frac{\partial\mathbf r}{\partial x_i}\,dS
 \]
 
-(with fluid stress terms and the sign of the surface normal declared; a pressure-only reduction is explicitly an approximation). For a two-mass reduced model, the surface-to-coordinate map must be specified in meters, not inferred from \`p_in\` or a generic constant \`g_i\` fitted to desired oscillations.
+(with fluid stress terms and the sign of the surface normal declared; a pressure-only reduction is explicitly an approximation). For a two-mass reduced model, the surface-to-coordinate map must be specified in meters, not inferred from `p_in` or a generic constant `g_i` fitted to desired oscillations.
 
 Fluid/acoustic volume balance, **only if the chosen control volume is geometrically defined**, is \(U_{\rm in}=q-\dot V_{\rm fluid\ boundary}\), and the reaction/loss work has to reconcile with \(P_{\rm sub}q\), \(p_{\rm in}U_{\rm in}\) and \(\sum F_i\dot x_i\). A wall pressure map that violates that accounting is physically rejected even if an oscillator appears stable.
 
 **G1-S freeze candidate:** static M5 *uniform rigid glottis* from Fulcher, Scherer & Powell (2011), DOI 10.1121/1.3514424. The originally planned pre-registration case in Core Draft #220 is life-size-equivalent \(d=0.02\,cm\), transglottal pressure \(10\,cmH_2O\), axial entrance tap 6 \(z=0.211\,cm\), straight-run end tap 11 \(z=0.413\,cm\), exit tap 13 \(z=0.511\,cm\), with Q source qualified separately. Preserve measured \(\Delta p_i=p_{\rm trachea}-p_i\), physical tap coordinates, FW/NFW where observed, measured uncertainty and scaled-model conventions. This is a **candidate control**, not already digitized wall-pressure data in Core. Existing 35 Q/\(k_{\rm ex}\) pairs in Draft #222 are **not** per-tap pressure measurements. G1-S STOP if independent wall-field reference cannot be recovered and qualified.
 
-G1-D needs **independent time-dependent moving-wall force or a separately justified conservative dynamic reference**; a static paper's Q-vs-pressure curve, peak-mode adjustment, arbitrary phase lag, negative damping, hidden F0 or hand-designed force schedule cannot be accepted as measured dynamic physiology. Even if a model is algebraically conservative, the physiological claim remains \`INDETERMINATE_PHYSIOLOGY\` until validated against dynamic evidence. A mathematical toy could be explored under an explicit \`SYNTHETIC_ONLY\` label but cannot be promoted to VF-1 physical self-phonation.
+G1-D needs **independent time-dependent moving-wall force or a separately justified conservative dynamic reference**; a static paper's Q-vs-pressure curve, peak-mode adjustment, arbitrary phase lag, negative damping, hidden F0 or hand-designed force schedule cannot be accepted as measured dynamic physiology. Even if a model is algebraically conservative, the physiological claim remains `INDETERMINATE_PHYSIOLOGY` until validated against dynamic evidence. A mathematical toy could be explored under an explicit `SYNTHETIC_ONLY` label but cannot be promoted to VF-1 physical self-phonation.
 
 ### Literature/independence anchors
 
 - Titze (2008), *Nonlinear source–filter coupling in phonation: Theory*, DOI [10.1121/1.2832337](https://doi.org/10.1121/1.2832337): tract reactance can influence both flow and tissue motion. **A scientific rationale, not a validation of this project solver.**
 - Fulcher, Scherer & Powell (2011), *Pressure distributions in a static physical model of the uniform glottis*, DOI [10.1121/1.3514424](https://doi.org/10.1121/1.3514424): measured static glottal wall-pressure profiles and pressure/flow coefficients. **Not time-dependent human vocal-fold force measurements.**
-- Project evidence: Core \`docs/research/voice-metrology/CASE_001.md\`, \`docs/research/vf1b/\` Draft #214, Draft #220/#222 and adopted \`src/morphoacoustics_waveguide/passive_waveguide.py\` on \`main@727b11e\`.
+- Project evidence: Core `docs/research/voice-metrology/CASE_001.md`, `docs/research/vf1b/` Draft #214, Draft #220/#222 and adopted `src/morphoacoustics_waveguide/passive_waveguide.py` on `main@727b11e`.
 
 ### Final architecture choice
 
