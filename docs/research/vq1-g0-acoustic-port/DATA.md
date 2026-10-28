@@ -35,3 +35,7 @@ Source/test SHA `ad967d5b978097a40ab8393704ae59e8ef5f96ae`; dedicated CI [run 40
 | M1 16-section **surrogate** pressure_release | 62363.63636363637 | 64 | 0 | 1.0339757656912846e-13 | 1.0339757656912846e-25 |
 
 These are the recorded maxima for these chosen fixtures, not independent wall-pressure measurements. Explicit matching of algebraic source pressure is *not* an external physiological validation. All numeric result categories remain research-only, with no inferred voice-like sound.
+
+
+### Snapshot payload-integrity refinement
+A process-local `state_digest` detects changes in the **native Core state**, but a user-constructed `PortSnapshot` with unchanged digest and edited cached (b,Z_0,h) could otherwise produce an incorrect prediction. The selected invariant is exact dataclass equality between supplied and freshly captured complete snapshot. Changed pressure/impedance/timestep/digest/tick is `StalePortSnapshot`; no native step advances. The implementation does not claim cryptographic authenticity or multithread atomicity.
