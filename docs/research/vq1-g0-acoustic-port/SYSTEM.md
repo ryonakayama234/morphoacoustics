@@ -35,3 +35,7 @@ A snapshot state digest alone does not prove that its cached inlet `b_pa`, `z0_p
 
 ### External review remediation R1 (2026-10-28)
 Original tested `ad967d5` received **four Codex P2** code-review findings: stale-payload snapshot, no Core-internal failure actually reached, STOP evidence erased, and receipt producer skipped after red tests. The adapter now binds all fields to a fresh live snapshot and commits the already validated flow. It still wraps `PassiveWaveguideSession.step()`, never rewrites its physics. Dedicated CI now creates evidence even when an earlier G0 pytest step fails.
+
+
+### Exact-code checkout control
+GitHub pull_request workflows default to an ephemeral **merge commit** unless `actions/checkout` pins the PR head. G0's dedicated workflow now checks out `github.event.pull_request.head.sha || github.sha` and forwards that expected SHA to the receipt producer; the producer refuses if `git rev-parse HEAD` differs. This is required for the exact-head Core port research gate and does not modify the solver.
