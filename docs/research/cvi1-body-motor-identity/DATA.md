@@ -212,3 +212,30 @@ Follow-up [Gate B Issue #227](https://github.com/ryonakayama234/morphoacoustics/
 **Audit scope:** First Stage B tests one prepared-body/target record and its null/infeasible cases. The eventual M0/M1 factorial is **NOT_YET_ELIGIBLE** until topology/representation and transferable physical state law are separately verified. For Stage C, store a separate recurring controller revision H_EXEC; H is not a redefined TaskDefinition, target adjustment or playback gain.
 
 **Provenance quarantine:** Physically interpretable `G_area` is still a *reduced 1D geometric model goal*. Papers using constriction gap distance from anatomical contours show that anatomy-calibrated distance is a distinct measurand. Do not promote this provisional binding to measured physiology or natural-voice semantics.
+
+
+## D4 precision — Gate B measurement dictionary, semantics and observability (2026-10-28)
+
+**Status:** design only, not a public ABI, new simulation or empirical human measurement. Sources: main `src/morphoacoustics/physical/tract1d.py`, `src/morphoacoustics/realization/tract1d.py`, Exp019/020 and preceding SMC preflight #226.
+
+| Candidate field | Authority / units | Contract / negative control |
+| --- | --- | --- |
+| `prepared_body_sha`, `cavity_id`, `backend_id`, `rest_geometry_sha` | Core preparation | reject mismatch before computing |
+| `xi_axial` | task location, dimensionless [0,1] | inlet/source 0, outlet/radiation 1; not anatomical tongue coordinate |
+| `section_index`, `section_interval_m`, `sensor_s_m` | Core geometry; integer, [m], [m] | use prepared section lengths and half-open intervals (last includes ξ=1), never copied 10-to-16 |
+| `rest_area_j_m2`, `requested_area_low_high_m2` | Core rest and declared goal [m²] | narrow CONSTRICT requires 0 < A_target ≤ A_rest,j |
+| `observed_area_j_m2` | **returned** Core state [m²], not echoed request | null if refused or no valid state |
+| `signed_error_m2`, `interval_violation_m2` | observer [m²] | A_obs−A_target and max(A_low−A_obs,0,A_obs−A_high) |
+| `neighbor_area_vector_m2`, `area_ratio_vector`, `positive_sections_count` | Core returned state; [m²], unitless, integer | all sections and adjacent effects, not only target j |
+| `R0_or_R1`, `reduced_stiffness`, `lambda`, `KKT_residual`, `condition_number`, `oracle_ref` | model-specific numeric diagnostics, dimensionless | no imaginary SI mechanical modulus, Joules, Newtons or force port |
+| `feasibility.status`, `issues`, `observer_validity`, `numeric_budget` | Core and research metrology | distinct INVALID, UNSUPPORTED, INFEASIBLE, NUMERICALLY_UNRESOLVED, NOT_MEASURABLE; do not convert failure to zero |
+| `smc_candidate_digest`, `smc_timing_digest`, `new_mapping_revision` | future B3 SMC and new adapter | new semantics must have new revision; original synthetic input and timing receipt remain immutable |
+| `motor_H_ref`, `actual_actuation_work_J`, `physical_velocity`, `acoustic_trace`, `take_ref` | Gate C+ only | **null** at B1/B2; do not fake with model stiffness or audio source |
+
+**Concrete historical Exp019 anchor:** 10 equal sections, L=0.17 m and Δs=0.017 m; rest A=3.0e-4 m², normalized ξ=0.65 gives s=0.1105 m, section j=6 (zero-based), interval [0.102,0.119) m, axial distance to either cell boundary 0.0085 m. Target A*=5.0e-5 m² = A_rest/6. This is a *model-section measurement* and not tongue–palate gap or measured 3D anatomy. Historical Wolfram reference records R1 left-neighbor area ratios 0.6816881258941345 (base) and 0.8516666666666667 (perturbed); R0 projects only j=6. Prior Exp019 acceptance limits were 1e-18 m² target residual and 1e-10 dimensionless state oracle; a new Gate B must freeze its own justified error budget, not back-fit tolerance.
+
+**Dimensional caution:** R1 uses q=A/A_rest with a dimensionless relative-stiffness/smoothness quadratic functional. A KKT multiplier is **not** a measured organ force; the objective is not calibrated in J. Exp020 dynamic activation and ω[s⁻¹] likewise do not identify a biological motor controller. Model-only geometry and reduced dynamic observations are permitted research evidence; both are insufficient for “physically actuated habit”.
+
+**Three independent uncertainty categories:** (i) arithmetic/solver & independent algebraic oracle, (ii) model-section discretization/location and how ξ maps to j/s, (iii) model-to-anatomy and acoustic relevance. A tiny (i) error does not bound (ii) or (iii).
+
+**Before M0/M1 generalization:** fixed ξ, fixed metric s, fixed 0-based j and fixed anatomical constriction landmark are *different invariants* when body length or discretization changes. The future factorial must choose one with evidence, or return `UNMAPPED_LOCATION`; do not compare arbitrary corresponding j values.
