@@ -38,3 +38,11 @@ No code has been executed at the time of this pre-source record.
 
 ### Audit-added falsifier (2026-10-28; after first green run, BEFORE G0 final acceptance)
 The 40-test `ad967d5` result was numerically green but did not exercise `dataclasses.replace(snapshot, b_pa/z0/dt)` with an unchanged digest. This is a real API invariant gap and not a new aerodynamic law. A regression now verifies altered cached pressure, impedance, timestep, digest or tick must all refuse while live Core state remains unchanged; a valid original snapshot can still commit exactly one tick. Implementation commits the exact checked flow value once. **Prior 40-test receipt remains the historical pilot; the refined head requires a NEW exact-head CI and review.** This amendment does not relax or retroactively change preregistered physical/energy thresholds.
+
+
+### Codex P2 findings and corrections R1 — before final research adoption
+At reviewed exact source `ad967d5`, Codex reported four **P2 findings**: (1) reconstructible snapshots can keep the state digest while modifying cached b/Z/h; (2) the previous 1e308 overflow check fails **during peek**, so cannot establish Core's downstream failure atomicity; (3) the runner discards raw measured tick values on a failure; (4) the workflow's default dependency skips the runner after red pytest. These limitations make initial 40/40 evidence insufficient for the **final** research gate, despite numerical consistency.
+
+Mitigations now authored (require their own new exact-head CI): full snapshot equality; conversion once on commit; a finite `peek(U=1e150)` whose actual Core `step` overflows on pressure-wave energy and must leave state unchanged for subsequent valid retry; every attempted tick and before/after fingerprint retained, including injected wrong-pressure negative control; and `if: !cancelled() && tests != skipped` for JSON receipt producer with explicit failed-test gate. New injected RED tests must never produce `GO_NUMERIC_PORT_CANDIDATE`. This is a quality/measurement remediation, NOT a change of physical force law or numeric tolerance.
+
+**Do not count previous Codex review at older SHA as review of the corrected head.** A second exact-head review is required before final `GO_PORT_RESEARCH_ONLY` scientific sign-off.
