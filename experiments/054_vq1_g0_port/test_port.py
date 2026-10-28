@@ -379,3 +379,35 @@ def test_failing_pytest_gate_cannot_turn_evidence_into_research_go(monkeypatch, 
     assert data["test_step_outcome"] == "failure"
     assert data["outcome"] == "NUMERICALLY_UNRESOLVED"
     assert data["reason"] == "test gate not verified"
+
+
+def test_evidence_refuses_synthetic_merge_or_wrong_source_head(monkeypatch, tmp_path):
+    """Action's PR merge ref must never masquerade as exact candidate source."""
+    import importlib.util
+    import json
+
+    script = Path(__file__).with_name("run.py")
+    spec = importlib.util.spec_from_file_location("vq1_g0_sha_under_test", script)
+    assert spec is not None and spec.loader is not None
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    monkeypatch.setenv("VQ1_TEST_OUTCOME", "success")
+    monkeypatch.setenv("VQ1_EXPECTED_HEAD_SHA", "e" * 40)
+    monkeypatch.setattr(
+        runner.subprocess, "check_output", lambda *a, **kw: "f" * 40 + "\n"
+    )
+
+    def must_never_execute(_receipt):
+        raise AssertionError("wrong SHA must STOP before numerical claim")
+
+    monkeypatch.setattr(runner, "run", must_never_execute)
+    dest = tmp_path / "sha_refusal.json"
+    monkeypatch.setattr(sys, "argv", ["run.py", "--out", str(dest)])
+    with pytest.raises(RuntimeError, match="SOURCE_SHA_MISMATCH"):
+        runner.main()
+    r = json.loads(dest.read_text())
+    assert r["outcome"] == "NUMERICALLY_UNRESOLVED"
+    assert r["checkout_sha"] == "f" * 40
+    assert r["expected_candidate_head_sha"] == "e" * 40
+    assert "SOURCE_SHA_MISMATCH" in r["failure"]
+    assert r["fixtures"] == []
