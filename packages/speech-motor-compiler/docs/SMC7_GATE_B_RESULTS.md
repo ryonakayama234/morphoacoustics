@@ -43,3 +43,14 @@
 
 ### Gate decision at this timestamp
 **MORE_DATA_REVIEW_PENDING / CONDITIONAL_L0_CI_GREEN**. Earlier STOP remains historically correct at its vulnerable SHA. The repaired code is *not* adopted until independent review completes and any actionable findings are test-first addressed. No main merge; no public MotorScore; no Core/Studio integration. The repair PR stacks on #232; original evidence remains on its own branch.
+
+## 2026-10-28 JST — second independent-review P2 and test-first response
+
+- Independent Codex review [P2](https://github.com/ryonakayama234/morphoacoustics/pull/236#discussion_r4397773467) of exact code SHA 3a9b5dae6614de03b54de6d810376ed5dbfbb7ec: caller-controlled dataclass field source_digest/proposal_digest set to unittest.mock.ANY can return equality TRUE against real hex-string digests; malformed object passes even after our earlier full-payload revalidation. Thus first repair remains **REVISE**, despite its 17/17 checks.
+- [Preregistration Amendment 02](SMC7_GATE_B_REPAIR_AMENDMENT_02.md) committed **f096aab4c3d3c7cade7f8eff9d44e6a91473ee9b BEFORE test/code**. Scope: plain built-in scalar types before equality and valid nested path/unit identity; hashes alone are not signatures.
+- New **test-only RED** SHA **c4b5c66dcbcd620616a39d5a227528020d486875**. GitHub isolated Python 3.12 job **122680024588** actually failed **R11 non-str digest; R12 nonplain metadata; R13 hostile nested identifier** (see [workflow run 40647267061](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40647267061) or corresponding linked commit's checks).
+- **Source repair SHA 5b970ebb1ddfbe08313f72116c39a5875148a78f**: exact built-in type for all candidate receipt scalars and nested dataclass wrappers before caller-defined equality; complete make_proposal rerun still required. No Core engine modification and upstream main #234 backport remains unchanged.
+- At exact code-bearing SHA **5b970ebb1ddfbe08313f72116c39a5875148a78f**, GitHub check-runs returned **18/18 SUCCESS**: isolated SMC 3.11/3.12/3.13, Core root 3.11/3.12/3.13, strict mypy, bounded SV1 and independent frozen research workflows. **No L1 phonetic, Core task binding or acoustic evidence.**
+- A new [Codex software re-review](https://github.com/ryonakayama234/morphoacoustics/pull/236#issuecomment-6462897200) was requested for source HEAD 5b970ebb. **RUNNING at time of this writing**; this is NOT a clean review or a GO.
+
+Current decision: **MORE_DATA_INDEPENDENT_REVIEW / LIMITED_L0_CI_GREEN**, original STOP historical, both review failures and their test-only RED/repairs preserved. Keep Draft PR #236 open and do not merge into main.

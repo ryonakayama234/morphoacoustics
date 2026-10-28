@@ -14,3 +14,8 @@ At code-bearing SHA e5b998565908859612074dbdcf32266ca3edb9a0, Codex review compl
 - Exact code-bearing SHA 3a9b5dae6614de03b54de6d810376ed5dbfbb7ec achieved 17/17 GitHub checks success, including full root tests 736 passed/9 skipped on 3.11 and package 3.11–3.13. Earlier P1/P2 negative fixtures are now green by GitHub CI.
 - **INDEPENDENT_CODE_REVIEW_PENDING** on #236 at this evidence timestamp; no implicit GO or resolved review-thread assertion. Current code candidate state: **MORE_DATA_REVIEW_PENDING** until exact SHA review completes. All earlier STOP facts at old SHA remain archived and true.
 - Distinguish reproducible hash/structural consistency from authentic language evidence: manual unverified paths remain unverified even after internal validation. L1 phonetic accuracy, L2 physical task semantics, L3 voice/audio NOT TESTED; no main merge/Studio changes.
+
+## 2026-10-28 — superseding latest conditional decision after second Codex review
+- First Gate B-R 17/17 green at SHA 3a9b5da was *not accepted*, because Codex found a new P2 spoofed digest equality via unittest.mock.ANY; review linked in Results.
+- Amendment f096aab → observed new R11-R13 RED test-only c4b5c66 → strict builtin-type repair 5b970ebb. This exact code SHA passes 18/18 GitHub checks.
+- Independent review **RUNNING at final write of this evidence entry**. Do not equate green CI with accepted software security or declare review completed. Updated **MORE_DATA_INDEPENDENT_REVIEW**, conditional L0 only, no main merge/Studio. No L1/L2/L3 science asserted.
