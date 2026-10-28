@@ -53,3 +53,11 @@ VQ1Case
 - **Sound/creator comparison:** a separate controlled audition asks whether this candidate is less signal-like and more useful than the pinned old Take **for the stated single vowel/task**. A/A and A/B; all conditions stored with provenance. No inferred speaker identity and no broad phonetic claims.
 
 Proposed public body/material and Performance Contract changes are explicitly **NOT authorized** by this document. Studio fixed V2 slots and existing v0/v1 historical Take meaning stay unchanged.
+
+## G0 data refinement — two incompatible solver-state families (read-only audit)
+
+Current main `PassiveWaveguideSession`: per-section forward/backward discrete pressure FIFO [Pa], optional B0 radiation `q` [m³/s], fixed `Zc=ρc/A` [Pa·s/m³], native `dt=length/(c*cells)` [s]. Its `WaveguideStep.source_pressure_pa` is the *actual inlet pressure* [Pa] in the prescribed-flow boundary update; `inlet_flow_m3_s` is the input at that same tick. A research-only prospective port-predictor could expose `(b_pa, Zc_pa_s_m3, tick_index, state_digest)` with `p(U)=2 b+Zc U` and a controlled once-only `commit(U)`, but **this is not an existing API**.
+
+VF-1A's different Draft `PassiveTract`: cell pressure array and face-flow array, implicit-midpoint solver state, independently set `dt_s`; `StepObservation.inlet_pressure_pa` is computed from midpoint coupling and face inertance. Passing this state to the main FIFO solver would discard its physical integration scheme and evidence trail. Never claim matching `PreparedMorphology` implies identical numerical state/clock, nor directly port VF-1A energy proofs.
+
+Candidate G0 comparison record should preserve `source_commit, backend_id, state_representation, p/U orientation, time_staggering, native_clock_hz, outlet_law, predictor_version, expected_tick, actual_tick, energy_residual_j`, with an explicit `UNSUPPORTED_INCOMPATIBLE_BACKEND` refusal. No public schema is amended here.
