@@ -39,3 +39,10 @@ Original tested `ad967d5` received **four Codex P2** code-review findings: stale
 
 ### Exact-code checkout control
 GitHub pull_request workflows default to an ephemeral **merge commit** unless `actions/checkout` pins the PR head. G0's dedicated workflow now checks out `github.event.pull_request.head.sha || github.sha` and forwards that expected SHA to the receipt producer; the producer refuses if `git rev-parse HEAD` differs. This is required for the exact-head Core port research gate and does not modify the solver.
+
+
+## G0-P final research-gate result — 2026-10-28
+
+The native FIFO port boundary `p_n=2*b_n+Z0*U_n`, work `h*p_n*U_n` and once-only commit are **verified for the research-only fixed serial 1D cases**. First validated source head `af41041086115e2cd04d66a8611fb21007e63efb`: dedicated exact-head checkout and entire Core full test CI success; final Codex code review of same SHA **0 findings**, four previous P2 threads resolved with specific regression evidence. The research module does not enter production `src`, any public OrganGraph API or Studio.
+
+**Gate decision: GO_PORT_RESEARCH_ONLY.** This means a qualified native acoustic p/U interface, NOT an independently validated physiological glottal force, wall FSI model, autonomous speech source or creator-approved audio. G1-S independently measured static p_wall and G1-D moving-wall work remain unresolved/held, not implicitly authorized.
