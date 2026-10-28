@@ -29,7 +29,14 @@ def run() -> dict:
             sections=tuple(TubeSection(length_m=lengths, area_m2=a) for a in areas),
         )
         config = PassiveWaveguideConfig(geometry, termination=termination)
-        session = PassiveWaveguideSession(config)
+        # A matched outlet produces no return; inject an *initial* incoming
+        # wave here so its inlet port is still tested with b != 0.
+        if name == "single_matched":
+            session = PassiveWaveguideSession(
+                config, initial_backward_pa=((0.25, 0.0),)
+            )
+        else:
+            session = PassiveWaveguideSession(config)
         port = FixedWaveguideInletPort(session)
         observations = []
         max_pressure_residual_pa = 0.0
