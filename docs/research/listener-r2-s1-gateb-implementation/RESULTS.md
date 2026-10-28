@@ -16,3 +16,14 @@ The synthetic source-match null predicts 2/3 Pa terminal magnitude for all froze
 ## Decision log
 
 Only mark **GATE_B_TESTED_PASS** after both CI versions and the frozen-blob SHA pin pass, with output artifact linking exact head SHA. Even then, use **NUMERICAL_CANDIDATE_PENDING_INDEPENDENT_REVIEW**, not an assertion of physiological or perceptual readiness. Record any failures by case, field, residual, implementation commit and CI link; do not loosen frozen acceptance thresholds retroactively.
+## 2026-10-28 executable evidence added after initial NOT_RUN ledger
+
+**Verified at Gate B code head `478e800fd3459e9cb3ad3b06f529cdc1bab0c85b`:**
+- [Dedicated CI run 40622407902](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40622407902): SUCCESS, Python 3.11 **and** 3.12. Exact original JSON/WL Git blob pins verified; 18/18 frozen Wolfram complex pressure/power cases PASS; Core UniformTube regression and all new positive, negative, zero-drive, mutation tests passed.
+- Maximum absolute complex-pressure component difference: `4.0245584642661925e-16 Pa`. Maximum mean-power difference: `2.9778502051908996e-23 W`. These are **synthetic numerical** values, not microphone, real ear or ASMR effects.
+- CI uploaded separately versioned `el-r2-s1-gateb-observations-3.11` and `-3.12` artifacts including 18 full complex p/U records, powers, two conservation residuals, exact oracle blob provenance and per-case numerical verdict.
+- Audit now independently recomputes source/terminal/Core-matrix residuals and powers **from raw observed ports** (not merely checking cached residual fields), tests deliberate stale flow mutation and numerical-overflow refusal. Local `--no-pin` development mode is explicitly `UNVERIFIED`, never PASS.
+
+**Unrelated full-suite failure and remediation:** [generic run 40621670744](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40621670744) had 1 failure in unchanged `tests/test_shared_timeline.py`: pytest 9.2.0 rejects nested `pytest.approx`; main's Oct-25 run with pytest 9.1.1 had passed. The single-test-only compatibility fix [PR #234](https://github.com/ryonakayama234/morphoacoustics/pull/234) passed full CI and was merged to main at `f1020c568c54615bc9fdc4c9804128ddbcc3ff0d`. The Gate B research branch now contains the **same byte-identical test file** as main; it adds no unrelated test diff against updated main.
+
+**Scientific disposition:** `NUMERICAL_GATES_PASS_AT_REFERENCED_CODE_HEAD`; `INDEPENDENT_SCIENCE_REVIEW_PENDING`; `NO_MEASURED_EAR_CLAIM`; `NO_ASMR_PUBLIC_ADOPTION`. A newer documentation-only head needs its own exact-head CI to count as current-head validated. Do not auto-merge research PR or alter frozen Gate A.
