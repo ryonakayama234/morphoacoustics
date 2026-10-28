@@ -1,0 +1,47 @@
+name: vf1b2a-rigid-flow-research
+on:
+  pull_request:
+    paths:
+      - "experiments/038_vf1b2a_rigid_glottis/**"
+      - "docs/research/vf1b2a/**"
+      - ".github/workflows/vf1b2a-rigid-flow.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  independent-rigid-science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Independent stdlib analytic and adversarial suite
+        run: |
+          mkdir -p evidence
+          set +e
+          python -m unittest discover -s experiments/038_vf1b2a_rigid_glottis -p 'test_*.py' -v > evidence/unittest.log 2>&1
+          status=$?
+          cat evidence/unittest.log
+          if [ "$status" -eq 0 ]; then passed=true; else passed=false; fi
+          printf '{"schema":"vf1b2a.unittest.v1","passed":%s,"exit_code":%s}\n' "$passed" "$status" > evidence/test_status.json
+          exit "$status"
+      - name: Run fixed-geometry experiment and record red receipts even on failed tests
+        if: always()
+        run: |
+          mkdir -p evidence
+          set +e
+          python experiments/038_vf1b2a_rigid_glottis/run.py --output-dir evidence --test-status-file evidence/test_status.json > evidence/runner.log 2>&1
+          status=$?
+          cat evidence/runner.log
+          exit "$status"
+      - name: Preserve complete rigid-flow evidence and failure records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1b2a-rigid-flow-evidence
+          path: evidence/
+          retention-days: 90
+          if-no-files-found: error
