@@ -114,6 +114,7 @@ def test_zero_source_is_valid_but_ratio_is_undefined():
     assert (o.h_drive,o.h_canal,o.h_total,o.zin_pa_s_m3)==(None,None,None,None)
     assert (o.power_drive_w,o.power_entrance_w,o.power_terminal_w,o.power_source_loss_w)==(0,0,0,0)
     assert abs(o.gamma_in)<1
+    assert o.undefined_transfer_reason=="zero_source_drive"
 
 
 @pytest.mark.parametrize("field,value,category",[
@@ -139,6 +140,13 @@ def test_typed_refusals(field,value,category):
     assert e.value.field==field
 
 
+def test_finite_input_numeric_scale_can_be_unresolved():
+    # The input is positive/finite, but rho*c*c exceeds float64 range.
+    with pytest.raises(ResearchBoundaryError) as e:
+        solve(Fixture(3e-5,.02,1000,air_density_kg_m3=1e308,sound_speed_m_s=1e308))
+    assert e.value.category=="NUMERICALLY_UNRESOLVED"
+
+
 def test_invalid_fixture_is_not_a_motor_infeasibility():
     with pytest.raises(ResearchBoundaryError) as e:
         solve({"area_m2":3e-5})
@@ -161,6 +169,8 @@ def test_mutations_are_actually_caught_by_named_invariants():
         "gamma_sign":replace(o,gamma_in=o.gamma_in.conjugate()),
         "determinant_broken":replace(o,matrix_determinant_residual=1+0j),
         "incorrect_port_plane":replace(o,entrance_plane="FREE_FIELD"),
+        "stale_source_flow":replace(o,u0_m3_s=o.u0_m3_s*1.5),
+        "stale_terminal_flow":replace(o,uL_m3_s=o.uL_m3_s*0.5),
     }
     for mutant_id,m in mutants.items():
         check=audit_row(f,m,ROWS[4])
