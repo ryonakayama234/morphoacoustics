@@ -7,7 +7,7 @@
 ## Immutable evidence inventory (source SHA vs candidate research data)
 
 - Main baseline commit `f1020c568c54615bc9fdc4c9804128ddbcc3ff0d`. Resolve dependencies only at this exact source, not "latest main."
-- Core geometric observer `src/morphoacoustics/physical/tract1d.py` blob `62f3ddf6d3cbf2e43072f9d8b2be6ee84f4c3ca7`. Core request validator/R0 hard projector `src/morphoacoustics/realization/tract1d.py` blob `87adb91ebe3ca2a3e2b36931f9d12d94c2ee7e0b`.
+- Core geometric observer `src/morphoacoustics/physical/tract1d.py` blob `62f3ddf6d3cbf2e43072f9d8b2be6ee84f4c3ca7`. Core request validator/R0 hard projector `src/morphoacoustics/realization/tract1d.py` blob `87adb91ebe3ca2a3e2b36931f9d12d94c2ee7e0b`. Prepared-body backend naming: `src/morphoacoustics/preparation/tract1d.py` blob `90860b19a6b181ba88ff3d4a01379c10ab23e226`, constant `TRACT1D_BACKEND_ID = "fidelity0.tract1d"`.
 - Exp019 existing experiment-local R1, fixture and solver `experiments/019_material_conditioned_realization/run.py` blob `b11319645569a297695644651a0813154cf67ad3`.
 - Independent **mathematical** Wolfram reference `experiments/019_material_conditioned_realization/wolfram/material_realization_oracle.json` blob `122440385fc4c7d7e5180153492de27081da0779`.
 - Exp019 documented [result](https://github.com/ryonakayama234/morphoacoustics/blob/main/experiments/019_material_conditioned_realization/RESULTS.md) including historical observed target and state errors; Exp020/022 historical finite-time/shared-body research is **not** grafted into this pilot.
@@ -50,7 +50,7 @@ If any B0 condition fails, verdict `BLOCKED_REVIEW_INTEGRITY`, no B1/B2 scientif
 | Check | Predetermined numerical acceptance |
 | --- | --- |
 | B1 xi→s and section edges, interior | `|s-0.1105|<=1e-12 m` and j==6; interval endpoints differ from 0.102/0.119 by ≤1e-12 m |
-| Request validity | `0<A*=5e-5<=A_rest=3e-4 m²`, unit literal `m2`, cavity oral, backend `tract1d`, 10 sections |
+| Request validity | `0<A*=5e-5<=A_rest=3e-4 m²`, unit literal `m2`, cavity oral, backend `fidelity0.tract1d`, 10 sections |
 | R0 target area and null | `|A6-A*|<=1e-18 m²`, full q-vector base-vs-label-change componentwise exactly identical; non-target q_k=1 within 1e-12 |
 | R1 target area | `|A6-A*|<=1e-18 m²` (inherited Exp019 acceptance) |
 | R1 q positivity | finite, all q_i>0 and A_i>0; **not** floor clipping |
