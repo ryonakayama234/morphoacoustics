@@ -39,3 +39,7 @@ These are the recorded maxima for these chosen fixtures, not independent wall-pr
 
 ### Snapshot payload-integrity refinement
 A process-local `state_digest` detects changes in the **native Core state**, but a user-constructed `PortSnapshot` with unchanged digest and edited cached (b,Z_0,h) could otherwise produce an incorrect prediction. The selected invariant is exact dataclass equality between supplied and freshly captured complete snapshot. Changed pressure/impedance/timestep/digest/tick is `StalePortSnapshot`; no native step advances. The implementation does not claim cryptographic authenticity or multithread atomicity.
+
+
+### Failure evidence contract R1 (source revision after first pilot)
+The research runner now records **every attempted native tick**, not six selected samples, with complete SI signed `incoming_b_pa`, `flow_m3_s`, oracle/predicted/actual pressure, source work, before/after stored energy, outlet loss, scaled signed residual and pre/post native snapshot hashes. Each fixture is appended **before** running its solver; a failure preserves prior fixtures, the attempted tick and a traceback with `NUMERICALLY_UNRESOLVED`. The CI step result (`success/failure`) and exact local `git rev-parse HEAD` are part of the JSON; red tests prohibit positive research GO even if the standalone runner passes. Validation further includes an input producing *finite* peek p/W but overflowing the actual downstream Core wave-energy square, with atomic retry on the same snapshot.
