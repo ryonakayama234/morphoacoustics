@@ -1,5 +1,8 @@
 # CVI-1 — FROZEN prospective Gate B1/B2 protocol v1
 
+> **SUPERSEDED BEFORE EXECUTION (2026-10-28):** This v1 draft was independently reviewed and found two P2 gaps: N06/N07 assumed nonexistent native body/section guards, and N02/N12 assumed all input failures return a Core feasibility report. **No Gate B experiment was executed under v1.** Use [review-corrected v1.1](GATE_B1_B2_PROTOCOL_V1_1.md) and [v1.1 fixture](gate_b1_b2_fixture_v1_1.json) for any future work. Original v1 source is preserved at [commit 84cb8ce](https://github.com/ryonakayama234/morphoacoustics/blob/84cb8ce2925f9ac8ec3d9210cfa7c1a82a9d0fde/docs/research/cvi1-body-motor-identity/GATE_B1_B2_PROTOCOL_V1.md); no thresholds were retroactively changed.
+
+
 2026-10-28 JST. Core #223 / #227, predecessor SMC5/6 preflight Draft #226, parent design Draft #224. **Protocol frozen before B1/B2 implementation or any new B data.** A frozen protocol is NOT execution approval, physics validation, independent review or a claim that the accepted SMC5 source supports model anatomy.
 
 **Decision:** choose **model-geometric task measurand first; audit minimum realization with it**, not a new H_EXEC controller first. B1/B2 only; **B3 SMC model-semantic binding and C dynamic controller are expressly excluded**. This pilot replicates an existing *known* Exp019 10-section model, not an independent discovery or a holdout. No Studio UI or public ABI change. No main merge.
