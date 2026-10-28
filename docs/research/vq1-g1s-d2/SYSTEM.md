@@ -4,7 +4,7 @@
 
 ## Decision in one sentence
 
-The next execution slice is **M5 Figure 2B measured spatial pressure-drop source qualification plus a source-independent force-identifiability audit**, **not** an immediately computed vocal-fold force, moving-wall solver, acoustic makeover, or Studio feature. The primary scientific output is a traceable **observed pressure reference** or an explicit PARTIAL/HOLD record; a force is admissible only with separately evidenced surface geometry, quadrature, external pressure reference, and enough spatial coverage.
+The next execution slice is **M5 Figure 2B measured spatial pressure-drop source qualification plus a source-independent force-identifiability audit**, **not** an immediately computed vocal-fold force, moving-wall solver, acoustic makeover, or Studio feature. The primary scientific output is a traceable **observed pressure reference** or an explicit PARTIAL/HOLD record; a force is admissible only with separately evidenced complete fluid-contact surfaces, their signed orientations, quadrature, exterior pressure distribution/reference, and enough spatial coverage.
 
 ### Existing gates and exact dependencies
 
@@ -20,7 +20,7 @@ The next execution slice is **M5 Figure 2B measured spatial pressure-drop source
 2. `D_i=p_{tap0}-p_{wall,i}`: **static M5 measured pressure drop** at a real pressure tap/side under a fixed apparatus and drive, with source figure/point uncertainty. This is measured relative to tap 0; **not** absolute tissue pressure, continuous wall field, or moving-fold force.
 3. `F_q = integral_S (p_wall-p_ext)(n·phi_q) dS`: a **model-defined generalized static pressure force** requiring independently defined wetted surface S, sign of normal, mode shape phi, outside pressure p_ext, and point-to-surface quadrature/coverage. No actual vocal tissue in the rigid M5 rig. A force output based on hypothetical geometry is always conditional, not physiologically validated.
 
-For a frozen discrete representation `w_j=A_j(n_j·phi_q,j)`, `F_q=(p0-p_ext)sum_j w_j - sum_j w_j D_j`. This equation is **not** permission to infer missing values. If all required `w_j` and `D_j` are known, the algebraic value is identifiable **conditional on geometry and gauge**. If `sum w_j=0`, the common reference term cancels for that generalized coordinate; otherwise `p0-p_ext` must be independently known. Any unknown patch coverage or pressure interpolation invalidates a full-force claim.
+For a frozen **paired-surface conditional** representation with `w_j=A_j(n_{fluid->solid,j}·phi_q,j)`, `F_q=(p0-p_ext)sum_j w_j - sum_j w_j D_j`. This is not the general real-tissue traction formula: the outside pressure acts on its own physical surface and cannot simply be subtracted at the glottal medial wall without an independently justified pairing and mode projection. In general, sum `p_s n_{fluid->solid,s}·phi_q` over all relevant gas-contact surfaces. This equation is **not** permission to infer missing values. If all required `w_j` and `D_j` are known, the algebraic value is identifiable **conditional on geometry and gauge**. If `sum w_j=0`, the common reference term cancels for that generalized coordinate; otherwise `p0-p_ext` must be independently known. Any unknown patch coverage or pressure interpolation invalidates a full-force claim.
 
 ## Stage architecture / evidence DAG
 
