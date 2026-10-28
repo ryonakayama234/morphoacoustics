@@ -154,6 +154,7 @@ def run(receipt: dict) -> None:
                     )
                 attempt["status"] = "NUMERIC_PASS"
             except Exception:
+                case["status"] = "NUMERICALLY_UNRESOLVED"
                 attempt["status"] = "FAIL"
                 attempt["failure"] = traceback.format_exc()
                 raise
