@@ -26,3 +26,7 @@ The first term is the **shared gauge reference**. It must not be treated as inde
 Output status is always `ALGEBRA_ONLY_NOT_SOURCE_OR_FORCE_VALIDATED` on successful synthetic numeric controls. Incomplete real input => explicit `SCIENTIFIC_HOLD` with reasons, not `INFEASIBLE` or `UNSUPPORTED` (those have different meanings in public Core).
 
 Versioning/ownership: experiment-local Python dataclasses; Studio does not store them in Character, Script, Direction, Scene, Take or panel registry. Future validated receipts could be inspected in `research.drawer`, subject to a separate UI authorization.
+
+## Recorded research receipt — 2026-10-28
+
+Evidence: [exact-source-head CI #40709820069](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40709820069), [JSON artifact 12826410001](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40709820069/artifacts/12826410001). Test outcome 13/13 PASS **only** for declared synthetic algebra; example input: `p0=100 Pa, pext=0 Pa, D6=25 Pa, area=.1 m², projection=1, u_p0=3 Pa, u_ext=5 Pa, u_D=2 Pa`. The **synthetic** output force is 7.5 N with conservative **pressure-only** half-width 1.0 N (not an animal/in vivo geometry). Source figure digital points: 0 qualified; actual wet-surface patches: 0 qualified; real common-gauge references: 0 qualified; waveforms: 0. Output `G1_S_SOURCE_HOLD`, `G1_D_HOLD`, `G4_NO_GO`. These are distinct from the conditional synthetic number. New documentation commits require new exact-head checks before any further adoption discussion.
