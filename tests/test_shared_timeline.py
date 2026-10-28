@@ -73,11 +73,12 @@ def test_compiles_experiment_011_sequential_and_overlap_windows() -> None:
     assert sequential.score is not None
     assert overlap.score is not None
 
-    assert [(g.onset_s, g.offset_s) for g in sequential.score.gestures] == pytest.approx(
-        [(0.08, 0.26), (0.26, 0.44)]
+    # pytest 9.2 rejects nested sequences in approx(); compare scalar endpoints.
+    assert [time for g in sequential.score.gestures for time in (g.onset_s, g.offset_s)] == pytest.approx(
+        [0.08, 0.26, 0.26, 0.44]
     )
-    assert [(g.onset_s, g.offset_s) for g in overlap.score.gestures] == pytest.approx(
-        [(0.08, 0.26), (0.20, 0.38)]
+    assert [time for g in overlap.score.gestures for time in (g.onset_s, g.offset_s)] == pytest.approx(
+        [0.08, 0.26, 0.20, 0.38]
     )
 
 
