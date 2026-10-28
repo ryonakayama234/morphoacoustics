@@ -12,6 +12,7 @@ import hashlib
 import json
 
 from listener_port import Fixture, PortObservation
+from morphoacoustics.acoustics.uniform_tube import UniformTube
 
 HERE = Path(__file__).resolve().parent
 GATE_A_ORACLE_BLOB = "f89ccf20cb60019c4487873a13af678e983beb6b"
@@ -90,6 +91,32 @@ def audit_row(f: Fixture, o: PortObservation, row: Sequence[float]) -> AuditResu
         failures.append("tube_energy_ledger")
     if not all(isfinite(p) and p >= -1e-13 for p in [*powers, o.power_entrance_w]):
         failures.append("passivity")
+    # Independently *recompute* invariants from the observed raw port fields.
+    # Stored residuals alone are not audit evidence: a mutated port may retain
+    # a stale zero residual, producing a false-positive PASS without these checks.
+    source_actual = f.source_pressure_pa - o.p0_pa - f.source_impedance_pa_s_m3 * o.u0_m3_s
+    terminal_actual = o.pL_pa - f.terminal_impedance_pa_s_m3 * o.uL_m3_s
+    if abs(source_actual) > 1e-11 or abs(o.source_boundary_residual_pa-source_actual)>1e-11:
+        failures.append("source_boundary_recomputed")
+    if abs(terminal_actual) > 1e-11 or abs(o.termination_boundary_residual_pa-terminal_actual)>1e-11:
+        failures.append("terminal_boundary_recomputed")
+    source_power_actual=(f.source_pressure_pa*o.u0_m3_s.conjugate()).real/2
+    entrance_power_actual=(o.p0_pa*o.u0_m3_s.conjugate()).real/2
+    terminal_power_actual=(o.pL_pa*o.uL_m3_s.conjugate()).real/2
+    source_loss_actual=f.source_impedance_pa_s_m3*abs(o.u0_m3_s)**2/2
+    if any(abs(reported-recomputed)>power_tol for reported,recomputed in zip(
+            (o.power_drive_w,o.power_entrance_w,o.power_terminal_w,o.power_source_loss_w),
+            (source_power_actual,entrance_power_actual,terminal_power_actual,source_loss_actual))):
+        failures.append("powers_recomputed_from_ports")
+    tube=UniformTube(f.length_m, f.area_m2,
+                     sound_speed_m_s=f.sound_speed_m_s,air_density_kg_m3=f.air_density_kg_m3)
+    t=tube.transfer_matrix(f.frequency_hz)
+    actual_p=o.p0_pa-(complex(t[0,0])*o.pL_pa+complex(t[0,1])*o.uL_m3_s)
+    actual_u=o.u0_m3_s-(complex(t[1,0])*o.pL_pa+complex(t[1,1])*o.uL_m3_s)
+    if (abs(actual_p)>1e-11 or abs(actual_u*o.zc_pa_s_m3)>1e-11 or
+            abs(o.matrix_pressure_residual_pa-actual_p)>1e-11 or
+            abs((o.matrix_flow_residual_m3_s-actual_u)*o.zc_pa_s_m3)>1e-11):
+        failures.append("core_matrix_boundary_recomputed")
     if abs(o.source_boundary_residual_pa) > 1e-11:
         failures.append("source_boundary")
     if abs(o.termination_boundary_residual_pa) > 1e-11:
