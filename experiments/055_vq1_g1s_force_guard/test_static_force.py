@@ -126,5 +126,49 @@ class StaticForceTests(unittest.TestCase):
                     self.assertAlmostEqual(z.force_n, (base-drop+50)*(-.0075))
 
 
+
+class ReceiptFailureTests(unittest.TestCase):
+    def test_red_analytic_control_retains_json_receipt(self):
+        import json
+        import os
+        import sys
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        import run
+        with tempfile.TemporaryDirectory() as folder:
+            path = str(Path(folder) / "red.json")
+            with (patch.dict(os.environ, {"VQ1_G1S_TEST_OUTCOME": "failure"}),
+                  patch.object(run, "static_force", side_effect=ScientificHold("injected numeric failure")),
+                  patch.object(sys, "argv", ["run.py", "--out", path])):
+                with self.assertRaises(SystemExit):
+                    run.main()
+            receipt = json.loads(Path(path).read_text(encoding="utf-8"))
+            self.assertEqual(receipt["synthetic_algebra_status"], "NUMERICALLY_UNRESOLVED")
+            self.assertIn("injected numeric failure", receipt["analytic_control_error"])
+            self.assertEqual(receipt["G1_S_physical_force"], "INDETERMINATE")
+            self.assertEqual(receipt["G4_creator_voice"], "NO_GO")
+
+    def test_broken_runner_still_archives_stop_receipt(self):
+        import json
+        import os
+        import sys
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        import run
+        with tempfile.TemporaryDirectory() as folder:
+            path = str(Path(folder) / "crashed.json")
+            with (patch.dict(os.environ, {"VQ1_G1S_TEST_OUTCOME": "success"}),
+                  patch.object(run, "build_receipt", side_effect=RuntimeError("injected runner failure")),
+                  patch.object(sys, "argv", ["run.py", "--out", path])):
+                with self.assertRaises(SystemExit):
+                    run.main()
+            receipt = json.loads(Path(path).read_text(encoding="utf-8"))
+            self.assertEqual(receipt["synthetic_algebra_status"], "NUMERICALLY_UNRESOLVED")
+            self.assertIn("injected runner failure", receipt["runner_error"])
+            self.assertEqual(receipt["measured_M5_reference"], "G1_S_SOURCE_HOLD_NO_QUALIFIED_SPATIAL_MEASUREMENTS")
+
+
 if __name__ == "__main__":
     unittest.main()
