@@ -59,7 +59,8 @@ class ReadingExecution:
 
 
 def _ascii(value: object, maximum: int = 80) -> bool:
-    return (isinstance(value, str) and 0 < len(value) <= maximum
+    return (isinstance(value, str) and type(value) is str
+            and 0 < len(value) <= maximum
             and value.isascii()
             and all(33 <= ord(x) <= 126 for x in value))
 
@@ -69,9 +70,14 @@ def _scalar(text: str) -> bool:
 
 
 def _source_error(source: object, revision: object) -> str | None:
-    if not isinstance(source, str) or not _scalar(source) or not source:
+    if not isinstance(source, str) or type(source) is not str or not source:
         return "INVALID_SOURCE"
-    if len(source) > _MAX_SOURCE_CHARS or len(source.encode("utf-8")) > _MAX_SOURCE_BYTES:
+    # Reject on O(1) length before any O(N) Unicode or UTF-8 traversal.
+    if len(source) > _MAX_SOURCE_CHARS:
+        return "SOURCE_LIMIT"
+    if not _scalar(source):
+        return "INVALID_SOURCE"
+    if len(source.encode("utf-8")) > _MAX_SOURCE_BYTES:
         return "SOURCE_LIMIT"
     if not _ascii(revision):
         return "INVALID_REVISION"
@@ -102,9 +108,9 @@ def make_proposal(
     if problem:
         return _reject(source_text, source_revision, problem)
     assert isinstance(source_text, str) and isinstance(source_revision, str)
-    if not isinstance(paths, tuple) or not paths or len(paths) > _MAX_PATHS:
+    if not isinstance(paths, tuple) or type(paths) is not tuple or not paths or len(paths) > _MAX_PATHS:
         return _reject(source_text, source_revision, "PATH_LIMIT")
-    if not all(isinstance(p, ReadingPath) for p in paths):
+    if not all(type(p) is ReadingPath for p in paths):
         return _reject(source_text, source_revision, "INVALID_PATH")
     readable = {i for i, ch in enumerate(source_text) if ch not in _SILENT}
     if not readable:
@@ -116,19 +122,21 @@ def make_proposal(
         if p.path_id in path_ids:
             return _reject(source_text, source_revision, "DUPLICATE_PATH")
         path_ids.add(p.path_id)
-        if not isinstance(p.units, tuple) or not p.units or len(p.units) > _MAX_UNITS:
+        if (not isinstance(p.units, tuple) or type(p.units) is not tuple
+                or not p.units or len(p.units) > _MAX_UNITS):
             return _reject(source_text, source_revision, "UNIT_LIMIT")
         unit_ids: set[str] = set()
         positions: set[int] = set()
         last_end = 0
         for unit in p.units:
-            if not isinstance(unit, ReadingUnit):
+            if not isinstance(unit, ReadingUnit) or type(unit) is not ReadingUnit:
                 return _reject(source_text, source_revision, "INVALID_UNIT")
             if not _ascii(unit.unit_id) or unit.unit_id in unit_ids:
                 return _reject(source_text, source_revision, "INVALID_UNIT_ID")
             unit_ids.add(unit.unit_id)
-            if (not isinstance(unit.symbol, str) or not _scalar(unit.symbol)
-                    or not 1 <= len(unit.symbol) <= 32):
+            if (not isinstance(unit.symbol, str) or type(unit.symbol) is not str
+                    or not 1 <= len(unit.symbol) <= 32
+                    or not _scalar(unit.symbol)):
                 return _reject(source_text, source_revision, "INVALID_SYMBOL")
             a, b = unit.start_offset, unit.end_offset
             if (type(a) is not int or type(b) is not int
@@ -190,17 +198,37 @@ def compile_selected(
     temporal_scenario: object,
 ) -> ReadingExecution:
     """Authenticated replay of complete SMC4/5 wire, never fabricate Task lexicon."""
-    if not isinstance(proposal, ReadingProposal) or proposal.status != "PROPOSED":
+    if not isinstance(proposal, ReadingProposal) or type(proposal) is not ReadingProposal:
         return _refuse("PROPOSAL", "NO_VALID_PROPOSAL")
-    if not isinstance(selected_path_id, str) or not selected_path_id:
+    # Never allow caller-defined __eq__ to judge an incoming receipt's integrity.
+    # Check exact built-in scalar/container types before any equality comparison.
+    if (type(proposal.source_text) is not str
+            or type(proposal.source_revision) is not str
+            or type(proposal.source_digest) is not str
+            or type(proposal.proposal_digest) is not str
+            or type(proposal.status) is not str
+            or type(proposal.code) is not str
+            or type(proposal.paths) is not tuple):
+        return _refuse("PROPOSAL", "BAD_PROPOSAL_INTEGRITY")
+    # Typed/frozen dataclasses are constructible and replaceable by callers.
+    # Re-run the *complete* bounded validator on all proposed paths here.
+    # A SHA-256 digest is an integrity/identity receipt, NOT an authorization
+    # signature or evidence of real Japanese pronunciation.
+    verified = make_proposal(
+        proposal.source_text, proposal.source_revision, proposal.paths,
+    )
+    if verified.status != "PROPOSED" or proposal != verified:
+        return _refuse("PROPOSAL", "BAD_PROPOSAL_INTEGRITY")
+    if not isinstance(selected_path_id, str) or type(selected_path_id) is not str or not selected_path_id:
         return _refuse("SELECTION", "SELECTION_REQUIRED")
     matching = [p for p in proposal.paths if p.path_id == selected_path_id]
     if len(matching) != 1:
         return _refuse("SELECTION", "UNKNOWN_SELECTED_PATH")
     if (not isinstance(temporal_scenario, TemporalScenario)
+            or type(temporal_scenario.lane) is not str
             or temporal_scenario.lane != "COMPATIBILITY"):
         return _refuse("TEMPORAL_POLICY", "UNSUPPORTED_LANE")
-    if not isinstance(canonical_wire, bytes):
+    if not isinstance(canonical_wire, bytes) or type(canonical_wire) is not bytes:
         return _refuse("INGRESS", "INVALID_WIRE")
     ingress = parse_canonical_request(canonical_wire)
     if ingress.request is None:

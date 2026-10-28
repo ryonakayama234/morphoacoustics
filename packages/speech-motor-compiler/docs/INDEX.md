@@ -142,3 +142,8 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [Gate A frozen protocol](SMC7_GATE_A_PROTOCOL.md), prior to test-only RED 1579f332 and source e5b9985.
 - [SMC7_GATE_B_RESULTS.md](SMC7_GATE_B_RESULTS.md): exact source and CI, root pytest nested-approx blocker, independent review state and stage-wise limits.
 - [SMC7_GATE_B_DECISIONS.md](SMC7_GATE_B_DECISIONS.md): HOLD_FULL_GATE / MORE_DATA, no main merge; L1/physical/audio not claimed.
+
+## SMC-7 L0 Gate B-R trust repair — 2026-10-28
+- [SMC7_GATE_B_REPAIR_PROTOCOL.md](SMC7_GATE_B_REPAIR_PROTOCOL.md): frozen repair protocol; P1 forged proposal / P2 size ordering / merged main #234 test-only backport.
+- [Gate B RESULTS](SMC7_GATE_B_RESULTS.md) and [DECISIONS](SMC7_GATE_B_DECISIONS.md): append-only original STOP plus new RED, 17/17 exact code-SHA CI, independent review pending.
+- Research repair [Draft PR #236](https://github.com/ryonakayama234/morphoacoustics/pull/236); original stopped Draft #232 remains unmerged.

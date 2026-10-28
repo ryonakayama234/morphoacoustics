@@ -185,3 +185,165 @@ def test_f14_independent_coverage_and_legacy_oracle():
         for u in direct["pronunciation"]["paths"][0]["units"]
     ]
     assert compile_selected(p, "p1", raw, scenario()).smc6 == analyze_temporal_wire(raw, scenario())
+
+# P1/P2 REPAIR PROTOCOL R01-R10: preregistered on separate test-only RED.
+# Do not replace historical F01-F14; this section tests *attacker-created*
+# dataclass objects where prevalidated status/digests cannot be trusted.
+
+def _updated_wire_source(text):
+    d = valid()
+    d["segment"]["source_text"] = text
+    return encoded(d)
+
+
+def test_r01_replaced_proposal_uncovered_suffix_refused_pre_smc():
+    real = proposal()
+    forged = replace(real, source_text="甲乙丙")
+    r = compile_selected(forged, "p1", _updated_wire_source("甲乙丙"), scenario())
+    assert r.status == "REFUSED"
+    assert r.stage == "PROPOSAL" and r.smc5 is None and r.smc6 is None
+
+
+def test_r02_forged_silent_punctuation_span_refused_pre_smc():
+    forged = replace(proposal(), source_text="、乙")
+    r = compile_selected(forged, "p1", _updated_wire_source("、乙"), scenario())
+    assert r.status == "REFUSED" and r.stage == "PROPOSAL"
+    assert r.smc5 is None and r.smc6 is None
+
+
+def test_r03_forged_oversized_source_refused_pre_smc():
+    source = "甲乙" + "丙" * 255
+    forged = replace(proposal(), source_text=source, source_digest=None, proposal_digest=None)
+    r = compile_selected(forged, "p1", _updated_wire_source(source), scenario())
+    assert r.status == "REFUSED" and r.stage == "PROPOSAL"
+    assert r.smc5 is None and r.smc6 is None
+
+
+def test_r04_digest_source_metadata_and_code_must_be_verified():
+    p = proposal()
+    mutations = [
+        replace(p, source_digest=None),
+        replace(p, proposal_digest=None),
+        replace(p, source_digest="0" * 64),
+        replace(p, proposal_digest="0" * 64),
+        replace(p, code="FORGED"),
+        replace(p, paths=(replace(p.paths[0], evidence_id="changed"), p.paths[1])),
+    ]
+    for forged in mutations:
+        r = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert r.status == "REFUSED" and r.stage == "PROPOSAL"
+        assert r.smc5 is None and r.smc6 is None
+    # Not a signature: byte-for-byte same *valid* externally re-created
+    # candidate is allowed as a consciously unverified hypothesis.
+    rebuilt = make_proposal(p.source_text, p.source_revision, p.paths)
+    assert rebuilt == p
+    assert compile_selected(rebuilt, "p1", encoded(valid()), scenario()).status == "SYMBOLIC_READY"
+
+
+def test_r05_forged_unselected_path_is_not_ignored():
+    p = proposal()
+    corrupted_alt = replace(p.paths[1], units=(ReadingUnit("BAD", "a", 0, 1),))
+    forged = replace(p, paths=(p.paths[0], corrupted_alt))
+    r = compile_selected(forged, "p1", encoded(valid()), scenario())
+    assert r.status == "REFUSED" and r.stage == "PROPOSAL"
+    assert r.smc5 is None and r.smc6 is None
+
+
+def test_r06_source_length_checked_before_scalar_scan(monkeypatch):
+    import morphoacoustics_smc.reading_paths as rp
+
+    def trap(value):
+        if len(value) > 256:
+            raise AssertionError("unbounded source scanned before size refusal")
+        return True
+    monkeypatch.setattr(rp, "_scalar", trap)
+    assert rp.propose_kana("あ" * 257, "r1").code == "SOURCE_LIMIT"
+    assert rp.make_proposal("あ" * 257, "r1", ()).code == "SOURCE_LIMIT"
+
+
+def test_r07_symbol_length_checked_before_scalar_scan(monkeypatch):
+    import morphoacoustics_smc.reading_paths as rp
+
+    real = rp._scalar
+    def trap(value):
+        if len(value) > 32:
+            raise AssertionError("unbounded symbol scanned before size refusal")
+        return real(value)
+    monkeypatch.setattr(rp, "_scalar", trap)
+    bad = rp.make_proposal("あ", "r1", (
+        rp.ReadingPath("p", (rp.ReadingUnit("U1", "x" * 10000, 0, 1),), "manual"),
+    ))
+    assert bad.status == "REJECTED" and bad.code == "INVALID_SYMBOL"
+
+
+def test_r08_existing_timing_and_unmapped_digests_unchanged():
+    raw = encoded(valid())
+    assert compile_selected(proposal(), "p1", raw, scenario()).smc5 == compile_wire(raw)
+    result = compile_selected(proposal(), "p1", raw, scenario(Fraction(1, 10)))
+    assert result.status == "TEMPORAL_REFUSED" and result.smc5 is not None
+    assert result.smc6 is not None and result.smc6.status == "UNSAT"
+    assert result.smc6.receipt is not None
+    assert result.smc6.receipt.source_candidate_digest == result.smc5.receipt.candidate_digest
+
+
+def test_r10_invalid_python_field_types_rejected_without_exceptions():
+    invalid = [
+        replace(proposal(), paths=("not a ReadingPath",)),
+        replace(proposal(), paths=123),
+        replace(proposal(), source_text=123),
+        replace(proposal(), paths=(replace(proposal().paths[0], units=("bad",)),)),
+    ]
+    for forged in invalid:
+        result = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert result.status == "REFUSED" and result.stage == "PROPOSAL"
+        assert result.smc5 is None and result.smc6 is None
+
+# Second Codex review P2: user-provided __eq__ may lie. Frozen before repair.
+def test_r11_non_str_digest_fields_cannot_spoof_dataclass_equality():
+    from unittest.mock import ANY
+    class AlwaysTrue:
+        def __eq__(self, other):
+            return True
+    for bad in (ANY, AlwaysTrue(), 123, None):
+        for field in ("source_digest", "proposal_digest"):
+            forged = replace(proposal(), **{field: bad})
+            result = compile_selected(forged, "p1", encoded(valid()), scenario())
+            assert result.status == "REFUSED"
+            assert result.stage == "PROPOSAL"
+            assert result.smc5 is None and result.smc6 is None
+
+
+def test_r12_non_plain_metadata_string_or_status_is_rejected():
+    from unittest.mock import ANY
+    class EvilStr(str):
+        def __eq__(self, other):
+            return True
+        __hash__ = str.__hash__
+    for field, value in (
+        ("source_text", EvilStr("甲乙")),
+        ("source_revision", EvilStr("r1")),
+        ("status", ANY),
+        ("code", ANY),
+        ("source_digest", EvilStr(proposal().source_digest)),
+    ):
+        forged = replace(proposal(), **{field: value})
+        result = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert result.status == "REFUSED" and result.stage == "PROPOSAL"
+        assert result.smc5 is None and result.smc6 is None
+
+
+def test_r13_non_plain_nested_units_and_identifier_fields_rejected():
+    class EvilStr(str):
+        def __eq__(self, other):
+            return True
+        __hash__ = str.__hash__
+    p = proposal()
+    tricky_path_id = replace(p.paths[0], path_id=EvilStr("p1"))
+    tricky_unit = replace(p.paths[0].units[0], symbol=EvilStr("a"))
+    for forged in (
+        replace(p, paths=(tricky_path_id, p.paths[1])),
+        replace(p, paths=(replace(p.paths[0], units=(tricky_unit, p.paths[0].units[1])), p.paths[1])),
+    ):
+        result = compile_selected(forged, "p1", encoded(valid()), scenario())
+        assert result.status == "REFUSED" and result.stage == "PROPOSAL"
+        assert result.smc5 is None and result.smc6 is None
