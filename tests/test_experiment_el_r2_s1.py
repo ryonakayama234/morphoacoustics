@@ -195,6 +195,8 @@ def test_research_cli_with_full_outputs(tmp_path):
     assert output["summary"]["frozen_rows"]==18
     assert output["summary"]["passed"]==18
     assert output["summary"]["failed"]==0
+    assert output["summary"]["scientific_verdict"]=="UNVERIFIED"
+    assert output["oracle_pin_status"]=="UNVERIFIED_LOCAL_DEVELOPMENT"
     assert len(output["rows"])==18
     assert output["source_calibration"]=="NUMERIC_EQUIVALENT_FIXTURE_NOT_EMPIRICAL"
     assert output["rows"][0]["ports"]["p0_pa"]!=output["rows"][0]["ports"]["pL_pa"]
