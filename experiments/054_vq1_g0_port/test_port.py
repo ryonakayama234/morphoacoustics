@@ -256,3 +256,28 @@ def test_zero_drive_zero_state_no_phantom_source():
         assert obs.tick == tick
         assert obs.source_work_j == obs.energy_residual_j == 0.0
         assert s.energies_j() == (0.0, 0.0)
+
+
+def test_tampered_snapshot_payload_refused_even_if_digest_and_tick_match():
+    """A constructed snapshot with identical digest must not alter predictor data."""
+    from dataclasses import replace
+
+    s = model(termination="b0", backward=((0.7, 0.0),))
+    port = FixedWaveguideInletPort(s)
+    snap = port.snapshot()
+    before = native_state(s)
+    for fake in (
+        replace(snap, b_pa=-snap.b_pa),
+        replace(snap, z0_pa_s_m3=0.5 * snap.z0_pa_s_m3),
+        replace(snap, dt_s=2 * snap.dt_s),
+        replace(snap, state_digest="0" * 64),
+        replace(snap, tick=snap.tick + 1),
+    ):
+        with pytest.raises(StalePortSnapshot):
+            port.peek(fake, 1e-6)
+        with pytest.raises(StalePortSnapshot):
+            port.commit_once(fake, 1e-6)
+        assert native_state(s) == before
+    # The original, valid snapshot still represents precisely one native tick.
+    obs = port.commit_once(snap, 1e-6)
+    assert obs.tick == 0
