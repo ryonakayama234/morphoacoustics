@@ -179,9 +179,11 @@ def main() -> None:
         cwd=root, text=True,
     ).strip()
     tests_outcome = os.environ.get("VQ1_TEST_OUTCOME", "not_verified")
+    expected_head = os.environ.get("VQ1_EXPECTED_HEAD_SHA")
     receipt = {
         "scope": "G0 discrete acoustics only; NO tissue, voice or Studio",
-        "source_head": head,
+        "checkout_sha": head,
+        "expected_candidate_head_sha": expected_head,
         "preregistered_numerical_threshold": 1e-10,
         "test_step_outcome": tests_outcome,
         "outcome": "NUMERICALLY_UNRESOLVED",
@@ -193,8 +195,12 @@ def main() -> None:
     }
     failure = None
     try:
+        if expected_head and head != expected_head:
+            raise RuntimeError(
+                "SOURCE_SHA_MISMATCH: actual checkout differs from exact expected candidate"
+            )
         run(receipt)
-        if tests_outcome != "success":
+        if tests_outcome != "success" or not expected_head:
             # The independent runner cannot grant a GO when pytest failed.
             receipt["outcome"] = "NUMERICALLY_UNRESOLVED"
             receipt["reason"] = "test gate not verified"
