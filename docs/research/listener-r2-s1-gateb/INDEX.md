@@ -16,12 +16,13 @@ Architecture/ownership: [ASMR PR #155](https://github.com/ryonakayama234/morphoa
 | Measurands, observation envelope, SI, reference planes | [DATA.md](./DATA.md) |
 | Competing hypotheses, nulls, evidence ladder and prereg gates | [EXPERIMENT.md](./EXPERIMENT.md) |
 | What an independent reviewer must check | [REVIEW.md](./REVIEW.md) |
+| Operational pre-code tolerances, unique passive solve, exact oracle coverage and refusal matrix (prospective) | [PROTOCOL-V1.md](./PROTOCOL-V1.md) |
 | Actually executed vs NOT RUN and future decision ledger | [RESULTS.md](./RESULTS.md) |
 | Original 18 rows, existing numerical acceptance limits | [PR #158 frozen EXPERIMENT](https://github.com/ryonakayama234/morphoacoustics/blob/489111e19ffa18b21c4c4cadba8ef19f84e11bb4/docs/research/listener-r2-s1/EXPERIMENT.md) |
 
 ## Current status
 - GATE_A_ORACLE = EXISTING_PRELIMINARY_WOLFRAM, not physical evidence.
-- GATE_B_DESIGN = PROPOSED_FOR_REVIEW, this branch is documents only.
+- GATE_B_DESIGN = PROPOSED_FOR_REVIEW, this branch is documents only. 2026-10-28 prospective operational [PROTOCOL-V1](./PROTOCOL-V1.md) added; independent review and coding authorization NOT given.
 - GATE_B_SOLVER / GATE_B_NEW_CI / INDEPENDENT_SCIENCE_AUDIT = NOT_RUN.
 - GATE_C_MEASURED_ACOUSTICS / GATE_D_ASMR_PERCEPTION / STUDIO_FEATURE = NOT_AUTHORIZED.
 - morphoacoustics_asmr currently only exports metadata; this design does not change its registry, package API, or Studio UI.
