@@ -23,8 +23,12 @@ jobs:
       - name: Install audited Core package and test dependencies
         run: python -m pip install -e '.[dev]'
       - name: Run preregistered analytic and adversarial G0 tests
+        id: g0_tests
         run: python -m pytest -v experiments/054_vq1_g0_port/test_port.py
-      - name: Produce independent signed energy/port receipt
+      - name: Produce independent signed energy/port receipt even after red tests
+        if: ${{ !cancelled() && steps.g0_tests.outcome != 'skipped' }}
+        env:
+          VQ1_TEST_OUTCOME: ${{ steps.g0_tests.outcome }}
         run: python experiments/054_vq1_g0_port/run.py --out vq1-g0-port-evidence.json
       - name: Retain signed receipt even on failure
         if: always()
