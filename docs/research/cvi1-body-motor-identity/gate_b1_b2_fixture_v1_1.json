@@ -1,0 +1,323 @@
+{
+  "schema": "cvi1-gate-b1-b2-frozen-fixture/v1.1",
+  "status": "REVIEW_CORRECTED_PREREGISTRATION_NOT_EXECUTED",
+  "research_owner": "Core issue #227",
+  "source_base_commit": "f1020c568c54615bc9fdc4c9804128ddbcc3ff0d",
+  "source_blobs": {
+    "src/morphoacoustics/physical/tract1d.py": "62f3ddf6d3cbf2e43072f9d8b2be6ee84f4c3ca7",
+    "src/morphoacoustics/realization/tract1d.py": "87adb91ebe3ca2a3e2b36931f9d12d94c2ee7e0b",
+    "experiments/019_material_conditioned_realization/run.py": "b11319645569a297695644651a0813154cf67ad3",
+    "experiments/019_material_conditioned_realization/wolfram/material_realization_oracle.json": "122440385fc4c7d7e5180153492de27081da0779",
+    "src/morphoacoustics/preparation/tract1d.py": "90860b19a6b181ba88ff3d4a01379c10ab23e226",
+    "src/morphoacoustics/domain/gesture.py": "782d3bdde829d0a3506beed490a78cc82dc13d0d",
+    "src/morphoacoustics/preparation/protocol.py": "72a6a536e5dd1800aac1328c3b84026bacad896e"
+  },
+  "body": {
+    "model": "Fidelity-0 Tract1DGeometry",
+    "backend_id": "fidelity0.tract1d",
+    "cavity_id": "oral",
+    "section_count": 10,
+    "total_length_m": 0.17,
+    "section_length_m": 0.017,
+    "rest_area_m2": 0.0003,
+    "normalized_axial_xi": 0.65,
+    "axial_position_m": 0.1105,
+    "zero_based_target_section": 6,
+    "target_section_interval_m": [
+      0.102,
+      0.119
+    ],
+    "articulator_reachable_xi": [
+      0.3,
+      0.8
+    ],
+    "target_area_m2": 0.00005,
+    "target_unit_literal": "m2",
+    "gesture_interval_s": [
+      0,
+      0.3
+    ],
+    "snapshot_time_s": 0.1
+  },
+  "r1": {
+    "material_domain": "dimensionless_reduced_quadratic",
+    "stiffness_baseline": 1,
+    "stiffness_perturbation": {
+      "section": 5,
+      "from": 1,
+      "to": 4
+    },
+    "smoothing_lambda": 1,
+    "target_ratio_num": 1,
+    "target_ratio_den": 6,
+    "left_neighbor_section": 5,
+    "right_neighbor_section": 7
+  },
+  "frozen_thresholds": {
+    "axial_position_error_m": 1e-12,
+    "section_interval_edge_error_m": 1e-12,
+    "r0_target_error_m2": 1e-18,
+    "r1_target_error_m2": 1e-18,
+    "r0_non_target_ratio_error": 1e-12,
+    "r1_oracle_max_abs_ratio_error": 1e-10,
+    "kkt_primal_abs_ratio_error": 1e-10,
+    "kkt_stationarity_inf_error": 1e-10,
+    "min_h_eigenvalue_exclusive": 0,
+    "max_h_condition_number": 100000000,
+    "r1_left_neighbor_ratio_delta_min_inclusive": 0.1,
+    "r1_right_neighbor_ratio_delta_max_abs": 1e-10,
+    "r1_l2_ratio_delta_min_inclusive": 0.001,
+    "minimum_effect_to_numeric_floor_ratio_exclusive": 5,
+    "numerical_floor_fixed_lower_bound_ratio": 1e-12
+  },
+  "numeric_floor_formula": "F_num = max(1e-12, max_abs_repeated_same_case_q_delta, max_abs_same_case_rank_one_discrepancy, max_abs_pinned_Wolfram_reference_discrepancy); evaluate BEFORE between-profile contrast",
+  "controls": [
+    "N01_valid",
+    "N02_wrong_unit_zero_negative_nonfinite",
+    "N03_nonconstrictive_target",
+    "N04_unreachable_xi_0_95",
+    "N05_unknown_or_connected_cavity",
+    "N06_body_or_backend_mismatch",
+    "N07_10_vs_16_mismatch",
+    "N08_xi_endpoints_and_boundary",
+    "N09_same_run_repeat",
+    "N10_r0_stiffness_null",
+    "N11_target_only_intervention",
+    "N12_invalid_material_or_multipoint_refusal",
+    "N13_no_acoustic_or_take",
+    "N14_original_smc_semantics_remain_unmapped"
+  ],
+  "gates": {
+    "B0": "BLOCKED_REVIEW_INTEGRITY until #226 review resolved and #235 v1.1 independently reviewed",
+    "B1_go": "MODEL_GEOMETRIC_MEASURAND_DEFINED",
+    "B2_go": "REDUCED_QUASISTATIC_MODEL_RESPONSE",
+    "B3": "NOT_RUN",
+    "C": "NOT_RUN",
+    "acoustics": "NOT_RUN",
+    "studio": "NOT_CHANGED"
+  },
+  "artifact_required": [
+    "manifest.json",
+    "observations.csv",
+    "oracles.json",
+    "refusals.json",
+    "decision.json"
+  ],
+  "evidence_boundary": "Exp019 known fixture replication only; model KKT and Wolfram are mathematics of one uncalibrated quadratic, NOT biological force/work, articulatory observation, speaker identity or a voice sound",
+  "protocol_revision": "v1.1-review-correction-2026-10-28",
+  "supersedes": {
+    "schema": "cvi1-gate-b1-b2-frozen-fixture/v1",
+    "blob_sha": "6c2eec95b2f5d27ff2b569bb280ade6f746a1df5",
+    "review_source_pr": 235,
+    "reason": "Codex P2: explicit harness guard for prepared body/section mismatch, and preservation of constructor exception outcomes. Thresholds and source pins unchanged."
+  },
+  "prepared_body_contract": {
+    "schema": "cvi1-prepared-body-contract/v1",
+    "backend_id": "fidelity0.tract1d",
+    "creature": {
+      "name": "g1m-reduced-material-body",
+      "cavities": [
+        {
+          "id": "oral",
+          "kind": "oral"
+        }
+      ],
+      "connections": [],
+      "source_organs": [],
+      "articulators": [
+        {
+          "id": "tongue",
+          "cavity_id": "oral",
+          "kind": "tongue",
+          "reachable_start": 0.3,
+          "reachable_end": 0.8
+        }
+      ]
+    },
+    "rest_state": {
+      "cavity_id": "oral",
+      "sections": [
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        },
+        {
+          "length_m": 0.017,
+          "area_m2": 0.0003
+        }
+      ]
+    },
+    "provenance": {
+      "source": "experiment-019",
+      "model": "uniform-rest-tract-with-experiment-local-material-profile",
+      "notes": [
+        "production morphology/material schema intentionally unchanged"
+      ]
+    }
+  },
+  "preflight_guard": {
+    "owner": "experiment-local Gate-B harness; never a Core native capability claim",
+    "guard_revision": "cvi1-b1-b2-body-preflight/v1",
+    "canonical_body_algorithm": "sha256(utf8(json.dumps(extract_prepared_contract(prepared), sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False)))",
+    "expected_body_contract_sha256": "211740f581d685b78807ef0f2fcd1b67640add15731921924eee29bcb9bf532f",
+    "serialization_contract": "Extract only the exact prepared-body-contract keys and types from the actual PreparedMorphology (including creature, all 10 ordered sections, backend, provenance); no target, solver output, model materials, timestamps or UI selection; Python JSON float spelling and insertion-independent sorted keys; forbid NaN/Infinity.",
+    "order": [
+      {
+        "step": 1,
+        "check": "actual prepared rest geometry exposes exactly 10 sections and the matched 10-element R1 material representation",
+        "code": "HARNESS_SECTION_MODEL_MISMATCH",
+        "failure_kind": "HARNESS_REJECTED"
+      },
+      {
+        "step": 2,
+        "check": "backend_id exactly fidelity0.tract1d; actual prepared geometry type Tract1DGeometry",
+        "code": "HARNESS_BACKEND_MISMATCH",
+        "failure_kind": "HARNESS_REJECTED"
+      },
+      {
+        "step": 3,
+        "check": "computed prepared-body contract SHA equals expected fixture digest and exact field-by-field equality; includes original creature and all section lengths/areas",
+        "code": "HARNESS_PREPARED_BODY_MISMATCH",
+        "failure_kind": "HARNESS_REJECTED"
+      },
+      {
+        "step": 4,
+        "check": "model profile is already successfully constructed, finite, positive and length 10; constructor errors are reported at construction phase, not hidden",
+        "code": "HARNESS_PROFILE_MISMATCH",
+        "failure_kind": "HARNESS_REJECTED"
+      }
+    ],
+    "no_side_effects": "Steps must finish before calling either R0.realize_snapshot or R1.realize_snapshot, before observer, and before any acoustics/Take; always include did_call_core=false and native_feasibility=null on harness refusal.",
+    "negative_controls": {
+      "N06_backend": "HARNESS_BACKEND_MISMATCH",
+      "N06_changed_body_same_count": "HARNESS_PREPARED_BODY_MISMATCH",
+      "N07_16_section": "HARNESS_SECTION_MODEL_MISMATCH",
+      "N07_expectation": "The native R0 currently can return FEASIBLE for 16 sections; bare Exp019 R1 may IndexError. This is NOT native capability refusal. Both must be intercepted by harness before dispatch."
+    }
+  },
+  "rejection_record_contract": {
+    "schema": "cvi1-gate-b-rejection/v1.1",
+    "required_fields": [
+      "case_id",
+      "phase",
+      "outcome_kind",
+      "harness_code",
+      "native_feasibility",
+      "exception",
+      "did_call_core",
+      "core_result_exists",
+      "core_state_present",
+      "did_invoke_acoustics",
+      "did_emit_take",
+      "source_input_ref"
+    ],
+    "phase_enum": [
+      "CONSTRUCT_PARAMETER",
+      "CONSTRUCT_GESTURE",
+      "CONSTRUCT_SCORE",
+      "CONSTRUCT_PROFILE",
+      "CONSTRUCT_BODY",
+      "HARNESS_PREFLIGHT",
+      "CORE_REALIZER"
+    ],
+    "outcome_kind_enum": [
+      "CONSTRUCTOR_REJECTED",
+      "HARNESS_REJECTED",
+      "CORE_FEASIBILITY_REJECTED",
+      "UNEXPECTED_FAILURE"
+    ],
+    "constructor_example": {
+      "case_id": "N02_nonfinite_parameter",
+      "phase": "CONSTRUCT_PARAMETER",
+      "outcome_kind": "CONSTRUCTOR_REJECTED",
+      "harness_code": null,
+      "native_feasibility": null,
+      "exception": {
+        "type": "ValueError",
+        "message": "parameter value must be finite"
+      },
+      "did_call_core": false,
+      "core_result_exists": false,
+      "core_state_present": null,
+      "did_invoke_acoustics": false,
+      "did_emit_take": false,
+      "source_input_ref": "N02/NaN"
+    },
+    "harness_example": {
+      "case_id": "N07_16_section_geometry",
+      "phase": "HARNESS_PREFLIGHT",
+      "outcome_kind": "HARNESS_REJECTED",
+      "harness_code": "HARNESS_SECTION_MODEL_MISMATCH",
+      "native_feasibility": null,
+      "exception": null,
+      "did_call_core": false,
+      "core_result_exists": false,
+      "core_state_present": null,
+      "did_invoke_acoustics": false,
+      "did_emit_take": false,
+      "source_input_ref": "N07/16"
+    },
+    "core_example": {
+      "case_id": "N02_zero_parameter",
+      "phase": "CORE_REALIZER",
+      "outcome_kind": "CORE_FEASIBILITY_REJECTED",
+      "harness_code": null,
+      "native_feasibility": "INVALID",
+      "exception": null,
+      "did_call_core": true,
+      "core_result_exists": true,
+      "core_state_present": false,
+      "did_invoke_acoustics": false,
+      "did_emit_take": false,
+      "source_input_ref": "N02/zero"
+    },
+    "invariants": [
+      "Only CORE_REALIZER cases with actual Core result may set native_feasibility to INVALID/UNSUPPORTED/INFEASIBLE",
+      "Constructor and HARNESS_PRELIGHT rejection may never report fake Core result, Core native status, or an observed state",
+      "Unexpected IndexError, TypeError, numeric exception or schema discrepancy is UNEXPECTED_FAILURE, never a passing negative control",
+      "Record exact original exception class and raw message and originating phase; no synthesized FeasibilityReport",
+      "Failure artifact row is a typed *attempt*, not proof of returned Core state"
+    ]
+  },
+  "negative_control_expected_phase_overrides": {
+    "N02_nonfinite_target": "CONSTRUCT_PARAMETER/CONSTRUCTOR_REJECTED/ValueError",
+    "N02_zero_or_negative_target": "CORE_REALIZER/CORE_FEASIBILITY_REJECTED/INVALID",
+    "N02_wrong_unit": "CORE_REALIZER/CORE_FEASIBILITY_REJECTED/INVALID",
+    "N06_mismatched_body_or_backend": "HARNESS_PREFLIGHT/HARNESS_REJECTED",
+    "N07_16_sections": "HARNESS_PREFLIGHT/HARNESS_REJECTED",
+    "N12_nonfinite_or_nonpositive_material_profile": "CONSTRUCT_PROFILE/CONSTRUCTOR_REJECTED/ValueError",
+    "N12_valid_two_active_constricts": "CORE_REALIZER/CORE_FEASIBILITY_REJECTED/UNSUPPORTED"
+  }
+}
