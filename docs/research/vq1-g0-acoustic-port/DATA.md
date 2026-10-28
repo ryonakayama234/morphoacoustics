@@ -47,3 +47,8 @@ The research runner now records **every attempted native tick**, not six selecte
 
 ### Distinguish candidate SHA from synthetic checkout SHA
 The first full-tick receipt on PR CI was generated against GitHub's temporary PR merge SHA (e.g. `3cbea7e7`) while the PR candidate branch SHA differed. Numerically it passed, but it must **not be presented as exact candidate-head test evidence**. The refined receipt contains `checkout_sha` and `expected_candidate_head_sha` and refuses mismatch, keeping a non-success failure JSON. New exact-head actions must be inspected before G0 adoption.
+
+
+## Final qualified G0 dataset snapshot (2026-10-28)
+
+At **actual checked-out candidate SHA = expected candidate head = `af41041086115e2cd04d66a8611fb21007e63efb`**, [G0 CI run 40688026925](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40688026925) passed **45/45** analytic/adversarial tests. [Artifact 12816390431](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40688026925/artifacts/12816390431) carries 512 complete signed tick records, 128 per case, source SHA equality, pytest step outcome, stored energy and power residuals, and exact scenario metadata. Maximum scaled energy residual over all 4 test cases = `1.0339757656912846e-13` (limit `1e-10`); max inlet pressure oracle residual 0 Pa for the tested algebraic boundary. Sample range is an independent engineering limit test, *not* a biological measurement or source-waveform realism benchmark. All four cases are synthetic fixed-duct fixtures; M0/M1 are surrogate lengths, **not authenticated body identities**.
