@@ -305,11 +305,16 @@
     },
     "invariants": [
       "Only CORE_REALIZER cases with actual Core result may set native_feasibility to INVALID/UNSUPPORTED/INFEASIBLE",
-      "Constructor and HARNESS_PRELIGHT rejection may never report fake Core result, Core native status, or an observed state",
+      "Constructor and HARNESS_PREFLIGHT rejection may never report fake Core result, Core native status, or an observed state",
       "Unexpected IndexError, TypeError, numeric exception or schema discrepancy is UNEXPECTED_FAILURE, never a passing negative control",
       "Record exact original exception class and raw message and originating phase; no synthesized FeasibilityReport",
       "Failure artifact row is a typed *attempt*, not proof of returned Core state"
-    ]
+    ],
+    "artifact_scope": {
+      "refusals_json": "Only expected rejected or unexpected failed attempts; one typed row for every rejection/exception including constructor errors, but do not place valid N01 as a refusal",
+      "observations_csv": "All successful valid cases, including N01, plus measured returned-state arrays; never invent numeric state for invalid attempts",
+      "manifest_json": "A complete N01-N14 inventory with per-case attempted/pass/fail/not_available and exact refusal/observation reference; required negative controls cannot be silently skipped"
+    }
   },
   "negative_control_expected_phase_overrides": {
     "N02_nonfinite_target": "CONSTRUCT_PARAMETER/CONSTRUCTOR_REJECTED/ValueError",
