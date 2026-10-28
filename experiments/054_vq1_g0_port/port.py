@@ -78,12 +78,13 @@ class FixedWaveguideInletPort:
     def _require_live(self, snapshot: PortSnapshot) -> None:
         if not isinstance(snapshot, PortSnapshot):
             raise TypeError("PortSnapshot required")
-        if (
-            snapshot.owner_token != id(self)
-            or snapshot.tick != self._session.ticks
-            or snapshot.state_digest != self._state_digest()
-        ):
-            raise StalePortSnapshot("foreign, stale, or already committed native state")
+        # The digest alone does not authenticate the *payload* in a snapshot:
+        # dataclasses.replace(snapshot, b_pa=...) must never change the
+        # predictor without invalidating this reference.
+        if snapshot != self.snapshot():
+            raise StalePortSnapshot(
+                "foreign, changed, stale, or already committed native snapshot"
+            )
 
     @staticmethod
     def _real_flow(flow_m3_s: float) -> float:
@@ -113,5 +114,5 @@ class FixedWaveguideInletPort:
         A failed step must not advance the real session; the same snapshot may
         be retried after an overflow with an independently valid flow.
         """
-        self.peek(snapshot, flow_m3_s)  # freshness, units and finite power
-        return self._session.step(float(flow_m3_s))
+        prediction = self.peek(snapshot, flow_m3_s)  # one validated flow value
+        return self._session.step(prediction.flow_m3_s)
