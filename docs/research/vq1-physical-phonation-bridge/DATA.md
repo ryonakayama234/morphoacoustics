@@ -61,3 +61,103 @@ Current main `PassiveWaveguideSession`: per-section forward/backward discrete pr
 VF-1A's different Draft `PassiveTract`: cell pressure array and face-flow array, implicit-midpoint solver state, independently set `dt_s`; `StepObservation.inlet_pressure_pa` is computed from midpoint coupling and face inertance. Passing this state to the main FIFO solver would discard its physical integration scheme and evidence trail. Never claim matching `PreparedMorphology` implies identical numerical state/clock, nor directly port VF-1A energy proofs.
 
 Candidate G0 comparison record should preserve `source_commit, backend_id, state_representation, p/U orientation, time_staggering, native_clock_hz, outlet_law, predictor_version, expected_tick, actual_tick, energy_residual_j`, with an explicit `UNSUPPORTED_INCOMPATIBLE_BACKEND` refusal. No public schema is amended here.
+
+
+---
+
+## D1 research data contract refinement (2026-10-28 JST)
+
+**Status: design candidate, not a new public Core/Studio ABI.** Keep G0 port, G1 static measurements, G1 dynamic wall forces and output audio as **four distinct record types**.
+
+### Minimal evidence graph
+
+\`\`\`mermaid
+flowchart LR
+  BR["BodyRevisionRef\nexact id/revision"] --> PREP["PreparedDuct\ngeometry / source SHA"]
+  PREP --> SNAP["NativeWaveSnapshot\nwaves, termination, tick"]
+  SNAP --> PRE["G0 PortPrediction\npure p(U), work(U), snapshot ID"]
+  PRE --> COM["NativeStepReceipt\none real physical step"]
+  WALL["G1 StaticReference\nmeasured wall p(z), Q, geometry"] --> QUAL["StaticForceLawQualification\nresidual + uncertainty"]
+  QUAL -. "G1-D cannot be inferred" .-> DYN["Dynamic force law\nHOLD"]
+  COM --> PROOF["G0 numerical / power proof"]
+  DYN -. "later separate physics" .-> DRES["Tissue dynamics + work receipt"]
+  PROOF -. "research only" .-> DRAW["Studio research.drawer; no UI edit"]
+  DRES -. "after voice gates" .-> TAKE["Future immutable Take"]
+\`\`\`
+
+| Record | Frozen inputs | Calculated observables | Invalid/missing branch |
+|---|---|---|---|
+| \`G0PreparedDuct\` | Core source SHA, geometry blob/digest, \(\rho\,[kg/m^3]\), \(c\,[m/s]\), each section \(L\,[m],A\,[m^2]\), \(n_{cells}\), \(\Delta t\,[s]\), outlet law | \(Z_c\,[Pa\,s/m^3]\), physical clock Hz | Unsupported geometry/time/ref |
+| \`G0PortSnapshot\` | native tick, immutable state digest, reflection sample \(b_n\,[Pa]\) with declared pre-shift time | Candidate \(p_n\,[Pa]\), \(U_n\,[m^3/s]\), \(W_n\,[J]\) | stale/mutated state; duplicate commit |
+| \`G0WaveStep\` | exact snapshot and chosen \(U_n\) | true Core \`WaveguideStep\`: inlet p, source work, mouth p/U, stored energy, outlet loss and signed residual | Core \`ValueError\`/\`FloatingPointError\`, no pretend audio |
+| \`G1StaticReference\` | DOI, figure/table, data-access origin, digitization revision, physical z[m] and uncertainty, actual measured pressure drops Pa, Q [m³/s], shape/conditions | spatial pressure residuals [Pa], comparison with independent paper equations / control | \`REFERENCE_UNQUALIFIED\` |
+| \`G1StaticForceCandidate\` | physical wet surface / effective normal/weights \(J_i(z)\,[m]\) and pressure field [Pa] | \(F_i\,[N]\), integral numerical uncertainty [N] | \`UNIDENTIFIABLE_FORCE\` if surface map missing |
+| \`G1DynamicResearch\` | physically valid moving-wall model/force law & independent dynamic reference (not yet available) | \(x,\dot x,p_{\rm wall},q,U_{\rm in},F_i\), power ledger | \`HOLD_DYNAMIC_REFERENCE\` |
+| Future Take | resolved source/body/motor/scene/observer + solver and artifact receipts | physical sound and immutable bytes | No Take prior to actual approved renderer and creator-quality gate |
+
+**Distinguish three pressures:** \(P_{\rm sub}\) reservoir/gauge [Pa]; \(p_{\rm in}\) tract acoustic pressure [Pa]; \(p_{\rm wall}(z)\) local intraglottal surface pressure [Pa]. These are not aliases. Define \(q\) from reservoir into glottis [m³/s] and \(U_{\rm in}\) from glottis into supraglottal tract [m³/s]. \(p_{\rm wall}\) may have distinct flow-wall/nonflow-wall values in the static M5 data; no symmetry assumption without a source.
+
+### Proposed \`G0PortProbe/v0\` private research-only wire (illustrative)
+
+\`\`\`json
+{
+  "schema_version": "vq1-g0-port-probe/v0-research",
+  "model_scope": "one-fixed-passive-1d-tract",
+  "source_commit": "PIN_EXACT_MAIN_SHA",
+  "backend": "morphoacoustics_waveguide/PassiveWaveguideSession",
+  "prepared_body_digest": "SOURCE_AUTHORED_DIGEST",
+  "state": {"tick": 0, "snapshot_digest": "HASH_OF_NATIVE_SESSION"},
+  "port": {
+    "flow_positive_direction": "into_supraglottal_tract",
+    "pressure_unit": "Pa",
+    "flow_unit": "m3/s",
+    "impedance_unit": "Pa*s/m3",
+    "work_unit": "J",
+    "native_time_reference": "step_n_pre_shift"
+  },
+  "candidate_flow_m3_s": 0.0,
+  "status": "UNTESTED_EXAMPLE_NOT_EXECUTED"
+}
+\`\`\`
+
+Values shown here are **placeholders**, not accepted fixture values or real digests. Real results must preserve exact Core SHA and state/fixture byte identity; do not mint versioned public \`PerformanceRequest\` from this draft.
+
+**G0 API invariants:** all \`peek\` calls return consistent values without mutating the real session; the same exact snapshot can be queried at \`U=0\`, \`+U\` and \`-U\`; only one \`commit\` is legal for that tick; \`commit\` result must be a true \`WaveguideStep\` with identical stored acoustic state to an independent direct session step for the same input. A fresh snapshot is required after advancing the tick. The method cannot change solver physics or silently convert the per-body native clock to 48k.
+
+### G1 force/work record: which data actually identify the mechanism?
+
+\`\`\`text
+G1WallStressCase
+  provenance: DOI + figure/table + image/data SHA + qualification version
+  geometry: surface / orientation / z-axis / life-size-equivalent scale
+  pressure: p_trachea, tap_pressure_drop_i, p_flow_wall_i, p_nonflow_wall_i
+  flow: measured_Q_m3_s + uncertainty + matched deltaP_Pa
+  model: pressure law ID / coefficients / static or dynamic
+  residuals: pressure_Pa, flow_m3_s, integral_force_N [only if surface map known]
+  uncertainty: measurement / extraction / geometry / truncation / model separate
+  outcome: QUALIFIED_STATIC_ONLY | REFERENCE_UNQUALIFIED
+           | INDETERMINATE_FORCE | STOP_INCONSISTENT_WORK
+\`\`\`
+
+**Static and moving tissue are not equivalent.** For the candidate M5 fixture \(d=0.02\,cm\), \(\Delta P=10\,cmH_2O\), Core Draft #220 specifies tap 6 \(0.211\,cm\), tap 11 \(0.413\,cm\), tap 13 \(0.511\,cm\) and Q \(64.7\,cm^3/s\), all as **life-size equivalents** requiring source recheck. Do not treat the entire paper's 35 Q/\(k_{\rm ex}\) pairs as measured pressure profiles, nor infer a numerical surface force from only three tap coordinates.
+
+For dynamic force acceptance define tissue/flow/tract powers \(\mathbf F_{\rm aero}\cdot\dot{\mathbf x}\), \(P_{\rm sub}q\), \(p_{\rm in}U_{\rm in}\); and the signed energy statement:
+
+\[
+\Delta(E_{\rm tissue}+E_{\rm fluid}+E_{\rm acoustic})
+-\int P_{\rm sub}q\,dt+\int (D_{\rm tissue}+D_{\rm flow}+D_{\rm outlet})\,dt=R_{\rm all}.
+\]
+
+This equality is a **required bookkeeping hypothesis**, not a current validated discretization or a guarantee of actual biological dynamics. A moving control volume must also account for volume-change terms and any other modeled work sources; unmodeled sources prohibit a PASS. Near-zero energy denominators and numerical cancellation are reported separately, not obscured by a small normalized residual.
+
+### Explicit uncertainty and evidence meaning
+
+| Uncertainty class | Example | What it can establish |
+|---|---|---|
+| Numerical | floating-point and nonlinear residual, dt refinement | equation implementation consistency |
+| Discretization/model | 1D scattering and boundary modeling; static pressure interpolation | sensitivity to approximate physics |
+| Experimental reference | M5 pressure taps/coordinate/digitization, static flow | static aerodynamic agreement only |
+| Anatomy/material | effective masses, surface maps, human/animal calibration | physiological interpretation **not** established by M5 |
+| Perceptual | human voice-likeness and creative utility | only after independently authenticated same-task Takes |
+
+A universal naturalness score, inferred F0 from a tone, or measured listener SPL cannot be generated from these records. During this task Studio domains are *read-only conceptual mappings*. The exact UI ownership remains that of Studio V2: Character stores references, Motion stores intent, Scene stores instances, Take dock stores playback of genuinely immutable physical output, Research Drawer owns raw proof. Neither \`src/App.tsx\` nor the panel registry may change.
