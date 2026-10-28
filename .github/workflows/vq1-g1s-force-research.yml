@@ -1,0 +1,41 @@
+name: vq1-g1s-static-force-research
+
+on:
+  push:
+    paths:
+      - "experiments/055_vq1_g1s_force_guard/**"
+      - "docs/research/vq1-g1s-force-identifiability/**"
+      - ".github/workflows/vq1-g1s-force-research.yml"
+  pull_request:
+    paths:
+      - "experiments/055_vq1_g1s_force_guard/**"
+      - "docs/research/vq1-g1s-force-identifiability/**"
+      - ".github/workflows/vq1-g1s-force-research.yml"
+
+jobs:
+  synthetic-static-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run independent static algebra and refusal tests
+        id: science_tests
+        run: python -m unittest discover -v -s experiments/055_vq1_g1s_force_guard -p "test_*.py"
+      - name: Emit signed status and explicit physical HOLD after tests
+        if: ${{ !cancelled() && steps.science_tests.outcome != 'skipped' }}
+        env:
+          VQ1_G1S_TEST_OUTCOME: ${{ steps.science_tests.outcome }}
+          VQ1_G1S_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python experiments/055_vq1_g1s_force_guard/run.py --out vq1-g1s-force-receipt.json
+      - name: Archive receipt on success or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vq1-g1s-force-research-receipt
+          path: vq1-g1s-force-receipt.json
+          if-no-files-found: warn
