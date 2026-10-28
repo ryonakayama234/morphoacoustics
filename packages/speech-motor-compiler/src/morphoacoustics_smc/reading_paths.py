@@ -69,9 +69,14 @@ def _scalar(text: str) -> bool:
 
 
 def _source_error(source: object, revision: object) -> str | None:
-    if not isinstance(source, str) or not _scalar(source) or not source:
+    if not isinstance(source, str) or not source:
         return "INVALID_SOURCE"
-    if len(source) > _MAX_SOURCE_CHARS or len(source.encode("utf-8")) > _MAX_SOURCE_BYTES:
+    # Reject on O(1) length before any O(N) Unicode or UTF-8 traversal.
+    if len(source) > _MAX_SOURCE_CHARS:
+        return "SOURCE_LIMIT"
+    if not _scalar(source):
+        return "INVALID_SOURCE"
+    if len(source.encode("utf-8")) > _MAX_SOURCE_BYTES:
         return "SOURCE_LIMIT"
     if not _ascii(revision):
         return "INVALID_REVISION"
@@ -127,8 +132,9 @@ def make_proposal(
             if not _ascii(unit.unit_id) or unit.unit_id in unit_ids:
                 return _reject(source_text, source_revision, "INVALID_UNIT_ID")
             unit_ids.add(unit.unit_id)
-            if (not isinstance(unit.symbol, str) or not _scalar(unit.symbol)
-                    or not 1 <= len(unit.symbol) <= 32):
+            if (not isinstance(unit.symbol, str)
+                    or not 1 <= len(unit.symbol) <= 32
+                    or not _scalar(unit.symbol)):
                 return _reject(source_text, source_revision, "INVALID_SYMBOL")
             a, b = unit.start_offset, unit.end_offset
             if (type(a) is not int or type(b) is not int
@@ -190,8 +196,17 @@ def compile_selected(
     temporal_scenario: object,
 ) -> ReadingExecution:
     """Authenticated replay of complete SMC4/5 wire, never fabricate Task lexicon."""
-    if not isinstance(proposal, ReadingProposal) or proposal.status != "PROPOSED":
+    if not isinstance(proposal, ReadingProposal):
         return _refuse("PROPOSAL", "NO_VALID_PROPOSAL")
+    # Typed/frozen dataclasses are constructible and replaceable by callers.
+    # Re-run the *complete* bounded validator on all proposed paths here.
+    # A SHA-256 digest is an integrity/identity receipt, NOT an authorization
+    # signature or evidence of real Japanese pronunciation.
+    verified = make_proposal(
+        proposal.source_text, proposal.source_revision, proposal.paths,
+    )
+    if verified.status != "PROPOSED" or proposal != verified:
+        return _refuse("PROPOSAL", "BAD_PROPOSAL_INTEGRITY")
     if not isinstance(selected_path_id, str) or not selected_path_id:
         return _refuse("SELECTION", "SELECTION_REQUIRED")
     matching = [p for p in proposal.paths if p.path_id == selected_path_id]
