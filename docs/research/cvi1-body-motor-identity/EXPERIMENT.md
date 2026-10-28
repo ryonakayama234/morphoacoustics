@@ -208,3 +208,47 @@ Keep SMC schedule and requested task fixed in the **first** H0/H1 contrast. A la
 - **Decision:** `MODEL_PHYSICAL_TASK_BOUND` (limited to the audited 1D model) or `UNMAPPED_SEMANTICS` / `KINEMATIC_ONLY` / native failure / `NUMERICALLY_UNRESOLVED` / `NOT_TESTABLE_BACKEND_CAPABILITY`. A model-level PASS is not biological articulatory validation, H_EXEC, voice identity or creator quality GO.
 
 **Do not treat these metrics as preregistered thresholds yet.** B1/B2 requires a separately frozen exact-SHA Gate-B protocol and independent reference *before* code/new simulation. This is a source-grounded choice of what to measure, not fabricated experiment results.
+
+
+## D4 precision — prospective Gate B1/B2 falsifiers and numerical oracle (2026-10-28)
+
+**DESIGN ONLY; no new simulation executed, thresholds and exact-source fixtures not yet frozen for implementation.** Existing Issue #227 governs this follow-on.
+
+### Explicit hypotheses and outcome tiers
+
+- **B1-H1 geometry is observable:** prepared-body SHA and ξ=0.65 uniquely resolve a *model section* j=6, s=0.1105 m and actual returned-state `A_j` [m²]. Fail if observer echoes target rather than reading returned state, or if body/coordinate changes silently.
+- **B1-H2 input is dimensional and valid:** one 10-section 0.17-m uniform-rest fixture with `A_rest=3.0e-4 m²` accepts candidate target `A*=5.0e-5 m²` (ratio 1/6); reject zero/negative area, wrong `m2` unit, unknown cavity, out-of-reach location, non-constrictive target and changed body index. An invalid request cannot generate a state or audio.
+- **B2-H1 R0 null:** hard-projector R0 produces the same full 10-vector when *only* reduced stiffness metadata changes. Goal satisfaction via R0 is `KINEMATIC_ONLY`, not physical control.
+- **B2-H2 R1 reduced response:** on the same fixture and goal, experiment-local R1 has a positive 10-section constrained optimum, preserves requested area at j, and exhibits neighboring response to left-neighbor *relative stiffness* 1→4 beyond an independently estimated solver/observer floor. Independent Wolfram or analytic model oracle must agree. This is `REDUCED_QUASISTATIC_MODEL_RESPONSE`, **not** tissue force, muscle work or controller H_EXEC.
+- **B2-H3 negative inference:** neither R0 nor R1 can be promoted to valid H_EXEC from a target residual alone; altered static stiffness is a *body/model-parameter* intervention. Exp020 scalar `omega_per_s` dynamics and Exp022 10-section modal dynamics are separate bounded mathematical precedents, **not already measured biological actuators**.
+- **B3 semantic gap (future):** old SMC5 `tract/open_closed/synthetic` TaskGoal (capability labels `flow/contact`) still has no evidenced Core location/target. B3 would need a distinct versioned model-only TaskDefinition and explicitly versioned *location + cavity + target conversion* binding outside SMC5 TaskGoal; current SMC TaskGoal has no physical location field. Reauthenticate entire new canonical candidate and its own COMPATIBILITY times; refuse any implicit relabel of the original candidate.
+
+### Independent mathematical reference, not biological oracle
+
+Exp019's reduced 10-section model represents `q=A/A_rest` as dimensionless area ratios. Let `K=diag(k_i)>0` be relative stiffness, `D` first differences, `λ≥0` dimensionless smoothing, `H=K+λDᵀD`, `c=e_j`, `ρ=A*/A_rest`. Existing R1 solves
+`min J(q)=1/2 (q−1)ᵀK(q−1)+λ/2||Dq||²  subject to cᵀq=ρ`.
+The independent analytic rank-one reference is
+`q*=1 + H⁻¹c(ρ−1)/(cᵀH⁻¹c)`;
+the R1 KKT implementation must match both this formula and existing Wolfram reference while meeting primal equality `|cᵀq−ρ|`, stationarity residual, positive `q_i`, eigenvalue/condition diagnostics, and returning all 10 actual section areas. This is a **mathematical model cross-check**, not a physical measurement independent of the model. R1's quadratic is uncalibrated and cannot be labeled Joules; its multiplier is not force. If any ratio becomes nonpositive, report model UNSUPPORTED, never clip to a plausible area.
+
+### Prespecified prospective cells
+
+| Cell | Model and intervention | Check |
+| --- | --- | --- |
+| V0 | validation / observer only | body+geometry identity, exact ξ→s→j, units and invalid cases |
+| R0-A / R0-B | Core hard projector, same goal; base vs changed stiffness metadata | full-state exact null, projection-only classification |
+| R1-A / R1-B | Exp019 10-section reduced equilibrium, same goal; left-relative stiffness 1 vs 4 | original independent Wolfram reference, analytic rank-one solution, task residual, positivity, neighbor contrast |
+| R1-X | unsupported positive-area or impossible-goal case | preserve native failure and null state, no fallback |
+| B3 future | new model-only SMC lexicon, exact timing and sidecar location rule | separately versioned semantics; not executed at B1/B2 |
+
+Controls before coding: A/A at same SHA; reordered or label-only changes have no model effect; section boundary ξ=0/1 and internal downstream half-open convention; ξ perturbation remaining inside same cell; changed target at same state solver; wrong SI unit/NaN/zero/oversized goal; unreachable/connected cavity; changed body SHA; forbidden 10-vs-16 transfer; SMC5 forged provenance or SMC6 override misrepresented as original. A physical failure must yield no acoustic port measurement.
+
+### Calibration and STOP rules
+
+The earlier Exp019 work recorded target residual acceptance `1e-18 m²`, normalized-state independent-oracle tolerance `1e-10`, and left-neighbor ratio 0.6816881258941345 → 0.8516666666666667. **These are historical benchmark priors**, not newly earned Gate-B thresholds. Before implementation the exact-source Gate-B protocol must freeze the numerical error budget from reference+solver condition, oracle residuals, observer section/discretization sensitivity, effect statistic and null floor. Do not choose a threshold after seeing a new run. Do not treat mesh-count mismatch as discretization convergence.
+
+**B0 mandatory debt:** Draft #226 independent Codex review P2 observed preregistered A09 had no no-physics source/import scanner or side-effect/output guard, despite 12 tests passing. The scanner, execution/output negative test, exact-head CI and independent re-review must be completed *before asserting that the previous software boundary was exhaustively proven*; its already observed 0/3 semantic STOP remains valid.
+
+**Decision staircase:** B1 `MODEL_GEOMETRIC_MEASURAND_DEFINED` or `NOT_MEASURABLE/INVALID`; B2 `REDUCED_QUASISTATIC_MODEL_RESPONSE` (R0-only `KINEMATIC_ONLY`) or `UNSUPPORTED/NUMERICALLY_UNRESOLVED`; B3 distinct `SMC_MODEL_SEMANTIC_BOUND` or `UNMAPPED_SEMANTICS`; C later requires a *demonstrated actuation and state-feedback law* with named physical input units, actual response/perturbation, null H0/H0, two valid distinct H_EXEC policies and body feasibility. If absent, `NOT_TESTABLE_BACKEND_CAPABILITY`. No sound identity, naturalness or Studio UI claim from B gates.
+
+**External theoretical context, not validation of Core:** [Nam et al. 2012](https://pmc.ncbi.nlm.nih.gov/articles/PMC3528686), [FACTS](https://pmc.ncbi.nlm.nih.gov/articles/PMC6743785), and [tract area-function modeling](https://pmc.ncbi.nlm.nih.gov/articles/PMC5234468) distinguish task variables, articulatory state and simplified 1D acoustic area representations. The 1D `A_j` sensor is not a tongue–palate clearance measure.
