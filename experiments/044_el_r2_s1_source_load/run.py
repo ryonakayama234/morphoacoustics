@@ -59,12 +59,13 @@ def main() -> int:
         "science_level":"SYNTHETIC_NUMERICAL_ONLY",
         "source_calibration":"NUMERIC_EQUIVALENT_FIXTURE_NOT_EMPIRICAL",
         "model":"linear_passive_lossless_rigid_uniform_1d",
+        "oracle_pin_status":"UNVERIFIED_LOCAL_DEVELOPMENT" if args.no_pin else "PINNED_ORIGINAL_VERIFIED",
         "gate_a_head_sha":"489111e19ffa18b21c4c4cadba8ef19f84e11bb4",
         "gate_a_oracle_blob":git_blob_digest((HERE/"wolfram_oracle_18.json").read_bytes()),
         "gate_a_wolfram_source_blob":git_blob_digest((HERE/"wolfram_oracle_18.wl").read_bytes()) if (HERE/"wolfram_oracle_18.wl").exists() else None,
         "core_primitive_sha256":hashlib.sha256((ROOT/"src/morphoacoustics/acoustics/uniform_tube.py").read_bytes()).hexdigest(),
         "runtime":{"python":sys.version.split()[0]},
-        "summary":{"frozen_rows":len(rows),"passed":len(rows)-len(failed),"failed":len(failed),"max_pressure_component_error_pa":max_p,"max_power_error_w":max_power,"scientific_verdict":"PASS" if not failed else "FAIL"},
+        "summary":{"frozen_rows":len(rows),"passed":len(rows)-len(failed),"failed":len(failed),"max_pressure_component_error_pa":max_p,"max_power_error_w":max_power,"scientific_verdict":"FAIL" if failed else "UNVERIFIED" if args.no_pin else "PASS"},
         "rows":rows,
     }
     rendered=json.dumps(payload,ensure_ascii=False,indent=2,allow_nan=False,sort_keys=True)+"\n"
