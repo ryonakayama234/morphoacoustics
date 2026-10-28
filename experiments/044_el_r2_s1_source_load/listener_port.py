@@ -70,6 +70,7 @@ class PortObservation:
     terminal_plane: str = "TERMINAL_SIDE"
     phasor: str = "peak_exp_plus_iwt"
     positive_u: str = "entrance_to_terminal"
+    undefined_transfer_reason: str | None = None
 
 
 def _real(value: object, name: str, *, positive: bool = False, nonnegative: bool = False) -> float:
@@ -175,6 +176,8 @@ def solve(fixture: Fixture) -> PortObservation:
         h_total = pL / ps if ratio_defined else None
         h_canal = pL / p0 if ratio_defined and abs(p0) > 16 * float_info.epsilon * abs(ps) else None
         zin = p0 / u0 if abs(u0) > 0 else None
+        undefined_reason = ("zero_source_drive" if not ratio_defined else
+                            "near_zero_entrance_pressure" if h_canal is None else None)
         pdrive = (ps * u0.conjugate()).real / 2
         pent = (p0 * u0.conjugate()).real / 2
         pterm = (pL * uL.conjugate()).real / 2
@@ -189,6 +192,7 @@ def solve(fixture: Fixture) -> PortObservation:
             ps - p0 - zs * u0, pL - zt * uL,
             p0 - aa * pL - bb * uL, u0 - cc * pL - dd * uL,
             aa * dd - bb * cc - 1, dn, dn - analytic_dn,
+            undefined_transfer_reason=undefined_reason,
         )
     except ResearchBoundaryError:
         raise
