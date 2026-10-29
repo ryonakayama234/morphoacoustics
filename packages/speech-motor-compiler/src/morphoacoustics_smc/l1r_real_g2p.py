@@ -13,6 +13,8 @@ from hashlib import sha256
 from importlib import import_module, metadata
 import json
 import os
+import stat
+import tempfile
 from pathlib import Path
 import sys
 from typing import Callable
@@ -74,52 +76,119 @@ def _source_l1_supported(s: str) -> bool:
     )
 
 
-def fingerprint_dictionary(path: Path | str) -> str:
-    """Deterministic content fingerprint of an existing local dictionary tree.
+def _dictionary_tree(path: Path | str, snapshot: Path | None = None) -> str:
+    """Bounded POSIX O_NOFOLLOW descriptor-relative enumeration and byte capture.
 
-    Not a signature of library authenticity or evidence of linguistic accuracy.
-    Refuses links, empty directories, excessive size and nonregular entries.
+    If snapshot is provided, the exact bytes hashed are copied to a fresh
+    owner-only temporary directory. The engine is constructed from that copy
+    with explicit userdic=b"", not from the mutable global cached dictionary.
     """
     if not (type(path) is str or isinstance(path, Path)):
         raise ValueError("INVALID_DICTIONARY_PATH")
+    if not hasattr(os, "O_DIRECTORY") or not hasattr(os, "O_NOFOLLOW"):
+        raise ValueError("UNSAFE_DICTIONARY_PLATFORM")
     root = Path(path)
-    if root.is_symlink() or not root.is_dir():
-        raise ValueError("INVALID_DICTIONARY_PATH")
-    h = sha256(b"SMC7-C0-OPENJTALK-DICTIONARY/v0\x00")
-    n = 0
-    total = 0
-    for item in sorted(root.rglob("*"), key=lambda p: p.relative_to(root).as_posix()):
-        if item.is_symlink():
-            raise ValueError("DICTIONARY_SYMLINK")
-        if item.is_dir():
-            continue
-        if not item.is_file():
-            raise ValueError("DICTIONARY_NOT_REGULAR")
-        n += 1
-        if n > _MAX_DICT_FILES:
-            raise ValueError("DICTIONARY_LIMIT")
-        size = item.stat().st_size
-        total += size
-        if size < 0 or total > _MAX_DICT_TOTAL:
-            raise ValueError("DICTIONARY_LIMIT")
-        name = item.relative_to(root).as_posix().encode("utf-8")
-        h.update(len(name).to_bytes(4, "big"))
-        h.update(name)
-        h.update(size.to_bytes(8, "big"))
-        with item.open("rb") as fh:
-            remaining = size
-            while remaining:
-                block = fh.read(min(1024 * 1024, remaining))
-                if not block:
-                    raise ValueError("DICTIONARY_CHANGED_DURING_READ")
-                remaining -= len(block)
-                h.update(block)
-            if fh.read(1):
-                raise ValueError("DICTIONARY_CHANGED_DURING_READ")
-    if n == 0:
-        raise ValueError("EMPTY_DICTIONARY")
-    return h.hexdigest()
+    if root.is_symlink():
+        raise ValueError("DICTIONARY_SYMLINK")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    rootfd = os.open(root, flags)
+    files: list[tuple[tuple[str, ...], os.stat_result]] = []
+    entry_count = 0
 
+    def collect(fd: int, prefix: tuple[str, ...], depth: int) -> None:
+        nonlocal entry_count
+        if depth > 8:
+            raise ValueError("DICTIONARY_LIMIT")
+        local: list[tuple[str, os.stat_result]] = []
+        with os.scandir(fd) as stream:
+            for item in stream:
+                entry_count += 1  # Count directories as well as files, before sort.
+                if entry_count > _MAX_DICT_FILES:
+                    raise ValueError("DICTIONARY_LIMIT")
+                local.append((item.name, item.stat(follow_symlinks=False)))
+        for name, observed in sorted(local, key=lambda x: x[0]):
+            if stat.S_ISDIR(observed.st_mode):
+                subfd = os.open(name, flags, dir_fd=fd)
+                try:
+                    opened = os.fstat(subfd)
+                    if (opened.st_dev, opened.st_ino) != (observed.st_dev, observed.st_ino):
+                        raise ValueError("DICTIONARY_CHANGED_DURING_SCAN")
+                    collect(subfd, prefix + (name,), depth + 1)
+                finally:
+                    os.close(subfd)
+            elif stat.S_ISREG(observed.st_mode):
+                files.append((prefix + (name,), observed))
+            else:
+                raise ValueError("DICTIONARY_NOT_REGULAR_OR_LINK")
+
+    try:
+        collect(rootfd, (), 0)
+        if not files:
+            raise ValueError("EMPTY_DICTIONARY")
+        total = 0
+        h = sha256(b"SMC7-C0-OPENJTALK-DICTIONARY/v0\x00")
+        for parts, observed in sorted(files, key=lambda pair: "/".join(pair[0])):
+            name = "/".join(parts).encode("utf-8")
+            if len(name) > 4096:
+                raise ValueError("DICTIONARY_LIMIT")
+            size = observed.st_size
+            total += size
+            if size < 0 or total > _MAX_DICT_TOTAL:
+                raise ValueError("DICTIONARY_LIMIT")
+            h.update(len(name).to_bytes(4, "big"))
+            h.update(name)
+            h.update(size.to_bytes(8, "big"))
+            # Reopen every parent and file under rootfd using no-follow; a
+            # pathname swap cannot escape to external bytes.
+            owned: list[int] = []
+            fd = rootfd
+            try:
+                for component in parts[:-1]:
+                    fd = os.open(component, flags, dir_fd=fd)
+                    owned.append(fd)
+                leaf = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=fd)
+                owned.append(leaf)
+                opened = os.fstat(leaf)
+                if (not stat.S_ISREG(opened.st_mode)
+                        or (opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns)
+                        != (observed.st_dev, observed.st_ino, size, observed.st_mtime_ns)):
+                    raise ValueError("DICTIONARY_CHANGED_DURING_SCAN")
+                if snapshot is not None:
+                    target = snapshot.joinpath(*parts)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    dst = target.open("xb")
+                else:
+                    dst = None
+                try:
+                    remaining = size
+                    while remaining:
+                        block = os.read(leaf, min(1024 * 1024, remaining))
+                        if not block:
+                            raise ValueError("DICTIONARY_CHANGED_DURING_READ")
+                        remaining -= len(block)
+                        h.update(block)
+                        if dst is not None:
+                            dst.write(block)
+                    if os.read(leaf, 1):
+                        raise ValueError("DICTIONARY_CHANGED_DURING_READ")
+                    after = os.fstat(leaf)
+                    if (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns) != (
+                            opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns):
+                        raise ValueError("DICTIONARY_CHANGED_DURING_READ")
+                finally:
+                    if dst is not None:
+                        dst.close()
+            finally:
+                for owned_fd in reversed(owned):
+                    os.close(owned_fd)
+        return h.hexdigest()
+    finally:
+        os.close(rootfd)
+
+
+def fingerprint_dictionary(path: Path | str) -> str:
+    """Fingerprint local dictionary bytes with bounded no-follow traversal."""
+    return _dictionary_tree(path)
 
 def _refuse(code: str, source: object = None) -> BaselineReading:
     digest = sha256(source.encode("utf-8")).hexdigest() if (
@@ -155,48 +224,54 @@ def read_b0(
     *,
     fixture_reader: Callable[[str], str] | None = None,
 ) -> BaselineReading:
-    """Real g2p(kana=True) *text only*, with verified local dictionary identity.
+    """Text-only G2P with an explicit private dictionary-bound engine.
 
-    Fixture override is reserved for software tests and unconditionally marked
-    FIXTURE_ONLY. No kana-to-source token/character alignment is invented.
+    A fixture callable never represents genuine Japanese G2P. Actual execution
+    always instantiates a NEW OpenJTalk from the exact hashed private snapshot,
+    with userdic=b""; it never uses pyopenjtalk's cached global singleton.
     """
     error = _source_valid(source)
     if error:
         return _refuse(error, source)
     assert isinstance(source, str)
-    try:
-        dictionary_sha = fingerprint_dictionary(dictionary_dir)
-    except (ValueError, OSError, UnicodeError):
-        return _refuse("DICTIONARY_UNVERIFIED", source)
-
-    if fixture_reader is None:
+    if fixture_reader is not None:
         try:
-            version = metadata.version("pyopenjtalk")
-            if version != _B0_VERSION:
-                return _refuse("PROVIDER_VERSION_MISMATCH", source)
-            module = import_module("pyopenjtalk")
-            active = module.OPEN_JTALK_DICT_DIR
-            if type(active) not in (bytes, str) or not (type(dictionary_dir) is str or isinstance(dictionary_dir, Path)):
-                return _refuse("DICTIONARY_UNVERIFIED", source)
-            # samefile enforces the provider's actual dictionary location; the
-            # passed folder is never merely a self-claimed SHA label.
-            if not os.path.samefile(os.fsdecode(active), dictionary_dir):
-                return _refuse("DICTIONARY_UNVERIFIED", source)
-        except (metadata.PackageNotFoundError, ImportError, OSError, AttributeError):
-            return _refuse("PROVIDER_UNAVAILABLE", source)
-        try:
-            raw = module.g2p(source, kana=True)
-        except Exception:
-            return _refuse("PROVIDER_FAILURE", source)
-        mode = "PYOPENJTALK_REAL"
-    else:
-        # Explicitly non-scientific controlled fixture. Never mislabel as B0.
-        version = "FIXTURE"
+            digest = fingerprint_dictionary(dictionary_dir)
+        except (OSError, ValueError, UnicodeError):
+            return _refuse("DICTIONARY_UNVERIFIED", source)
         try:
             raw = fixture_reader(source)
         except Exception:
             return _refuse("PROVIDER_FAILURE", source)
+        version = "FIXTURE"
         mode = "FIXTURE_ONLY"
+    else:
+        try:
+            version = metadata.version("pyopenjtalk")
+        except (metadata.PackageNotFoundError, ImportError):
+            return _refuse("PROVIDER_UNAVAILABLE", source)
+        if version != _B0_VERSION:
+            return _refuse("PROVIDER_VERSION_MISMATCH", source)
+        try:
+            module = import_module("pyopenjtalk")
+        except (ImportError, OSError):
+            return _refuse("PROVIDER_UNAVAILABLE", source)
+        try:
+            with tempfile.TemporaryDirectory(prefix="smc7-c0-openjtalk-") as temp:
+                snapshot = Path(temp) / "dictionary"
+                snapshot.mkdir(mode=0o700)
+                digest = _dictionary_tree(dictionary_dir, snapshot)
+                # Snapshot contents are immutable to external untrusted
+                # directory writers, and only these bytes feed this engine.
+                engine = module.OpenJTalk(
+                    dn_mecab=os.fsencode(snapshot), userdic=b"",
+                )
+                raw = engine.g2p(source, kana=True)
+        except (OSError, ValueError, UnicodeError):
+            return _refuse("DICTIONARY_UNVERIFIED", source)
+        except Exception:
+            return _refuse("PROVIDER_FAILURE", source)
+        mode = "PYOPENJTALK_REAL"
     problem = _kana_valid(raw)
     if problem:
         return _refuse(problem, source)
@@ -204,9 +279,8 @@ def read_b0(
     return BaselineReading(
         "READ", "OK", mode, raw,
         sha256(source.encode("utf-8")).hexdigest(),
-        dictionary_sha, version, _source_l1_supported(source),
+        digest, version, _source_l1_supported(source),
     )
-
 
 def audit_joyo_jsonl(path: Path | str, *, expected_sha256: str | None = None) -> JoyoAudit:
     """Format/provenance *audit* of original Joyo kanji-level data, not H1–H4.
@@ -259,7 +333,11 @@ def audit_joyo_jsonl(path: Path | str, *, expected_sha256: str | None = None) ->
         marked = row["normalized_pron"]
         if (type(key) is not str or len(key) > 120
                 or len(key.split("_")) != 3 or not key.split("_")[-1].isdigit()
-                or not key.split("_")[0] or len(key.split("_")[0]) != 1):
+                or not key.split("_")[1] or len(key.split("_")[0]) != 1
+                or not 0x4E00 <= ord(key.split("_")[0]) <= 0x9FFF
+                or not all(0x3041 <= ord(ch) <= 0x3096
+                           or 0x30A1 <= ord(ch) <= 0x30FA
+                           or ch == "ー" for ch in key.split("_")[1])):
             errors["INVALID_KEY"] += 1
             continue
         if key in keys:
