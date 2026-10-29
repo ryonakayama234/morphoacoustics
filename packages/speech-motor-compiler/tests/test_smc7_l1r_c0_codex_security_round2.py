@@ -61,9 +61,9 @@ def test_r203_fifo_substitution_never_blocks_before_validation(tmp_path: Path, m
         return former_open(path, flags, *args, **kwargs)
 
     monkeypatch.setattr(c0.os, "open", swap)
-    with pytest.raises((ValueError, OSError, AssertionError)):
+    with pytest.raises((ValueError, OSError)):
         c0.fingerprint_dictionary(d)
-    assert injected is True or (d / "sys.dic").is_file()
+    assert injected is True
 
 
 def test_r204_corpus_path_symlink_swap_before_open_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
