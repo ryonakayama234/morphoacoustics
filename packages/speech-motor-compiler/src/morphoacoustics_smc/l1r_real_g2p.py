@@ -60,7 +60,7 @@ def _source_valid(s: object) -> str | None:
         return "INVALID_SOURCE"
     if len(s) > 256:
         return "SOURCE_LIMIT"
-    if not _scalar(s):
+    if not _scalar(s) or "\x00" in s:
         return "INVALID_SOURCE"
     if len(s.encode("utf-8")) > 2048:
         return "SOURCE_LIMIT"
@@ -148,7 +148,7 @@ def _dictionary_tree(path: Path | str, snapshot: Path | None = None) -> str:
                 for component in parts[:-1]:
                     fd = os.open(component, flags, dir_fd=fd)
                     owned.append(fd)
-                leaf = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=fd)
+                leaf = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
                 owned.append(leaf)
                 opened = os.fstat(leaf)
                 if (not stat.S_ISREG(opened.st_mode)
@@ -163,16 +163,29 @@ def _dictionary_tree(path: Path | str, snapshot: Path | None = None) -> str:
                     dst = None
                 try:
                     remaining = size
+                    dicrc_bytes = bytearray() if parts == ("dicrc",) else None
                     while remaining:
                         block = os.read(leaf, min(1024 * 1024, remaining))
                         if not block:
                             raise ValueError("DICTIONARY_CHANGED_DURING_READ")
                         remaining -= len(block)
                         h.update(block)
+                        if dicrc_bytes is not None:
+                            if len(dicrc_bytes) + len(block) > 65536:
+                                raise ValueError("DICTIONARY_CONFIG_LIMIT")
+                            dicrc_bytes.extend(block)
                         if dst is not None:
                             dst.write(block)
                     if os.read(leaf, 1):
                         raise ValueError("DICTIONARY_CHANGED_DURING_READ")
+                    if dicrc_bytes is not None:
+                        if b"\x00" in dicrc_bytes:
+                            raise ValueError("DICTIONARY_CONFIG_INVALID")
+                        for rawline in dicrc_bytes.splitlines():
+                            unquoted = rawline.split(b"#", 1)[0].strip()
+                            key = unquoted.partition(b"=")[0].strip().lower()
+                            if key == b"userdic":
+                                raise ValueError("DICTIONARY_EXTERNAL_USERDIC")
                     after = os.fstat(leaf)
                     if (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns) != (
                             opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns):
@@ -295,11 +308,34 @@ def audit_joyo_jsonl(path: Path | str, *, expected_sha256: str | None = None) ->
     file = Path(path)
     if file.is_symlink() or not file.is_file():
         raise ValueError("INVALID_DATASET_PATH")
-    if file.stat().st_size > _MAX_CORPUS_BYTES:
-        raise ValueError("DATASET_LIMIT")
-    data = file.read_bytes()
-    if len(data) > _MAX_CORPUS_BYTES:
-        raise ValueError("DATASET_LIMIT")
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK"):
+        raise ValueError("UNSAFE_DATASET_PLATFORM")
+    # No second unbounded pathname read: the no-follow/nonblocking descriptor
+    # is checked before the finite read, and rechecked after.
+    fd = os.open(file, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("INVALID_DATASET_PATH")
+        if before.st_size > _MAX_CORPUS_BYTES:
+            raise ValueError("DATASET_LIMIT")
+        chunks: list[bytes] = []
+        total = 0
+        while True:
+            block = os.read(fd, min(1024 * 1024, _MAX_CORPUS_BYTES + 1 - total))
+            if not block:
+                break
+            total += len(block)
+            if total > _MAX_CORPUS_BYTES:
+                raise ValueError("DATASET_LIMIT")
+            chunks.append(block)
+        after = os.fstat(fd)
+        if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (
+                after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns):
+            raise ValueError("DATASET_CHANGED_DURING_READ")
+        data = b"".join(chunks)
+    finally:
+        os.close(fd)
     digest = sha256(data).hexdigest()
     if expected_sha256 is not None:
         if (type(expected_sha256) is not str or len(expected_sha256) != 64
