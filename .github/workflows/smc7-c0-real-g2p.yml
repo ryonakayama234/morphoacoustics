@@ -1,0 +1,75 @@
+name: smc7-c0-real-g2p-and-data-audit
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/smc7-c0-real-g2p.yml'
+      - 'packages/speech-motor-compiler/src/morphoacoustics_smc/l1r_real_g2p.py'
+      - 'packages/speech-motor-compiler/tests/test_smc7_l1r_c0_preregistered.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-b0-execution:
+    name: actual-pyopenjtalk-0.4.1-and-joyo-format-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install research-only isolated package and pin actual G2P package version
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e packages/speech-motor-compiler
+          python -m pip install 'pyopenjtalk==0.4.1'
+          python -m pip freeze | sort
+      - name: Real B0 read and active dictionary digest (NOT held-out accuracy)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, platform, sys
+          from dataclasses import asdict
+          from pathlib import Path
+          import pyopenjtalk
+          from morphoacoustics_smc.l1r_real_g2p import read_b0, fingerprint_dictionary
+
+          # OpenJTalk may fetch its upstream public dictionary on first initialization.
+          # This step is deliberately separate from the no-network library adapter.
+          print("C0_REAL_B0_PROVIDER_VERSION", pyopenjtalk.__version__)
+          print("C0_DICTIONARY_INITIALIZATION", pyopenjtalk.g2p("こんにちは", kana=True))
+          active = Path(os.fsdecode(pyopenjtalk.OPEN_JTALK_DICT_DIR))
+          print("C0_ACTIVE_DICTIONARY_DIR", active)
+          print("C0_ACTIVE_DICTIONARY_SHA256", fingerprint_dictionary(active))
+          result = read_b0("人気のない場所", active)
+          print("C0_REAL_B0_RESULT", json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+          print("C0_RUNTIME", json.dumps({"python": sys.version, "platform": platform.platform()}, ensure_ascii=False))
+          if result.mode != "PYOPENJTALK_REAL" or result.status != "READ" or not result.kana:
+              raise SystemExit("ACTUAL_B0_NOT_EXECUTED")
+          PY
+      - name: Download exact-revision public kanji benchmark and audit syntax only
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+          from dataclasses import asdict
+          from pathlib import Path
+          from morphoacoustics_smc.l1r_real_g2p import audit_joyo_jsonl
+
+          url = "https://huggingface.co/datasets/sbintuitions/joyo-kanji-yomi-benchmark/resolve/2ae383bcdac88dacf89c9ab84f9990eec55fe5c9/common_kanji_source.jsonl"
+          with urllib.request.urlopen(url, timeout=45) as resp:
+              raw = resp.read(8 * 1024 * 1024 + 1)
+          if len(raw) > 8 * 1024 * 1024:
+              raise SystemExit("C0_DATASET_LIMIT")
+          path = Path("joyo-source.tmp.jsonl")
+          path.write_bytes(raw)
+          result = audit_joyo_jsonl(path)
+          print("C0_KANJI_DATA_FORMAT_AUDIT", json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+          path.unlink()
+          if result.status != "AUDITED":
+              raise SystemExit("C0_AUDIT_FOUND_INCONSISTENT_ROWS")
+          # No target-reading scoring, no H1-H4, no gold access by ranker.
+          PY
