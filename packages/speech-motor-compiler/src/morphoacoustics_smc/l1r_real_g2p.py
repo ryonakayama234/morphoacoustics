@@ -80,7 +80,7 @@ def fingerprint_dictionary(path: Path | str) -> str:
     Not a signature of library authenticity or evidence of linguistic accuracy.
     Refuses links, empty directories, excessive size and nonregular entries.
     """
-    if type(path) not in (str, Path):
+    if not (type(path) is str or isinstance(path, Path)):
         raise ValueError("INVALID_DICTIONARY_PATH")
     root = Path(path)
     if root.is_symlink() or not root.is_dir():
@@ -176,7 +176,7 @@ def read_b0(
                 return _refuse("PROVIDER_VERSION_MISMATCH", source)
             module = import_module("pyopenjtalk")
             active = module.OPEN_JTALK_DICT_DIR
-            if type(active) not in (bytes, str) or type(dictionary_dir) not in (Path, str):
+            if type(active) not in (bytes, str) or not (type(dictionary_dir) is str or isinstance(dictionary_dir, Path)):
                 return _refuse("DICTIONARY_UNVERIFIED", source)
             # samefile enforces the provider's actual dictionary location; the
             # passed folder is never merely a self-claimed SHA label.
