@@ -90,6 +90,8 @@ def _dictionary_tree(path: Path | str, snapshot: Path | None = None) -> str:
     root = Path(path)
     if root.is_symlink():
         raise ValueError("DICTIONARY_SYMLINK")
+    if not root.is_dir():
+        raise ValueError("INVALID_DICTIONARY_PATH")
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     rootfd = os.open(root, flags)
     files: list[tuple[tuple[str, ...], os.stat_result]] = []
