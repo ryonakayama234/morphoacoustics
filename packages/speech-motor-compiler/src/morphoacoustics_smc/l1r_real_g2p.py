@@ -214,7 +214,7 @@ def audit_joyo_jsonl(path: Path | str, *, expected_sha256: str | None = None) ->
     Marked reading is a target **pronunciation span**. It is never a source span,
     nor proof of a unique whole-utterance Japanese reading.
     """
-    if type(path) not in (Path, str):
+    if not (type(path) is str or isinstance(path, Path)):
         raise ValueError("INVALID_DATASET_PATH")
     file = Path(path)
     if file.is_symlink() or not file.is_file():
