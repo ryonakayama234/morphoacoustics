@@ -121,7 +121,7 @@ def test_t08_duplicate_keys_and_bad_markers_are_not_admitted(tmp_path: Path):
         json.dumps({"key": "空_クウ_0", "normalized_text": "空だ。", "normalized_pron": "クウダ。"}, ensure_ascii=False),
     ]) + "\n", encoding="utf-8")
     q = audit_joyo_jsonl(p)
-    assert (q.status, q.rows, q.valid_rows, q.invalid_rows) == ("INVALID_DATASET", 4, 1, 3)
+    assert (q.status, q.rows, q.valid_rows, q.invalid_rows) == ("RECONCILIATION_REQUIRED", 4, 1, 3)
     assert q.failure_codes == (("DUPLICATE_KEY", 1), ("INVALID_TARGET_MARKER", 2))
 
 
@@ -143,3 +143,14 @@ def test_t10_real_b0_absent_must_not_fall_back_to_fixture(tmp_path: Path, monkey
     assert a.status == "REFUSED"
     assert a.mode != "FIXTURE_ONLY"
     assert a.kana is None
+
+
+def test_ar04_integrity_mismatch_rejects(tmp_path: Path):
+    p = tmp_path / "tiny.jsonl"
+    p.write_text(json.dumps({"key": "甲_コウ_0", "normalized_text": "甲だ。", "normalized_pron": "<コウ>ダ。"}, ensure_ascii=False) + "\\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="DATASET_DIGEST_MISMATCH"):
+        audit_joyo_jsonl(p, expected_sha256="f" * 64)
+    link = tmp_path / "link.jsonl"
+    link.symlink_to(p)
+    with pytest.raises(ValueError, match="INVALID_DATASET_PATH"):
+        audit_joyo_jsonl(link)
