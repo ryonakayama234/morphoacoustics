@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   real-b0-execution:
-    name: actual-pyopenjtalk-0.4.1-and-joyo-format-audit
+    name: actual-pyopenjtalk-0.4.1-B0-only
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -49,6 +49,17 @@ jobs:
           if result.mode != "PYOPENJTALK_REAL" or result.status != "READ" or not result.kana:
               raise SystemExit("ACTUAL_B0_NOT_EXECUTED")
           PY
+  corpus-admission-audit:
+    name: independent-Joyo-reconciliation-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install isolated audit parser (no pyopenjtalk/no model)
+        run: python -m pip install -e packages/speech-motor-compiler
       - name: Download exact-revision public kanji benchmark and audit syntax only
         shell: bash
         run: |
@@ -66,10 +77,10 @@ jobs:
               raise SystemExit("C0_DATASET_LIMIT")
           path = Path("joyo-source.tmp.jsonl")
           path.write_bytes(raw)
-          result = audit_joyo_jsonl(path)
+          result = audit_joyo_jsonl(path, expected_sha256="32a843f662c55f1876baf64f8dc3475cc7b777c576a8fea6b43a2343ff46e897")
           print("C0_KANJI_DATA_FORMAT_AUDIT", json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
           path.unlink()
           if result.status != "AUDITED":
-              raise SystemExit("C0_AUDIT_FOUND_INCONSISTENT_ROWS")
+              raise SystemExit("C0_MANUAL_ROW_RECONCILIATION_REQUIRED")
           # No target-reading scoring, no H1-H4, no gold access by ranker.
           PY
