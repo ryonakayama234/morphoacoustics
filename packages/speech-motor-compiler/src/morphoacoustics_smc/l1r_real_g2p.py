@@ -288,7 +288,7 @@ def audit_joyo_jsonl(path: Path | str, *, expected_sha256: str | None = None) ->
         if _source_l1_supported(source):
             eligible += 1
     return JoyoAudit(
-        "AUDITED" if not errors else "INVALID_DATASET",
+        "AUDITED" if not errors else "RECONCILIATION_REQUIRED",
         len(lines), valid, len(lines) - valid, len(kanji), eligible,
         digest, tuple(sorted(errors.items())),
     )
