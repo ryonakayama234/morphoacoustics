@@ -94,7 +94,7 @@ def _context_error(context: object, revision: object, profile: object) -> str | 
         return "INVALID_CONTEXT"
     if len(context.encode("utf-8")) > _MAX_CONTEXT_BYTES:
         return "CONTEXT_LIMIT"
-    if not _ascii(revision) or profile != "ja-JP" or type(profile) is not str:
+    if not _ascii(revision) or type(profile) is not str or profile != "ja-JP":
         return "INVALID_PROFILE_OR_REVISION"
     return None
 
@@ -146,6 +146,16 @@ def _source_error(value: object, revision: object) -> str | None:
         return "SOURCE_LIMIT"
     if not _ascii(revision):
         return "INVALID_REVISION"
+    # Restricted L1 source repertoire, independent of L0 span correctness.
+    # A complete caller-provided reading is not authority for unsupported text.
+    if not all(
+        ch in " \n\t、。！？…"
+        or 0x3041 <= ord(ch) <= 0x3096
+        or 0x30A1 <= ord(ch) <= 0x30FA
+        or 0x4E00 <= ord(ch) <= 0x9FFF
+        for ch in value
+    ):
+        return "UNSUPPORTED_SOURCE"
     return None
 
 
