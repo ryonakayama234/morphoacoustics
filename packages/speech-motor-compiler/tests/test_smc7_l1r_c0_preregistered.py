@@ -137,8 +137,8 @@ def test_t09_unicode_bytes_and_size_are_bounded(tmp_path: Path):
 
 def test_t10_real_b0_absent_must_not_fall_back_to_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     d = _dic(tmp_path)
-    # An arbitrary nonexistent required distribution cannot be accepted as 0.4.1.
-    monkeypatch.setenv("SMC7_C0_REQUIRE_UNAVAILABLE_PROVIDER", "1")
+    # Deterministically refuse an unexpected version, even if installed.
+    monkeypatch.setattr("morphoacoustics_smc.l1r_real_g2p.metadata.version", lambda _: "0.0.invalid")
     a = read_b0("人気", d)
     assert a.status == "REFUSED"
     assert a.mode != "FIXTURE_ONLY"
