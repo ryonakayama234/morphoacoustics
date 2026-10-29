@@ -147,3 +147,12 @@ Second GitHub AI software review found typed rational timing sort-key P2; `../te
 - [SMC7_GATE_B_REPAIR_PROTOCOL.md](SMC7_GATE_B_REPAIR_PROTOCOL.md): frozen repair protocol; P1 forged proposal / P2 size ordering / merged main #234 test-only backport.
 - [Gate B RESULTS](SMC7_GATE_B_RESULTS.md) and [DECISIONS](SMC7_GATE_B_DECISIONS.md): append-only original STOP plus new RED, 17/17 exact code-SHA CI, independent review pending.
 - Research repair [Draft PR #236](https://github.com/ryonakayama234/morphoacoustics/pull/236); original stopped Draft #232 remains unmerged.
+
+## SMC-7 L1-R methodological research / evidence software (2026-10-29; append-only latest)
+- [Owner Issue #242](https://github.com/ryonakayama234/morphoacoustics/issues/242), new stacked [Draft PR #243](https://github.com/ryonakayama234/morphoacoustics/pull/243) on unmerged accepted L0 repair #236; **NO MAIN MERGE**.
+- [SMC7_L1R_GATE_A_PROTOCOL.md](SMC7_L1R_GATE_A_PROTOCOL.md): method preregistered before tests/source at SHA `2dfb61d`; proposed 880 held-out and 120 pilot **NOT yet gathered/frozen**.
+- [SMC7_L1R_GATE_B_AMENDMENT_01.md](SMC7_L1R_GATE_B_AMENDMENT_01.md): independent first-review P2 pair, frozen before review-regression tests and repair.
+- [SMC7_L1R_IMPLEMENTATION.md](SMC7_L1R_IMPLEMENTATION.md): as-built finite evidence/manifest/context/explicit selection + exact software fixture metrics, no automatic G2P or motor plan.
+- [SMC7_L1R_GATE_B_RESULTS.md](SMC7_L1R_GATE_B_RESULTS.md): test-only missing-module RED, first 16/16 GREEN but review P2, second 5-failure RED, repaired exact-code SHA `f2ff1e0` 16/16 GREEN + independent re-review no findings.
+- [SMC7_L1R_DECISIONS.md](SMC7_L1R_DECISIONS.md): **GO_LIMITED_L1R_EVIDENCE_SOFTWARE** only at `f2ff1e09535fd2578dee4f5a12faca4b228fcdd1`; **MORE_DATA_L1_LINGUISTIC_CORPUS_AND_PROVIDER**, not `GO_LIMITED_L1_READING`. Future corpus/license/annotations [Issue #244](https://github.com/ryonakayama234/morphoacoustics/issues/244).
+- No adopted Japanese predictive quality, stress/accent/phonetic score, body/physical Task binding, acoustic quality, public MotorScore ABI or Studio UI. Historic L0 STOP entries above are retained as time-local records, not overwritten by this appended evidence.
