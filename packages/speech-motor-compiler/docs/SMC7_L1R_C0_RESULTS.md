@@ -43,3 +43,22 @@ As of this ledger creation the independent **exact repaired SHA Codex re-review 
 - **Non-goals maintained:** no SMC4/5/6 source change, no newly authorized source offset/token alignment, no TaskLexicon/physical organ mapping, Core sound, Studio UI, main merge or public ABI.
 
 Reference: owner #245, corpus #244, original H1–H4 protocol `SMC7_L1R_GATE_A_PROTOCOL.md`.
+
+## 7. Third independent Codex review — further P2×4, another test-first repair (2026-10-29)
+Second Codex exact-SHA review at `9b898152a492e0b57de0509d82b4eade0b6c39ee` completed with **four additional P2** and `REVISE`:
+- Cached external user dictionary can still be loaded through an active `userdic` directive in snapshotted `dicrc`, even when `OpenJTalk(...,userdic=b"")`. Snapshot must reject external configuration.
+- NUL in source can truncate upstream C parser at `strlen`, misrepresenting a prefix as full original text.
+- POSIX FIFO leaf replacement can block before fstat when opening O_RDONLY without O_NONBLOCK.
+- Corpus `Path.read_bytes` follows newly swapped symlink after initial stat or reads unbounded bytes if file grows.
+
+[Amendment 03](SMC7_L1R_C0_AMENDMENT_03.md) committed **`9cff1e5b9a7d8ec64be7a58e7bb5a55ca861347d` BEFORE regression tests/source**. Test-only commit **`1cefe748d3ed4151e5f396334511949fb1e335a9`** and revised stricter FIFO test-only **`c116b02ab7367db211bbafedc70278fd3e9c440a`**: GitHub isolated 3.11 actual [job 123364658491](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40849300000) observed NUL false acceptance, external `dicrc` userdic not refused, missing O_NONBLOCK and corpus symlink re-open bypass. This RED is historical and not a current failure claim.
+
+Minimal repaired code **`5087bd5775a148655188df9918d6faaff6a8ea4a`**:
+- rejects NUL before native provider invocation;
+- hashes `dicrc` as part of bounded source tree then refuses active `userdic` directives before engine construction (no user dictionary silently loaded);
+- opens all dictionary leaves with `O_NOFOLLOW|O_NONBLOCK` then checks regular inode, identity, size and mtime;
+- opens corpus via `O_NOFOLLOW|O_NONBLOCK`, immediate `fstat`, reads at most 8MiB + 1 bytes and checks descriptor metadata after read. No new source-offset authority or automatic SMC transition.
+
+**Actual exact code SHA `5087bd5775a148655188df9918d6faaff6a8ea4a` GitHub checks: 17/18 success; isolated Joyo reconciliation gate the sole deliberate FAILURE.** Independent actual [real B0 job 123365200272](https://github.com/ryonakayama234/morphoacoustics/actions/runs/40849518746/job/123365200272) succeeded under this revised code. Pin `pyopenjtalk==0.4.1`, Python 3.11.17 Linux; same actual private dictionary bytes identity `88167f04755fe6f0973f5be05bf839aad53d600e190d7068b29d7af15c594dbd`; real `人気のない場所` -> `ニンキノナイバショ`; mode `PYOPENJTALK_REAL`. This is **one real execution**, not a reading-correctness judgment. Data audit remains **`RECONCILIATION_REQUIRED` 39/13,095**; no thresholds changed.
+
+**Independent exact-source Codex re-review at `5087bd5` requested** after these fixes. This ledger states the status at the time of commit; a separate Decision document must refer to the later completed review outcome before accepting software safety claims.
