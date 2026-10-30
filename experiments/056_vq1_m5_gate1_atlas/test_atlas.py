@@ -68,8 +68,10 @@ class MetrologyTests(unittest.TestCase):
         self.assertEqual(r["source_metrology"],atlas.PARTIAL)
         self.assertEqual(r["accepted_fw_taps"],[6,11,13])
         self.assertEqual(r["source_qualified_samples"],0)
-        self.assertEqual(r["feature_checks"]["H_AXIAL"],"SUPPORT_CANDIDATE")
-        self.assertEqual(r["feature_checks"]["H_RECOVERY"],"SUPPORT_CANDIDATE")
+        self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INSTRUMENT_UNQUALIFIED")
+        self.assertEqual(r["digitization_only_checks"]["H_AXIAL"],"SUPPORT_CANDIDATE")
+        self.assertEqual(r["feature_checks"]["H_RECOVERY"],"INDETERMINATE_INSTRUMENT_UNQUALIFIED")
+        self.assertEqual(r["digitization_only_checks"]["H_RECOVERY"],"SUPPORT_CANDIDATE")
         self.assertEqual(r["external_source_audit"],"REQUIRED_NOT_PERFORMED")
 
     def test_synthetic_eight_tap_candidate_is_still_not_verified(self):
@@ -179,7 +181,8 @@ class MetrologyTests(unittest.TestCase):
         for s in p["reads"]:
             s["markers"][1]["pixel_y"]=s["markers"][0]["pixel_y"]
         r=atlas.audit(p,BYTES)
-        self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INTERVAL_OVERLAP")
+        self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INSTRUMENT_UNQUALIFIED")
+        self.assertEqual(r["digitization_only_checks"]["H_AXIAL"],"INDETERMINATE_INTERVAL_OVERLAP")
 
 
     def test_ambiguous_attachment_category_preserved_without_number(self):
@@ -213,6 +216,26 @@ class MetrologyTests(unittest.TestCase):
                 run.main()
             receipt=json.loads(path.read_text())
             self.assertEqual(receipt["code_head"],"source-head-not-merge-head")
+
+
+    def test_physical_tap_uncertainty_not_narrowed_by_plot_resolution(self):
+        r=atlas.audit(source(),BYTES)
+        v=next(p for p in r["candidate_markers"] if p["tap"]==6 and
+               p["attachment_class"]=="FW")
+        self.assertAlmostEqual(v["z_m_interval"][0],.00211-.000025)
+        self.assertAlmostEqual(v["z_m_interval"][1],.00211+.000025)
+
+    def test_zero_resolution_plot_cannot_certify_instrument_precision(self):
+        p=source()
+        for s in p["reads"]:
+            for marker in s["markers"]:
+                marker["radius_px"]=1e-9
+            s["x_axis"]["tick_radius_pixel"]=0
+            s["y_axis"]["tick_radius_pixel"]=0
+        r=atlas.audit(p,BYTES)
+        self.assertEqual(r["instrument_uncertainty"],"UNQUALIFIED_NO_ABSOLUTE_BOUND")
+        self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INSTRUMENT_UNQUALIFIED")
+        self.assertEqual(r["source_qualified_samples"],0)
 
 
 class RunnerTests(unittest.TestCase):
