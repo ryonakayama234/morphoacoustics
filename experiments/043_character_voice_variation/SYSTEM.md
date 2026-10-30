@@ -39,3 +39,7 @@ second task's onset time. A phonetic symbol does not specify a WAV.
 source-filter coupling, per-individual articulatory skill, full organ graph,
 binaural listener or arbitrary script. A valid numeric observation is not a
 claim of natural voice.
+
+## 2026-10-31 source-physics integrity amendment
+
+The frozen-source validation now checks **three distinct layers** before rendering: (1) inherited Exp026 regression and fixed 100 Hz planned metadata, (2) independently clock-derived cumulative cycle/phase trajectory, and (3) actual emitted LF flow against its declared opening × gain controls. This closes the specific independent review finding where a generator silently changed waveform phase while retaining 100 Hz metadata. The frozen LF source is still prescribed; this is not self-oscillation or source/tract feedback. These checks make no voice-quality claim.
