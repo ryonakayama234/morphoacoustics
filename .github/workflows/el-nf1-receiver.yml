@@ -1,0 +1,59 @@
+name: EL-NF1 relative near-field receiver numeric gate
+on:
+  push:
+    branches:
+      - 'research/asmr-el-nf1-nearfield-receiver'
+  pull_request:
+    paths:
+      - 'experiments/045_el_nf1_receiver/**'
+      - 'tests/test_experiment_045_el_nf1.py'
+      - 'docs/research/listener-nf1/**'
+      - '.github/workflows/el-nf1-receiver.yml'
+  workflow_dispatch:
+jobs:
+  synthetic-and-measured:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install independent experimental dependencies
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pip install 'scipy>=1.11' 'h5py>=3.8'
+      - name: Synthetic-oracle, invalid data and provenance tests
+        run: python -m pytest -q tests/test_experiment_045_el_nf1.py
+      - name: Download and pin original Marschall measured SOFA
+        run: |
+          mkdir -p /tmp/el-nf1
+          curl --fail --location --retry 4 --retry-delay 5 --connect-timeout 25 --max-time 180 \
+            'https://zenodo.org/records/7316545/files/NF_LIB_HRTF_measured.sofa?download=1' \
+            --output /tmp/el-nf1/NF_LIB_HRTF_measured.sofa
+          printf '%s  %s\n' '4ba9cc348801a6805265c7168b5b3227' /tmp/el-nf1/NF_LIB_HRTF_measured.sofa | md5sum -c -
+      - name: Evaluate G0 + F30/F40 preregistered real-data holdouts
+        run: |
+          python experiments/045_el_nf1_receiver/run.py \
+            --sofa /tmp/el-nf1/NF_LIB_HRTF_measured.sofa \
+            --output /tmp/el-nf1/evidence.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          e=json.loads(Path('/tmp/el-nf1/evidence.json').read_text())
+          assert e['directions']>=10
+          assert len(e['records'])==e['directions']*2*3
+          assert e['adoption']=='NOT_ADOPTED'
+          assert e['g4_listening']=='PENDING'
+          assert e['g5_independent_review']=='PENDING'
+          print('G3 NUMERIC VERDICT:',e['numerical_verdict'])
+          print('ILD median error dB:',{k:v['median_ild_error_db'] for k,v in e['statistics'].items()})
+          print('Paired direction cluster bootstrap 95% CI:',e['ild_improvement_ci95_db'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: EL-NF1-measured-HRTF-evidence
+          path: /tmp/el-nf1/evidence.json
+          if-no-files-found: warn
+          retention-days: 30
