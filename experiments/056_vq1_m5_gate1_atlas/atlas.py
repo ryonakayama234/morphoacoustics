@@ -121,6 +121,8 @@ def audit(payload: object, figure_bytes: bytes | None = None) -> dict:
         "case_id": CASE_ID, "figure_id": "2B", "doi": DOI,
         "figure_sha256": None, "candidate_markers": [],
         "accepted_fw_taps": [], "unresolved": [], "feature_checks": {},
+        "digitization_only_checks": {},
+        "instrument_uncertainty": "UNQUALIFIED_NO_ABSOLUTE_BOUND",
         "source_metrology": S0, "external_source_audit": "REQUIRED_NOT_PERFORMED",
         "source_qualified_samples": 0, "s2_reference": "HOLD",
         "s3_force": "HOLD", "g1_d": "HOLD", "voice": "NO_GO"
@@ -193,10 +195,10 @@ def audit(payload: object, figure_bytes: bytes | None = None) -> dict:
         if z_overlap_lo > z_overlap_hi:
             receipt["unresolved"].append({"point": kname, "reason": "TAP_SPATIAL_DISAGREEMENT"})
             continue
-        zlo = min(first["x_plot_m"][0], second["x_plot_m"][0],
-                  first["z_m"]-first["z_unc_m"], second["z_m"]-second["z_unc_m"])
-        zhi = max(first["x_plot_m"][1], second["x_plot_m"][1],
-                  first["z_m"]+first["z_unc_m"], second["z_m"]+second["z_unc_m"])
+        # Graphic x is a tap-identity crosscheck, NOT a new instrument
+        # measuring the manufactured physical tap location.
+        zlo = min(first["z_m"]-first["z_unc_m"], second["z_m"]-second["z_unc_m"])
+        zhi = max(first["z_m"]+first["z_unc_m"], second["z_m"]+second["z_unc_m"])
         receipt["candidate_markers"].append({"tap": key[0], "attachment_class": key[1],
                                                "drop_pa_interval": [lo, hi], "z_m_interval": [zlo,zhi],
                                                "reader_ids": sorted(read_ids),
@@ -218,7 +220,10 @@ def audit(payload: object, figure_bytes: bytes | None = None) -> dict:
             outcome = ("SUPPORT_CANDIDATE" if by_fw[b][1] < by_fw[a][0] else
                        "CONTRADICT_CANDIDATE" if by_fw[b][0] > by_fw[a][1] else
                        "INDETERMINATE_INTERVAL_OVERLAP")
-        receipt["feature_checks"][name] = outcome
+        receipt["digitization_only_checks"][name] = outcome
+        receipt["feature_checks"][name] = (
+            "INDETERMINATE_MISSING_INDEPENDENT_POINTS" if a not in by_fw or b not in by_fw
+            else "INDETERMINATE_INSTRUMENT_UNQUALIFIED")
     receipt["source_metrology"] = (COMPLETE if set(receipt["accepted_fw_taps"]) == REQUIRED_FW
                                    else PARTIAL)
     receipt["source_qualified_samples"] = 0
