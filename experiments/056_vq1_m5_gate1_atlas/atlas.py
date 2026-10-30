@@ -224,10 +224,14 @@ def audit(payload: object, figure_bytes: bytes | None = None) -> dict:
         receipt["feature_checks"][name] = (
             "INDETERMINATE_MISSING_INDEPENDENT_POINTS" if a not in by_fw or b not in by_fw
             else "INDETERMINATE_INSTRUMENT_UNQUALIFIED")
-    receipt["source_metrology"] = (COMPLETE if set(receipt["accepted_fw_taps"]) == REQUIRED_FW
-                                   else PARTIAL)
+    if not receipt["candidate_markers"]:
+        receipt["source_metrology"] = S0
+        receipt["reason"] = "NO_USABLE_TWO_READER_MEASURED_MARKERS"
+    else:
+        receipt["source_metrology"] = (COMPLETE if set(receipt["accepted_fw_taps"]) == REQUIRED_FW
+                                       else PARTIAL)
+        receipt["reason"] = "INDEPENDENT_PUBLICATION_FIGURE_AUDIT_STILL_REQUIRED"
     receipt["source_qualified_samples"] = 0
-    receipt["reason"] = "INDEPENDENT_PUBLICATION_FIGURE_AUDIT_STILL_REQUIRED"
     return receipt
 
 
