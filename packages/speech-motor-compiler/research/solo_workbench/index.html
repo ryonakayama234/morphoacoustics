@@ -34,6 +34,7 @@ button:hover{filter:brightness(.95)}.actions{display:flex;flex-wrap:wrap;gap:8px
 <aside>
 <h2>作業の管理</h2>
 <p id="progress" class="help">0件</p>
+<p id="storageWarn" class="help" role="alert"></p>
 <div class="actions"><button id="importBtn">JSON読込</button><button id="exportBtn" class="primary">JSON書出</button></div>
 <input id="file" type="file" accept=".json,application/json" class="hidden">
 <p class="help">編集内容はこのブラウザにも自動保存されます。<strong>作業終了時は必ずJSONを書き出してバックアップ</strong>してください。データは外部送信されません。</p>
@@ -89,14 +90,26 @@ let data={schema:SCHEMA,evidence_tier:"SOLO_DEVELOPMENT_ONLY",cases:[]}, index=0
 const $=id=>document.getElementById(id);
 const lines=s=>s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
 function show(msg,bad=false){$("message").textContent=msg;$("message").className=bad?"error":"";}
+function pathProblem(status,paths){
+ const allowed=["UNANNOTATED","SINGLE","MULTI","UNKNOWN","CONTEXT_INSUFFICIENT"];
+ if(!allowed.includes(status)||!Array.isArray(paths)||paths.length>8||
+    paths.some(p=>typeof p!=="string"||Array.from(p).length>512||
+       !/^[\u30A1-\u30FAー 　\t、。！？…]+$/u.test(p)))
+    return "読み候補の形式が不正です（全角カタカナ・句読点、8件以内、各512文字以内）。";
+ if(status==="UNANNOTATED"&&paths.length) return "未注釈には読みを入れないでください。";
+ if(status==="SINGLE"&&paths.length!==1) return "SINGLEは読み1件が必要です。";
+ if(status==="MULTI"&&new Set(paths).size<2) return "MULTIは異なる読み2件以上が必要です。";
+ if(status==="UNKNOWN"&&paths.length) return "UNKNOWNには推測した読みを入れないでください。";
+ if(status==="CONTEXT_INSUFFICIENT"&&paths.length===1) return "文脈不足で1件だけを確定しないでください。";
+ return "";
+}
 function validCase(c){
  return !!c&&typeof c==="object"&&typeof c.id==="string"&&c.id.length<120&&
   typeof c.source==="string"&&Array.from(c.source).length>0&&Array.from(c.source).length<=256&&
   typeof c.context==="string"&&Array.from(c.context).length<=512&&
   typeof c.target==="string"&&typeof c.stratum==="string"&&["C","O","U","A"].includes(c.stratum)&&
   typeof c.origin==="string"&&c.annotation&&typeof c.annotation==="object"&&
-  typeof c.annotation.status==="string"&&["UNANNOTATED","SINGLE","MULTI","UNKNOWN","CONTEXT_INSUFFICIENT"].includes(c.annotation.status)&&
-  Array.isArray(c.annotation.paths)&&c.annotation.paths.length<=8&&c.annotation.paths.every(p=>typeof p==="string"&&p.length<=512)&&
+  typeof c.annotation.status==="string"&&!pathProblem(c.annotation.status,c.annotation.paths)&&
   Array.isArray(c.annotation.target_readings)&&c.annotation.target_readings.length<=8&&
   c.annotation.target_readings.every(p=>typeof p==="string"&&p.length<=128)&&
   typeof c.annotation.notes==="string"&&c.annotation.notes.length<=4000;
@@ -111,8 +124,14 @@ function loadState(){
  }catch(_){/* file:// storage may be disabled: use JSON exports */ }
 }
 function persist(){
- try{localStorage.setItem(KEY,JSON.stringify(data));}
- catch(_){show("ブラウザ保存が使用できません。必ずJSONを書き出してください。",true);}
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+  $("storageWarn").textContent="";
+  return true;
+ }catch(_){
+  $("storageWarn").textContent="【ブラウザへの保存失敗】現在の注釈はメモリ内のみです。直ちに「JSON書出」でバックアップしてください。再読み込みで消える場合があります。";
+  return false;
+ }
 }
 function hasUnsaved(){
  if(!data.cases.length)return false;
@@ -167,19 +186,14 @@ function addCase(){
 function saveCase(){
  if(!data.cases.length)return;
  const status=$("status").value, paths=lines($("paths").value), target=lines($("targetReadings").value);
- if(paths.length>8||target.length>8){show("読み候補は8件以下にしてください。",true);return;}
- if(paths.some(p=>Array.from(p).length>512||!/^[\u30A1-\u30FAー 　\t、。！？…]+$/u.test(p))){
-  show("全文の読みは全角カタカナと許可された句読点・空白のみ、512文字以内です。",true);return;
- }
- if(status==="SINGLE"&&paths.length!==1){show("SINGLEには全文読みが1件必要です。",true);return;}
- if(status==="MULTI"&&(new Set(paths).size<2)){show("MULTIには異なる全文読みが2件以上必要です。",true);return;}
- if(status==="UNKNOWN"&&paths.length){show("UNKNOWNでは推測した全文読みを記録しないでください。",true);return;}
- if(status==="CONTEXT_INSUFFICIENT"&&paths.length===1){show("文脈不足で1件のみを確定候補にしないでください。",true);return;}
- if(status==="UNANNOTATED"&&paths.length){show("未注釈の場合、全文読みは空欄にしてください。",true);return;}
+ if(target.length>8){show("注目語読みは8件以下にしてください。",true);return;}
+ const problem=pathProblem(status,paths);
+ if(problem){show(problem,true);return;}
  const notes=$("notes").value;
  if(notes.length>4000||target.some(t=>t.length>128)){show("備考または注目語の読みが長すぎます。",true);return;}
  data.cases[index].annotation={status,paths,target_readings:target,notes,saved_at:new Date().toISOString()};
- persist();render();show("ローカルに保存しました。作業終了時はJSONを書き出してください。");
+ const stored=persist();render();
+ show(stored?"ブラウザに保存しました。終了時はJSONを書き出してください。":"ブラウザ保存失敗。直ちにJSONを書き出してください。",!stored);
 }
 function exportJson(){
  if(hasUnsaved()){alert("注釈の編集内容が未保存です。先に「この注釈を保存」を押してください。");return;}
@@ -190,7 +204,7 @@ function exportJson(){
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function importJson(file){
- if(!file||file.size>2*1024*1024){alert("JSONファイルは2MB以内にしてください。");return;}
+ if(!file||file.size>16*1024*1024){alert("JSONファイルは16MB以内にしてください。");return;}
  try{
   const candidate=JSON.parse(await file.text());
   if(candidate.schema!==SCHEMA||candidate.evidence_tier!=="SOLO_DEVELOPMENT_ONLY"||
