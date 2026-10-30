@@ -48,3 +48,5 @@ jobs:
               assert case["origin"]=="SYNTHETIC_SAMPLE"
           print("PASS: self-contained offline HTML JS parses; sample no gold; NO external network")
           PY
+      - name: Execute actual local UI logic under mocked DOM (no browser/network needed)
+        run: node packages/speech-motor-compiler/research/solo_workbench/test_offline.js
