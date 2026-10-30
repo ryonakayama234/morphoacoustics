@@ -16,7 +16,7 @@ DOI = "10.1121/1.3514424"
 KNOWN_Z_M = {6: 0.00211, 11: 0.00413, 13: 0.00511}
 REQUIRED_FW = set(range(6, 14))
 CMH2O_TO_PA = 98.0665
-ALLOWED_SIDES = {"FW", "NFW"}
+ALLOWED_SIDES = {"FW", "NFW", "AMBIGUOUS"}
 S0 = "S0_SOURCE_UNQUALIFIED"
 PARTIAL = "S1_PARTIAL_CANDIDATE_FOR_EXTERNAL_AUDIT"
 COMPLETE = "S1_COMPLETE_CANDIDATE_FOR_EXTERNAL_AUDIT"
@@ -88,6 +88,8 @@ def read_marker(marker: object, xaxis: dict, yaxis: dict) -> dict:
     require(m["side"] in ALLOWED_SIDES, "FW/NFW must be flow-attachment class")
     require(m["observation"] in {"VISIBLE", "OCCLUDED", "AMBIGUOUS"},
             "unknown visibility status")
+    require(m["side"] != "AMBIGUOUS" or m["observation"] == "AMBIGUOUS",
+            "unknown attachment class cannot be a resolved numeric marker")
     key = (m["tap"], m["side"])
     if m["observation"] != "VISIBLE":
         require(m["pixel_x"] is None and m["pixel_y"] is None and
