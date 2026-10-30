@@ -1,0 +1,51 @@
+{
+  "schema": "SMC7_SOLO_WORKBENCH_V1",
+  "evidence_tier": "SOLO_DEVELOPMENT_ONLY",
+  "cases": [
+    {
+      "id": "sample-c-01",
+      "source": "人気のない通りを歩いた。",
+      "context": "深夜で、通行人の姿は見えなかった。",
+      "target": "人気",
+      "stratum": "C",
+      "origin": "SYNTHETIC_SAMPLE",
+      "annotation": {
+        "status": "UNANNOTATED",
+        "paths": [],
+        "target_readings": [],
+        "notes": "練習用。正解を事前記載せず、辞書・モデルの出力を見る前に自分の読みを記録する。",
+        "saved_at": null
+      }
+    },
+    {
+      "id": "sample-c-02",
+      "source": "人気のない商品を値下げした。",
+      "context": "売れ行きが悪く、購入者からの評判も芳しくなかった。",
+      "target": "人気",
+      "stratum": "C",
+      "origin": "SYNTHETIC_SAMPLE",
+      "annotation": {
+        "status": "UNANNOTATED",
+        "paths": [],
+        "target_readings": [],
+        "notes": "練習用。これらの2例は同一ファミリーの本評価用データではない。",
+        "saved_at": null
+      }
+    },
+    {
+      "id": "sample-o-03",
+      "source": "今日は雨が降っている。",
+      "context": "空の様子を話している。",
+      "target": "",
+      "stratum": "O",
+      "origin": "SYNTHETIC_SAMPLE",
+      "annotation": {
+        "status": "UNANNOTATED",
+        "paths": [],
+        "target_readings": [],
+        "notes": "入力や保存の操作を試す練習用。",
+        "saved_at": null
+      }
+    }
+  ]
+}

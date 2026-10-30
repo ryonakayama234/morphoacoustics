@@ -1,0 +1,52 @@
+name: SMC7 solo workbench offline static checks
+on:
+  push:
+    paths:
+      - "packages/speech-motor-compiler/research/solo_workbench/**"
+      - ".github/workflows/smc7-solo-workbench.yml"
+  pull_request:
+    paths:
+      - "packages/speech-motor-compiler/research/solo_workbench/**"
+      - ".github/workflows/smc7-solo-workbench.yml"
+permissions:
+  contents: read
+jobs:
+  offline-static-and-negative-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check no third-party data/model, no network endpoints and valid inline JS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+          import subprocess
+          p=Path("packages/speech-motor-compiler/research/solo_workbench")
+          html=(p/"index.html").read_text(encoding="utf-8")
+          assert html.startswith("<!doctype html>")
+          scripts=re.findall(r"<script>(.*?)</script>",html,re.S)
+          assert len(scripts)==1, "exactly one inline script"
+          js=scripts[0]
+          subprocess.run(["node","--check","-"],input=js,text=True,check=True)
+          for banned in ("fetch(", "XMLHttpRequest", "WebSocket(", "sendBeacon", "<script src=", "<iframe", "cdn."):
+              assert banned not in html, "external dependency/network feature: "+banned
+          sample=json.loads((p/"sample_cases.json").read_text(encoding="utf-8"))
+          assert sample["schema"]=="SMC7_SOLO_WORKBENCH_V1"
+          assert sample["evidence_tier"]=="SOLO_DEVELOPMENT_ONLY"
+          assert len(sample["cases"])==3
+          ids=set()
+          for case in sample["cases"]:
+              assert case["id"] not in ids
+              ids.add(case["id"])
+              assert case["annotation"]["status"]=="UNANNOTATED"
+              assert not case["annotation"]["paths"], "sample MUST NOT contain model/LLM gold"
+              assert case["origin"]=="SYNTHETIC_SAMPLE"
+          print("PASS: self-contained offline HTML JS parses; sample no gold; NO external network")
+          PY
+      - name: Execute actual local UI logic under mocked DOM (no browser/network needed)
+        run: node packages/speech-motor-compiler/research/solo_workbench/test_offline.js

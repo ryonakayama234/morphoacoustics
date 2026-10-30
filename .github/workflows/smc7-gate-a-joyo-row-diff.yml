@@ -1,0 +1,28 @@
+name: SMC7 Gate A public Joyo row discrepancy reproduction
+on:
+  push:
+    paths:
+      - "packages/speech-motor-compiler/research/joyo_row_diff.py"
+      - ".github/workflows/smc7-gate-a-joyo-row-diff.yml"
+  pull_request:
+    paths:
+      - "packages/speech-motor-compiler/research/joyo_row_diff.py"
+      - ".github/workflows/smc7-gate-a-joyo-row-diff.yml"
+permissions:
+  contents: read
+jobs:
+  external-public-audit-not-gold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Syntax check no model/no corpus training
+        run: python -m py_compile packages/speech-motor-compiler/research/joyo_row_diff.py
+      - name: Fetch pinned public Joyo, SHA check, verify old-vs-current row policy
+        run: python packages/speech-motor-compiler/research/joyo_row_diff.py
+      - name: Bounded claim
+        if: always()
+        run: echo "This is format-only public source audit; NO H1-H6, NO independent 880 gold, NO SMC motor."

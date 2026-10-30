@@ -1,0 +1,31 @@
+name: SMC7 Gate A structural intake (synthetic only)
+on:
+  push:
+    paths:
+      - "packages/speech-motor-compiler/research/gate_a_manifest_lint.py"
+      - ".github/workflows/smc7-gate-a-structural.yml"
+  pull_request:
+    paths:
+      - "packages/speech-motor-compiler/research/gate_a_manifest_lint.py"
+      - ".github/workflows/smc7-gate-a-structural.yml"
+permissions:
+  contents: read
+jobs:
+  gate-a-synthetic-structural-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile offline linter
+        run: python -m py_compile packages/speech-motor-compiler/research/gate_a_manifest_lint.py
+      - name: Run synthetic-only negative-control self-test
+        run: python packages/speech-motor-compiler/research/gate_a_manifest_lint.py --self-test
+      - name: No fake scientific freeze claim
+        run: echo "Synthetic software checks only; independent Japanese gold has NOT been obtained."

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMC-7 Solo Reading Workbench</title>
+<style>
+:root {font-family:system-ui,"Yu Gothic",Meiryo,sans-serif;color:#182231;background:#f4f6fa}
+*{box-sizing:border-box}body{margin:0}header{background:#18283f;color:#fff;padding:16px 22px}
+header h1{font-size:1.24rem;margin:0 0 5px}header p{font-size:.89rem;margin:0;max-width:960px;color:#d7e0eb}
+main{display:grid;grid-template-columns:270px minmax(310px,1fr);gap:18px;max-width:1180px;margin:20px auto;padding:0 16px}
+aside,.panel{background:#fff;border:1px solid #dce2eb;border-radius:10px;padding:17px}
+aside{height:max-content}h2{font-size:1.05rem;margin:0 0 12px}h3{font-size:.96rem;margin:18px 0 8px}
+label{font-size:.88rem;display:block;font-weight:600;margin:10px 0 4px}
+input,textarea,select,button{font:inherit}input,textarea,select{width:100%;border:1px solid #aeb9c8;border-radius:6px;padding:9px;background:white}
+textarea{min-height:72px;resize:vertical}
+button{padding:9px 12px;border:1px solid #8c9bb0;background:#fff;border-radius:7px;cursor:pointer}
+button.primary{background:#234c80;color:white;border-color:#234c80}button.danger{color:#972b28;border-color:#dcb2ad}
+button:hover{filter:brightness(.95)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.help{color:#596577;font-size:.86rem;line-height:1.6}.source{font-size:1.16rem;line-height:1.8;white-space:pre-wrap;background:#f4f6fa;padding:12px;border-radius:8px;overflow-wrap:anywhere}
+.context{white-space:pre-wrap;color:#42546a}.sub{font-size:.84rem;color:#596577}
+#cases{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
+#cases button{text-align:left;font-size:.84rem;width:100%}#cases button.selected{border-color:#234c80;background:#ebf3fc}
+#message{color:#234c80;font-size:.88rem;min-height:1.4rem}#message.error{color:#a71e1e}
+.small{font-size:.78rem}.hidden{display:none}hr{border:0;border-top:1px solid #e3e7ed;margin:17px 0}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>SMC-7 Solo Reading Workbench</h1>
+<p>無料・オフライン・個人用。研究区分は常に <strong>SOLO_DEVELOPMENT_ONLY</strong>。独立した正解データ・880文検証・運動プランにはなりません。</p>
+</header>
+<main>
+<aside>
+<h2>作業の管理</h2>
+<p id="progress" class="help">0件</p>
+<p id="storageWarn" class="help" role="alert"></p>
+<div class="actions"><button id="importBtn">JSON読込</button><button id="exportBtn" class="primary">JSON書出</button></div>
+<input id="file" type="file" accept=".json,application/json" class="hidden">
+<p class="help">編集内容はこのブラウザにも自動保存されます。<strong>作業終了時は必ずJSONを書き出してバックアップ</strong>してください。データは外部送信されません。</p>
+<hr>
+<h3>案件一覧</h3>
+<div id="cases"></div>
+<hr>
+<h3>新しい文章を追加</h3>
+<label for="newSource">文章（原文そのまま）</label><textarea id="newSource" maxlength="768" placeholder="例：今日は雨が降っている。"></textarea>
+<label for="newContext">文脈（任意）</label><textarea id="newContext" maxlength="1536" placeholder="例：天気予報についての会話"></textarea>
+<label for="newTarget">読みを注目する語（任意）</label><input id="newTarget" placeholder="例：今日">
+<label for="newStratum">分類</label><select id="newStratum"><option value="C">C：文脈依存／異読語</option><option value="O" selected>O：一般文</option><option value="U">U：固有名詞・未知語</option><option value="A">A：曖昧／決められない</option></select>
+<label for="newOrigin">文章の出典</label><select id="newOrigin"><option value="SELF_WRITTEN">自分で書いた文章</option><option value="PRIVATE_AUTHORIZED">利用権限のある文章（非公開）</option><option value="EXTERNAL_REFERENCE">公開資料から参照（権利要確認）</option></select>
+<button id="addBtn">文章を追加</button>
+</aside>
+<section class="panel">
+<h2 id="caseTitle">文章を追加、またはJSONを読み込んでください</h2>
+<div id="detail" class="hidden">
+<p class="sub" id="caseMeta"></p>
+<label>原文（固定）</label><div class="source" id="source"></div>
+<label>参考文脈</label><div class="context" id="context"></div>
+<p class="help" id="target"></p>
+<hr>
+<h3>あなた自身の読みの記録</h3>
+<label for="status">判断</label>
+<select id="status">
+<option value="UNANNOTATED">未注釈</option>
+<option value="SINGLE">読みが1つ定まる</option>
+<option value="MULTI">複数の自然な読みを許容</option>
+<option value="UNKNOWN">分からない（推測しない）</option>
+<option value="CONTEXT_INSUFFICIENT">文脈不足で決定できない</option>
+</select>
+<label for="paths">全文のカタカナ読み（1行1候補）</label>
+<textarea id="paths" rows="5" placeholder="例：キョウワアメガフッテイル&#10;自然な別の読みがあれば次の行"></textarea>
+<p class="help">読みは全文を記録してください。句読点は含めても省いても構いませんが、一貫した方式を使い、異なる表記を黙って統一しないでください。分からない場合は空欄で保存できます。</p>
+<label for="targetReadings">注目語の読み（任意、1行1候補）</label>
+<textarea id="targetReadings" rows="2"></textarea>
+<label for="notes">根拠・迷い・辞書を後で確認すべき点</label><textarea id="notes" rows="3"></textarea>
+<div class="actions">
+<button id="saveBtn" class="primary">この注釈を保存</button>
+<button id="prevBtn">前の文章</button><button id="nextBtn">次の文章</button>
+<button id="removeBtn" class="danger">この文章を削除</button>
+</div>
+<p id="message" role="status"></p>
+</div>
+<hr><p class="help">重要：本人による注釈は<strong>開発用の自己記録</strong>です。自作文章なら問題の設計にも関与しているため、独立・盲検の言語精度を立証しません。候補モデルの出力を見たあとで正解を書き換えた場合はその履歴を分けて記録してください。原文文字位置の信頼済み対応、SMC Task、Core物理実現の認証には一切用いません。</p>
+</section>
+</main>
+<script>
+"use strict";
+const SCHEMA="SMC7_SOLO_WORKBENCH_V1", KEY="smc7-solo-workbench-v1";
+let data={schema:SCHEMA,evidence_tier:"SOLO_DEVELOPMENT_ONLY",cases:[]}, index=0, unsafeLocalState=false;
+const $=id=>document.getElementById(id);
+const lines=s=>s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
+function show(msg,bad=false){$("message").textContent=msg;$("message").className=bad?"error":"";}
+function pathProblem(status,paths){
+ const allowed=["UNANNOTATED","SINGLE","MULTI","UNKNOWN","CONTEXT_INSUFFICIENT"];
+ if(!allowed.includes(status)||!Array.isArray(paths)||paths.length>8||
+    paths.some(p=>typeof p!=="string"||Array.from(p).length>512||
+       !/^[\u30A1-\u30FAー 　\t、。！？…]+$/u.test(p)))
+    return "読み候補の形式が不正です（全角カタカナ・句読点、8件以内、各512文字以内）。";
+ if(status==="UNANNOTATED"&&paths.length) return "未注釈には読みを入れないでください。";
+ if(status==="SINGLE"&&paths.length!==1) return "SINGLEは読み1件が必要です。";
+ if(status==="MULTI"&&new Set(paths).size<2) return "MULTIは異なる読み2件以上が必要です。";
+ if(status==="UNKNOWN"&&paths.length) return "UNKNOWNには推測した読みを入れないでください。";
+ if(status==="CONTEXT_INSUFFICIENT"&&paths.length===1) return "文脈不足で1件だけを確定しないでください。";
+ return "";
+}
+function validCase(c){
+ return !!c&&typeof c==="object"&&typeof c.id==="string"&&c.id.length<120&&
+  typeof c.source==="string"&&Array.from(c.source).length>0&&Array.from(c.source).length<=256&&
+  typeof c.context==="string"&&Array.from(c.context).length<=512&&
+  typeof c.target==="string"&&typeof c.stratum==="string"&&["C","O","U","A"].includes(c.stratum)&&
+  typeof c.origin==="string"&&c.annotation&&typeof c.annotation==="object"&&
+  typeof c.annotation.status==="string"&&!pathProblem(c.annotation.status,c.annotation.paths)&&
+  Array.isArray(c.annotation.target_readings)&&c.annotation.target_readings.length<=8&&
+  c.annotation.target_readings.every(p=>typeof p==="string"&&p.length<=128)&&
+  typeof c.annotation.notes==="string"&&c.annotation.notes.length<=4000;
+}
+function loadState(){
+ try{
+  const value=localStorage.getItem(KEY);
+  if(value){const candidate=JSON.parse(value);
+   if(candidate.schema===SCHEMA&&candidate.evidence_tier==="SOLO_DEVELOPMENT_ONLY"&&Array.isArray(candidate.cases)&&candidate.cases.length<=250&&candidate.cases.every(validCase))
+    data=candidate;
+  }
+ }catch(_){/* file:// storage may be disabled: use JSON exports */ }
+}
+function persist(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+  unsafeLocalState=false;
+  $("storageWarn").textContent="";
+  return true;
+ }catch(_){
+  unsafeLocalState=true;
+  $("storageWarn").textContent="【ブラウザへの保存失敗】現在の注釈はメモリ内のみです。直ちに「JSON書出」でバックアップしてください。再読み込みで消える場合があります。";
+  return false;
+ }
+}
+function hasUnsaved(){
+ if(!data.cases.length)return false;
+ const a=data.cases[index].annotation;
+ return $("status").value!==a.status || $("paths").value!==a.paths.join("\n") ||
+  $("targetReadings").value!==a.target_readings.join("\n") ||
+  $("notes").value!==a.notes;
+}
+function canLeave(){
+ return !hasUnsaved()||confirm("保存していない注釈があります。破棄して移動しますか？");
+}
+function select(i){if(!canLeave())return;index=Math.min(Math.max(i,0),data.cases.length-1);render();}
+function render(){
+ $("cases").replaceChildren();
+ const complete=data.cases.filter(c=>c.annotation.status!=="UNANNOTATED").length;
+ $("progress").textContent="記録 "+complete+" / "+data.cases.length+" 件 （開発用のみ）";
+ data.cases.forEach((c,i)=>{
+  const b=document.createElement("button");
+  b.type="button";b.textContent=(i+1)+". "+c.source.slice(0,20)+" ["+c.annotation.status+"]";
+  if(i===index)b.className="selected";
+  b.addEventListener("click",()=>select(i));$("cases").appendChild(b);
+ });
+ const has=data.cases.length>0;
+ $("detail").classList.toggle("hidden",!has);
+ if(!has){$("caseTitle").textContent="文章を追加、またはJSONを読み込んでください";return;}
+ const c=data.cases[index], a=c.annotation;
+ $("caseTitle").textContent="第"+(index+1)+"件 / "+data.cases.length+"件";
+ $("caseMeta").textContent="分類="+c.stratum+" / 出典="+c.origin+" / ID="+c.id;
+ $("source").textContent=c.source;$("context").textContent=c.context||"（未設定）";
+ $("target").textContent="注目語："+(c.target||"（未設定）")+"。注目語から文字位置は自動的に認証しません。";
+ $("status").value=a.status;
+ $("paths").value=a.paths.join("\n");
+ $("targetReadings").value=a.target_readings.join("\n");
+ $("notes").value=a.notes;
+ show("");
+ $("prevBtn").disabled=index===0;$("nextBtn").disabled=index===data.cases.length-1;
+}
+function addCase(){
+ if(!canLeave())return;
+ const source=$("newSource").value.trim(),context=$("newContext").value.trim(),target=$("newTarget").value.trim();
+ if(!source||Array.from(source).length>256||Array.from(context).length>512||data.cases.length>=250){
+  alert("文章は1〜256文字、文脈は512文字以内、総数250件以内にしてください。");return;
+ }
+ const c={id:"solo-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9),
+  source,context,target,stratum:$("newStratum").value,origin:$("newOrigin").value,
+  annotation:{status:"UNANNOTATED",paths:[],target_readings:[],notes:"",saved_at:null}};
+ if(!validCase(c)){alert("文章情報が不正です。");return;}
+ data.cases.push(c);index=data.cases.length-1;
+ ["newSource","newContext","newTarget"].forEach(id=>$(id).value="");
+ persist();render();
+}
+function saveCase(){
+ if(!data.cases.length)return;
+ const status=$("status").value, paths=lines($("paths").value), target=lines($("targetReadings").value);
+ if(target.length>8){show("注目語読みは8件以下にしてください。",true);return;}
+ const problem=pathProblem(status,paths);
+ if(problem){show(problem,true);return;}
+ const notes=$("notes").value;
+ if(notes.length>4000||target.some(t=>t.length>128)){show("備考または注目語の読みが長すぎます。",true);return;}
+ data.cases[index].annotation={status,paths,target_readings:target,notes,saved_at:new Date().toISOString()};
+ const stored=persist();render();
+ show(stored?"ブラウザに保存しました。終了時はJSONを書き出してください。":"ブラウザ保存失敗。直ちにJSONを書き出してください。",!stored);
+}
+function exportJson(){
+ if(hasUnsaved()){alert("注釈の編集内容が未保存です。先に「この注釈を保存」を押してください。");return;}
+ if(!data.cases.length&&!confirm("空の作業ファイルを保存しますか？"))return;
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="smc7-solo-"+new Date().toISOString().slice(0,10)+".json";
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ // A manual export has been initiated; the browser owns download completion.
+ unsafeLocalState=false;
+}
+async function importJson(file){
+ if(!file||file.size>16*1024*1024){alert("JSONファイルは16MB以内にしてください。");return;}
+ try{
+  const candidate=JSON.parse(await file.text());
+  if(candidate.schema!==SCHEMA||candidate.evidence_tier!=="SOLO_DEVELOPMENT_ONLY"||
+     !Array.isArray(candidate.cases)||candidate.cases.length>250||!candidate.cases.every(validCase)||
+     new Set(candidate.cases.map(c=>c.id)).size!==candidate.cases.length)throw Error("invalid schema");
+  if(data.cases.length&&!confirm("現在の作業を読込ファイルで置き換えます。先にJSON書出で保存しましたか？"))return;
+  data=candidate;index=0;persist();render();
+ }catch(e){alert("安全な作業ファイルとして読めません: "+e.message);}
+}
+$("addBtn").addEventListener("click",addCase);
+$("saveBtn").addEventListener("click",saveCase);
+$("prevBtn").addEventListener("click",()=>select(index-1));
+$("nextBtn").addEventListener("click",()=>select(index+1));
+$("removeBtn").addEventListener("click",()=>{
+ if(!canLeave())return;
+ if(!data.cases.length||!confirm("この文章と注釈を削除します。事前に書き出しましたか？"))return;
+ data.cases.splice(index,1);index=Math.min(index,Math.max(0,data.cases.length-1));persist();render();
+});
+$("exportBtn").addEventListener("click",exportJson);
+$("importBtn").addEventListener("click",()=>$("file").click());
+$("file").addEventListener("change",async e=>{await importJson(e.target.files[0]);e.target.value="";});
+window.addEventListener("beforeunload",event=>{
+ if(hasUnsaved()||unsafeLocalState){event.preventDefault();event.returnValue="";}
+});
+loadState();render();
+</script>
+</body></html>
