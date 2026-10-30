@@ -180,7 +180,7 @@ def evaluate(data,roles,bins):
         _guard_feature(row)<=threshold]
     byfold={f:[row for row in accepted if row["fold"]==f] for f in ("S1","S2")}
     paired_ci=_paired_bootstrap(accepted,baseline) if baseline and accepted else None
-    med_b=_median(accepted,baseline) if baseline else None
+    med_b=_median(accepted,baseline) if (baseline and accepted) else None
     med_c=_median(accepted,"C2")
     def _diag(m,key):
         vals=[row["models"][m][key] for row in accepted]
@@ -212,7 +212,7 @@ def evaluate(data,roles,bins):
         "final_evaluated_queries":len(final),"accepted_queries":len(accepted),
         "accepted_coverage":coverage,
         "geometric_C2_coverage":sum(row["models"]["C2"]["supported"] for row in final)/len(final) if final else 0,
-        "matched_baseline_ild_median_db":med_b,"matched_C2_ild_median_db":med_c if np.isfinite(med_c) else None,
+        "matched_baseline_ild_median_db":(med_b if med_b is not None and np.isfinite(med_b) else None),"matched_C2_ild_median_db":med_c if np.isfinite(med_c) else None,
         "paired_block_bootstrap_95ci_baseline_minus_c2_db":paired_ci,
         "matched_baseline_ild_p95_db":p95_b,"matched_C2_ild_p95_db":p95_c,
         "gates":gates,
