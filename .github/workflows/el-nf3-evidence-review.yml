@@ -1,5 +1,8 @@
 name: EL-NF3 posthoc refusal diagnostics from frozen G3 evidence
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/el-nf3-evidence-review.yml'
   push:
     branches:
       - research/asmr-el-nf3-geometry-guard
