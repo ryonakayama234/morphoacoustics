@@ -14,7 +14,7 @@ def default_receipt() -> dict:
         "g1_d": "HOLD", "voice": "NO_GO",
         "external_source_audit": "REQUIRED_NOT_PERFORMED",
         "case_id": "M5_UNIFORM_FIG2B_D002CM_DP10CMH2O",
-        "code_head": os.environ.get("GITHUB_SHA", "UNKNOWN"),
+        "code_head": os.environ.get("SOURCE_HEAD", os.environ.get("GITHUB_SHA", "UNKNOWN")),
         "test_outcome": os.environ.get("VQ1_M5_TEST_OUTCOME", "not_reported")
     }
 
