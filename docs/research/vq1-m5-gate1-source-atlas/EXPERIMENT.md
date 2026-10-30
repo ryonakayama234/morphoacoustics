@@ -6,7 +6,7 @@
 - H-IMAGE: an original figure image traceably identified as Fulcher/Scherer/Powell 2011 Fig2B can be obtained; *absent bytes -> HOLD and no pixel measurements*.
 - H-CASE: source case is d=0.02cm and 10cmH2O; wrong panel, model scale, conversion or tap0 sign -> REFUSE.
 - H-CAL: ≥2 distinct independently annotated x/y ticks define calibrated intervals with nonzero uncertainty, correct axis direction/unit and no invented affine x/tap spacing. Degenerate ticks -> REFUSE.
-- H-DUAL: two independent reads of a **visible** point agree by bounded interval overlap. Copying one reader into a second ID, incompatible/occluded/ambiguous marker -> PARTIAL/HOLD, not numeric pass.
+- H-DUAL: two independent reads of a **visible** point agree by bounded interval overlap and then report their **conservative union/hull**, not a narrower intersection. Copying one reader into a second ID, incompatible/occluded/ambiguous marker -> PARTIAL/HOLD, not numeric pass.
 - H-AXIAL: if qualified tap 6 & 11 data on one same flow category exist, test `D11>D6` by nonoverlapping conservative intervals; otherwise INDETERMINATE. For tap11 vs13, if available test `D13<D11`; do not infer values from prose.
 - H-SIDE: FW/NFW are attachment categories, not anatomical sides; overlapping NFW cannot be copied from FW. Such missing side does not affect an FW-only partial if clearly reported.
 - H-LIMIT: success in pixel calibration is not observed wall force; S2 S3 G1-D voice must always be HOLD/NO_GO. No model-generated Figure4 fit is allowed as observed Figure2B marker.
