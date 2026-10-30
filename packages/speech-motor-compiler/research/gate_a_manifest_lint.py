@@ -13,6 +13,7 @@ from hashlib import sha256
 import json
 import os
 import stat
+import tempfile
 from pathlib import Path
 import re
 import sys
@@ -197,7 +198,24 @@ def self_test() -> None:
     cases[1]["target_reading_sha256"] = _hash("VARIANT_0")
     cases[3]["target_reading_sha256"] = _hash("VARIANT_0")
     assert lint(doc)["status"] == "REFUSED"
-    print("SELF_TEST_PASSED: structural acceptance + distinct reviewer + split leak + contrastive family")
+    cases[1]["target_reading_sha256"] = _hash("VARIANT_1")
+    cases[3]["target_reading_sha256"] = _hash("VARIANT_1")
+    cases[0]["source_sha256"] = cases[1]["source_sha256"]
+    cases[0]["context_sha256"] = cases[1]["context_sha256"]
+    assert lint(doc)["status"] == "REFUSED"
+    with tempfile.TemporaryDirectory() as d:
+        good = Path(d) / "good.json"
+        good.write_bytes(b"{}")
+        assert _read_bounded(good) == b"{}"
+        alias = Path(d) / "symlink.json"
+        alias.symlink_to(good)
+        try:
+            _read_bounded(alias)
+        except (OSError, ValueError):
+            pass
+        else:
+            raise AssertionError("symlink was accepted")
+    print("SELF_TEST_PASSED: admission, reviewers, split, contrast, duplicates, no-follow file")
 
 
 def _read_bounded(path: Path) -> bytes:
