@@ -121,6 +121,36 @@ def audited_fixed_source(model):
     source = np.asarray(source_result.source, dtype=np.float64)
     if source.shape != planned.shape or not np.isfinite(source).all():
         raise RuntimeError("frozen LF source has invalid samples")
+
+    # The inherited Exp026 regression checks nominal F0 metadata, zero noise,
+    # and cycle-boundary jumps, but cannot by itself detect a generator which
+    # changes actual phase progression while retaining 100 Hz metadata.
+    # Derive the expected phase independently from the frozen sampling clock.
+    cycles = np.asarray(source_result.cycles, dtype=np.float64)
+    expected_cycles = (
+        np.arange(source.size, dtype=np.float64)
+        * (FROZEN_SOURCE_F0_HZ / SAMPLE_RATE)
+    )
+    if (
+        cycles.shape != source.shape
+        or not np.isfinite(cycles).all()
+        or not np.allclose(cycles, expected_cycles, atol=1e-8, rtol=0.0)
+    ):
+        raise RuntimeError("frozen LF source phase progression differs from 100 Hz")
+
+    # Confirm that the emitted waveform is the declared deterministic LF
+    # opening times its physical gain envelope, not an altered source with
+    # unchanged planned-F0/cycle metadata. No post-render signal replacement.
+    opening = np.asarray(source_result.opening, dtype=np.float64)
+    gain = np.asarray(source_result.planned_gain, dtype=np.float64)
+    if (
+        opening.shape != source.shape or gain.shape != source.shape
+        or not np.isfinite(opening).all() or not np.isfinite(gain).all()
+    ):
+        raise RuntimeError("frozen LF source has invalid opening/gain controls")
+    expected_source = model.EXP26.EXP13.normalize_peak(opening * gain)
+    if not np.allclose(source, expected_source, atol=1e-15, rtol=1e-11):
+        raise RuntimeError("frozen LF source differs from declared physical controls")
     return source, regression, float(planned[0])
 
 
