@@ -35,6 +35,7 @@ jobs:
         if: always()
         env:
           VQ1_M5_TEST_OUTCOME: ${{ steps.science_tests.outcome }}
+          SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           cd experiments/056_vq1_m5_gate1_atlas
           python run.py --out ../../m5_gate1_receipt.json
@@ -42,7 +43,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vq1-m5-gate1-source-receipt-${{ github.sha }}
+          name: vq1-m5-gate1-source-receipt-${{ github.event.pull_request.head.sha || github.sha }}
           path: m5_gate1_receipt.json
           if-no-files-found: error
           retention-days: 30
