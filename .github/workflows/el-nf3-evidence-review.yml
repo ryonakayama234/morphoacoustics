@@ -1,0 +1,43 @@
+name: EL-NF3 posthoc refusal diagnostics from frozen G3 evidence
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/el-nf3-evidence-review.yml'
+  push:
+    branches:
+      - research/asmr-el-nf3-geometry-guard
+    paths:
+      - '.github/workflows/el-nf3-evidence-review.yml'
+  workflow_dispatch:
+jobs:
+  refusal-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: el-nf3-kemar-relative-receiver-evidence
+          repository: ryonakayama234/morphoacoustics
+          run-id: '41058197316'
+          github-token: ${{ github.token }}
+          path: /tmp/el-nf3-audit
+      - name: Diagnose refusal reasons without reopening SOFA or changing predictions
+        shell: bash
+        run: |
+          python - <<'PY'
+          import collections, json, pathlib
+          f=pathlib.Path('/tmp/el-nf3-audit/evidence.json')
+          e=json.loads(f.read_text())
+          r=e['experiment']['final_rows']
+          for fold in ['S1','S2']:
+              rows=[x for x in r if x['fold']==fold]
+              counts=collections.Counter(x['models']['C2'].get('reason','SUPPORTED') for x in rows)
+              print(fold,'queries',len(rows),'refusals',dict(counts))
+          for method in ['B0','B1','B2','C1','C2']:
+              counts=collections.Counter(x['models'][method].get('reason','SUPPORTED') for x in r)
+              print(method,'support reasons',dict(counts))
+          print('source_sha256',e['audit']['sha256'])
+          print('note: posthoc diagnostic only; cannot modify frozen G3 thresholds.')
+          PY
