@@ -96,3 +96,7 @@ whether the repair passes. The historical `dece9415` run and artifact
 they do NOT certify these new provenance/anti-drift checks. No audible
 improvement, human voice-likeness, speaker identity, Studio adoption or main
 merge is claimed by the review fixes.
+
+## 2026-10-31: latest P2 source/phase guard follow-up
+
+**Implementation update only; verification pending.** Latest Codex review at PR #258 HEAD `a74b263` found the previous negative control altered a regression expectation but not actual generated phase. Updated the research-only branch to validate source phase against an independent 48 kHz / 100 Hz clock, reconstruct the emitted LF source from opening × gain, and test three actual drift cases (source phase, source-and-expected-F0, emitted waveform). No new four-case output is claimed until exact new-head Actions execution and artifact audit. The 2026-10-30 archived WAV/pressure bundle remains historical, not revalidated by new code. No Studio UI, engine ABI or release adoption.
