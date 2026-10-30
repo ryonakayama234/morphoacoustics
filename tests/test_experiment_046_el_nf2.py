@@ -4,9 +4,12 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-import h5py
 import numpy as np
 import pytest
+
+# h5py/scipy are research-only dependencies, not required by Core's test matrix.
+h5py = pytest.importorskip("h5py")
+pytest.importorskip("scipy")
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "experiments" / "046_el_nf2_spatial" / "run.py"
