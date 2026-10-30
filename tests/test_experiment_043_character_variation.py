@@ -92,7 +92,7 @@ def test_frozen_source_drift_is_refused(monkeypatch: pytest.MonkeyPatch) -> None
             sources, params = original_build_sources()
             base = sources["lf_fixed"]
             changed = np.asarray(base.source, dtype=np.float64).copy()
-            changed[5000:6000] *= 0.90
+            changed *= 0.90  # Scale uniformly; inherited jump ratio still passes.
             sources["lf_fixed"] = replace(base, source=changed)
             return sources, params
 
