@@ -207,7 +207,7 @@ $("nextBtn").addEventListener("click",()=>select(index+1));
 $("removeBtn").addEventListener("click",()=>{
  if(!canLeave())return;
  if(!data.cases.length||!confirm("この文章と注釈を削除します。事前に書き出しましたか？"))return;
- data.cases.splice(index,1);persist();select(index);
+ data.cases.splice(index,1);index=Math.min(index,Math.max(0,data.cases.length-1));persist();render();
 });
 $("exportBtn").addEventListener("click",exportJson);
 $("importBtn").addEventListener("click",()=>$("file").click());
