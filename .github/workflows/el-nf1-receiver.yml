@@ -50,6 +50,7 @@ jobs:
           print('ILD median error dB:',{k:v['median_ild_error_db'] for k,v in e['statistics'].items()})
           print('Paired direction cluster bootstrap 95% CI:',e['ild_improvement_ci95_db'])
           PY
+          python experiments/045_el_nf1_receiver/audit.py --evidence /tmp/el-nf1/evidence.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
