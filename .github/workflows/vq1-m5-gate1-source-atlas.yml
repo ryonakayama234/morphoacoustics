@@ -37,7 +37,7 @@ jobs:
           VQ1_M5_TEST_OUTCOME: ${{ steps.science_tests.outcome }}
         run: |
           cd experiments/056_vq1_m5_gate1_atlas
-          python run.py --out ../../../m5_gate1_receipt.json
+          python run.py --out ../../m5_gate1_receipt.json
       - name: Always archive measured-source HOLD or failure
         if: always()
         uses: actions/upload-artifact@v4
