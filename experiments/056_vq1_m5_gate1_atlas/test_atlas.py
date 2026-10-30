@@ -238,6 +238,16 @@ class MetrologyTests(unittest.TestCase):
         self.assertEqual(r["source_qualified_samples"],0)
 
 
+    def test_zero_usable_points_is_source_hold_not_partial_candidate(self):
+        p=source()
+        for reading in p["reads"]:
+            reading["markers"] = [mark(6,0,status="AMBIGUOUS")]
+        r=atlas.audit(p,BYTES)
+        self.assertEqual(r["source_metrology"],atlas.S0)
+        self.assertEqual(r["reason"],"NO_USABLE_TWO_READER_MEASURED_MARKERS")
+        self.assertEqual(len(r["candidate_markers"]),0)
+
+
 class RunnerTests(unittest.TestCase):
     def test_normal_source_hold_json(self):
         import run
