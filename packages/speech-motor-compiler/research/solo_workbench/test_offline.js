@@ -22,7 +22,7 @@ async function main(){
    addEventListener(){},remove(){},click(){},
   };
  }
- const storage=new Map();
+ const storage=new Map(), windowHooks={};
  let failStorage=false, lastExport;
  const doc={
   getElementById(id){if(!nodes.has(id))nodes.set(id,elt());return nodes.get(id);},
@@ -31,6 +31,7 @@ async function main(){
  };
  const ctx={
   document:doc,
+  window:{addEventListener:(name,fn)=>{windowHooks[name]=fn;}},
   localStorage:{
    getItem:k=>storage.get(k)||null,
    setItem:(k,v)=>{if(failStorage)throw Error("quota exceeded");storage.set(k,v);},
@@ -71,11 +72,24 @@ async function main(){
  evaluate("saveCase()");
  assert.equal(evaluate("data.cases[0].annotation.status"),"SINGLE");
  assert(storage.get("smc7-solo-workbench-v1"),"normal local autosave failed");
+ assert.equal(typeof windowHooks.beforeunload,"function");
+ doc.getElementById("notes").value="まだ保存していない入力";
+ const leaveEdit={preventDefault(){this.prevented=true;},returnValue:null};
+ windowHooks.beforeunload(leaveEdit);
+ assert(leaveEdit.prevented,"missing unload guard for unsaved form");
+ doc.getElementById("notes").value=example.cases[0].annotation.notes;
+ // After a completed save there must be no spurious unload prompt.
+ const leaveClean={preventDefault(){this.prevented=true;},returnValue:null};
+ windowHooks.beforeunload(leaveClean);
+ assert(!leaveClean.prevented,"clean form is incorrectly blocked");
  failStorage=true;
  doc.getElementById("notes").value="追加メモ";
  evaluate("saveCase()");
  assert(doc.getElementById("storageWarn").textContent.includes("保存失敗"),"quota warning erased");
  assert(doc.getElementById("message").textContent.includes("保存失敗"),"false save success");
+ const leaveFailed={preventDefault(){this.prevented=true;},returnValue:null};
+ windowHooks.beforeunload(leaveFailed);
+ assert(leaveFailed.prevented,"failed browser store lost unload warning");
  evaluate("exportJson()");
  assert(lastExport,"explicit export should work even when browser storage fails");
  const exported=JSON.parse(await lastExport.text());
