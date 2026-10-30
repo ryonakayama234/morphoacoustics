@@ -102,17 +102,29 @@ def lint(doc: object) -> dict[str, Any]:
         elif len(set(refs.values())) != 3:
             fail(n + ":ANNOTATORS_NOT_DISTINCT")
         gold = case.get("gold_paths_sha256")
-        if type(gold) is not list or not gold or len(gold) > 8 or any(
-                not _valid_hash(x) for x in gold):
+        status = case.get("gold_status")
+        # Unknown readings may honestly have NO attested complete path.
+        # Never fabricate a digest just to satisfy a manifest checker.
+        gold_ok = (type(gold) is list and len(gold) <= 8
+                   and all(_valid_hash(x) for x in gold))
+        if not gold_ok:
             fail(n + ":GOLD_PATH_DIGESTS_INVALID")
+        if status not in ("SINGLE", "MULTI", "UNKNOWN", "CONTEXT_INSUFFICIENT"):
+            fail(n + ":INVALID_GOLD_STATUS")
+        elif gold_ok:
+            if status == "SINGLE" and len(gold) != 1:
+                fail(n + ":SINGLE_NEEDS_ONE_PATH")
+            if status == "MULTI" and (len(gold) < 2 or len(set(gold)) < 2):
+                fail(n + ":MULTI_NEEDS_TWO_DISTINCT_PATHS")
+            if status == "UNKNOWN" and gold:
+                fail(n + ":UNKNOWN_MUST_NOT_INVENT_GOLD")
+            # CONTEXT_INSUFFICIENT may have either 0 or several natural paths.
+            if status == "CONTEXT_INSUFFICIENT" and len(gold) == 1:
+                fail(n + ":INSUFFICIENT_CANNOT_ASSERT_SINGLE_GOLD")
         if case.get("blind_a_b") is not True or case.get("adjudicated") is not True:
             fail(n + ":BLIND_OR_ADJUDICATION_NOT_ATTESTED")
-        if stratum == "A":
-            if case.get("gold_status") not in ("MULTI", "CONTEXT_INSUFFICIENT"):
-                fail(n + ":AMBIGUOUS_CASE_NOT_ATTESTED")
-            elif case.get("gold_status") == "MULTI" and (
-                    type(gold) is not list or len(set(gold)) < 2):
-                fail(n + ":MULTI_NEEDS_TWO_DISTINCT_PATHS")
+        if stratum == "A" and status not in ("MULTI", "CONTEXT_INSUFFICIENT"):
+            fail(n + ":AMBIGUOUS_CASE_NOT_ATTESTED")
         if stratum == "C":
             reading = case.get("target_reading_sha256")
             if not _valid_hash(reading):
@@ -189,6 +201,22 @@ def self_test() -> None:
         i += 1
     doc = {"schema": "SMC7_GATE_A_STRUCTURAL_V0", "cases": cases}
     assert lint(doc)["status"].startswith("STRUCTURAL_CHECKS_PASSED")
+    # Codex P2 regression: honest missing gold in U/A must be allowed.
+    u_case = cases[400 + 240]
+    assert u_case["stratum"] == "U"
+    u_case["gold_status"] = "UNKNOWN"
+    u_case["gold_paths_sha256"] = []
+    a_case = cases[400 + 240 + 160]
+    assert a_case["stratum"] == "A"
+    a_case["gold_status"] = "CONTEXT_INSUFFICIENT"
+    a_case["gold_paths_sha256"] = []
+    assert lint(doc)["status"].startswith("STRUCTURAL_CHECKS_PASSED")
+    # Codex P2 regression: malformed unhashable gold must be structured refusal.
+    a_case["gold_status"] = "MULTI"
+    a_case["gold_paths_sha256"] = [{}]
+    assert lint(doc)["status"] == "REFUSED"
+    a_case["gold_paths_sha256"] = [
+        _hash("SYNTHETIC_PATH_800"), _hash("SYNTHETIC_ALT_800")]
     cases[0]["annotators"] = {"A": "same", "B": "same", "C": "third"}
     assert lint(doc)["status"] == "REFUSED"
     cases[0]["annotators"] = {"A": "x", "B": "y", "C": "z"}
