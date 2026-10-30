@@ -11,6 +11,8 @@ import argparse
 from collections import Counter, defaultdict
 from hashlib import sha256
 import json
+import os
+import stat
 from pathlib import Path
 import re
 import sys
@@ -43,6 +45,7 @@ def lint(doc: object) -> dict[str, Any]:
 
     ids: set[str] = set()
     content_split: dict[str, str] = {}
+    source_context_pairs: set[tuple[str, str]] = set()
     family_split: dict[str, str] = {}
     document_split: dict[str, str] = {}
     group: dict[str, list[tuple[str, str]]] = defaultdict(list)
@@ -78,6 +81,10 @@ def lint(doc: object) -> dict[str, Any]:
         if not _valid_hash(source) or not _valid_hash(context):
             fail(n + ":INVALID_SOURCE_OR_CONTEXT_HASH")
             continue
+        pair = (source, context)
+        if pair in source_context_pairs:
+            fail(n + ":DUPLICATE_SOURCE_CONTEXT")
+        source_context_pairs.add(pair)
         for value, seen, tag in ((source, content_split, "SOURCE"),
                                  (family, family_split, "FAMILY"),
                                  (document, document_split, "DOCUMENT")):
@@ -193,6 +200,34 @@ def self_test() -> None:
     print("SELF_TEST_PASSED: structural acceptance + distinct reviewer + split leak + contrastive family")
 
 
+def _read_bounded(path: Path) -> bytes:
+    """No-follow, regular-file only, bounded descriptor read; no stat/read race."""
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK"):
+        raise ValueError("UNSAFE_PLATFORM")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_size > MAX_BYTES:
+            raise ValueError("INVALID_INPUT")
+        parts: list[bytes] = []
+        total = 0
+        while True:
+            part = os.read(fd, min(65536, MAX_BYTES + 1 - total))
+            if not part:
+                break
+            total += len(part)
+            if total > MAX_BYTES:
+                raise ValueError("INVALID_INPUT")
+            parts.append(part)
+        after = os.fstat(fd)
+        if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (
+                after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns):
+            raise ValueError("CHANGED_DURING_READ")
+        return b"".join(parts)
+    finally:
+        os.close(fd)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Untrusted metadata lint only; NOT gold freeze")
     parser.add_argument("manifest", nargs="?", help="private rights-cleared metadata JSON")
@@ -204,13 +239,10 @@ def main() -> int:
     if not args.manifest:
         parser.error("manifest required unless --self-test")
     f = Path(args.manifest)
-    if f.is_symlink() or not f.is_file() or f.stat().st_size > MAX_BYTES:
-        print(json.dumps({"status": "REFUSED", "errors": ["INVALID_INPUT"]}))
-        return 2
     try:
-        doc = json.loads(f.read_text(encoding="utf-8"))
-    except (UnicodeError, ValueError, OSError):
-        print(json.dumps({"status": "REFUSED", "errors": ["INVALID_JSON"]}))
+        doc = json.loads(_read_bounded(f).decode("utf-8"))
+    except (UnicodeError, ValueError, OSError, RecursionError):
+        print(json.dumps({"status": "REFUSED", "errors": ["INVALID_INPUT_OR_JSON"]}))
         return 2
     result = lint(doc)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
