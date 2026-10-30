@@ -153,11 +153,11 @@ def _arrivals(ir, mode):
     return np.argmax(mask, axis=1).astype(float)
 
 
-def _aligned_blend(hrirs, weights, mode):
+def _aligned_blend(hrirs, weights, mode, fs):
     if not np.isclose(weights.sum(), 1., atol=1e-6) or np.any(weights < -1e-9):
         raise Unsupported("Invalid or extrapolating weights")
     delay = np.array([_arrivals(h, mode) for h in hrirs])
-    if np.any(np.abs(delay[:, 0] - delay[:, 1]) > .0015 * 48000):
+    if np.any(np.abs(delay[:, 0] - delay[:, 1]) > .0015 * fs):
         raise Unsupported("Training bilateral arrival mismatch")
     pred_delay = weights @ delay
     out = np.zeros_like(hrirs[0], dtype=np.float64)
@@ -253,7 +253,7 @@ class Predictor:
             irs = self.data.ir[self.indices[ix]]
             if self.method == "B1":
                 return np.tensordot(w, irs, axes=(0,0)), {"method":"B1"}
-            return _aligned_blend(irs, w, "peak"), {"method":"C1", "arrival":"peak_proxy"}
+            return _aligned_blend(irs, w, "peak", self.data.fs), {"method":"C1", "arrival":"peak_proxy"}
         if self.method == "B2":
             simplex = int(self.tri3.find_simplex(q))
             if simplex < 0:
@@ -287,9 +287,9 @@ class Predictor:
             span = max(sl,sh)
         irs = self.data.ir[self.indices[ids]]
         if self.method in ("C2A","C2B"):
-            out = np.tensordot(w, irs, axes=(0,0)) if self.method == "C2A" else _aligned_blend(irs,w,"peak")
+            out = np.tensordot(w, irs, axes=(0,0)) if self.method == "C2A" else _aligned_blend(irs,w,"peak",self.data.fs)
         else:
-            out = _aligned_blend(irs,w,"onset")
+            out = _aligned_blend(irs,w,"onset",self.data.fs)
         return out, {"method":self.method, "angular_span_deg":span, "radial_gap_m":hi-lo,
                      "max_weight":float(w.max()), "reference_plane":self.data.reference_plane}
 
