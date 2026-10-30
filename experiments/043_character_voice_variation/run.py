@@ -10,7 +10,9 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import platform
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -25,6 +27,7 @@ PROFILES = ("reference", "late_constriction")
 BODIES = ("M0", "M1")
 DELAYED_ONSET_S = 0.19
 VERSION = "exp043-research-only/v0"
+FROZEN_SOURCE_F0_HZ = 100.0
 
 
 def load_model():
@@ -98,9 +101,55 @@ def sha256_array(values: np.ndarray) -> str:
     return hashlib.sha256(np.asarray(values, dtype="<f8").tobytes()).hexdigest()
 
 
+def audited_fixed_source(model):
+    """Require the declared, inherited LF source rather than trusting its label."""
+    sources, _ = model.EXP26.EXP13.build_sources()
+    source_result = sources.get("lf_fixed")
+    if source_result is None:
+        raise RuntimeError("frozen lf_fixed source is missing")
+    regression = model.EXP26.source_regression(source_result)
+    planned = np.asarray(source_result.planned_f0_hz, dtype=np.float64)
+    if (
+        not regression["pass"]
+        or planned.shape != (round(DURATION_S * SAMPLE_RATE),)
+        or not np.isfinite(planned).all()
+        or not np.allclose(
+            planned, FROZEN_SOURCE_F0_HZ, atol=1e-12, rtol=0.0
+        )
+    ):
+        raise RuntimeError("inherited LF source failed frozen 100 Hz regression")
+    source = np.asarray(source_result.source, dtype=np.float64)
+    if source.shape != planned.shape or not np.isfinite(source).all():
+        raise RuntimeError("frozen LF source has invalid samples")
+    return source, regression, float(planned[0])
+
+
+def execution_provenance() -> dict:
+    """Attach the executing checkout and runtime to EACH generated receipt."""
+    def git(*arguments: str) -> str:
+        try:
+            return subprocess.check_output(
+                ["git", *arguments], cwd=ROOT, text=True,
+                stderr=subprocess.PIPE,
+            ).strip()
+        except (OSError, subprocess.CalledProcessError) as error:
+            raise RuntimeError("cannot establish execution checkout provenance") from error
+
+    revision = git("rev-parse", "--verify", "HEAD")
+    if len(revision) != 40 or any(c not in "0123456789abcdef" for c in revision):
+        raise RuntimeError("invalid Git HEAD revision")
+    return {
+        "core_commit_sha": revision,
+        "tracked_worktree_dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
+        "python_version": platform.python_version(),
+        "numpy_version": np.__version__,
+    }
+
+
 def run(out: Path) -> dict:
     if out.exists():
         raise FileExistsError("research output must be a new directory")
+    provenance = execution_provenance()
     model = load_model()
     base0, base1 = (make_body(model, body_id) for body_id in BODIES)
     if len(base0.sections) != 16 or len(base1.sections) != 16:
@@ -113,10 +162,7 @@ def run(out: Path) -> dict:
     if not np.isclose(base1.total_length_m / base0.total_length_m, 1.10, atol=1e-12):
         raise RuntimeError("incorrect axial intervention")
 
-    sources, _ = model.EXP26.EXP13.build_sources()
-    source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
-    if source.shape != (round(DURATION_S * SAMPLE_RATE),) or not np.isfinite(source).all():
-        raise RuntimeError("reference source invalid")
+    source, source_regression, observed_f0_hz = audited_fixed_source(model)
 
     # Causal negative and positive controls, evaluated before audio synthesis.
     for body in (base0, base1):
@@ -169,8 +215,10 @@ def run(out: Path) -> dict:
     info = {
         "schema": VERSION, "status": "NUMERICAL_PILOT_ONLY",
         "reference_model": "Experiment027 task-field; Experiment023 Arai vowel tube",
+        "execution": provenance,
         "source": {"kind": "lf_fixed", "sha256_float64": sha256_array(source),
-                   "f0_hz": 100.0, "sample_rate_hz": SAMPLE_RATE},
+                   "f0_hz": observed_f0_hz, "sample_rate_hz": SAMPLE_RATE,
+                   "frozen_regression": source_regression},
         "interventions": {
             "body": "M1 sections 0.011m vs M0 0.010m, all areas identical",
             "timing": "second constriction onset 0.19s vs 0.15s; same 0.35s offset and final target",
