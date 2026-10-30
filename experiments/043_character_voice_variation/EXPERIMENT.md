@@ -28,8 +28,7 @@ when only body axial length and one gesture onset are varied?
 3. No realized geometric change during the schedule intervention at t=0.17 s.
 4. Nonfinite or incorrectly shaped raw pressure or shared-gain clipped WAV.
 5. Identical raw pressure under one-factor physical interventions.
-6. Loss of true upstream source or a model mismatch at execution: stop, do
-   not create synthetic substitute waveforms.
+6. Loss of true upstream source or a model mismatch at execution: stop, do\n   not create synthetic substitute waveforms. The frozen source must pass the\n   inherited Exp026 source-regression check AND an independent 100 Hz planned-F0\n   assertion. Negative control: a 120 Hz source/expected-F0 drift must refuse.\n7. A missing/unresolvable Git checkout revision or missing runtime metadata\n   must stop receipt publication. Record tracked-worktree dirty status even\n   for non-CI exploratory runs. Previously archived evidence is not relabelled.
 
 These are numerical viability checks, not natural-voice or phonetic-validity
 gates. No arbitrary perceptual magnitude threshold is imposed after seeing
