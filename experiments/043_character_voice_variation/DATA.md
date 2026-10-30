@@ -28,3 +28,7 @@ Do not identify `M0` or `M1` as a real species or voice actor. The profile
 `late_constriction` is a schedule intervention, not an independent speaker
 identity. The current audio render is an experiment-local observation bundle
 and **must not be presented as a validated creator Take**.
+
+## 2026-10-31 source integrity amendment
+
+Source control records remain SI volume flow (m³/s) sampled at 48 kHz. Before accepting a run, the pilot checks `source_result.cycles` (dimensionless cycles) against a 100 Hz / 48 kHz independently clock-derived trajectory (absolute tolerance 1e-8 cycles), and checks emitted flow against the LF opening × planned-gain control (float tolerance 1e-15 m³/s absolute plus 1e-11 relative). These are experiment-local **source integrity assertions**, not independent physiological validation and not a change in Character/Take data ownership. Original 2026-10-30 audio artifacts are unmodified and must retain their exact historical source SHA and runtime receipt.
