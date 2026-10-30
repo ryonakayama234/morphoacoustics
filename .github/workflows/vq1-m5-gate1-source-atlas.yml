@@ -1,0 +1,48 @@
+name: vq1-m5-gate1-source-atlas
+on:
+  push:
+    branches:
+      - research/vq1-m5-gate1-source-atlas-20261030
+  pull_request:
+    paths:
+      - 'experiments/056_vq1_m5_gate1_atlas/**'
+      - 'docs/research/vq1-m5-gate1-source-atlas/**'
+      - '.github/workflows/vq1-m5-gate1-source-atlas.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  m5-figure-source-metadata-and-negative-controls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exact source SHA
+        run: |
+          echo "Checked HEAD $(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Run independent synthetic source-metrology tests
+        id: science_tests
+        run: |
+          cd experiments/056_vq1_m5_gate1_atlas
+          python -m unittest discover -v -p 'test_*.py'
+      - name: Always write absence and science HOLD receipt
+        if: always()
+        env:
+          VQ1_M5_TEST_OUTCOME: ${{ steps.science_tests.outcome }}
+        run: |
+          cd experiments/056_vq1_m5_gate1_atlas
+          python run.py --out ../../../m5_gate1_receipt.json
+      - name: Always archive measured-source HOLD or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vq1-m5-gate1-source-receipt-${{ github.sha }}
+          path: m5_gate1_receipt.json
+          if-no-files-found: error
+          retention-days: 30
