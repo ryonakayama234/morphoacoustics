@@ -54,10 +54,51 @@ def test_frozen_source_drift_is_refused(monkeypatch: pytest.MonkeyPatch) -> None
     assert regression["pass"] is True
     assert f0_hz == pytest.approx(100.0)
     assert source.shape == (24_000,)
-    # Prove a seemingly valid LF input does not pass after source metadata drift.
-    monkeypatch.setattr(model.EXP26, "BASE_F0_HZ", 120.0)
-    with pytest.raises(RuntimeError, match="frozen 100 Hz regression"):
-        PILOT["audited_fixed_source"](model)
+
+    # Drift source *and* inherited regression expectation together. Independent
+    # frozen-100 check must still reject an internally self-consistent 120 Hz.
+    with monkeypatch.context() as patch:
+        patch.setattr(model.EXP26.EXP13, "BASE_F0_HZ", 120.0)
+        patch.setattr(model.EXP26, "BASE_F0_HZ", 120.0)
+        with pytest.raises(RuntimeError, match="frozen 100 Hz regression"):
+            PILOT["audited_fixed_source"](model)
+
+    # Keep published 100 Hz metadata but change the *actual generated* phase
+    # and LF samples. This was the exact missing negative control identified
+    # in the independent review of Exp043 at a74b263.
+    with monkeypatch.context() as patch:
+        exp13 = model.EXP26.EXP13
+        original = exp13.cycles_from_f0
+
+        def drifted_cycles(planned_f0):
+            return original(np.asarray(planned_f0) * 1.2)
+
+        patch.setattr(exp13, "cycles_from_f0", drifted_cycles)
+        generated, _ = exp13.build_sources()
+        assert np.all(generated["lf_fixed"].planned_f0_hz == 100.0)
+        assert generated["lf_fixed"].cycles[-1] > 55.0
+        with pytest.raises(RuntimeError, match="phase progression"):
+            PILOT["audited_fixed_source"](model)
+
+    # Even unchanged phase and metadata must not license a source waveform
+    # silently modified after its declared LF opening/gain controls.
+    with monkeypatch.context() as patch:
+        from dataclasses import replace
+
+        exp13 = model.EXP26.EXP13
+        original_build_sources = exp13.build_sources
+
+        def altered_waveform():
+            sources, params = original_build_sources()
+            base = sources["lf_fixed"]
+            changed = np.asarray(base.source, dtype=np.float64).copy()
+            changed[5000:6000] *= 0.90
+            sources["lf_fixed"] = replace(base, source=changed)
+            return sources, params
+
+        patch.setattr(exp13, "build_sources", altered_waveform)
+        with pytest.raises(RuntimeError, match="declared physical controls"):
+            PILOT["audited_fixed_source"](model)
 
 
 @pytest.mark.skipif(
