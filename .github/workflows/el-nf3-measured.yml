@@ -1,10 +1,10 @@
 name: EL-NF3 original KEMAR measured SOFA Gate G0-G3 (RESEARCH ONLY)
 on:
-  pull_request:
+  push:
+    branches:
+      - research/asmr-el-nf3-geometry-guard
     paths:
-      - '.github/workflows/el-nf3-measured.yml'
       - 'experiments/047_el_nf3_receiver/**'
-      - 'docs/research/listener-nf3/PREREGISTRATION_V1_1.md'
   workflow_dispatch:
 jobs:
   measured:
