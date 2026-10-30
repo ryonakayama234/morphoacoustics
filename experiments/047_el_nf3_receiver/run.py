@@ -207,7 +207,7 @@ def evaluate(data,roles,bins):
     numerical="PASS_LIMITED_NUMERIC" if all(gates.values()) else "REVISE_OR_REJECT"
     if baseline is None or threshold is None or not gates["eight_blocks_each"]:
         numerical="INDETERMINATE"
-    return {"baseline":baseline,"selection_medians":{m:_median(selection,m) for m in MODES},
+    return {"baseline":baseline,"selection_medians":{m:(_median(selection,m) if np.isfinite(_median(selection,m)) else None) for m in MODES},
         "calibration_geometry_threshold":threshold,
         "final_evaluated_queries":len(final),"accepted_queries":len(accepted),
         "accepted_coverage":coverage,
