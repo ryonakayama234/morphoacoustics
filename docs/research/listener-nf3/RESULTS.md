@@ -49,3 +49,24 @@ Selection-only best *eligible baseline* B2 was frozen before final metrics; C2's
 - Final [synthetic CI 41058196865](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41058196865) success on Python 3.11/3.12; original measured G0–G3 runner + independent arithmetic audit [41058197316](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41058197316) **SUCCESS**; scientific inference remains **INDETERMINATE**.
 
 **Follow-up:** Analyze refusal reasons using the frozen evidence artifact (angular simplex, shell topology, boundary/axis checks), perform prospective measurement topology and reference-plane review, and open a **new preregistered successor** only if a distinctly justified model/support domain can be proposed. Never relax C2's 25° support rule against this already opened final holdout and reuse it as a fresh blind test. The present branch is a reproducible negative scientific record and must remain Draft; no production adoption.
+
+
+### D3a: evidence-only posthoc refusal analysis, 2026-10-30
+
+Using the **already frozen** original G3 artifact, a separate GitHub Actions evidence-only reviewer [run 41059171559](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41059171559) downloaded only the stored JSON, not the acoustic dataset, and counted `final_rows[*].models[*].reason`. This is a posthoc **descriptive diagnosis**, not a fresh test or permission to revise v1.1.
+
+| Predictor | Accepted geometrically | Unsupported |
+|---|---:|---|
+| B0 | 155 / 155 | 0 |
+| B1 | 155 / 155 | 0 |
+| B2 | 127 / 155 | 28 outside 3D Cartesian convex hull |
+| C1 | 155 / 155 | 0 |
+| C2 | **0 / 155** | **144 angular simplex span >25°; 11 outside angular convex hull** |
+
+- S1: 102 queries; all 102 C2 refusals were `Angular simplex exceeds 25 degrees`.
+- S2: 53 queries; 42 C2 refusals from angular span, 11 from outside angular convex hull.
+- Under the frozen 20°×10° independent angular-block holdout plus a 5° data exclusion buffer, C2's strict triangulation guard does not support new locations. This is an **applicability-design incompatibility**; no accepted final HRIR exists to assess actual C2 acoustic prediction accuracy.
+- B2 itself loses coverage for 28 targets and the baseline selection stage did not create a universally supported model; B0/B1/C1 remain available at all 155 positions but without the same geometric guarantee. Do not infer those algorithms are scientifically reliable merely because they return output.
+- **Next study hypothesis (NOT tested here):** geometry guard and spatial-block holdout geometry were mutually incompatible; to improve support without extrapolation requires a newly justified interpolation topology, new prespecified domain/withheld design, and truly fresh blind acoustic evidence. **Do not tune the 25° cap using the current final data.**
+
+No code, source IR, heldout masks, or G3 decision thresholds were changed for this analysis. G3 remains `INDETERMINATE`, C2 `NOT_ADOPTED`.
