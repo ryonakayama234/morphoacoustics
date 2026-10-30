@@ -71,3 +71,28 @@ perceptually meaningful speaker identity or better sound.
 
 This pilot remains on a Draft PR and is not a new adopted character or voice
 generation capability.
+
+## 2026-10-30: post-review integrity remediation (distinct from original run)
+
+Codex review on original PR HEAD `1ca1fd47c15e41ede451bdc9600c6c3e65bc8c7b`
+identified two P2 blockers: drift of the inherited LF source could leave a
+false `f0_hz=100` receipt, and generated observation bundles lacked executable
+Git/runtime provenance. The subsequent research-only branch changes now:
+
+- recheck the actual inherited LF source with the established Exp026 source
+  regression plus an independent frozen planned-100-Hz condition **before**
+  any physical rendering;
+- derive `f0_hz` from the verified planned source rather than from an
+  unconditional receipt literal;
+- embed the **executing** Git HEAD, tracked-worktree dirty flag, and
+  Python/NumPy versions in each fresh `receipt.json`;
+- test source-metadata drift refusal and metadata presence, with source/data/
+  system/experiment documentation amended in the same branch.
+
+**Evidence status:** implementation updated; a new exact-head four-WAV
+CI rerun, artifact verification and renewed independent review must establish
+whether the repair passes. The historical `dece9415` run and artifact
+`12978197071` remain valid **only as historical original-run observations**;
+they do NOT certify these new provenance/anti-drift checks. No audible
+improvement, human voice-likeness, speaker identity, Studio adoption or main
+merge is claimed by the review fixes.
