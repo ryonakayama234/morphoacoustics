@@ -232,6 +232,12 @@ class MetrologyTests(unittest.TestCase):
                 marker["radius_px"]=1e-9
             s["x_axis"]["tick_radius_pixel"]=0
             s["y_axis"]["tick_radius_pixel"]=0
+        # Both readers may choose exactly the same pixel center while their
+        # provenance and independent source audit remain unverified.
+        # The test isolates unqualified instrument error from reader disagreement.
+        for first, second in zip(p["reads"][0]["markers"],p["reads"][1]["markers"]):
+            second["pixel_x"]=first["pixel_x"]
+            second["pixel_y"]=first["pixel_y"]
         r=atlas.audit(p,BYTES)
         self.assertEqual(r["instrument_uncertainty"],"UNQUALIFIED_NO_ABSOLUTE_BOUND")
         self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INSTRUMENT_UNQUALIFIED")
