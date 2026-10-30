@@ -86,7 +86,7 @@ button:hover{filter:brightness(.95)}.actions{display:flex;flex-wrap:wrap;gap:8px
 <script>
 "use strict";
 const SCHEMA="SMC7_SOLO_WORKBENCH_V1", KEY="smc7-solo-workbench-v1";
-let data={schema:SCHEMA,evidence_tier:"SOLO_DEVELOPMENT_ONLY",cases:[]}, index=0;
+let data={schema:SCHEMA,evidence_tier:"SOLO_DEVELOPMENT_ONLY",cases:[]}, index=0, unsafeLocalState=false;
 const $=id=>document.getElementById(id);
 const lines=s=>s.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);
 function show(msg,bad=false){$("message").textContent=msg;$("message").className=bad?"error":"";}
@@ -126,9 +126,11 @@ function loadState(){
 function persist(){
  try{
   localStorage.setItem(KEY,JSON.stringify(data));
+  unsafeLocalState=false;
   $("storageWarn").textContent="";
   return true;
  }catch(_){
+  unsafeLocalState=true;
   $("storageWarn").textContent="【ブラウザへの保存失敗】現在の注釈はメモリ内のみです。直ちに「JSON書出」でバックアップしてください。再読み込みで消える場合があります。";
   return false;
  }
@@ -202,6 +204,8 @@ function exportJson(){
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="smc7-solo-"+new Date().toISOString().slice(0,10)+".json";
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ // A manual export has been initiated; the browser owns download completion.
+ unsafeLocalState=false;
 }
 async function importJson(file){
  if(!file||file.size>16*1024*1024){alert("JSONファイルは16MB以内にしてください。");return;}
@@ -226,6 +230,9 @@ $("removeBtn").addEventListener("click",()=>{
 $("exportBtn").addEventListener("click",exportJson);
 $("importBtn").addEventListener("click",()=>$("file").click());
 $("file").addEventListener("change",async e=>{await importJson(e.target.files[0]);e.target.value="";});
+window.addEventListener("beforeunload",event=>{
+ if(hasUnsaved()||unsafeLocalState){event.preventDefault();event.returnValue="";}
+});
 loadState();render();
 </script>
 </body></html>
