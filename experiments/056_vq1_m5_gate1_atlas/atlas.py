@@ -174,18 +174,27 @@ def audit(payload: object, figure_bytes: bytes | None = None) -> dict:
         if first is None or second is None or first["status"] != "VISIBLE" or second["status"] != "VISIBLE":
             receipt["unresolved"].append({"point": kname, "reason": "NOT_INDEPENDENTLY_VISIBLE_BOTH_READS"})
             continue
-        lo = max(first["drop_pa"][0], second["drop_pa"][0])
-        hi = min(first["drop_pa"][1], second["drop_pa"][1])
-        if lo > hi:
+        overlap_lo = max(first["drop_pa"][0], second["drop_pa"][0])
+        overlap_hi = min(first["drop_pa"][1], second["drop_pa"][1])
+        if overlap_lo > overlap_hi:
             receipt["unresolved"].append({"point": kname, "reason": "INCOMPATIBLE_INDEPENDENT_READS"})
             continue
-        zlo = max(first["x_plot_m"][0], second["x_plot_m"][0],
-                  first["z_m"]-first["z_unc_m"], second["z_m"]-second["z_unc_m"])
-        zhi = min(first["x_plot_m"][1], second["x_plot_m"][1],
-                  first["z_m"]+first["z_unc_m"], second["z_m"]+second["z_unc_m"])
-        if zlo > zhi:
+        # Do not narrow physical uncertainty by intersecting two imperfect
+        # digitizer intervals. Require overlap for consistency, report the
+        # conservative ENVELOPE of both independently defensible intervals.
+        lo = min(first["drop_pa"][0], second["drop_pa"][0])
+        hi = max(first["drop_pa"][1], second["drop_pa"][1])
+        z_overlap_lo = max(first["x_plot_m"][0], second["x_plot_m"][0],
+                           first["z_m"]-first["z_unc_m"], second["z_m"]-second["z_unc_m"])
+        z_overlap_hi = min(first["x_plot_m"][1], second["x_plot_m"][1],
+                           first["z_m"]+first["z_unc_m"], second["z_m"]+second["z_unc_m"])
+        if z_overlap_lo > z_overlap_hi:
             receipt["unresolved"].append({"point": kname, "reason": "TAP_SPATIAL_DISAGREEMENT"})
             continue
+        zlo = min(first["x_plot_m"][0], second["x_plot_m"][0],
+                  first["z_m"]-first["z_unc_m"], second["z_m"]-second["z_unc_m"])
+        zhi = max(first["x_plot_m"][1], second["x_plot_m"][1],
+                  first["z_m"]+first["z_unc_m"], second["z_m"]+second["z_unc_m"])
         receipt["candidate_markers"].append({"tap": key[0], "attachment_class": key[1],
                                                "drop_pa_interval": [lo, hi], "z_m_interval": [zlo,zhi],
                                                "reader_ids": sorted(read_ids),
