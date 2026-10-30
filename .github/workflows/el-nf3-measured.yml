@@ -1,0 +1,56 @@
+name: EL-NF3 original KEMAR measured SOFA Gate G0-G3 (RESEARCH ONLY)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/el-nf3-measured.yml'
+      - 'experiments/047_el_nf3_receiver/**'
+      - 'docs/research/listener-nf3/PREREGISTRATION_V1_1.md'
+  workflow_dispatch:
+jobs:
+  measured:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated scientific dependencies
+        run: python -m pip install numpy scipy h5py
+      - name: Obtain original measured KEMAR dataset (do not upload source)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/el-nf3
+          curl --fail --location --retry 4 --retry-delay 10 \
+            --max-time 1200 \
+            'https://zenodo.org/records/7626148/files/KEMAR_NFHRIRmea_1cm.sofa?download=1' \
+            --output /tmp/el-nf3/KEMAR_NFHRIRmea_1cm.sofa
+          echo '8e286f7f2ffa67973bb0eb2e37c158e2  /tmp/el-nf3/KEMAR_NFHRIRmea_1cm.sofa' | md5sum --check
+          sha256sum /tmp/el-nf3/KEMAR_NFHRIRmea_1cm.sofa
+      - name: Audit actual file, topology and acoustical metadata
+        run: |
+          python experiments/047_el_nf3_receiver/run.py audit \
+            --sofa /tmp/el-nf3/KEMAR_NFHRIRmea_1cm.sofa > /tmp/el-nf3/g0-audit.json
+          cat /tmp/el-nf3/g0-audit.json
+      - name: Score preregistered unknown direction/radius blocks
+        run: |
+          python experiments/047_el_nf3_receiver/run.py evaluate \
+            --sofa /tmp/el-nf3/KEMAR_NFHRIRmea_1cm.sofa \
+            --output /tmp/el-nf3/evidence.json
+      - name: Independent-from-predictor evidence audit
+        run: |
+          python experiments/047_el_nf3_receiver/audit.py \
+            --evidence /tmp/el-nf3/evidence.json
+      - name: Publish only traceable audit/evidence, NEVER measured SOFA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: el-nf3-kemar-relative-receiver-evidence
+          path: |
+            /tmp/el-nf3/g0-audit.json
+            /tmp/el-nf3/evidence.json
+          if-no-files-found: ignore
+          retention-days: 30
