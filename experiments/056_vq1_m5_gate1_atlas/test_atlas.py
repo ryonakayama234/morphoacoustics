@@ -182,6 +182,39 @@ class MetrologyTests(unittest.TestCase):
         self.assertEqual(r["feature_checks"]["H_AXIAL"],"INDETERMINATE_INTERVAL_OVERLAP")
 
 
+    def test_ambiguous_attachment_category_preserved_without_number(self):
+        p=source()
+        for s in p["reads"]:
+            s["markers"].append(mark(7,45,"AMBIGUOUS",status="AMBIGUOUS"))
+        receipt=atlas.audit(p,BYTES)
+        self.assertTrue(any(v["point"]=="tap7:AMBIGUOUS" for v in receipt["unresolved"]))
+        self.assertTrue(all(v["attachment_class"]!="AMBIGUOUS" for v in receipt["candidate_markers"]))
+        p["reads"][0]["markers"][-1]=mark(7,45,"AMBIGUOUS",status="VISIBLE")
+        with self.assertRaisesRegex(atlas.SourceHold,"unknown attachment class"):
+            atlas.audit(p,BYTES)
+
+    def test_compatible_readers_do_not_shrink_uncertainty_to_intersection(self):
+        p=source()
+        first=atlas.axis_interval(AY,30,1,"drop_cmH2O_life")
+        second=atlas.axis_interval(AY,30.3,1,"drop_cmH2O_life")
+        receipt=atlas.audit(p,BYTES)
+        joined=next(v["drop_pa_interval"] for v in receipt["candidate_markers"]
+                    if v["tap"]==6 and v["attachment_class"]=="FW")
+        self.assertAlmostEqual(joined[0],min(first[0],second[0])*atlas.CMH2O_TO_PA)
+        self.assertAlmostEqual(joined[1],max(first[1],second[1])*atlas.CMH2O_TO_PA)
+
+    def test_runner_pins_explicit_checked_source_head(self):
+        import run
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/"receipt.json"
+            with patch.dict(os.environ,{"VQ1_M5_TEST_OUTCOME":"success",
+                                        "SOURCE_HEAD":"source-head-not-merge-head",
+                                        "GITHUB_SHA":"synthetic-merge-head"}),patch.object(sys,"argv",["run.py","--out",str(path)]):
+                run.main()
+            receipt=json.loads(path.read_text())
+            self.assertEqual(receipt["code_head"],"source-head-not-merge-head")
+
+
 class RunnerTests(unittest.TestCase):
     def test_normal_source_hold_json(self):
         import run
