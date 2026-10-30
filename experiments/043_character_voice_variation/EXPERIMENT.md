@@ -46,3 +46,7 @@ character distinction separately from closed-set discriminability.
 
 Formal CVI voice identity (same speaker across phonation, text, effort and
 performance) requires additional physiology and independent evidence.
+
+## Post-review Gate-A amendment (2026-10-31; not prospective to the original WAVs)
+
+The 2026-10-30 independent reviewer observed a false-negative source-drift test: changing Exp026's expected `BASE_F0_HZ` does not actually mutate Exp013's generated phase. To close this separate integrity gap, the revised pilot must fail **before rendering** when (A) Exp013 actual phase progresses at 120 Hz but planned F0 still says 100 Hz, (B) both nominal source and inherited regression expectations drift to 120 Hz together, or (C) emitted LF flow differs from the declared opening/gain controls while phase metadata remains unchanged. Original experiment intervention/thresholds, old WAVs, and voice-quality HOLD are unchanged. A fresh exact-head CI and review are required; this amendment does not retroactively certify the archived output.
