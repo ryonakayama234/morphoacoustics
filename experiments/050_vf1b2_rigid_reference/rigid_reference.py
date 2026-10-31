@@ -135,6 +135,10 @@ def check_receipt(obs: Observation, upstream_pa: float) -> bool:
     port_power = flow * (obs.face_pressure_pa[0] - obs.face_pressure_pa[-1])
     loss = math.fsum(obs.loss_per_cell_w)
     tol = 1e-12 * max(abs(port_power), 1e-18)
+    # An aggregate work identity alone misses pressure/loss redistribution.
+    if any(abs(obs.loss_per_cell_w[j] - flow * (obs.face_pressure_pa[j] - obs.face_pressure_pa[j+1])) > tol
+           for j in range(len(obs.loss_per_cell_w))):
+        return False
     return (abs(obs.input_power_w - upstream_pa * flow) <= tol
         and abs(obs.dissipation_w - loss) <= tol
         and abs(obs.power_residual_w - (obs.input_power_w - loss)) <= tol
