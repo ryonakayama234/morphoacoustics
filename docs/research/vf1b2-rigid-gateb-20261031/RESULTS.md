@@ -40,3 +40,12 @@ The low-Re fixed-wall pressure law is **not** a valid surrogate for realistic hi
 - Li et al., 2020, J Biomech Eng, DOI 10.1115/1.4044033: 1D momentum-based glottal ROM, context-specific 3D comparison.
 - Energy-based fluid-structure model of the vocal folds, IMA J Math Control Info (2021), DOI 10.1093/imamci/dnaa031: power-preserving FSI concept.
 - M5/M6 source audits PR #222 and PR #217: geometry/instrument mismatches prevent treating them as direct moving-wall reference data.
+
+## GitHub Actions exact-code verification (2026-10-31, after initial local result)
+- Research code/evidence/docs commit (before this report-only amendment): `606192a408ba6f339528ae2e4b6bc8b425505f68`.
+- Dedicated workflow **SUCCESS**: [Actions run 41206091892](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41206091892). Separate Python **3.11, 3.12, 3.13** jobs all SUCCESS, each log showing `Ran 7 tests ... OK` and `cases: 48`.
+- All three CI jobs report identical `records.json` SHA-256: `202a8329648c43c29384ba767e3be822bd0a174cde88fd6a5055537d4093bc0f` and identical max tapered N32 flow relative error `8.815539449780196e-05`.
+- Uploaded artifact IDs: 3.11 `13044418449`, 3.12 `13043409082`, 3.13 `13044403478`. These are subject to GitHub retention; do not rely solely on expiring ZIPs.
+- Other Core repository workflows at that commit (generic `tests`, `og3-gate-b`, `og4-gate-b`, `sv1-sustained-vowel-physical`) showed SUCCESS when checked.
+- **What this upgrades:** G0 and G1 mathematical/engineering repeatability is now **CI_VERIFIED_LIMITED_CANDIDATE**, rather than local-only. It does **not** establish independent human/biophysical validation or full source-flow energy law. Codex independent review requested on PR #262; outcome pending at record time.
+- The experiment directory is still isolated from published Core/Studio API. Do not merge or call `Reference Baseline ADOPTED` without independent scope/claim review and explicit decision.
