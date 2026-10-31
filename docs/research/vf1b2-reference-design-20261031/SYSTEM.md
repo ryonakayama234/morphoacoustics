@@ -60,3 +60,24 @@ The interface terms must cancel algebraically in total and in an independent, se
 - Source reservoir has prescribed **constant pressure**, but actual flow is solved dynamically; a steady pressure is an external energy boundary, not a preset periodic excitation.
 - SA-2B dynamic passive radiation remains a later dependency. Neither this matched outlet nor SA-2A's frequency-only piston gives a valid listener pressure.
 - Projected Studio owner mapping unchanged: character.canvas = morphology/organ ref; motion.canvas = task/effort ref; scene.canvas = speaker/listener ref only; selection.inspector = selected domain entity; take.transport = qualified immutable Take; research.drawer = traces and receipts. No new slot.
+
+## B2a design correction — total-enthalpy flux, not pressure times volume flow alone
+
+**Prospective derivation requirement; NOT an implemented or biologically validated moving-wall model.** The earlier "target" global ledger `Psub * Uin - Pexternal * Uexit` is **not a complete generic energy boundary** for the compressible moving-area mass/momentum family above: it omits convective kinetic/internal-energy transport. It may only be reused after an explicit small-Mach/low-amplitude reduction with all retained mean-flow terms accounted for.
+
+For a smooth noncontact quasi-1D channel with fixed axial end planes, lateral moving wall, barotropic `p=p(rho)` and axial speed `u`, a candidate continuous model must derive, with the *same pressure state*:
+
+```text
+mass:     d_t(rho*A) + d_z(rho*u*A) = 0
+momentum: d_t(rho*u*A) + d_z[(rho*u^2+p)*A] = p*d_z(A) - f_drag
+energy:   d_t[rho*A*(u^2/2 + e(rho))]
+        + d_z[U*(rho*u^2/2 + rho*e(rho) + p)]
+        = -p*d_t(A) - f_drag*u
+U = u*A; de/drho = p/rho^2; f_drag*u >= 0
+```
+
+All pressure quantities must share one declared gauge/external-pressure reference and consistent energy zero. One illustration (NOT a calibrated air EOS) is `p=c^2(rho-rho0)` with `e(rho)=c^2[ln(rho/rho0)+rho0/rho-1]`; this satisfies `de/drho=p/rho^2` and `e(rho0)=0`. For the fixed axial boundaries the total fluid energy flux is `U*(rho*u^2/2+rho*e+p)`, **not simply `p*U`**. Its conservation-law derivation, sign, dimensionality and physical EOS validity must be independently audited before B2c.
+
+The structure receives the opposite lateral wall power `+integral p*d_t(A) dz = sum_i F_i*v_i`. In the total balance the two wall powers cancel ONCE. The tract's existing acoustic `p_acoustic*U_acoustic` is a *linear perturbation port* of its declared baseline, not an automatically compatible bulk total-enthalpy port. A mean-flow / acoustic-perturbation split and any time-mean advection/pressure offsets need an explicit conservative interface. Reusing the SFI-3 open-valve port unaltered and declaring total compressible-fluid/tract energy closure is prohibited without a derivation.
+
+The newly registered [VF-1B2 rigid Gate B0 research PR #262](https://github.com/ryonakayama234/morphoacoustics/pull/262) tests only low-Re **fixed** Stokes resistance; it cannot justify moving-wall `f_drag`, high-drive separation, realistic intraglottal pressures or true phonation. B2c must remain HOLD until these boundary conditions are independently defensible. Do not fabricate conservation by pressure-wavetable/EQ/oscillator forcing.
