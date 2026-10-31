@@ -17,8 +17,9 @@ def make_row(subject,fold,block,d):
         return {"supported":supported,"nearest_train_m":d,
                 "error":{"ild_median_db":ild,"ild_bands_abs_db":[ild]*4,
                          "itd_error_us":10.,"spectral_shape_rmse_db":1.}}
-    return {"subject":subject,"fold":fold,"block":block,
-            "models":{"B0":model(1.),"C3-o3-l0.1":model(.6)}}
+    allmodels={name:{"supported":False,"reason":"test not selected"} for name in m.MODES}
+    allmodels.update({"B0":model(1.),"C3-o3-l0.1":model(.6)})
+    return {"subject":subject,"fold":fold,"block":block,"models":allmodels}
 
 
 def test_model_selection_and_acceptance_without_final():
