@@ -17,3 +17,23 @@ p [Pa], Q [m^3/s], r [Pa s/m^4], R [Pa s/m^3], loss DeltaP Q [W], virtual F [N].
 
 ## Boundary and history
 Do not import PR #81/#84/#209/#214 (unmerged); preserve their independently pinned code/results for later coupled stages. This calculation does not exercise SFI-3, active tissue, and cannot produce a Studio Take. Character.canvas owns eventual organ design; Motion.canvas future motor intents; take.transport only qualified immutable audio; research.drawer later scientific receipts. No UI/schema edits.
+
+## Dataflow and fixed Studio panel ownership (diagram; no UI integration)
+```mermaid
+flowchart LR
+  X["Predeclared SI rigid geometry"] --> V["B0 regime guard: slenderness / Re / Mach"]
+  F["Predeclared low-Re fluid + pressure"] --> V
+  V -->|supported| S["Core experiment: cell Stokes resistance"]
+  V -->|unsupported| U["Typed explicit refusal: no observation"]
+  S --> O["Port observations: Q, p(z), virtual F, losses"]
+  A["Independent continuous-taper analytic oracle"] --> C["Scientific comparison"]
+  O --> C
+  C --> R["G0/G1 CI receipt; G2/G3/G4 explicit limits"]
+  R -. "future, separate UI approval" .-> D["Studio research.drawer only"]
+  B["Character canvas / organ design"] -. "not connected" .-> X
+  M["Motion canvas / tasks"] -. "not connected" .-> F
+  T["Take transport"] -. "no sound or Take" .-> R
+```
+
+Future `character.canvas` owns anatomy references; `motion.canvas` owns performance intent; `scene.canvas` owns Speaker/Listener references; `selection.inspector` displays the selected authorized entity without copying physics; `take.transport` reads only a qualified immutable Take, which **does not exist for this experiment**. All scientific traces are Core-owned and, if integrated later by explicit approval, restricted to `research.drawer`. No panel registry, ABI, or Scene content was modified.
+
