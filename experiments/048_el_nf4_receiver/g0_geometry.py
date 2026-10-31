@@ -60,6 +60,19 @@ def inspect(path: Path) -> dict:
         if "Data.Delay" in f:
             delay = {"shape": list(f["Data.Delay"].shape),
                      "zero": bool(np.all(np.asarray(f["Data.Delay"][()]) == 0))}
+        blocks = np.column_stack((np.floor(a / 20.).astype(int),
+                                  np.floor((e + 30.) / 10.).astype(int)))
+        keys = sorted(set(map(tuple, blocks)))
+        def hsh(k):
+            return hashlib.sha256(("EL-NF4-20261031:" + str(k[0]) + ":" + str(k[1])).encode()).digest()
+        order = sorted(keys, key=hsh)
+        n = len(keys)
+        n20 = n // 5
+        roles = {k: ("final" if i < n20 else "calibration" if i < 2 * n20
+                     else "selection" if i < 3 * n20 else "train") for i, k in enumerate(order)}
+        counts_role = {role: sum(roles[k] == role for k in keys)
+                       for role in ("train", "selection", "calibration", "final")}
+        # Source coordinates alone allow fixed split support checks (never response).
         return {
             "name": path.name,
             "sha256": fingerprint(path),
@@ -77,6 +90,15 @@ def inspect(path: Path) -> dict:
                        "azimuth_deg": [float(a.min()), float(a.max())],
                        "elevation_deg": [float(e.min()), float(e.max())]},
             "distance_shells_m": [[float(x), int(n)] for x, n in zip(radii, counts)],
+            "proposed_20az10el_block_split": {
+                "unique_blocks": n,
+                "blocks_by_role": counts_role,
+                "direction_count_by_role": {role: sum(roles[tuple(k)] == role for k in blocks[::7])
+                    for role in ("train", "selection", "calibration", "final")},
+                "source_position_block_hash": hashlib.sha256(blocks.tobytes()).hexdigest(),
+                "block_keys_by_role": {role: [list(k) for k in sorted(keys) if roles[k] == role]
+                    for role in ("train", "selection", "calibration", "final")}
+            },
             "unique_directions_0.001deg": int(len(np.unique(dirs, axis=0))),
             "unique_positions_1e-4m": int(len(np.unique(np.round(p, 4), axis=0))),
             "acoustic_values_read": False,
