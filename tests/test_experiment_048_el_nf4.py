@@ -5,6 +5,9 @@ import sys
 import numpy as np
 import pytest
 
+# Optional research-only dependencies are NOT Core installation requirements.
+pytest.importorskip('scipy')
+
 p=Path(__file__).resolve().parents[1]/"experiments/048_el_nf4_receiver/model.py"
 spec=importlib.util.spec_from_file_location("el_nf4_model",p)
 m=importlib.util.module_from_spec(spec)
