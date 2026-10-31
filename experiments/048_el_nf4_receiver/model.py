@@ -35,8 +35,12 @@ def spherical(p):
 def roles(xyz):
     """Frozen geometry-only role map shared across heads and distances."""
     s = spherical(xyz)
-    bins = np.column_stack((np.floor(s[:,0]/20).astype(int),
-                            np.floor((s[:,1]+30)/10).astype(int)))
+    # Fix Cartesian -> spherical floating-point boundary noise without
+    # changing G0's direct spherical source-angle partition definition.
+    az=np.mod(np.round(s[:,0],6),360.)
+    el=np.round(s[:,1],6)
+    bins = np.column_stack((np.floor(az/20).astype(int),
+                            np.floor((el+30)/10).astype(int)))
     keys = [tuple(map(int,k)) for k in sorted(set(map(tuple,bins)))]
     if len(keys)<60:
         raise Unsupported("Too few angular block groups")
