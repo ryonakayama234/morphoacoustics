@@ -90,3 +90,16 @@ def test_fir_shift_is_not_periodic():
     x=np.zeros(64);x[12]=1
     assert np.argmax(m.shift(x,5))==17
     assert np.count_nonzero(m.shift(x,-30))==0
+
+
+def test_exact_scuttlike_grid_is_stable_at_20deg_and_10deg_boundaries():
+    # Synthetic COORDINATES ONLY. Mirrors observed 72 x 12 = 864 directions.
+    sph=np.asarray([[az,e,.2] for az in np.arange(0.,360.,5.)
+                             for e in np.arange(-30.,81.,10.)])
+    xyz=m.to_xyz(sph)
+    a,b=m.roles(xyz)
+    expected=np.column_stack((np.floor(sph[:,0]/20).astype(int),
+                              np.floor((sph[:,1]+30)/10).astype(int)))
+    assert np.array_equal(b,expected)
+    assert len({tuple(x) for x in b})==216
+    assert len({tuple(x) for x in b[a=="final"]})==43
