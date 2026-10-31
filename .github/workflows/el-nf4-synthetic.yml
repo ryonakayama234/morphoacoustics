@@ -1,0 +1,31 @@
+name: EL-NF4 isolated synthetic checks
+on:
+  push:
+    branches: [research/asmr-el-nf4-support-field]
+    paths:
+      - experiments/048_el_nf4_receiver/model.py
+      - tests/test_experiment_048_el_nf4.py
+      - .github/workflows/el-nf4-synthetic.yml
+  pull_request:
+    paths:
+      - experiments/048_el_nf4_receiver/model.py
+      - tests/test_experiment_048_el_nf4.py
+      - .github/workflows/el-nf4-synthetic.yml
+  workflow_dispatch:
+jobs:
+  synthetic-only:
+    strategy:
+      matrix:
+        python: ['3.11','3.12']
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install 'numpy>=1.24,<3' 'scipy>=1.11,<2' 'pytest>=8,<10'
+      - run: python -m pytest -q tests/test_experiment_048_el_nf4.py
