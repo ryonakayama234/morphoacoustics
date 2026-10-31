@@ -84,6 +84,14 @@ class FrozenB0Tests(unittest.TestCase):
         self.assertFalse(check_receipt(replace(obs, face_pressure_pa=obs.face_pressure_pa[:-1]+(1.,)),.2))
         self.assertFalse(check_receipt(replace(obs, loss_per_cell_w=obs.loss_per_cell_w[:-1]+(-1.0,)),.2))
         self.assertFalse(check_receipt(obs,.4))
+        altered_p = list(obs.face_pressure_pa)
+        altered_p[8] += .003  # preserves endpoints, monotonicity and global power
+        self.assertFalse(check_receipt(replace(obs, face_pressure_pa=tuple(altered_p)),.2))
+        altered_loss = list(obs.loss_per_cell_w)
+        shift = altered_loss[3] * .2
+        altered_loss[2] += shift
+        altered_loss[3] -= shift  # sum and positive losses preserved
+        self.assertFalse(check_receipt(replace(obs, loss_per_cell_w=tuple(altered_loss)),.2))
 
 if __name__ == '__main__':
     unittest.main()
