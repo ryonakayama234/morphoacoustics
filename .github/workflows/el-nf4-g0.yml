@@ -28,6 +28,7 @@ jobs:
           done
       - name: Inspect only SourcePosition and metadata, NOT Data.IR array
         run: |
+          set -o pipefail
           python experiments/048_el_nf4_receiver/g0_geometry.py /tmp/nf4/*.sofa | tee /tmp/nf4/geometry_manifest.json
       - name: Preserve metadata-only geometry manifest
         uses: actions/upload-artifact@v4
