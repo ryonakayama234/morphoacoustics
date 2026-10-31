@@ -62,7 +62,7 @@ def inspect(path: Path) -> dict:
                      "zero": bool(np.all(np.asarray(f["Data.Delay"][()]) == 0))}
         blocks = np.column_stack((np.floor(a / 20.).astype(int),
                                   np.floor((e + 30.) / 10.).astype(int)))
-        keys = sorted(set(map(tuple, blocks)))
+        keys = [tuple(map(int, k)) for k in sorted(set(map(tuple, blocks)))]
         def hsh(k):
             return hashlib.sha256(("EL-NF4-20261031:" + str(k[0]) + ":" + str(k[1])).encode()).digest()
         order = sorted(keys, key=hsh)
