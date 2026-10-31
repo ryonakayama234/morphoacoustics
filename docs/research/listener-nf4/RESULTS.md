@@ -86,3 +86,10 @@ This **frequency-dependent tradeoff** is observed, not explained causally. Candi
 5. **No G4 human blind listening; no G5 distinct science reviewer. Do not merge/release into `asmr/`, Core, SMC or Studio.**
 
 The main research hypothesis is **REJECTED for this frozen numerical protocol**. Preserve the entire negative result, and pursue a new model/split/dataset only under a new D0 and fresh independent acoustic validation.
+
+
+### Additional posthoc baseline-robustness diagnosis, 2026-10-31
+
+The *preregistered development-selected* baseline **remains B3-o4-l0.03**. However, the final artifact also saved the simplest B0 nearest-neighbor comparator at all 344 targets. On the EXACT 242 C4-accepted final positions, B0 median four-band ILD **1.53527 dB**, versus frozen B3 **2.06708 dB** and C4 **2.34171 dB**. Across all 344 eligible final positions B0 median is **1.58906 dB**. This is explicitly a **posthoc diagnostic**, NOT replacing B3 in the frozen preselected hypothesis test or CI.
+
+Interpretation: development baseline ranking did not transport to the two final subjects/angular blocks; a zero-order nearest-neighbor often preserves relative ILD more reliably than the higher-order global models under this measured geometry. Complexity is not justified by this test. A prospective successor must predefine B0 as a mandatory, non-optional safeguard and validate on independent untouched measurements; it cannot choose B0 retrospectively as the NF4 registered baseline.
