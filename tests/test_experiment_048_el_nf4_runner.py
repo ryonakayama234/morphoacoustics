@@ -5,6 +5,10 @@ import sys
 import numpy as np
 import pytest
 
+# Optional research-only dependencies are NOT Core installation requirements.
+pytest.importorskip('scipy')
+pytest.importorskip('h5py')
+
 p=Path(__file__).resolve().parents[1]/"experiments/048_el_nf4_receiver/run.py"
 spec=importlib.util.spec_from_file_location("el_nf4_run",p)
 m=importlib.util.module_from_spec(spec)
