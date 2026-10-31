@@ -115,13 +115,16 @@
     "posthoc_angular_block_bootstrap_sensitivity_95ci_db": [
       -0.927431838728822,
       0.25095479434189505
-    ]
+    ],
+    "posthoc_B0_ILD_median_on_C4_accepted_db": 1.5352721462622596,
+    "posthoc_B0_ILD_median_all_eligible_db": 1.5890590623530647
   },
   "notes": [
     "Frequency-band and angular-only bootstrap sensitivity are POSTHOC descriptive analyses, NOT preregistered alternative acceptance tests.",
     "All numbers refer to comparative measured-relative binaural HRIR prediction, not absolute ear/eardrum pressure or subjective ASMR.",
     "Numerical CI success is not a scientific gate success.",
-    "No original SOFA samples, model coefficients or raw HRIR redistributed."
+    "No original SOFA samples, model coefficients or raw HRIR redistributed.",
+    "POSTHOC only: B0 nearest neighbor was not the development-selected frozen baseline B3. On the SAME 242 C4-accepted final positions its ILD median was 1.53527 dB, better than B3 2.06708 and C4 2.34171. This cannot retroactively alter model selection or gates; it strengthens the complexity-not-justified diagnostic."
   ],
   "production": "FORBIDDEN_UNTIL_SEPARATE_EVIDENCE_AND_EXPLICIT_APPROVAL"
 }
