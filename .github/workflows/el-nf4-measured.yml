@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/el-nf4-measured.yml
       - experiments/048_el_nf4_receiver/run.py
+      - experiments/048_el_nf4_receiver/model.py
       - experiments/048_el_nf4_receiver/audit.py
   workflow_dispatch:
 permissions:
