@@ -17,3 +17,6 @@
 - **Rights blocker newly found**: SOFA root `License = CC 3.0 BY-SA`, paper's explicit dataset licence `CC BY-SA 4.0`. Maintain `RIGHTS_CONFLICT_REVIEW_REQUIRED`. Independent file/edition legal review must determine actual governing terms and obligations for derived weights/commercial usage before distribution.
 - **Timing blocker refined**: `Data.Delay` shape [1,2] is common to measurement positions in each SOFA. No per-position delay values are in that field. No conclusion on physical absolute TOF until evidence of preprocessing, time origin, Data.IR or independently calibrated arrival is qualified with appropriate blind control.
 - No G0-B geometry split, signal sampling/learning, G3b truth or production adoption. **Scientific overall decision: PARTIAL-GO-INTEGRITY / BLOCKED-MEASURAND-QUALIFICATION.**
+
+## D4 — 2026-11-01 JST: revised implementation CI independently checked
+Latest [run 41307934856](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307934856) passes ten synthetic tests and original archive recheck at commit 9291e7bb; explicit machine-readable output enforces a visible 3.0-vs-4.0 rights conflict and UNQUALIFIED physical measurands. Limited provenance/structure success only; final G3b and product adoption stay blocked.
