@@ -48,7 +48,7 @@ Reference comparisons are anchored to **OD-1 archival known outputs** and immuta
 ## Ordered plan
 ### A0. Forensic audit, no new physics code
 - Verify main+old Draft exact SHA, source inventory, current Core preset/cavity identifiers, full #145→#166 dependency and Studio #27 pin.
-- Decide one runtime ABI candidate: reviewed bounded CLI *or* installable Core Python API, not both and not a parallel registry. Define physical authority and old-history mapping.
+- **Selected runtime interface:** a versioned local Core CLI, reconciled with #165/#166 and existing BodyPresetRegistry (one logical registry/identity authority). Verify command schema/version negotiation and old-history mapping; **do not** launch a competing importable Python API or a new SaaS service in this phase.
 - Archive original OD-1 result metadata and published negative/quality decisions; document any missing source/artifact capability as NOT_TESTABLE.
 
 ### A1. Model/identity preregistration
