@@ -58,5 +58,8 @@ Canonical Studio V2 ADR: docs/product/STUDIO_WORKSPACE_V2_DECISION.md, merged PR
 ## Unchanged external and research integration
 SMC belongs to task/gesture proposals in Motion, but cannot choose the waveform. ASMR belongs to scene contacts/receiver and is independently gated; no implicit import. VF-1B2/biological tissue/materials are separate future physical fidelities. Neural closures must preserve body-derived causal differences and physical infeasibility; no neural audio beautification in OD-2.
 
+## Selected first operational interface
+OD-2 selects a **Core-local versioned CLI ABI** as the initial path rather than adding a production Python API, browser synthesis, fourth Studio mode, or remote HTTP service. Reconcile #165's inspect/perform/verify and #166's register/resolve into **one logical authenticated-by-local-trust Core authority** with exact schema/version and actual artifact readback. Add a bounded shape derive/propose operation for the five-cell family. One manifest and revision identity authority only; no second registry. In the later Studio bridge, a trusted local adapter invokes Core and verifies complete evidence, then Studio stores immutable references. A future importable Python facade is a separate decision, not today's technical selection.
+
 ## Runtime safety for a private workstation
 Bounded allowed family, fixed parent and source versions; strict rejection on unexpected schema/version/fields/NaN/Inf/bool, hashes and rederived identity, controlled local append-only history and no success until complete verified artifacts. This is not a remotely exposed authenticated SaaS. Preserve refusal provenance; avoid complex security systems irrelevant to personal use, but do not accept false historical Takes.
