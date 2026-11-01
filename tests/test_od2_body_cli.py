@@ -14,6 +14,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 CLI = runpy.run_path(str(ROOT / "tools" / "od2_body_cli.py"))
 
+# This test module executes the existing audited LF source. Generic CI matrices
+# use newer NumPy and must not bypass the inherited scientific version gate.
+# All six tests run under pinned NumPy 2.4.6 in the dedicated OD-2 workflow.
+pytestmark = pytest.mark.skipif(
+    np.__version__ != "2.4.6",
+    reason="OD-2 source and numerical physics are frozen to NumPy 2.4.6",
+)
+
 
 @pytest.fixture(scope="module")
 def context():
