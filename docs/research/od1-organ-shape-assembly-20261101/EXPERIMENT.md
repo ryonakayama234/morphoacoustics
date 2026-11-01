@@ -37,3 +37,9 @@ Prior informal site0 unidentifiable and site4 slightly different reports are exp
 
 ## Stop / decision
 G0 proven source + ancestry/revisions; G1 independent shape+mutants; G2 model-matched transfer/physical pressure; G3 new approved Core/Studio loop; G4 audible/voice quality. Report GO_LIMITED / REVISE / MORE_DATA / REJECT per capability with actual evidence and remaining risks. STOP on painted audio, wrong port/load, impossible motor silently rendered, unqualified source–tract physics, changed legacy Take identity or unauthorized Studio panel changes. A negative physical/acoustic result is retained without EQ/F0 tweaks.
+
+
+## Gate B initial actual CI evidence and coverage boundary
+See RESULTS.md for measured exact-head six-case machine output and archived native Pa/WAV. A0–A3 physical/equation/oracle thresholds were committed **before** new experiment files, at Core commit b3f0efd2dc88f5695eee14c51c2579a6fc1ca85a (A0_A3_FREEZE_20261101.md). Reference geometry, model-matched complex H, two oracle computations, 4 temporal log-area invariance probes, source/plan identity, old M0 quantized waveform and each condition's 102 acoustic calls are checked by actual run.py. The old Core CC-A2 regression runs in the same scientific workflow.
+
+Negative test categories implemented: illegal numeric edit (including bool, NaN/Inf, center, ratio), one-cell/aggregate volume preserving geometry corruption as independent-oracle discriminator, false output acoustic observer, wrong/source/preregistration blob pin and WAV gain/clipping corruption. G3 independent body registry/tampered historical Take/restart, source/actuator fault injection, Studio browser E2E, controlled human ABX, voice-naturalness and moving-wall C1/C2 remain NOT_TESTED by this new five-cell experiment. Do not report any of these as a pass merely because runner/CI succeeded.
