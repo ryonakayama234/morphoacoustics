@@ -69,11 +69,17 @@ def recursive_uout_uin(areas: np.ndarray, freq: np.ndarray) -> np.ndarray:
     f=np.asarray(freq,dtype=float)
     down=np.full(f.size,LOAD_RATIO*RHO*SOUND_SPEED/float(areas[-1]),dtype=complex)
     gain=np.ones(f.size,dtype=complex)
+    # Re-derive each downstream-to-upstream section independently.
+    # Do not reuse _segment (the direct-matrix observer's implementation).
+    local_k=2.0*np.pi*f/SOUND_SPEED - 1j*ATTENUATION
     for a in areas[::-1]:
-        A,B,C,D=_segment(f,float(a))
-        denominator=C*down+D
-        gain/=denominator
-        down=(A*down+B)/denominator
+        z=RHO*SOUND_SPEED/float(a)
+        phase=local_k*SECTION_LENGTH
+        co=np.cos(phase)
+        si=np.sin(phase)
+        denominator=(1j*si/z)*down+co
+        gain=gain/denominator
+        down=(co*down+1j*z*si)/denominator
     return gain
 
 
