@@ -196,6 +196,71 @@ def test_real_physics_archive_restart_and_adversarial_readback(tmp_path):
     finally:
         decision.write_bytes(original)
 
+
+    # A scientific PASS flag and correctly recomputed decision hash are not
+    # evidence when a recorded shape/oracle measurement is absent or failing.
+    marker_good = marker.read_bytes()
+    decision_good = decision.read_bytes()
+    try:
+        bad = json.loads(decision_good)
+        bad["conditions"][0]["loaded_oracle_rest"]["grid_relative_complex_error"] = 1.0
+        decision.write_bytes(CLI["canonical"](bad))
+        new_marker = json.loads(marker_good)
+        new_marker["decision_sha256"] = CLI["digest"](decision.read_bytes())
+        marker.write_bytes(CLI["canonical"](new_marker))
+        with pytest.raises(CLI["RevisionError"], match="failed loaded_oracle_rest"):
+            CLI["verify_archive"](root)
+    finally:
+        decision.write_bytes(decision_good)
+        marker.write_bytes(marker_good)
+
+    # Codex P2: a forged nonnull trace can preserve its baseline-relative L2
+    # while reversing the body's physical response. Update every hash, WAV,
+    # common gain and saved decision consistently: only fresh physics exposes it.
+    runner, exp, parent, _ = CLI["_load_context"]()
+    physical_dir = root / "physics"
+    original_files = {p.name: p.read_bytes() for p in physical_dir.iterdir()}
+    original_manifest = marker.read_bytes()
+    try:
+        baseline = np.load(physical_dir / "c04_r100.npy", allow_pickle=False)
+        case = physical_dir / "c04_r090.npy"
+        altered = 2 * baseline - np.load(case, allow_pickle=False)
+        with case.open("wb") as out:
+            np.save(out, altered, allow_pickle=False)
+        edited_decision = json.loads(original_files["decision.json"])
+        for row in edited_decision["conditions"]:
+            if row["center"] == 4 and row["ratio"] == .90:
+                row["raw_pa_sha256_le_f64"] = runner["sha_f64"](altered)
+                row["raw_pa_quantized_sha256"] = exp.quantized_waveform_sha256(altered)
+                row["raw_pa_relative_l2"] = float(
+                    np.linalg.norm(altered-baseline) / np.linalg.norm(baseline)
+                )
+        bodies = {p.name: np.load(p, allow_pickle=False)
+                  for p in physical_dir.glob("*.npy")}
+        gain = .90 / max(float(np.max(np.abs(x))) for x in bodies.values())
+        edited_decision["preview_common_gain"] = gain
+        for row in edited_decision["conditions"]:
+            raw = bodies[row["raw_file"]]
+            wav_data = runner["wav_bytes"](raw, gain)
+            (physical_dir / row["preview_file"]).write_bytes(wav_data)
+            row["preview_sha256"] = CLI["digest"](wav_data)
+        decision.write_bytes(CLI["canonical"](edited_decision))
+        edited_manifest = json.loads(original_manifest)
+        edited_manifest["decision_sha256"] = CLI["digest"](decision.read_bytes())
+        edited_manifest["artifact_sha256"] = {
+            p.name: CLI["digest"](p.read_bytes())
+            for p in physical_dir.iterdir() if p.suffix in (".npy", ".wav")
+        }
+        marker.write_bytes(CLI["canonical"](edited_manifest))
+        # The complete checksum and monitoring WAV path is consistent: only
+        # an actual fresh physical replay can reject the wrong raw pressure.
+        with pytest.raises(CLI["RevisionError"], match="stored Pa differs"):
+            CLI["verify_archive"](root)
+    finally:
+        for name, old_data in original_files.items():
+            (physical_dir / name).write_bytes(old_data)
+        marker.write_bytes(original_manifest)
+
     link = root / "physics" / "c04_r110.wav"
     original = link.read_bytes()
     link.unlink()
