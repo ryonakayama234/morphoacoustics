@@ -38,8 +38,23 @@ jobs:
               assert (p.parent/c["raw_file"]).is_file()
               assert (p.parent/c["preview_file"]).is_file()
               assert c["acoustic_calls"]==102
-          print(json.dumps({"status":r["status"],"measured_relative_raw_l2":
-                [(c["center"],c["ratio"],c["raw_pa_relative_l2"]) for c in r["conditions"]]},indent=2))
+          print(json.dumps({
+              "status":r["status"],
+              "source_sha256":r["source_sha256_le_f64"],
+              "gesture_plan_sha256":r["gesture_plan_sha256"],
+              "common_gain":r["preview_common_gain"],
+              "cases":[{
+                  "center":c["center"],"ratio":c["ratio"],
+                  "volume_m3":c["rest_volume_m3"],
+                  "harmonic_transfer_l2":c["rest_harmonic_transfer_l2"],
+                  "raw_relative_l2":c["raw_pa_relative_l2"],
+                  "null_floor":c["null_numerical_floor"],
+                  "rest_oracle_complex_error":c["loaded_oracle_rest"]["grid_relative_complex_error"],
+                  "terminal_oracle_complex_error":c["loaded_oracle_endpoint"]["grid_relative_complex_error"],
+                  "raw_sha":c["raw_pa_sha256_le_f64"],
+                  "preview_sha":c["preview_sha256"]
+              } for c in r["conditions"]]
+          },indent=2))
           PY
       - name: Core adopted CC-A2 regression at existing frozen model
         env:
