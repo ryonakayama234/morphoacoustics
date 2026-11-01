@@ -33,6 +33,8 @@ jobs:
           python tools/od2_body_cli.py perform-suite --output-dir od2-evidence
           python tools/od2_body_cli.py verify --output-dir od2-evidence
           python tools/od2_body_cli.py resolve --output-dir od2-evidence --center 8 --ratio 0.90
+          python tools/od2_body_cli.py reperform-revision --output-dir od2-evidence --center 4 --ratio 1.10
+          python tools/od2_body_cli.py reperform-revision --output-dir od2-evidence --center 8 --ratio 0.90
       - name: Real physical replay/adversarial process tests
         env:
           OD2_REAL_PHYSICS: "1"
