@@ -212,6 +212,108 @@ def _trusted_archive_files(directory: Path) -> None:
             "INVALID_ARCHIVE", "missing physical archive")
 
 
+
+def _fresh_physical_from_receipt(exp: Any, parent: Any, body: dict[str, Any]) -> np.ndarray:
+    """Reconstruct exact SI body from saved trusted receipt; recompute source→Pa."""
+    c, r = body["center_index"], body["rest_area_ratio"]
+    base = parent.prepared.rest_state
+    geometry = Tract1DGeometry(
+        cavity_id=base.cavity_id,
+        sections=tuple(TubeSection(float.fromhex(length), float.fromhex(area))
+                       for length, area in zip(body["lengths_hex"],
+                                               body["rest_areas_hex"], strict=True)),
+    )
+    if body["null_alias"]:
+        prepared = parent.prepared
+    else:
+        prepared = prepare_tract1d(
+            parent.prepared.creature, geometry,
+            provenance=PreparationProvenance(
+                source="od2-local-revision-study", model=FAMILY,
+                notes=(f"parent={parent.preparation_digest}",
+                       f"center={c}", f"ratio={r}"),
+            ),
+        )
+        selected = make_body_preset(
+            preset_id=body["preset_id"], revision=body["preset_revision"], prepared=prepared
+        )
+        _expect(selected.preparation_digest == body["preparation_digest"],
+                "REVISION_MISMATCH", "reconstructed Core physical binding changed")
+    _expect(exp.capability_report(prepared).status is exp.FeasibilityStatus.FEASIBLE,
+            "INFEASIBLE", "valid bound body cannot execute frozen task")
+    sources, _ = exp.EXP26.EXP13.build_sources()
+    source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
+    actual = exp.evaluate_condition(prepared, source, label=f"od2-replay-c{c}-r{r}")
+    _expect(actual.feasibility.status is exp.FeasibilityStatus.FEASIBLE
+            and actual.waveform is not None and actual.acoustic_call_count == 102,
+            "PHYSICAL_RESULT_MISMATCH", "replayed Core did not execute 102 acoustic calls")
+    raw = np.asarray(actual.waveform, dtype=np.float64)
+    _expect(raw.shape == (SAMPLES,) and np.isfinite(raw).all(),
+            "PHYSICAL_RESULT_MISMATCH", "invalid freshly calculated pressure")
+    return raw
+
+
+def _verify_saved_model_observers(runner: Any, exp: Any, parent: Any,
+                                  receipt: dict[str, Any], row: dict[str, Any]) -> None:
+    """Do not trust a saved PASS status or edited scientific metric fields."""
+    center, ratio_text = receipt["center_index"], receipt["rest_area_ratio"]
+    base_area = np.array([s.area_m2 for s in parent.prepared.rest_state.sections])
+    area = np.array([float.fromhex(x) for x in receipt["rest_areas_hex"]])
+    w = np.array(runner["weights"](center))
+    expected_log_error = float(np.max(np.abs(
+        np.log(area / base_area) - math.log(RATIOS[ratio_text]) * w
+    )))
+    shape_error = row.get("shape_log_residual")
+    _expect(type(shape_error) is float and math.isfinite(shape_error)
+            and 0 <= shape_error <= 1e-12
+            and abs(shape_error - expected_log_error) <= 1e-12,
+            "SCIENTIFIC_EVIDENCE_INVALID", "missing/failed shape oracle")
+    expected_volume = math.fsum(
+        float.fromhex(length) * float(a)
+        for length, a in zip(receipt["lengths_hex"], area, strict=True)
+    )
+    expected_derivative = math.fsum(
+        float.fromhex(length) * float(a) * float(weight)
+        for length, a, weight in zip(receipt["lengths_hex"], area, w, strict=True)
+    )
+    for key, expected in (("rest_volume_m3", expected_volume),
+                          ("volume_derivative_per_log_ratio_m3", expected_derivative)):
+        recorded = row.get(key)
+        _expect(type(recorded) is float and math.isfinite(recorded)
+                and abs(recorded - expected) <= 1e-12 * max(abs(expected), 1e-20),
+                "SCIENTIFIC_EVIDENCE_INVALID", f"missing/failed {key} oracle")
+    # Recompute the actual loaded outlet/observer transfer independently of
+    # the stored decision. Ideal pressure-release impedance is NOT the target.
+    geom = Tract1DGeometry(
+        cavity_id=parent.prepared.rest_state.cavity_id,
+        sections=tuple(TubeSection(float.fromhex(length), float.fromhex(a))
+                       for length, a in zip(receipt["lengths_hex"],
+                                            receipt["rest_areas_hex"], strict=True)),
+    )
+    rest = runner["check_transfer"](exp, geom)
+    terminal = exp.EXP27.realize_task_geometry(
+        geom, 1.0, cavity_id="od2-independent-terminal"
+    )
+    endpoint = runner["check_transfer"](exp, terminal)
+    for name, expected_record in (("loaded_oracle_rest", rest),
+                                  ("loaded_oracle_endpoint", endpoint)):
+        saved = row.get(name)
+        _expect(type(saved) is dict and set(saved) == set(expected_record),
+                "SCIENTIFIC_EVIDENCE_INVALID", f"missing {name} observer")
+        for key, expected in expected_record.items():
+            actual = saved[key]
+            _expect(type(actual) is float and math.isfinite(actual)
+                    and actual >= 0 and abs(actual - expected) <= 1e-10
+                    and (not key.endswith("relative_complex_error") or actual <= 1e-9),
+                    "SCIENTIFIC_EVIDENCE_INVALID", f"failed {name}.{key}")
+    harmonics = row.get("rest_harmonic_transfer_l2")
+    expected_harmonics = (0. if ratio_text == "1.00" else
+                          runner["EXPECTED_HARMONICS"][(center, RATIOS[ratio_text])])
+    _expect(type(harmonics) is float and math.isfinite(harmonics)
+            and abs(harmonics - expected_harmonics) <= 2e-7,
+            "SCIENTIFIC_EVIDENCE_INVALID", "bad harmonic transfer reference")
+
+
 def verify_archive(directory: Path) -> dict[str, Any]:
     _trusted_archive_files(directory)
     runner, exp, parent, _ = _load_context()
@@ -285,6 +387,13 @@ def verify_archive(directory: Path) -> dict[str, Any]:
                 and digest((directory / "physics" / wav_name).read_bytes()) ==
                     row["preview_sha256"],
                 "ARTIFACT_TAMPER", "stored native pressure/preview receipt incorrect")
+        _verify_saved_model_observers(runner, exp, parent, receipt, row)
+        # Re-execute the whole physical model from the authoritative saved
+        # BodyRevision, not just the same relative L2 statistic.
+        replay = _fresh_physical_from_receipt(exp, parent, receipt)
+        replay_floor = float(np.linalg.norm(replay - raw) / np.linalg.norm(raw))
+        _expect(math.isfinite(replay_floor) and replay_floor <= 1e-12,
+                "PHYSICAL_RESULT_MISMATCH", "stored Pa differs from fresh body-driven physics")
         waveforms[(c, r)] = raw
         if r == "1.00":
             nulls.append(raw)
@@ -377,46 +486,7 @@ def reperform_revision(directory: Path, center: int, ratio: str) -> dict[str, An
     verify_archive(directory)
     runner, exp, parent, _ = _load_context()
     body = _receipt(runner, exp, parent, center, ratio)
-    base = parent.prepared.rest_state
-    geometry = Tract1DGeometry(
-        cavity_id=base.cavity_id,
-        sections=tuple(
-            TubeSection(float.fromhex(length), float.fromhex(area))
-            for length, area in zip(
-                body["lengths_hex"], body["rest_areas_hex"], strict=True
-            )
-        ),
-    )
-    if body["null_alias"]:
-        prepared = parent.prepared
-    else:
-        prepared = prepare_tract1d(
-            parent.prepared.creature, geometry,
-            provenance=PreparationProvenance(
-                source="od2-local-revision-study", model=FAMILY,
-                notes=(f"parent={parent.preparation_digest}",
-                       f"center={center}", f"ratio={ratio}"),
-            ),
-        )
-        selected = make_body_preset(
-            preset_id=body["preset_id"], revision=body["preset_revision"],
-            prepared=prepared,
-        )
-        _expect(selected.preparation_digest == body["preparation_digest"],
-                "REVISION_MISMATCH", "reconstructed body disagrees with Core binding")
-    _expect(exp.capability_report(prepared).status is exp.FeasibilityStatus.FEASIBLE,
-            "INFEASIBLE", "this body cannot execute the frozen task")
-    sources, _ = exp.EXP26.EXP13.build_sources()
-    source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
-    actual = exp.evaluate_condition(
-        prepared, source, label=f"od2-reperformed-c{center}-r{ratio}"
-    )
-    _expect(actual.feasibility.status is exp.FeasibilityStatus.FEASIBLE
-            and actual.waveform is not None and actual.acoustic_call_count == 102,
-            "PHYSICAL_RESULT_MISMATCH", "no genuine 102-call physical realization")
-    raw = np.asarray(actual.waveform, dtype=np.float64)
-    _expect(raw.shape == (SAMPLES,) and np.isfinite(raw).all(),
-            "PHYSICAL_RESULT_MISMATCH", "bad newly generated raw pressure")
+    raw = _fresh_physical_from_receipt(exp, parent, body)
     archive_name = f"c{center:02d}_r{round(RATIOS[ratio]*100):03d}.npy"
     archived = np.load(directory / "physics" / archive_name, allow_pickle=False)
     denominator = float(np.linalg.norm(archived))
