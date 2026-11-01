@@ -115,6 +115,13 @@ def test_real_physics_archive_restart_and_adversarial_readback(tmp_path):
     assert a["verified_revisions"] == 4
     assert a["verified_null_aliases"] == 2
     assert a == CLI["verify_archive"](root)
+    for c, ratio in ((4, "1.10"), (8, "0.90")):
+        physical = CLI["reperform_revision"](root, c, ratio)
+        assert physical["status"] == "GO_LIMITED_DIRECT_REVISION_EXECUTION_REPLAY"
+        assert physical["acoustic_calls"] == 102
+        assert physical["samples"] == 24000
+        assert physical["raw_relative_l2_replay_error"] <= 1e-12
+        assert physical["fresh_raw_sha256_le_f64"] == physical["archived_raw_sha256_le_f64"]
     with pytest.raises(CLI["RevisionError"], match="overwrite"):
         CLI["perform_suite"](root)
 
