@@ -25,6 +25,9 @@ flowchart LR
 
 ## Proposed data objects (semantic shape, no stable wire ABI yet)
 
+## Planned opt-in local CLI command semantics (NOT RELEASED)
+The initial integration technology is a **version-negotiated local Core CLI**, with logical operations: inspect-capabilities, derive/propose (validated full revision receipt without saving), perform (fresh physical output for exact body/task), register (accept only previously verified receipt/output), resolve (reconstruct and check exact immutable revision), verify (read back raw/WAV/trace/source identity). An implementation may retain #165/#166's existing two executable helpers while publishing **one logical protocol and one physical identity authority**. Stdout is typed strict JSON status/receipts, errors are nonzero and fail-closed; no success marker before all expected content is atomically published and verified. The exact command-line flags/request schema remain a G3 prereg freeze item; do not guess existing flags for the new five-cell family.
+
 ### ShapeEditProposal (input intent)
 - schema_version: literal od2.shape-proposal.v0-draft (future version negotiated at G3).
 - parent: exact Core-owned preset_id, revision, preparation_digest (M0/r1 only).
