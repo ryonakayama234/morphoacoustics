@@ -20,6 +20,7 @@ def make_sofa(missing: str | None = None) -> bytes:
     buf = io.BytesIO()
     with h5py.File(buf,"w") as f:
         f.attrs["SOFAConventions"] = "SimpleFreeFieldHRIR"
+        f.attrs["License"] = "CC 3.0 BY-SA"
         for name, shape, fill in [
             ("Data.IR",(4,2,128),912345.0), ("Data.Delay",(4,2),777777.0),
             ("Data.SamplingRate",(1,),48000.0), ("SourcePosition",(4,3),123456.0),
@@ -76,3 +77,10 @@ def test_path_traversal_blocked(tmp_path):
         z.writestr("../escape.sofa",make_sofa())
     with pytest.raises(audit.QualificationError,match="Unsafe"):
         audit.audit_archive(p,hashlib.md5(p.read_bytes()).hexdigest())
+
+def test_embedded_license_version_conflict_is_explicit(tmp_path):
+    p,md5=make_zip(tmp_path)
+    result=audit.audit_archive(p,md5)
+    assert result["embedded_file_licenses"] == ["CC 3.0 BY-SA"]
+    assert result["rights_status"] == "FILE_NOTICE_AND_PAPER_VERSION_CONFLICT_REVIEW_REQUIRED"
+    assert result["physical_measurand_status"] == "NOT_QUALIFIED_BY_METADATA"

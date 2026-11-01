@@ -25,3 +25,6 @@ NF1/NF2 Aalto, NF3 KEMAR, NF4 SCUT previously exposed; not fresh G3b. NF4 C4 onl
 
 ## Privacy and distribution
 Do not add SOFA, archive, audio, per-position derived acoustic responses, model weights or final truth to git. Publisher and mirror identities are aliases until hashes establish exact copies; never count them as independent heads.
+
+## Verified original header/ZIP findings (2026-11-01; commit 8f663af, run 41307651527)
+Original full-sphere ZIP MD5 match and SHA256: `5f3a4c6df0f0c0bbbce6639f41129a20bc03603d19316db74637f70bfa1ff5f9`. Four SOFA files each [2702,2,128] original response shape and [1,2] Data.Delay shape; recorded SOFA convention version 1.0, Fs=48k. Confirmed original SOFA root `License = CC 3.0 BY-SA`, different from paper's dataset licence CC BY-SA 4.0. Do NOT silently reconcile notices; independent rights review required. Full non-reconstructive per-file SHA256 and structure are in RESULTS and CI stdout. No original audio/IR or per-position geometry has been committed.

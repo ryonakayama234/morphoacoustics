@@ -97,6 +97,12 @@ def audit_archive(path: Path, expected_md5: str) -> dict:
                                     "sha256":digest(member,"sha256"), **result})
     if not any(f.get("structure") == "PASS_SHAPE_ONLY" for f in output["files"]):
         raise QualificationError("No qualifying SOFA entries")
+    file_licenses = sorted(set(str(f.get("attributes", {}).get("License", "")) for f in output["files"] if f.get("structure") == "PASS_SHAPE_ONLY"))
+    output["embedded_file_licenses"] = file_licenses
+    output["publisher_paper_license"] = "CC BY-SA 4.0"
+    output["rights_status"] = ("FILE_NOTICE_AND_PAPER_VERSION_CONFLICT_REVIEW_REQUIRED"
+                                if file_licenses != ["CC BY-SA 4.0"] else "LICENSE_STRING_MATCH_ONLY_RIGHTS_REVIEW_PENDING")
+    output["physical_measurand_status"] = "NOT_QUALIFIED_BY_METADATA"
     output["conclusion"] = "INTEGRITY_AND_STRUCTURE_ONLY_NOT_PHYSICAL_QUALIFICATION"
     return output
 

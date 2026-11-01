@@ -8,10 +8,10 @@
   "source_id": "K1_THK_KU100_NF",
   "archive_filename": "NFHRIR_L2702_SOFA.zip",
   "publisher_md5": "1310d2b015c82272cc27d10d680b6bb4",
-  "original_archive_sha256": null,
-  "archive_integrity": "NOT_VERIFIED",
+  "original_archive_sha256": "5f3a4c6df0f0c0bbbce6639f41129a20bc03603d19316db74637f70bfa1ff5f9",
+  "archive_integrity": "PUBLISHER_MD5_MATCHED_ORIGINAL_SHA256_COMPUTED",
   "local_download": "FAILED_DNS",
-  "ci_download": "NOT_RUN",
+  "ci_download": "SUCCEEDED",
   "file_specific_license_notice": null,
   "independent_rights_review": "NOT_PERFORMED",
   "original_data_ir_values_read": false,
@@ -22,12 +22,31 @@
     "Q3_radius_gain": "PUBLISHER_FACTORS_ONLY",
     "Q4_window": "ANALYTIC_RISK_ONLY",
     "Q5_split": "NOT_RUN_G0B",
-    "Q6_rights": "PUBLISHER_CC_BY_SA_CLAIM_INDEPENDENT_REVIEW_PENDING"
+    "Q6_rights": "CC_3_0_FILE_VS_CC_4_0_PAPER_CONFLICT_REVIEW_REQUIRED"
   },
   "original_recording_plane": null,
   "stored_time_zero": null,
   "final_geometry_manifest": null,
   "final_truth_access": "PROHIBITED",
   "g3b": "BLOCKED",
-  "adopted_capability": false
+  "adopted_capability": false,
+  "original_archive_bytes": 13608685,
+  "original_sofa_members": 4,
+  "original_sofa_shape": [
+    2702,
+    2,
+    128
+  ],
+  "original_delay_shape": [
+    1,
+    2
+  ],
+  "original_sampling_rate_hz": 48000,
+  "sofa_convention": "SimpleFreeFieldHRIR 1.0",
+  "original_file_license_notice": "CC 3.0 BY-SA (all four SOFA files)",
+  "publisher_declared_dataset_license": "CC BY-SA 4.0 (2016 paper)",
+  "rights_conflict": "FILE_NOTICE_AND_PAPER_VERSION_DIFFER",
+  "ci_run_url": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307651527",
+  "inspected_code_commit": "8f663af052949a618df11de22c6785f52df061a3",
+  "scientific_verdict": "PARTIAL_GO_INTEGRITY_ONLY_BLOCKED_MEASURAND"
 }

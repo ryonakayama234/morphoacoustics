@@ -11,3 +11,9 @@
 
 ## D2 — current STOP boundary
 **NO G0-B OR G1–G5**, no source-to-ear physical pressure claim, no measured amplitude/time/frequency score, no final blind data, no adopted ASMR runtime. Outcome cannot be declared `QUALIFIED_LIMITED` solely from metadata. Explicit additional review and next-stage decision required.
+
+## D3 — 2026-11-01 JST: observed original CI evidence
+- G0-A2 **integrity/source-family identity** is confirmed by successful [run 41307651527](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307651527). Original archive verified to published MD5 and local SHA256; four SOFAs structurally checked. This is a bounded GO for provenance/format **only**.
+- **Rights blocker newly found**: SOFA root `License = CC 3.0 BY-SA`, paper's explicit dataset licence `CC BY-SA 4.0`. Maintain `RIGHTS_CONFLICT_REVIEW_REQUIRED`. Independent file/edition legal review must determine actual governing terms and obligations for derived weights/commercial usage before distribution.
+- **Timing blocker refined**: `Data.Delay` shape [1,2] is common to measurement positions in each SOFA. No per-position delay values are in that field. No conclusion on physical absolute TOF until evidence of preprocessing, time origin, Data.IR or independently calibrated arrival is qualified with appropriate blind control.
+- No G0-B geometry split, signal sampling/learning, G3b truth or production adoption. **Scientific overall decision: PARTIAL-GO-INTEGRITY / BLOCKED-MEASURAND-QUALIFICATION.**
