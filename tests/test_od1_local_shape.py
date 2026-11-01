@@ -70,3 +70,40 @@ def test_aggregate_volume_is_not_a_sufficient_anatomical_oracle() -> None:
     assert math.isclose(OBS["static_volume"](altered),OBS["static_volume"](ref),
                         rel_tol=0,abs_tol=1e-19)
     assert float(np.max(np.abs(np.log(altered/ref))))>.001
+
+
+def test_preregistration_and_source_are_pinned(monkeypatch: pytest.MonkeyPatch) -> None:
+    RUN["check_source_pins"]()
+    pins=RUN["PINNED_SOURCE_BLOBS"]
+    old=pins["experiments/009_fixed_tract_waveform/run.py"]
+    monkeypatch.setitem(pins,"experiments/009_fixed_tract_waveform/run.py","0"*40)
+    with pytest.raises(RuntimeError,match="source or protocol drift"):
+        RUN["check_source_pins"]()
+    monkeypatch.setitem(pins,"experiments/009_fixed_tract_waveform/run.py",old)
+
+
+def test_wrong_acoustic_observation_is_not_accepted() -> None:
+    from types import SimpleNamespace
+    from morphoacoustics.physical import Tract1DGeometry,TubeSection
+    area=OBS["reference_areas"](4,1.1)
+    geom=Tract1DGeometry("oral",tuple(TubeSection(.01,float(x)) for x in area))
+    wrong=SimpleNamespace(EXP26=SimpleNamespace(EXP9=SimpleNamespace(
+        outlet_volume_velocity_transfer=lambda geom,f: np.zeros_like(f,dtype=complex),
+        far_field_pressure_transfer=lambda geom,f: np.zeros_like(f,dtype=complex))))
+    with pytest.raises(RuntimeError,match="transfer disagreement"):
+        RUN["check_transfer"](wrong,geom)
+
+
+def test_common_gain_preview_is_a_deterministic_raw_pa_derivative() -> None:
+    import io
+    import wave
+    raw=np.linspace(-1.,1.,RUN["SAMPLES"])
+    a=RUN["wav_bytes"](raw,.8)
+    b=RUN["wav_bytes"](raw,.8)
+    assert a==b
+    with wave.open(io.BytesIO(a),"rb") as wav:
+        assert wav.getframerate()==48000 and wav.getnchannels()==1
+        pcm=np.frombuffer(wav.readframes(RUN["SAMPLES"]),dtype="<i2")
+    assert np.array_equal(pcm,np.rint(raw*.8*32767).astype("<i2"))
+    with pytest.raises(ValueError,match="clipping"):
+        RUN["wav_bytes"](raw,1.3)
