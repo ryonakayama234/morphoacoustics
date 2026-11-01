@@ -19,7 +19,7 @@ flowchart LR
 | Record | Authority | Required content |
 |---|---|---|
 | BaseBodyRef | Core | exact M0 body ID/revision, backend, producer SHA, preparation digest, 16 SI areas and lengths, expected orientation |
-| ShapeEditProposal | Core interprets, Studio may draft | schema version; parent exact ref; family tract1d.local-log-area-5.v1; integer c=4/8; enum r=.90/1/.10 [correct values are 0.90/1.00/1.10]; rest_cross_section_area, not frequency or F0 |
+| ShapeEditProposal | Core interprets, Studio may draft | schema version; parent exact ref; family tract1d.local-log-area-5.v1; integer c=4/8; enum r∈{0.90,1.00,1.10}; rest_cross_section_area, not frequency or F0 |
 | ShapeBasis | Core | fixed five weights 1/4,1/2,1,1/2,1/4, ordered center, unit m², exact shape law revision |
 | BodyRevision | Core only | parent full digest; canonical edit; resulting 16×(area,length), inherited air medium, backend/capability, unique immutable recipe ID and distinct preparation digest |
 | PreparedMorphology | Core | existing semantic CreatureSpec joined to backend-specific rest state and validation provenance |
