@@ -48,5 +48,11 @@
   "rights_conflict": "FILE_NOTICE_AND_PAPER_VERSION_DIFFER",
   "ci_run_url": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307651527",
   "inspected_code_commit": "8f663af052949a618df11de22c6785f52df061a3",
-  "scientific_verdict": "PARTIAL_GO_INTEGRITY_ONLY_BLOCKED_MEASURAND"
+  "scientific_verdict": "PARTIAL_GO_INTEGRITY_ONLY_BLOCKED_MEASURAND",
+  "latest_code_commit": "9291e7bb4775caf052b6994851a109113f56c68d",
+  "latest_ci_run": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307934856",
+  "latest_ci_conclusion": "SUCCESS",
+  "synthetic_tests_passed": 10,
+  "embedded_license_comparison": "FILE_NOTICE_AND_PAPER_VERSION_CONFLICT_REVIEW_REQUIRED",
+  "physical_measurand_status": "NOT_QUALIFIED_BY_METADATA"
 }
