@@ -1,0 +1,54 @@
+name: od1-preregistered-shape-science
+on:
+  pull_request:
+    paths:
+      - "experiments/od1_local_shape/**"
+      - "tests/test_od1_local_shape.py"
+      - "docs/research/od1-organ-shape-assembly-20261101/**"
+      - ".github/workflows/od1-local-shape.yml"
+      - "src/morphoacoustics/**"
+      - "tools/cc_a2_live.py"
+  workflow_dispatch:
+jobs:
+  frozen-physical-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned numerical environment
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Run independent numeric/negative unit tests
+        run: python -m pytest -v tests/test_od1_local_shape.py
+      - name: Execute all 6 *new* genuine physics runs at frozen source
+        run: |
+          python experiments/od1_local_shape/run.py --output-dir od1-physics-evidence
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("od1-physics-evidence/decision.json")
+          r=json.loads(p.read_text("utf-8"))
+          assert r["status"]=="GO_LIMITED_RESEARCH_SHAPE_AND_INHERITED_1D_ACOUSTICS"
+          assert len(r["conditions"])==6
+          for c in r["conditions"]:
+              assert (p.parent/c["raw_file"]).is_file()
+              assert (p.parent/c["preview_file"]).is_file()
+              assert c["acoustic_calls"]==102
+          print(json.dumps({"status":r["status"],"measured_relative_raw_l2":
+                [(c["center"],c["ratio"],c["raw_pa_relative_l2"]) for c in r["conditions"]]},indent=2))
+          PY
+      - name: Core adopted CC-A2 regression at existing frozen model
+        env:
+          CC_A2_REAL_PHYSICS: "1"
+        run: python -m pytest -q tests/test_cc_a2_live.py
+      - name: Upload genuine source-derived raw pressure and WAV (including failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: od1-six-condition-physical-evidence
+          path: od1-physics-evidence/
+          if-no-files-found: warn
