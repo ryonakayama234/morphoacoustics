@@ -21,6 +21,7 @@ import numpy as np
 from morphoacoustics.integration.body_presets import (
     BodyPresetRegistry, CharacterBodyBinding, make_body_preset,
 )
+from morphoacoustics.physical import Tract1DGeometry, TubeSection
 from morphoacoustics.preparation import PreparationProvenance, prepare_tract1d
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -365,10 +366,84 @@ def perform_suite(output: Path) -> dict[str, Any]:
             shutil.rmtree(stage)
 
 
+
+def reperform_revision(directory: Path, center: int, ratio: str) -> dict[str, Any]:
+    """Freshly execute physics from a verified saved body recipe, not old WAV.
+
+    This is an R1 engineering replay on the *same* frozen task/solver, not a
+    creator Take API and not an arbitrary new performance/voice model.
+    """
+    center, ratio = _require_case(center, ratio)
+    verify_archive(directory)
+    runner, exp, parent, _ = _load_context()
+    body = _receipt(runner, exp, parent, center, ratio)
+    base = parent.prepared.rest_state
+    geometry = Tract1DGeometry(
+        cavity_id=base.cavity_id,
+        sections=tuple(
+            TubeSection(float.fromhex(length), float.fromhex(area))
+            for length, area in zip(
+                body["lengths_hex"], body["rest_areas_hex"], strict=True
+            )
+        ),
+    )
+    if body["null_alias"]:
+        prepared = parent.prepared
+    else:
+        prepared = prepare_tract1d(
+            parent.prepared.creature, geometry,
+            provenance=PreparationProvenance(
+                source="od2-local-revision-study", model=FAMILY,
+                notes=(f"parent={parent.preparation_digest}",
+                       f"center={center}", f"ratio={ratio}"),
+            ),
+        )
+        selected = make_body_preset(
+            preset_id=body["preset_id"], revision=body["preset_revision"],
+            prepared=prepared,
+        )
+        _expect(selected.preparation_digest == body["preparation_digest"],
+                "REVISION_MISMATCH", "reconstructed body disagrees with Core binding")
+    _expect(exp.capability_report(prepared).status is exp.FeasibilityStatus.FEASIBLE,
+            "INFEASIBLE", "this body cannot execute the frozen task")
+    sources, _ = exp.EXP26.EXP13.build_sources()
+    source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
+    actual = exp.evaluate_condition(
+        prepared, source, label=f"od2-reperformed-c{center}-r{ratio}"
+    )
+    _expect(actual.feasibility.status is exp.FeasibilityStatus.FEASIBLE
+            and actual.waveform is not None and actual.acoustic_call_count == 102,
+            "PHYSICAL_RESULT_MISMATCH", "no genuine 102-call physical realization")
+    raw = np.asarray(actual.waveform, dtype=np.float64)
+    _expect(raw.shape == (SAMPLES,) and np.isfinite(raw).all(),
+            "PHYSICAL_RESULT_MISMATCH", "bad newly generated raw pressure")
+    archive_name = f"c{center:02d}_r{round(RATIOS[ratio]*100):03d}.npy"
+    archived = np.load(directory / "physics" / archive_name, allow_pickle=False)
+    denominator = float(np.linalg.norm(archived))
+    _expect(denominator > 0, "PHYSICAL_RESULT_MISMATCH", "empty archived reference")
+    relative_error = float(np.linalg.norm(raw - archived) / denominator)
+    _expect(math.isfinite(relative_error) and relative_error <= 1e-12,
+            "PHYSICAL_RESULT_MISMATCH", "revision-to-physics direct replay drift")
+    return {
+        "schema": PROTOCOL,
+        "status": "GO_LIMITED_DIRECT_REVISION_EXECUTION_REPLAY",
+        "revision_id": body["revision_id"],
+        "center_index": center,
+        "rest_area_ratio": ratio,
+        "source_id": "lf_fixed",
+        "sample_rate_hz": SAMPLE_RATE_HZ,
+        "samples": SAMPLES,
+        "acoustic_calls": actual.acoustic_call_count,
+        "fresh_raw_sha256_le_f64": runner["sha_f64"](raw),
+        "archived_raw_sha256_le_f64": runner["sha_f64"](archived),
+        "raw_relative_l2_replay_error": relative_error,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="OD-2 opt-in local research body adapter")
     parser.add_argument("operation", choices=("inspect", "derive", "perform-suite",
-                                               "verify", "resolve"))
+                                               "verify", "resolve", "reperform-revision"))
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--center", type=int)
     parser.add_argument("--ratio", choices=tuple(RATIOS))
@@ -382,6 +457,11 @@ def main() -> None:
                 verify_archive(args.output_dir)
             runner, exp, parent, _ = _load_context()
             result: dict[str, Any] = _receipt(runner, exp, parent, c, r)
+        elif args.operation == "reperform-revision":
+            _expect(args.output_dir is not None,
+                    "INVALID_INPUT", "reperform-revision requires --output-dir")
+            c, r = _require_case(args.center, args.ratio)
+            result = reperform_revision(args.output_dir, c, r)
         elif args.operation == "inspect":
             _, _, parent, _ = _load_context()
             result = {"schema": PROTOCOL, "status": "RESEARCH_ONLY",
