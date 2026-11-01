@@ -1,0 +1,93 @@
+# OD-2 EXPERIMENT — prospective hypothesis, measurands, verification, refusal gates
+
+**DESIGN REVIEW / NOT A3 PREREGISTRATION.** This is an implementable experimental protocol proposal derived from *already observed* OD-1 results. Numerical acceptance and exact source dependencies must be frozen in a new versioned A3 commit **before new OD-2 execution code or inspection of novel outputs**. Do not call previously seen center4/8 site performance a blind discovery.
+
+## Scientific claim under test
+A lawful bounded rest-geometry edit applied to an exact source body can be named, prepared, persisted and *re-executed* as one immutable physical body; same task/source on different bodies yields reproducible model-derived pressure without waveform editing. This does **not** claim new biomechanical fidelity, more natural-sounding speakers or auditory perceptibility.
+
+## Hypotheses and falsifiers (pre-acceptance)
+| ID | Hypothesis | Primary observables | Falsifier / stop |
+|---|---|---|---|
+| H0 null/idempotence | r=1 aliases exact M0 and repeated same edit resolves same revision | parent digest, revision ID, ordered 16-area vector, readback | any minted null body, changed geometry, duplicate differing ID |
+| H1 geometric truth | Core derives exactly five log-area weights and no other structural edits | per-index log-area, length, V, dV/dtheta, impedance sensitivity | wrong site/neighbor, mismatched volume despite same total, nonpositive |
+| H2 physical-task invariance | source, task, solver and observer are identical across edits | source/gesture SHA, clocks, 16 timed states; log-area separability | changed LF/task/gain, silent fallback, invalid time evolution |
+| H3 model-matched acoustic causality | unchanged inherited Core yields the same old OD-1 acoustic response per prepared geometry | complex matched-load H(f) amplitude/phase, real Pa(t), relative L2, independent oracle | receiver-plane/load mismatch, nonfinite output, failure against frozen model tolerance |
+| H4 version/lineage | old single-site08 / CC-A2 refs and new 5-cell bodies never collide, are independently replayable | complete receipt, preparation digest, exact registry lookup, stale revision negative | historical retarget, alias crossing, forged receipt accepted |
+| H5 genuine persistence | body and real Pa/WAV/trace survive process restart without reclassifying failed/partial data as Take | per-file SHA/size, canonical bytes, marker-last, restarted resolver | forged manifest, changed bytes, partial run accepted |
+| H6 creator interaction | only existing approved V2 slots can show/select/edit the validated organ and immutable paired Takes | slot registry/interaction test, exact body selectors, A/B, archived take | inert control presented as active, a new panel/mode, fake audio |
+| H7 perceptual character value | new body may or may not be audibly distinct; voice likeness is independent | blind discrimination, open-set vocal impression, artifacts, creator utility | outcome INDETERMINATE / negative is retained, never repaired with EQ |
+| H8 compatibility | no regression of existing CC-A2/X2a, OG3/OG4, SV1, v0/v1 contract, old archived Takes | exact-source CI and negative fixtures | any altered old run without explicit version/migration |
+
+H3 tests the inherited *chosen mathematical equations* and physical runner, not biological ground truth. H7 cannot be inferred from H3 and is not a prereq for G2 limited research adoption.
+
+## Measurand specification and traceability
+| Quantity | Definition / dimension | How acquired | Required gate |
+|---|---|---|---|
+| A_i^rest | cross section m² per section | Core derived state, 16 values | G1 |
+| L_i and total L | m, 16×0.010m and 0.160m | Core derived state/independent oracle | G1 |
+| V_rest | sum L_i A_i, m³ | independent calculation | G1 |
+| dV/dtheta | sum L_i A_i w_i, m³ | independent derivative and finite differences as diagnostic | G1 |
+| Z_i | rho*c_air/A_i, Pa·s/m³ | independent calculation | G1 |
+| A_i(t) | timed cross-section, m² | actual Core timecourse at preselected instants | G2 |
+| H(f) | complex pressure-per-inlet-volume-flow, Pa/(m³/s), actual load+observer | matrix product vs reverse impedance recurrence | G2 |
+| p_obs(t) | model output/0.20m pressure proxy, Pa | raw float64 Core result | G2 |
+| relative waveform L2 | ||p_edit-p_baseline||₂/||p_baseline||₂, dimensionless | full raw Pa, no gain compensation | G2 |
+| numerical floor | repeated null and independent oracle residual on same environment | preregistered controls | G1–G2 |
+| artifact integrity | raw Pa/PCM/trace SHA256 and sizes | independent post-write verification | G3 |
+| creator audible/quality | paired listener result; non-numeric concept distinct from L2 | separately approved blind listening | G5 |
+
+No absolute receiver-ear SPL, body tissue force, calibrated naturalness, or human vocal fold state is measured. Wav gain is common across a pair and not a physical input. F0 is prescribed at the source, not generated by self-excited material mechanics.
+
+## Conditions, interventions and priority
+Audited fixed M0 geometry with original Arai reverse-direction 16 areas; new center c in {4,8} × r in {0.90,1.00,1.10}, six executions/four derived bodies/two null cases. Legacy single-site08 is a *separate* identity regression only, not pooled into same intervention family.
+
+Preserve the OD-1 exact inherited source: 100Hz LF prescribed waveform; fixed three-task /a/→/i/-like trajectory; 48 kHz × 24000 samples, 102 acoustic calls per body under current runner, air rho=1.21, c_air=343, attenuation=.4Np/m, resistive terminal and 0.20m monopole pressure proxy. Do not substitute OG3 passive graph or a new solver to make it sound better.
+
+Reference comparisons are anchored to **OD-1 archival known outputs** and immutable old approved CC-A2. OD-2 work is primarily an equivalence, identity/persistence and integration study, not a second study claiming to rediscover its known nonzero effects.
+
+## Ordered plan
+### A0. Forensic audit, no new physics code
+- Verify main+old Draft exact SHA, source inventory, current Core preset/cavity identifiers, full #145→#166 dependency and Studio #27 pin.
+- Decide one runtime ABI candidate: reviewed bounded CLI *or* installable Core Python API, not both and not a parallel registry. Define physical authority and old-history mapping.
+- Archive original OD-1 result metadata and published negative/quality decisions; document any missing source/artifact capability as NOT_TESTABLE.
+
+### A1. Model/identity preregistration
+- Freeze complete family schema/canonical byte algorithm, null/idempotence behavior, negative mutation matrix, expected fixed path and platform.
+- Obtain independent area/volume/Z mathematics without importing candidate shape code. Freeze reference finite grid + time probes and numerical tolerances before implementation.
+- Lock expected recipe IDs only after canonical format is chosen; don't create or publish a claimed SHA derived from unspecified encoding.
+
+### A2. Adapter implementation experiment (later, not in this design PR)
+- Keep OD-1 solver and waveform generator unchanged. Only derive/edit/validate/prepare revision and bind exactly one existing physical engine.
+- Try existing core registry binding/readback. If reconciling #166 is unsafe, STOP and design a replacement before code. Avoid blind merges.
+- Generate real fresh pressure on old+new body with distinct exact receipts; store failure outcomes as well as successes.
+
+### A3. Primary gates, negative controls and exact-head verification
+1. Null same-object/same-revision (c4,r1 and c8,r1), repeated identity and deterministic readback.
+2. Each of four changes alters *only* prescribed five rest sections, with unchanged lengths and source/task/solver.
+3. Independent rest volume and impedance identities at all 16 cells; nonnull auditory effect is NOT expected.
+4. Two reference observers computed on named actual resistive load and same pressure output plane; compare amplitude/phase and floor. Verify timecourse log-area residual at t in {0,.20,.35,.50}s using callable trace semantics.
+5. Reproduce OD-1 model-level output within frozen cross-run floating precision and explicitly compare its archived measured 0.05627/0.05681 (c4) and 0.02660/0.02708 (c8) raw relative L2; these are *previously seen* values for regression, not prospectively newly discovered effects.
+6. Typed failures: wrong parent/SHA/body/backend/family/index/ratio/port/source, boolean/NaN/Inf, positive-but-mutated per-cell geometry (including sum-volume-preserving swap), wrong direction/length/volume, stale or forged digest, double registration with differing bytes, WAV/Pa mismatch, corrupted gain, partially published artifacts, interruption then restart, and attempted older Take retarget.
+7. Existing software and physics regressions at exact new code SHA; no relaxed manifest/checksum tolerances to accommodate silent source changes.
+
+### A4. Engineering signoff then separate creator integration
+- G0–G2 must be technically sufficient before a stable API decision. G3 tests one authoritative registry + typed request/result + exact readback across process restart and history.
+- Studio G4 only after a creator-approved *specific* V2 UI change. Legacy app current entrypoint and frozen preview #33 are not silently merged. On G4 complete, same body can be used for multiple verified immutable Takes; playback/gain recipe and model limits shown without replacing physical truth.
+- If a separate G5 listening experiment is desired, preregister randomized blind A/A, A/B (or ABX), positive controls, shared monitor gain, device, unsure responses and explicit *voice-likeness* alongside audible distinction. As a suggested exploratory design, OD-1 prior proposal was 24 ABX trials and 19/24 screening threshold; do not claim it has been performed or is a population inference. If controls fail, label perception INDETERMINATE.
+
+## Numerical gates and what they mean
+Candidate inherited OD-1 A3 limits (must reconfirm for exact OD-2 implementation before A2): max per-cell |ln(Anew/Abase)-theta*w| <= 1e-12; relative rest-volume residual <=1e-12; matched complex H max relative error <=1e-9 with reference denominator max(|H_ref|,1e-12) over 100..3500Hz / 25Hz grid; timed log-area residual <=1e-10 at the four probes. Existing OD-1 model-effect threshold for full raw Pa relative L2 was >max(1e-4,10× repeated null floor), but because OD-2 is principally a *reimplementation equivalence/persistence* study, never distort new results to exceed it: compare actual effect with existing archived model result under a preregistered cross-platform tolerance.
+
+Old portable baseline quantized Pa SHA (1e-9Pa quantum) = dc14c78bcc6d4a19c11fe2a01ba84b1394802b66626f4dfa27cc582c741e714e. Full native float64 exact-byte identity across SIMD/Python platforms is not promised. Any revised tolerance, platform or source is *a new protocol*, recorded before new outputs; no retrospective threshold adjustment. 'More visible waveform' and 'better sound' are not valid replacement criteria for physics.
+
+## Decision matrix and STOP
+- GO_LIMITED G1–G2: correct bounded family, reproducible matched-model source→state→pressure. No general organ engine/voice quality claim.
+- GO_LIMITED G3: stable single Core revision ABI and verified exact persistence, with legacy compatibility. No automatic UI adoption.
+- GO_LIMITED G4: actual approved Studio edit/Perform/Take/reload loop. No forced favorite.
+- G5 auditory: independently PASS, REVISE, MORE_DATA or REJECT, not inherited from machine outcomes.
+- STOP/REVISE on identity authority split, deprecated old Take relocation, source/solver changed for effect, forged physical trace, unexpected active-graph claim, failed independent reference, or UI registry change without approval.
+- MORE_DATA when observation plane or numerical floor cannot be qualified; NOT_TESTABLE when an inherited backend cannot express the fixed lawful experiment; REJECT only for a contradicted testable claim.
+- Append all failed trials and exact SHA, no fictitious green pass, no spontaneous main merge.
+
+## Science and limitations
+VocalTractLab 2.4 (https://vocaltractlab.de/download-vocaltractlab/VTL2.4-manual.pdf) supports the conceptual geometry/control/acoustic separation. Takemoto et al., Acoustical Science and Technology 44(1), 2023 (https://doi.org/10.1250/ast.44.9) supports limited 1D acoustic comparison. Raunak & Olsen NIST (https://www.nist.gov/publications/metamorphic-testing-continuum-verification-and-validation-simulation-models) motivates scientific metamorphic test relations. None establishes genuine speaker voice or the correctness of this specific new registry/bridge.
