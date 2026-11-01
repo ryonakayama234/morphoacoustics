@@ -9,7 +9,7 @@
 - [SYSTEM.md](SYSTEM.md): diagrams for authoritative Core physics + approved Studio panel roles, mathematical shape law and actual acoustic observation.
 - [DATA.md](DATA.md): proposed typed input/body/physical/result records, identity, one registry, failure taxonomy and historic Take preservation.
 - [EXPERIMENT.md](EXPERIMENT.md): H0–H8 hypotheses, units and measurands, independent oracles, mutation controls, numeric bounds, stop rules and creator gates.
-- RESULTS.md: **NOT CREATED because OD-2 has not been executed.** Create only with real results when a later authorized experiment runs, and preserve negative findings.
+- [RESULTS.md](RESULTS.md): actual OD-2 physical execution, exact-head CI, immutable four-revision receipts, six raw-Pa/WAV cases, negative evidence and scoped research-only adoption decision.
 
 ## Repos and authoritative prior decisions
 - Core main at design audit: 4d7730a5552eca1d1758e1b2f137bd5acf64950f.
@@ -27,3 +27,7 @@ Do NOT introduce another BodyRevision engine: create a bounded, versioned five-c
 This documentation PR does not modify Python source, physical solvers, tests, GitHub workflows, vendor contracts, old revision history, UI code, SMC, ASMR or physics quality. It does not automatically approve future code, production API, main merge or the acknowledged speaker-quality defect.
 
 Related design tracker: https://github.com/ryonakayama234/morphoacoustics/issues/271
+
+## Implementation evidence (after design-only package)
+- [OD-2 A3 pre-code freeze](A3_FREEZE_20261102.md): committed before new OD-2 adapter code, inheriting previously known OD-1 references.
+- [OD-2 implementation Draft PR #273](https://github.com/ryonakayama234/morphoacoustics/pull/273): opt-in local Core research CLI, tests, CI and actual RESULTS; no Studio UI or public Core API adoption.
