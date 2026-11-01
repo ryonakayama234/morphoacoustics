@@ -29,6 +29,26 @@ FREQ = np.arange(100.,3500.1,25.)
 HARMONICS = np.arange(100.,3500.1,100.)
 TIMES = (0.,.20,.35,.50)
 SAMPLES = 24000
+PINNED_SOURCE_BLOBS = {
+    "tools/cc_a2_live.py":"dd90ab5e83082c0da1b2f527288f7154bdd38aae",
+    "experiments/009_fixed_tract_waveform/run.py":"2cb870d6bcca28be8e9db8b32ae83a5b550c82c8",
+    "experiments/027_task_field_vowel_transition/run.py":"134ccd3607f68c97ccaa9a10b1ec42eb35240110",
+    "experiments/029_task_field_embodied_infeasibility/run.py":"8d911d6a9d7f2dce556b1fd57439e74b3ff07269",
+    "docs/research/od1-organ-shape-assembly-20261101/A0_A3_FREEZE_20261101.md":
+        "b7ee5bb03cfbaffd29ffeff3fe73a8e20d4972bd",
+}
+
+
+def git_blob_sha1(raw: bytes) -> str:
+    header=b"blob "+str(len(raw)).encode("ascii")+b"\0"
+    return hashlib.sha1(header+raw).hexdigest()
+
+
+def check_source_pins() -> None:
+    for name, expected in PINNED_SOURCE_BLOBS.items():
+        p=ROOT/name
+        if not p.is_file() or git_blob_sha1(p.read_bytes())!=expected:
+            raise RuntimeError("G0 FAIL: predeclared source or protocol drift: "+name)
 FREEZE = ROOT/"docs/research/od1-organ-shape-assembly-20261101/A0_A3_FREEZE_20261101.md"
 
 
@@ -111,6 +131,7 @@ def run(output_dir: Path) -> dict[str,object]:
         raise FileExistsError("never overwrite scientific evidence")
     if not FREEZE.is_file():
         raise RuntimeError("A3 preregistration missing")
+    check_source_pins()
     adapter=runpy.run_path(str(ROOT/"tools/cc_a2_live.py"))
     frozen=adapter["_load_frozen_adapter"]()
     exp=frozen._load_audited_experiment()
