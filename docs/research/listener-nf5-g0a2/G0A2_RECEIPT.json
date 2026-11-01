@@ -1,0 +1,33 @@
+{
+  "schema": "el_nf5_g0a2_receipt_v1",
+  "date_local": "2026-11-01",
+  "issue": "https://github.com/ryonakayama234/morphoacoustics/issues/269",
+  "d0_design_sha": "483f708140899fb16f11eff49d3dde4171e0512c",
+  "g0a_docs_sha": "169586af338c98e575e32d7796fcf20d4f37a150",
+  "authorization": "G0A2_INTEGRITY_AND_METADATA_ONLY",
+  "source_id": "K1_THK_KU100_NF",
+  "archive_filename": "NFHRIR_L2702_SOFA.zip",
+  "publisher_md5": "1310d2b015c82272cc27d10d680b6bb4",
+  "original_archive_sha256": null,
+  "archive_integrity": "NOT_VERIFIED",
+  "local_download": "FAILED_DNS",
+  "ci_download": "NOT_RUN",
+  "file_specific_license_notice": null,
+  "independent_rights_review": "NOT_PERFORMED",
+  "original_data_ir_values_read": false,
+  "original_data_delay_values_read": false,
+  "measurands": {
+    "Q1_absolute_arrival": "UNVERIFIED",
+    "Q2_bilateral": "UNVERIFIED",
+    "Q3_radius_gain": "PUBLISHER_FACTORS_ONLY",
+    "Q4_window": "ANALYTIC_RISK_ONLY",
+    "Q5_split": "NOT_RUN_G0B",
+    "Q6_rights": "PUBLISHER_CC_BY_SA_CLAIM_INDEPENDENT_REVIEW_PENDING"
+  },
+  "original_recording_plane": null,
+  "stored_time_zero": null,
+  "final_geometry_manifest": null,
+  "final_truth_access": "PROHIBITED",
+  "g3b": "BLOCKED",
+  "adopted_capability": false
+}
