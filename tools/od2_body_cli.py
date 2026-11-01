@@ -239,6 +239,15 @@ def verify_archive(directory: Path) -> dict[str, Any]:
     _expect(saved.get("source_id") == measured.get("source_id")
             and saved.get("gesture_plan_sha256") == measured.get("gesture_plan_sha256"),
             "SOURCE_MISMATCH", "source/task identity changed")
+    # Re-derive the frozen *physical source and task* rather than trusting a
+    # manifest that could be rewritten alongside its unkeyed SHA-256.
+    sources, _ = exp.EXP26.EXP13.build_sources()
+    actual_source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
+    _expect(measured.get("source_id") == "lf_fixed"
+            and measured.get("source_sha256_le_f64") == runner["sha_f64"](actual_source)
+            and measured.get("gesture_plan_sha256") ==
+                exp.sha256_json(exp.task_plan_payload()),
+            "SOURCE_MISMATCH", "declared source/task differs from frozen physics")
     cases = measured["conditions"]
     expected_names: set[str] = set()
     nulls: list[np.ndarray] = []
@@ -281,6 +290,20 @@ def verify_archive(directory: Path) -> dict[str, Any]:
             _expect(exp.quantized_waveform_sha256(raw) ==
                     exp.AUDITED_QUANTIZED_WAVEFORM_SHA256,
                     "BASELINE_DRIFT", "audited old M0 raw pressure changed")
+    # Playback is only one common-gain PCM derivative of the *actual* raw
+    # physical pressure. Compare byte-for-byte, not just an editable file hash.
+    shared_peak = max(float(np.max(np.abs(x))) for x in waveforms.values())
+    common_gain = measured.get("preview_common_gain")
+    _expect(type(common_gain) is float and math.isfinite(common_gain)
+            and shared_peak > 0
+            and math.isclose(common_gain, .90 / shared_peak, rel_tol=1e-14),
+            "GAIN_MISMATCH", "playback gain is not the common raw-Pa peak scale")
+    for receipt in expected_receipts:
+        c, r = receipt["center_index"], receipt["rest_area_ratio"]
+        name = f"c{c:02d}_r{round(RATIOS[r]*100):03d}.wav"
+        expected_wav = runner["wav_bytes"](waveforms[(c, r)], common_gain)
+        _expect((directory / "physics" / name).read_bytes() == expected_wav,
+                "PA_WAV_MISMATCH", "WAV is not the declared shared-gain raw-Pa derivative")
     _expect(len(nulls) == 2
             and exp.quantized_waveform_sha256(nulls[0]) ==
                 exp.quantized_waveform_sha256(nulls[1]),
