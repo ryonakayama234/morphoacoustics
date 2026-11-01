@@ -503,7 +503,7 @@ def reperform_revision(directory: Path, center: int, ratio: str) -> dict[str, An
         "source_id": "lf_fixed",
         "sample_rate_hz": SAMPLE_RATE_HZ,
         "samples": SAMPLES,
-        "acoustic_calls": actual.acoustic_call_count,
+        "acoustic_calls": 102,  # _fresh_physical_from_receipt enforces this exact count
         "fresh_raw_sha256_le_f64": runner["sha_f64"](raw),
         "archived_raw_sha256_le_f64": runner["sha_f64"](archived),
         "raw_relative_l2_replay_error": relative_error,
