@@ -29,6 +29,11 @@ Base = audited CC-A2 M0 rest tract, 16 0.010 m sections (glottis→mouth). New f
 
 r=1.00 is an identity/null control referring back to the same baseline revision, not a minted 'new' body. Legacy site08 single-cell family and existing IDs remain distinct, even if numbers look similar. Exactly four new nonnull geometry configurations are supported for the initial family; two semantic null executions complete the six-case scientific matrix. No continuous slider or arbitrary site is authorized by this design.
 
+## Technical ABI decision — CLI first, one revision authority
+**SELECT for OD-2 initial implementation:** a version-negotiated **Core-local CLI protocol**, reusing/reconciling the existing site08 #165/#166 inspect/perform/verify and register/resolve patterns. The protocol is one logical Core boundary even if existing implementation has separate executable helpers. Each request/result is strictly versioned JSON with explicit success/non-success and source/body/solver receipts; commands conceptually support inspect-capabilities, derive/propose, perform, register, resolve, and verify. The chosen ABI is initially private local/opt-in; only after G3 evidence may it be called a supported bounded CLI. A Python library facade can follow later, but is not a parallel authoritative renderer or registry.
+
+**Why CLI first:** Studio already invokes pinned local Core subprocesses; src/morphoacoustics inventory is source-frozen for older physics regressions; and a personal creator app does not need an HTTP SaaS or a new Core package API to exercise body reuse. Do not assume the existing stacked Drafts merge cleanly. Reuse or extract reviewed trust/registry logic with exact-source tests; never weaken former SHA guards. The adapter cannot choose/rewrite the waveform, source F0, task, observer gain or solver. The precise command spelling is **not a released wire contract** until the G3 test-first freeze.
+
 ## Model fidelity and meaning
 OD-2 defines a versioned *shape asset* and its physical preparation/transport contract. It introduces no organ material constitutive law, tissue contact, glottal FSI, self-oscillating source, side-branch solution, scene receiver, vowel intelligibility or calibrated absolute SPL. Inherited prescribed LF100Hz / three-task and observer are acknowledged as limited, and Core WG2 quality NO-GO remains unchanged.
 
