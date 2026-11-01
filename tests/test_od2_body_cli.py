@@ -156,6 +156,30 @@ def test_real_physics_archive_restart_and_adversarial_readback(tmp_path):
     finally:
         wav.write_bytes(original)
 
+    # Coordinated tampering with the WAV, all the SHA receipts and the
+    # decision is still rejected: a waveform must derive from raw physical Pa.
+    altered_wav = root / "physics" / "c08_r110.wav"
+    good_wav = altered_wav.read_bytes()
+    decision = root / "physics" / "decision.json"
+    original = decision.read_bytes()
+    try:
+        altered_wav.write_bytes(good_wav[:-2] + b"\x00\x00")
+        forged_decision = json.loads(original)
+        for row in forged_decision["conditions"]:
+            if row["center"] == 8 and row["ratio"] == 1.1:
+                row["preview_sha256"] = CLI["digest"](altered_wav.read_bytes())
+        decision.write_bytes(CLI["canonical"](forged_decision))
+        forged_manifest = json.loads(good)
+        forged_manifest["decision_sha256"] = CLI["digest"](decision.read_bytes())
+        forged_manifest["artifact_sha256"][altered_wav.name] = CLI["digest"](altered_wav.read_bytes())
+        marker.write_bytes(CLI["canonical"](forged_manifest))
+        with pytest.raises(CLI["RevisionError"], match="WAV is not"):
+            CLI["verify_archive"](root)
+    finally:
+        altered_wav.write_bytes(good_wav)
+        decision.write_bytes(original)
+        marker.write_bytes(good)
+
     decision = root / "physics" / "decision.json"
     original = decision.read_bytes()
     try:
