@@ -24,3 +24,8 @@ Synthetic metadata/format tests and original integrity workflow are described in
 
 ### Interpretation and next blocker
 A real, source-verified four-shell original is now available for a separately authorized **geometry-only** G0-B once rights and source-plane prerequisites are resolved, but a robust NF5 physical arrival/level validation cannot be claimed by this metadata-only result. Specific independent rights review and metrological reference/time review remain the bottleneck. This is useful measured-file qualification progress; it is **not** evidence that spatial predictions improve.
+
+## 2026-11-01: revised exact-head reproducibility verified
+- **Revised commit:** `9291e7bb4775caf052b6994851a109113f56c68d`, [dedicated run 41307934856](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307934856) **SUCCESS**: **10 synthetic tests** passed (pytest `..........`), original ZIP downloaded, MD5 and SHA256 match prior run, 4 SOFA metadata inspected, ephemeral cleanup successful.
+- Revised code now emits `embedded_file_licenses=["CC 3.0 BY-SA"]`, `publisher_paper_license="CC BY-SA 4.0"`, `rights_status=FILE_NOTICE_AND_PAPER_VERSION_CONFLICT_REVIEW_REQUIRED`, `physical_measurand_status=NOT_QUALIFIED_BY_METADATA`. These explicit warnings are expected scientific results, not CI failures.
+- [Whole-repository test run 41307934830](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307934830) **SUCCESS** on the same revised commit; [repeat test run 41307938322](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41307938322) **SUCCESS**. No model accuracy, Q1/Q2/Q4 physical validity or G3b PASS is asserted.
