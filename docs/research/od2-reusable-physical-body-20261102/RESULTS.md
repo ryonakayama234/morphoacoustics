@@ -71,3 +71,39 @@ Reference model: 16 × 0.010 m sections, SI area fields, resistive terminal Zloa
 - [OD-1 prereg/results](../od1-organ-shape-assembly-20261101/RESULTS.md).
 - [OD-2 A3 pre-code freeze](A3_FREEZE_20261102.md), [SYSTEM](SYSTEM.md), [DATA](DATA.md), [EXPERIMENT](EXPERIMENT.md), [DECISION](DECISION.md).
 - [Studio Workspace V2 fixed UI contract](https://github.com/ryonakayama234/morphoacoustics-studio/blob/main/docs/product/STUDIO_WORKSPACE_V2_DECISION.md).
+
+
+---
+
+## Subsequent R1/R2 direct physical replay and Codex P2 remediation (append-only)
+
+**New reviewed-issue source:** [PR #273 automated review](https://github.com/ryonakayama234/morphoacoustics/pull/273) against earlier docs-only SHA dde93031b24e9d4ff42b9539b273ef61c3c61ef6 identified two P2 correctness holes: (1) forged nonnull pressure could preserve relative L2 while changing all waveform/hash receipts together; (2) archived scientific shape/oracle scores were insufficiently revalidated. The prior success run remains historical; it is not the final acceptance evidence.
+
+**Pre-implementation remediation chronology:** [R1 direct execution freeze](R1_DIRECT_REPLAY_FREEZE_20261102.md), followed by [R2 Codex review remediation plan](R2_REVIEW_REMEDIATION_20261102.md), then code/tests. One intermediate CI [run #41324849433](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324849433) generated and verified model pressure successfully but failed its extra command on a refactor-introduced NameError in the CLI's returned \`acoustic_calls\` field. This was corrected without altering the physical solver, reference model or numerical gate. Failures remain in the GitHub history.
+
+**Final independently executed post-remediation evidence at code SHA \`e358402d4373cc71dbbe38f6076de55c85d967cd\`:**
+- [OD-2 all-gates Actions run #41324965684](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965684): **SUCCESS**, frozen structural/negative 16 passed 1 skipped; real physical/adversarial 6 passed; inherited adopted CC-A2 physics regression SUCCESS.
+- [Exact output ZIP artifact #13090413183](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965684/artifacts/13090413183): 6 native f64 Pa NPY + 6 WAV + decision + verified body manifest, 14 files.
+- [Python 3.11/3.12/3.13 + typecheck run #41324965755](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965755): SUCCESS. [OG3 #41324965726](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965726), [OG4 #41324965722](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965722), [SV1 #41324965689](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41324965689): SUCCESS.
+
+### Full physics re-execution and direct R1 command
+At archive verification, **all six** model raw pressure traces are now recomputed by Core from the saved verified body receipt: its 16 section area/length hexadecimal values are decoded, bound via \`prepare_tract1d\`, given the same LF100 source and three-task, and passed to \`exp.evaluate_condition\` (102 acoustic calls each). Reexecuted full waveforms are compared directly to the archived native pressure with predeclared same-runtime relative L2 <=1e-12. Hence a sign-flipped body response retaining the same baseline-relative L2 cannot qualify.
+
+The CLI's separately selected direct replay was executed for:
+- c4/r1.10, revision \`od2-7c2663189d907111665544c67def56c885576f5394e4220ec12251e0ca5ebf67\`: **fresh raw L2 replay error = 0.0**, 102 acoustic calls, fresh and archive f64 SHA \`351f2732e802bf9861b071de57774ef1c5da6a96d23764dadbdb3119c5e1d1b0\`.
+- c8/r0.90, revision \`od2-d722dfb9595672f0d19c46a8780c610c9d41fc3a8935b93d3d01a5d68aab4084\`: **fresh raw L2 replay error = 0.0**, 102 acoustic calls, f64 SHA \`2b42192c4c4e667d403f6e8f6d906dad93e67f97f782087c8f6b6575f848f6f6\`.
+
+These are *zero differences in the declared pinned run*, not a claim of portable byte equality on every CPU.
+
+### Explicit scientific evidence replay
+For each receipt, verifier also reconstructs the SI rest shape and compares stored: shape log residual, rest volume and dV/dtheta, model-pinned rest harmonic transfer, and independent actual-loaded complex transfer at both rest and terminal states. All must be finite, complete and within frozen tolerances; a saved successful status and a changed manifest hash are not sufficient. New negative test confirms that changing stored grid complex error to 1.0 and updating the enclosing SHA is refused.
+
+### Coordinated false-audio mutation rejection
+New negative test replaces one nonnull pressure waveform by \`2*p_null - p_original\`, preserving its difference magnitude while inverting the intervention's waveform effect. It reconstructs the common monitoring gain and **all six WAVs**, updates the altered raw Pa SHAs, all preview WAV SHAs, decision.json and manifest SHA. Despite the internally consistent artifact receipt and retained L2 statistic, **the verifier refuses the forged result** on fresh body-driven waveform mismatch. This directly resolves the first P2 mechanism. Source and output are still a physically qualified simplified 1D model, not biological truth.
+
+### Meaning of revised result
+**R1:** the versioned body receipt is not merely a label attached to old pressure: a Core body reconstructed from it physically executes and reproduces the source+geometry-specific waveform.
+**R2:** replay qualification rechecks full physical waveform and model measurements rather than only hashes/aggregate signal norms.
+**No change** to Studio UI, production registry, Core package source, FFT/EQ/audio coloring, human perception, actual tissue mechanics, SMC/ASMR or published stable ABI.
+
+**Final disposition remains \`GO_LIMITED_OD2_RESEARCH_REVISION_REPLAY\`**, with a stronger engineering basis and the same narrow model/sound-quality claim. Automated code-review signoff and main merge decisions are independently tracked on PR #273; do not interpret passing CI alone as creator acceptance of sound quality.
