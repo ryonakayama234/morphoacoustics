@@ -70,3 +70,10 @@ No edit of src/morphoacoustics, src/morphoacoustics_graph or performance contrac
 
 ## Frozen UI responsibilities (no changes)
 character.canvas organ selection; selection.inspector selected supported rest-shape parameter only after separate UI authorization; project.library refs; motion.canvas fixed script/direction/gesture; scene.canvas unchanged; take.transport real verified replay and A/B only; research.drawer hidden physics receipts, SHA and uncertainty. No additional panel/mode or simulated listening ear.
+
+
+## Gate B research implementation / physics route (no public API)
+Research-only experiments/od1_local_shape/run.py derives the 16-section five-cell shape from canonical Exp023 /a/ baseline and explicitly calls the unchanged Exp029/027 realizer and Exp009 lossy resistive-load far-field-pressure-proxy output. Source files, the exact A0–A3 freeze blob, and frozen dependencies are verified before any physics. No import or modification of src/morphoacoustics_graph and no novel FSI/Material/Source–Tract law. Separate oracle.py derives reference areas from published diameter table, evaluates forward ABCD and reverse downstream impedance recurrence independently, and checks Core's U_out/U_in and 20cm monopole-pressure approximation over a fixed frequency grid. A geometry model-matched acoustic crosscheck is NOT a physiological validation.
+
+### Gate B actual process (same inherited motion)
+Studio Character rest-shape edit concept → experiment-local validate(c,r) → five-cell SI rest Geometry → existing prepare_tract1d → exact existing task-geometry field and physical capability gate → unchanged 102-transfer-call time-domain renderer → newly computed raw Pa → one common-gain WAV, immutable research receipt. Wrong shape/energy/observation yields explicit failure; no apparently successful historical Take on a failed experiment. No Studio UI, owner, graph topology or Performance Contract modified.

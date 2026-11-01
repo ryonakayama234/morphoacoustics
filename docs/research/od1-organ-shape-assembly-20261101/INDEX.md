@@ -16,3 +16,9 @@ Core/main 727b11ecf103f5c087cfcb820bdec11f883e7c03. Studio/main 6bc0d715e0a66b1e
 
 ## Governance
 No API, UI, runtime, existing source, Performance Contract, SMC, ASMR, Take or panel registry edits in this decision. A3 exact-head protocol freeze is a separate later prerequisite for new confirmatory code. Every implementation PR must update SYSTEM/DATA/EXPERIMENT together and append genuine RESULTS. Keep failure records; owner agreement to architecture does not imply code approval or a biology claim.
+
+
+## Gate B workstream
+- [A0–A3 preimplementation frozen physics protocol](A0_A3_FREEZE_20261101.md) — immutable before any new OD-1 study code.
+- [RESULTS.md](RESULTS.md) — exact-head machine evidence and limitations, not Studio Take or creator evaluation.
+- Core stacked [Draft PR #268](https://github.com/ryonakayama234/morphoacoustics/pull/268) implements experiments/od1_local_shape/{oracle,run}.py, tests/test_od1_local_shape.py and .github/workflows/od1-local-shape.yml. Source/solver, performance v0/v1, Studio, SMC, ASMR, VF-1B2a and original CC-B1 site08 revision semantics remain unchanged.
