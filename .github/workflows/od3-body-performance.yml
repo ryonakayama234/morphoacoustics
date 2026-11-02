@@ -34,6 +34,7 @@ jobs:
           python experiments/od3_body_performance/run.py inspect
           python experiments/od3_body_performance/run.py perform-suite --output-dir od3-evidence
           python experiments/od3_body_performance/run.py verify --output-dir od3-evidence
+          python -c "import json; a=json.load(open('od2-source-audit/physics/decision.json')); b=json.load(open('od3-evidence/decision.json')); assert a['source_sha256_le_f64']==b['source_sha256_le_f64'] and a['source_id']==b['source_id'] and a['gesture_plan_sha256']==b['task_plan_sha256']; print('SAME_RUN_OD2_OD3_SOURCE_TASK_IDENTITY: PASS',b['source_sha256_le_f64'])"
           python -c "import json; x=json.load(open('od3-evidence/decision.json')); print('OD3_MEASURED', json.dumps({'metrics':x['metrics'],'interactions':x['interactions'],'source':x['source_sha256_le_f64']},sort_keys=True))"
       - name: Reused selected body paired G0/G1 and fresh readback
         run: |
