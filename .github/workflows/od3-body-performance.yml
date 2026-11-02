@@ -1,0 +1,57 @@
+name: od3-body-performance-physical
+on:
+  pull_request:
+    paths:
+      - "experiments/od3_body_performance/**"
+      - "tests/test_od3_body_performance.py"
+      - "docs/research/od3-reusable-body-performance-20261102/**"
+      - ".github/workflows/od3-body-performance.yml"
+      - "tools/od2_body_cli.py"
+  workflow_dispatch:
+jobs:
+  od3-pinned-physical-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install exact inherited numerical source and test dependencies
+        run: |
+          python -m pip install "numpy==2.4.6"
+          python -m pip install -e ".[dev]"
+      - name: Research schedule / body / refusal unit tests
+        run: |
+          python -m pytest -v tests/test_od3_body_performance.py -m "not unavailable" -k "not actual_six_physical_cases and not selected_pair_restart"
+          python -m pytest -q tests/test_od2_body_cli.py tests/test_body_presets.py
+      - name: Independent OD-2 source and six-case regression audit
+        run: |
+          python tools/od2_body_cli.py perform-suite --output-dir od2-source-audit
+          python tools/od2_body_cli.py verify --output-dir od2-source-audit
+      - name: Fresh six-case physical source and full readback
+        run: |
+          python experiments/od3_body_performance/run.py inspect
+          python experiments/od3_body_performance/run.py perform-suite --output-dir od3-evidence
+          python experiments/od3_body_performance/run.py verify --output-dir od3-evidence
+          python -c "import json; a=json.load(open('od2-source-audit/physics/decision.json')); b=json.load(open('od3-evidence/decision.json')); assert a['source_sha256_le_f64']==b['source_sha256_le_f64'] and a['source_id']==b['source_id'] and a['gesture_plan_sha256']==b['task_plan_sha256']; print('SAME_RUN_OD2_OD3_SOURCE_TASK_IDENTITY: PASS',b['source_sha256_le_f64'])"
+          python -c "import json; x=json.load(open('od3-evidence/decision.json')); print('OD3_MEASURED', json.dumps({'metrics':x['metrics'],'interactions':x['interactions'],'source':x['source_sha256_le_f64']},sort_keys=True))"
+      - name: Reused selected body paired G0/G1 and fresh readback
+        run: |
+          python experiments/od3_body_performance/run.py perform-pair --center 4 --ratio 1.10 --output-dir od3-selected-pair
+          python experiments/od3_body_performance/run.py verify --output-dir od3-selected-pair
+      - name: Full real pressure, replay, and adversarial test suite
+        env:
+          OD3_REAL_PHYSICS: "1"
+        run: |
+          python -m pytest -v tests/test_od3_body_performance.py
+      - name: Preserve original 48k raw pressure and same-gain WAVs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: od3-six-real-body-motor-cases
+          path: |
+            od3-evidence/
+            od3-selected-pair/
+            od2-source-audit/ 
+          if-no-files-found: warn
