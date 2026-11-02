@@ -32,15 +32,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error --retry 4 --retry-delay 5 --max-time 180 'https://zenodo.org/records/4297951/files/NFHRIR_L2702_SOFA.zip?download=1' --output "$"+"{RUNNER_TEMP}/nf5_m1_original.zip"
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 5 --max-time 180 'https://zenodo.org/records/4297951/files/NFHRIR_L2702_SOFA.zip?download=1' --output "${RUNNER_TEMP}/nf5_m1_original.zip"
       - name: G0-B geometry-only audit
         shell: bash
         run: |
           set -euo pipefail
-          python experiments/052_el_nf5_m1/qualification.py --archive "$"+"{RUNNER_TEMP}/nf5_m1_original.zip" --output "$"+"{RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
-          test -s "$"+"{RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
+          python experiments/052_el_nf5_m1/qualification.py --archive "${RUNNER_TEMP}/nf5_m1_original.zip" --output "${RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
+          test -s "${RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
       - name: Ephemeral cleanup
         if: always()
         shell: bash
         run: |
-          rm -f "$"+"{RUNNER_TEMP}/nf5_m1_original.zip" "$"+"{RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
+          rm -f "${RUNNER_TEMP}/nf5_m1_original.zip" "${RUNNER_TEMP}/nf5_m1_g0b_receipt.json"
