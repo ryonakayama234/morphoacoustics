@@ -1,0 +1,23 @@
+# PREREGISTRATION_AMENDMENT — M1 prospective operational addendum
+**2026-11-03 JST, prospective M1 design freeze before G0-B implementation/result and before any new original KU100 acoustic truth. Parent NF5 D0 at 483f708 remains authoritative.**
+## No changes to the frozen D0 scientific G3b gates
+Integrated primary e_ILD: four bands [500,1000),[1000,2000),[2000,4000),[4000,8000] Hz, mean across valid four bands per position; median positions. Selected F1/F2/F3 candidate <=.85× **both** B0 and development-selected B* on exactly same accepted final positions. Both paired spatial-block bootstrap 95% lower bounds B−F >0, 2000 PCG64 seed 20261101, S1/S2 each improvement >0 and >=8 accepted effective angular blocks, >=80% all-eligible coverage **each** S1/S2. ITD median <= each baseline+25µs; centered per-ear log spectral RMSE median <= each+0.5dB; ILD p95 <= each+1dB; two lower bands aggregate <= each+0.25dB. Engineering limits, NOT JNDs.
+One primary model selected only on selection metric after training; risk threshold only calibration; B* independently chosen only on development; tie tolerance 0.01dB favors F1→F2→F3 and simpler spatial model. Preregistered C-TIME/C-LEVEL tests vs both baselines use Holm family adjustment, C-TRANSFORM only numeric identity (relative L2<=1e-9). No component/result retroactive freeze.
+## Prospective M1 geometry operational recipe (subject to geometry-only versioned amendment)
+Four publisher-verified 2702-direction shells .5/.75/1/1.5m. For every direction, normalize azimuth to [0,360), elevation to [-90,90]; round to 6 decimal degrees to resolve source-file representation; cell `(floor(az/20), floor((el+90)/10))`; pole canonicalization needs explicit test and no auto-repair on original. SHA256 `nf5-m1-g0b-v1|az_bin|el_bin`; first 64 bits modulo 100 role: [0,54] fit, [55,74] selection, [75,84] calibration, [85,99] final. Single role per cell over ALL radii; remove fit directions <5 great-circle degrees of any non-fit direction. The 5° buffer must apply also selection/calibration targets relative to fit; test exact boundary behaviour. Fix thresholds before geometry run; if no >=8 final blocks, log negative G0-B and prospective geometry-only revision before any acoustic access.
+S1 final directions at .75m while fit contains .75m for other directions; S2 final directions at 1.0m while 1.0m shell excluded from **S2 fit**, with .75m &1.5m physically bracketing target. Selection/calibration for each fold must obey the same radius restriction as its corresponding fit. Do not conflate S1 vs S2 model objects. No same-final angular direction in any training shell.
+The geometry-only procedure is permitted to inspect SourcePosition values; original HRIR/Data.Delay numerical contents remain closed. A geometry receipt can prequalify support capacity, not actual model coverage or physical independence.
+## Operational metric and implementation details to freeze at G1 before original final acoustics
+Exact FFT size/window and bin-edge/energy weights; training-derived eps/mask; ITD 500–1500Hz cross-correlation with 8x interpolation within ±1ms (right minus left); IR length/origin/delay path; L/R conventions; exact neighbor-count/SH-order/ridge search grids; deterministic tie; matched-domain baseline support; bootstrap grouping and CI percentile method; prediction seal format and independent auditor code identity. G1 must create a hash-locked versioned amendment for any values left open here BEFORE access, and cannot use final HRIR to decide them. Current M1 does **not** make claims that these are all fixed or that prediction implementation is authorized/completed.
+## Negative controls
+- identical linear interpolation of m/ell vs L/R log magnitude must be algebraically equivalent;
+- swapped L/R changes signs of ILD and signed ITD;
+- common gain leaves ILD unchanged, ear-specific gain does not;
+- common delay leaves relative ITD unchanged; channel-specific delay does not;
+- final direction at different radius must not enter fit;
+- arbitrary final/per-condition RMS matching forbidden for evaluation;
+- invalid low-energy band, nonfinite values, phase truncation, FFT length mismatch must REFUSE/INVALID;
+- moving a withheld raw response into fit or changing sealed predicted hash fails evaluator;
+- zero-coverage/refused positions cannot count toward accepted accuracy.
+## Amendment rule
+Changes to operational G0 geometry allowed only on SourcePosition metadata before ANY final `Data.IR` access, recorded append-only with explicit SHA. Later work needs distinct authorization for G1 predictor/G3b final. Final scoring gates MUST NOT be rewritten to rescue a negative result.
