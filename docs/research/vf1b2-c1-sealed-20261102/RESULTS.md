@@ -38,3 +38,11 @@ Independent review found endpoint-only energy validation and missing trace-cover
 
 ## Second post-review audit verification — local 2026-11-02
 Retesting revised observer against **unchanged** original solver and unchanged primary raw traces: **11/11 standard-library tests PASS** on Python 3.13.5. Signed kinematic five-point witness (maximum absolute velocity difference): damped 1us **5.565046375111127e-10 m/s** (engineering threshold **2.053125e-9 m/s**), lossless 1us **7.748034453608499e-10 m/s**, damped 4us **1.423123075806887e-7 m/s** (engineering threshold **5.001e-7 m/s**). Deliberate velocity sign flip at tick 3000 and NaN time are independently rejected; nonfinite pressure metadata and negative density fixture are rejected. Kinematic tolerance is post-review engineering calibration, NOT a preregistered G1 physical threshold. Prior numerical energy results remain unchanged, and full source-to-audio phonation remains NOT IMPLEMENTED.
+
+## Third code-review correction, current exact source identities (2026-11-02)
+**IMPORTANT:** The earliest section titled "Final same-byte Git blob identities" identifies the **historical first-review version** only. Current verified source contents after the 3 review cycles:
+- `solver.py = 1976fbff1f80d686626287e298fdaa56c5ac05a0` (unchanged all cycles);
+- `audit.py = 94e4d80003c6584152d760c78d39b3998ced6106`;
+- `test_r0.py = a93628c04edade4b7b35386a582ef93d61d84b9f`;
+- `run.py = 76bbd2f7d7de73d5ba4b258316c5baf4dbd15889`.
+All four Git blob SHAs are from locally executed exact-content test source, and must be reverified on branch after commit. The new independent acceleration witness rejects a constant non-equilibrium x/v/p/rho trajectory despite energy conservation; a deliberate audit failure now leaves raw trace + sha + failure receipt on disk. Local Python 3.13.5 suite **13/13 PASS**. Existing primary raw pressure/density/trajectory SHA and first 6ms energy measurements are unchanged. The new acceleration discrepancy tolerance is *post hoc engineering*, not a new preregistered G1 proof. Full C1/G2/G3/G4 remain HOLD/NO_GO.
