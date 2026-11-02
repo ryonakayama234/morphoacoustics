@@ -9,8 +9,17 @@ def audit(trace: dict) -> dict:
     f = trace["fixture"]
     samples = trace["samples"]
     dt = trace["dt_s"]
-    if len(samples) < 2 or not math.isfinite(dt) or dt <= 0:
+    duration = trace.get("duration_s")
+    if (not isinstance(duration, (int, float)) or not math.isfinite(duration)
+            or duration <= 0 or not math.isfinite(dt) or dt <= 0):
         raise ValueError("INVALID_SAMPLES")
+    expected_n = round(duration / dt)
+    if (expected_n < 1 or abs(duration / dt - expected_n) > 1e-8
+            or len(samples) != expected_n + 1):
+        raise ValueError("INCOMPLETE_TRACE")
+    if (samples[0].get("x_m") != [f["x_L0_m"], f["x_U0_m"]]
+            or samples[0].get("v_m_s") != [f["v_L0_m_s"], f["v_U0_m_s"]]):
+        raise ValueError("INITIAL_STATE_MISMATCH")
     length, depth, half_gap = (f[k] for k in ("L_g_m", "ell_m", "half_gap_m"))
     v0 = 2 * length * depth * half_gap
     g = length * depth
@@ -49,14 +58,21 @@ def audit(trace: dict) -> dict:
                    + f["k_c_N_m"] * (xl - xu) ** 2) / 2
         energies.append(gas_delta + external + kinetic + elastic)
         dissipation.append(f["d_L_Ns_m"] * vl * vl + f["d_U_Ns_m"] * vu * vu)
-    total_loss = sum(dt * (dissipation[i] + dissipation[i + 1]) / 2 for i in range(len(samples) - 1))
+    cumulative_loss = 0.0
+    max_abs_residual = 0.0
+    for i, h in enumerate(energies):
+        if i:
+            cumulative_loss += dt * (dissipation[i - 1] + dissipation[i]) / 2
+        max_abs_residual = max(max_abs_residual, abs(h + cumulative_loss - energies[0]))
+    total_loss = cumulative_loss
     residual = energies[-1] + total_loss - energies[0]
     if max_p_rel > 2e-12 or max_mass_abs > 1e-16 or max_vol_rel > 2e-12:
         raise ValueError("RAW_TRACE_CONTRADICTS_PHYSICS")
-    if abs(residual) > 3e-10 or abs(residual) / max(abs(energies[0]), 1e-8) > 5e-4:
+    if max_abs_residual > 3e-10 or max_abs_residual / max(abs(energies[0]), 1e-8) > 5e-4:
         raise ValueError("ENERGY_LEDGER_FAIL")
     return {"pressure_relative_error_max": max_p_rel, "gas_mass_error_max_kg": max_mass_abs,
             "volume_relative_error_max": max_vol_rel, "H_initial_J": energies[0],
             "H_final_J": energies[-1], "loss_trapezoid_J": total_loss,
-            "energy_residual_J": residual,
-            "energy_residual_relative": abs(residual) / max(abs(energies[0]), 1e-8)}
+            "energy_residual_J": residual, "max_energy_residual_J": max_abs_residual,
+            "energy_residual_relative": abs(residual) / max(abs(energies[0]), 1e-8),
+            "max_energy_residual_relative": max_abs_residual / max(abs(energies[0]), 1e-8)}
