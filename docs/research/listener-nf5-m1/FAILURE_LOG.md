@@ -1,0 +1,13 @@
+# FAILURE_LOG — independent negative and blocker ledger
+## Preserved historical findings
+- NF3 PR257: final C2 0/155 available positions, INDETERMINATE; geometric validity guard must not be weakened to improve paper coverage.
+- NF4 PR261: C4 242/344 acceptance below 80%; ILD C4 2.34171 vs B3 2.06708 dB; bootstrap [-0.83938,+0.10474] dB; both folds failed, 500–2000Hz worse; posthoc B0 1.53527dB on accepted. Reusing opened SCUT final would invalidate new blind confirmation.
+- NF5 G0-A2: rights edition conflict, shared Data.Delay [1,2] and short 128 tap FIR. No inference of absent absolute propagation times or physical time origin from metadata alone.
+## M1 negative controls to record
+Wrong archive hash; duplicate direction/zero radius; coordinate pole/az wrap misassignment; inconsistent four shells; same angular final direction in training different radius; insufficient spatial blocks; 5° buffer violation; low-band unqualified; common vs ear-specific gain/time; phase/real FIR failure; hidden IR read; false-green CI/no pipefail; rights/plane ambiguity; zero support. Any failure will be appended with code SHA, reproducer and classification, without rewriting passed historical gates.
+
+## 2026-11-03 M1 executed failures and risks
+- [Run 41481408599](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41481408599) FAILED at curl with exit 23 before geometry: workflow emitted literal `"$"+"{RUNNER_TEMP}` due construction error. Commit `8812733c` fixed shell variable expansion ONLY; new run 41481623538 passed both jobs. No scientific thresholds, roles or target sounds changed. Original failure preserved.
+- **Fit-density tradeoff**: 5° buffer removed 848/1284 fit candidate directions, leaving 436/2702 unique directions. Future support/accuracy may be low despite G0B split PASS; forbid silently reducing buffer or treating 395 directions as independent subjects.
+- **Apparatus confounder** from Arend et al. 2016: rear Lebedev robot-arm shadow materially changes measured spectrum, with published 0.5m rear full-band difference mean 6.51dB. This is not a directly measured 500–8000Hz ILD error; if a model reproduces it, one cannot conclude anatomical fidelity. Stratified front/rear exploratory diagnostics must be prospectively planned, not a repair to failed final.
+- **Physical signal/rights blockers**: 128-tap/postprocessed, distance-dependent phase inverse compensation, missing verified recording plane and absolute time; paper license CC BY-SA4 vs original file CC3 BY-SA. Research-source access does not establish commercial asset rights. Independent reviewer pending.
