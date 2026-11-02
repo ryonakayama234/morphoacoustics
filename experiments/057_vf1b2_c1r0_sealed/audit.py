@@ -107,9 +107,39 @@ def audit(trace: dict) -> dict:
         raise ValueError("RAW_TRACE_CONTRADICTS_PHYSICS")
     if max_abs_residual > 3e-10 or max_abs_residual / max(abs(energies[0]), 1e-8) > 5e-4:
         raise ValueError("ENERGY_LEDGER_FAIL")
+    # Independent mechanical equation witness from saved signed v(t) and p(t).
+    # This detects physically impossible stationary yet nonequilibrium traces.
+    force_tolerance_m_s2 = 0.025 * (dt / 4e-6) ** 4 + 1e-6
+    max_force_residual_m_s2 = 0.0
+    g = length * depth
+    for i in range(n + 1):
+        if i == 0:
+            st = [(-25, 0), (48, 1), (-36, 2), (16, 3), (-3, 4)]
+        elif i == 1:
+            st = [(-3, 0), (-10, 1), (18, 2), (-6, 3), (1, 4)]
+        elif i == n:
+            st = [(25, n), (-48, n - 1), (36, n - 2), (-16, n - 3), (3, n - 4)]
+        elif i == n - 1:
+            st = [(3, n), (10, n - 1), (-18, n - 2), (6, n - 3), (-1, n - 4)]
+        else:
+            st = [(1, i - 2), (-8, i - 1), (8, i + 1), (-1, i + 2)]
+        x_l, x_u = samples[i]["x_m"]
+        v_l, v_u = samples[i]["v_m_s"]
+        air = g * (samples[i]["p_abs_Pa"] - pext)
+        expected = (
+            (air - f["k_L_N_m"] * x_l - f["k_c_N_m"] * (x_l - x_u) - f["d_L_Ns_m"] * v_l) / f["m_L_kg"],
+            (air - f["k_U_N_m"] * x_u - f["k_c_N_m"] * (x_u - x_l) - f["d_U_Ns_m"] * v_u) / f["m_U_kg"],
+        )
+        for j in (0, 1):
+            observed = sum(w * samples[k]["v_m_s"][j] for w, k in st) / (12 * dt)
+            max_force_residual_m_s2 = max(max_force_residual_m_s2, abs(observed - expected[j]))
     if max_kinematic_error_m_s > kinematic_bound_m_s:
         raise ValueError("KINEMATIC_MISMATCH")
-    return {"kinematic_velocity_error_max_m_s": max_kinematic_error_m_s,
+    if max_force_residual_m_s2 > force_tolerance_m_s2:
+        raise ValueError("MOMENTUM_FORCE_MISMATCH")
+    return {"force_acceleration_residual_max_m_s2": max_force_residual_m_s2,
+            "force_acceleration_tolerance_m_s2": force_tolerance_m_s2,
+            "kinematic_velocity_error_max_m_s": max_kinematic_error_m_s,
             "kinematic_tolerance_m_s": kinematic_bound_m_s,
             "pressure_relative_error_max": max_p_rel, "gas_mass_error_max_kg": max_mass_abs,
             "volume_relative_error_max": max_vol_rel, "H_initial_J": energies[0],
