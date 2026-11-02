@@ -33,6 +33,7 @@ DELAY_S = 0.020
 SAMPLE_RATE_HZ = 48000
 SAMPLES = 24000
 REPLAY_TOL = 1e-12
+OD2_FROZEN_SOURCE_SHA256 = "4d075fd89958ff481507661ea43e4602ed5fe72b0104bc897685b1f696abf529"
 GEOMETRY_TOL = 1e-10
 
 
@@ -230,7 +231,10 @@ def _source(exp: Any, runner: Any) -> tuple[np.ndarray, str]:
     source = np.asarray(sources["lf_fixed"].source, dtype=np.float64)
     require(source.shape == (SAMPLES,) and np.isfinite(source).all(),
             "SOURCE_MISMATCH", "frozen source differs from experiment")
-    return source, runner["sha_f64"](source)
+    current_sha = runner["sha_f64"](source)
+    require(current_sha == OD2_FROZEN_SOURCE_SHA256, "SOURCE_MISMATCH",
+            "actual LF100 source must equal OD-2 archived source bytes")
+    return source, current_sha
 
 
 def _cases(kind: str, center: int | None = None,
