@@ -29,6 +29,17 @@ def verify(rebuilt_path: Path) -> tuple[float, float]:
             raise AssertionError(f"Reference metadata differs: {key}")
     if len(frozen["rows"]) != len(generated["rows"]) or len(frozen["rows"]) != 24:
         raise AssertionError("Expected same 24 rows")
+    # A plain zip(left,right) *silently ignores missing trailing columns*.
+    # Explicitly require the full original 15-column independent observation.
+    column_count = len(frozen["columns"])
+    if column_count != 15:
+        raise AssertionError("Expected exactly 15 B2 reference columns")
+    if any(not isinstance(row, list) or len(row) != column_count
+           for row in frozen["rows"]):
+        raise AssertionError("Frozen reference row lacks all 15 columns")
+    if any(not isinstance(row, list) or len(row) != column_count
+           for row in generated["rows"]):
+        raise AssertionError("Regenerated reference row lacks all 15 columns")
     max_p, max_scaled_u = 0., 0.
     for left,right in zip(frozen["rows"],generated["rows"]):
         if tuple(left[:3]) != tuple(right[:3]):
