@@ -5,7 +5,9 @@
 - [SYSTEM](SYSTEM.md): physical boundary equations, planes and model ownership.
 - [DATA](DATA.md): fixture and output schema, exact Wolfram oracle mapping and field units.
 - [EXPERIMENT](EXPERIMENT.md): frozen H_B1–H_B5 vs prospective H_B6–H_B8, numerical/negative checks.
-- [RESULTS](RESULTS.md): performed tests, known caveats and decision ledger.
+- [RESULTS](RESULTS.md): original 18-case Gate B implementation evidence and decision ledger.
+- [D1_ADDITIONAL24](D1_ADDITIONAL24.md): prospectively fixed 24-case grid and tolerances BEFORE independent reference generation (Issue #274).
+- [B2_RESULTS](B2_RESULTS.md): 24/24 ECMAScript traveling-wave oracle, numerical discrepancies, GitHub CI evidence and limited synthetic freeze decision (PR #275).
 - [Experiment README](../../../experiments/044_el_r2_s1_source_load/README.md): local reproduction and source SHA pins.
 
 **No empirical source/ear validation, no HRTF, no production ASMR API, no Studio modification.** The independent human/science review and any adoption gate remain separate from Python CI.

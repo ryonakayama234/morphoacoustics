@@ -1,0 +1,49 @@
+name: el-r2-s1-b2-prospective-24
+
+on:
+  push:
+    branches:
+      - research/el-r2-s1-b2-24case-audit-20261102
+  pull_request:
+    paths:
+      - "docs/research/listener-r2-s1-gateb-implementation/D1_ADDITIONAL24.md"
+      - "docs/research/listener-r2-s1-gateb-implementation/B2_RESULTS.md"
+      - "experiments/044_el_r2_s1_source_load/holdout_oracle_24.json"
+      - "experiments/044_el_r2_s1_source_load/run_b2.py"
+      - "experiments/044_el_r2_s1_source_load/rebuild_b2.mjs"
+      - "experiments/044_el_r2_s1_source_load/verify_b2_generated.py"
+      - "tests/test_experiment_el_r2_s1_b2.py"
+      - ".github/workflows/el-r2-s1-b2-24case.yml"
+  workflow_dispatch:
+
+jobs:
+  synthetic-24-contrast:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Core without changing physical solver
+        run: python -m pip install -e '.[dev]'
+      - name: Original 18 + prospective 24 + Core tube regression
+        run: python -m pytest -q tests/test_experiment_el_r2_s1.py tests/test_experiment_el_r2_s1_b2.py tests/test_acoustics_uniform_tube.py
+      - name: Independently regenerate and verify 24 reference vectors with ECMAScript
+        run: |
+          node experiments/044_el_r2_s1_source_load/rebuild_b2.mjs > "el-r2-s1-b2-rebuilt-${{ matrix.python-version }}.json"
+          python experiments/044_el_r2_s1_source_load/verify_b2_generated.py "el-r2-s1-b2-rebuilt-${{ matrix.python-version }}.json"
+      - name: Export 24 complete complex observations with audit maxima
+        env:
+          GATEB_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python experiments/044_el_r2_s1_source_load/run_b2.py "el-r2-s1-b2-observations-${{ matrix.python-version }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: el-r2-s1-b2-observations-${{ matrix.python-version }}
+          path: |
+            el-r2-s1-b2-observations-${{ matrix.python-version }}.json
+            el-r2-s1-b2-rebuilt-${{ matrix.python-version }}.json
+          if-no-files-found: error
