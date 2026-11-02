@@ -21,12 +21,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run preregistered scientific controls
-        working-directory: experiments/057_vf1b2_c1r0_sealed
-        run: python -m unittest -v test_r0.py
-      - name: Generate full physical traces and independent receipts
+      - name: Generate full physical traces and independent receipts BEFORE tests
         working-directory: experiments/057_vf1b2_c1r0_sealed
         run: python run.py vf1b2-c1r0-artifacts
+      - name: Run preregistered scientific and adversarial controls
+        working-directory: experiments/057_vf1b2_c1r0_sealed
+        run: python -m unittest -v test_r0.py
       - name: Archive raw evidence even after scientific failure
         if: always()
         uses: actions/upload-artifact@v4
