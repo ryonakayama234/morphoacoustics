@@ -7,6 +7,15 @@ def audit(trace: dict) -> dict:
     if trace.get("schema") != "vf1b2.c1r0.sealed.v0-research":
         raise ValueError("SCHEMA_MISMATCH")
     f = trace["fixture"]
+    positive = ("L_g_m", "ell_m", "half_gap_m", "P0_abs_Pa", "Pext_abs_Pa", "rho0_kg_m3",
+                "m_L_kg", "m_U_kg", "k_L_N_m", "k_U_N_m")
+    nonnegative = ("k_c_N_m", "d_L_Ns_m", "d_U_Ns_m")
+    initial = ("x_L0_m", "x_U0_m", "v_L0_m_s", "v_U0_m_s")
+    if (any(not isinstance(f[k], (int, float)) or not math.isfinite(f[k]) or f[k] <= 0 for k in positive)
+            or any(not isinstance(f[k], (int, float)) or not math.isfinite(f[k]) or f[k] < 0 for k in nonnegative)
+            or any(not isinstance(f[k], (int, float)) or not math.isfinite(f[k]) for k in initial)
+            or not math.isfinite(f["gamma"]) or f["gamma"] <= 1):
+        raise ValueError("INVALID_FIXTURE")
     samples = trace["samples"]
     dt = trace["dt_s"]
     duration = trace.get("duration_s")
@@ -48,6 +57,8 @@ def audit(trace: dict) -> dict:
         if volume <= 0:
             raise ValueError("INVALID_VOLUME")
         p_expected = p0 * (v0 / volume) ** gamma
+        if not math.isfinite(p_expected) or p_expected <= 0 or s["rho_kg_m3"] <= 0:
+            raise ValueError("INVALID_GAS")
         max_p_rel = max(max_p_rel, abs(s["p_abs_Pa"] - p_expected) / p_expected)
         max_mass_abs = max(max_mass_abs, abs(s["rho_kg_m3"] * volume - mass_expected))
         max_vol_rel = max(max_vol_rel, abs(s["V_m3"] - volume) / volume)
@@ -58,7 +69,10 @@ def audit(trace: dict) -> dict:
         kinetic = (f["m_L_kg"] * vl * vl + f["m_U_kg"] * vu * vu) / 2
         elastic = (f["k_L_N_m"] * xl * xl + f["k_U_N_m"] * xu * xu
                    + f["k_c_N_m"] * (xl - xu) ** 2) / 2
-        energies.append(gas_delta + external + kinetic + elastic)
+        e = gas_delta + external + kinetic + elastic
+        if not math.isfinite(e):
+            raise ValueError("NONFINITE_ENERGY")
+        energies.append(e)
         dissipation.append(f["d_L_Ns_m"] * vl * vl + f["d_U_Ns_m"] * vu * vu)
     cumulative_loss = 0.0
     max_abs_residual = 0.0
