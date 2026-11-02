@@ -10,3 +10,6 @@ No second BodyRevision registry; no imports into Core main or src/morphoacoustic
 
 ## Review amendment — stricter raw data binding
 For this frozen 6ms/4–2–1us study, the saved trace must contain the complete finite timestamps, exact start state from the declared immutable Fixture, SI-valid finite positive physical parameters, and finite pressure/mass/energy. All saved velocities must agree with the independent signed kinematic witness; max derivative discrepancy in m/s is recorded with the audit engineering tolerance. The output receipt includes `max_energy_residual_J`, `max_energy_residual_relative`, `kinematic_velocity_error_max_m_s` and `kinematic_tolerance_m_s`. This is research trace integrity, not a newly published Studio contract.
+
+## Audit failure-state preservation and source identity amendment
+Raw records are now written to disk *before* the independent scientific audit. If it refuses the case, `<case>.failure.json` persists the error classification and raw SHA, `receipt.json` includes the rejected case, and the command propagates failure; Actions uploads retained bytes using `if: always()`. Independent observer receipts also provide `force_acceleration_residual_max_m_s2` and `force_acceleration_tolerance_m_s2`. The source identity claim is per exact-head Git blob, not stale earlier labels; see final RESULTS identity appendix.
