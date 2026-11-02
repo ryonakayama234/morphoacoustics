@@ -76,6 +76,32 @@ class R0Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "INVALID_FIXTURE"):
             audit(b)
 
+    def test_frozen_non_equilibrium_trajectory_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        first = copy.deepcopy(a["samples"][0])
+        for record in a["samples"]:
+            for key in ("x_m", "v_m_s", "V_m3", "p_abs_Pa", "rho_kg_m3"):
+                record[key] = copy.deepcopy(first[key])
+        with self.assertRaisesRegex(ValueError, "MOMENTUM_FORCE_MISMATCH"):
+            audit(a)
+
+    def test_failed_audit_preserves_raw_evidence(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from run import produce
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            with patch("run.audit", side_effect=ValueError("FORCED_AUDIT_FAILURE")):
+                with self.assertRaisesRegex(ValueError, "FORCED_AUDIT_FAILURE"):
+                    produce(path)
+            self.assertTrue((path / "damped_4us.json").exists())
+            failure = __import__("json").loads((path / "damped_4us.failure.json").read_text())
+            self.assertEqual(failure["status"], "AUDIT_FAILED")
+            self.assertEqual(failure["raw_sha256"], __import__("hashlib").sha256(
+                (path / "damped_4us.json").read_bytes()).hexdigest())
+            self.assertTrue((path / "receipt.json").exists())
+
     def test_domain_refusals(self):
         with self.assertRaisesRegex(ValueError, "UNSUPPORTED_CONTACT"):
             simulate(replace(Fixture(), x_L0_m=-0.00021), 1e-6)
