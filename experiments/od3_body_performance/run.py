@@ -432,8 +432,13 @@ def _verify_files(output: Path, runner: Any, exp: Any, parent: Any) -> dict[str,
             require(recorded_files[file_path.name] == sha(file_path.read_bytes()),
                     "ARTIFACT_TAMPER", "artifact digest changed")
         restored = np.load(raw_path, allow_pickle=False)
-        require(restored.shape == (SAMPLES,) and np.isfinite(restored).all(),
-                "INVALID_PRESSURE", "saved raw pressure shape/nonfinite")
+        require(restored.shape == (SAMPLES,) and np.isfinite(restored).all()
+                and restored.dtype == np.dtype("<f8"),
+                "INVALID_PRESSURE", "saved pressure must be finite native f64 Pa")
+        matching = next((row for row in expected["conditions"] if row["id"] == name), None)
+        require(matching is not None and runner["sha_f64"](restored) ==
+                matching["raw_sha256_le_f64"], "RAW_PRESSURE_HASH_MISMATCH",
+                "saved Pa samples do not match the model-authoritative raw SHA receipt")
         floor = float(np.linalg.norm(restored - raw) / np.linalg.norm(raw))
         require(math.isfinite(floor) and floor <= REPLAY_TOL,
                 "PHYSICAL_REPLAY_MISMATCH", "saved Pa not reproduced from exact body/schedule")
