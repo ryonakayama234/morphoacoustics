@@ -89,6 +89,15 @@ def finite(value: object) -> bool:
 def audit_24(f: Fixture, o: PortObservation, ref: list[float]) -> tuple[str, ...]:
     """Evaluate raw ports against the separate frozen wave reference, fail-closed."""
     errors: list[str] = []
+    if (not isinstance(ref, (list, tuple)) or len(ref) != len(COLUMNS)
+            or not all(finite(v) and not isinstance(v, bool) for v in ref)):
+        return ("nonfinite_or_invalid_reference",)
+    if (f.source_pressure_pa != 1+0j
+        or f.source_impedance_pa_s_m3 != REFERENCE["source_impedance_pa_s_m3"]
+        or f.terminal_impedance_pa_s_m3 != REFERENCE["terminal_impedance_pa_s_m3"]
+        or f.air_density_kg_m3 != REFERENCE["rho_kg_m3"]
+        or f.sound_speed_m_s != REFERENCE["c_m_s"]):
+        errors.append("absolute_drive_load_air_identity")
     raw = [o.p0_pa, o.pL_pa, o.u0_m3_s, o.uL_m3_s, o.zc_pa_s_m3,
            o.power_drive_w, o.power_entrance_w, o.power_terminal_w,
            o.power_source_loss_w, o.h_total, o.h_drive, o.h_canal]
@@ -194,6 +203,17 @@ def test_mutated_observation_and_reference_cannot_pass():
     mutant_row = list(row)
     mutant_row[12] += 1e-8
     assert "Pentrance_independent_reference" in audit_24(f,valid,mutant_row)
+    mutant_row = list(row)
+    mutant_row[3] = float('nan')
+    assert audit_24(f,valid,mutant_row) == ("nonfinite_or_invalid_reference",)
+    for bad_fixture in (
+        replace(f,source_pressure_pa=2+0j),
+        replace(f,source_impedance_pa_s_m3=f.source_impedance_pa_s_m3*1.1),
+        replace(f,terminal_impedance_pa_s_m3=f.terminal_impedance_pa_s_m3*1.1),
+        replace(f,air_density_kg_m3=1.20),
+        replace(f,sound_speed_m_s=342.0),
+    ):
+        assert "absolute_drive_load_air_identity" in audit_24(bad_fixture,valid,row)
 
 
 def test_oracle_byte_edit_rejected(tmp_path):
