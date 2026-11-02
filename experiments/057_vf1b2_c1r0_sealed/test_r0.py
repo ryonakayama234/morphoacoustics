@@ -54,6 +54,18 @@ class R0Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "INITIAL_STATE_MISMATCH"):
             audit(null)
 
+    def test_velocity_sign_corruption_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        a["samples"][3000]["v_m_s"][0] *= -1
+        with self.assertRaisesRegex(ValueError, "KINEMATIC_MISMATCH"):
+            audit(a)
+
+    def test_nonfinite_timestamp_rejected(self):
+        a = simulate(Fixture(), 2e-6)
+        a["samples"][500]["t_s"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "BAD_TIME_CLOCK"):
+            audit(a)
+
     def test_domain_refusals(self):
         with self.assertRaisesRegex(ValueError, "UNSUPPORTED_CONTACT"):
             simulate(replace(Fixture(), x_L0_m=-0.00021), 1e-6)
