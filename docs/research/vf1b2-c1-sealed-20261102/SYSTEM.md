@@ -13,3 +13,6 @@ Studio V2 ADR: Character/Inspector own future organ parameter edit refs; Motion 
 
 ## 2026-11-02 engineering review amendment — independent signed kinematics
 The original system equations remain unchanged. The data audit now reconstructs each signed v_i(t) from the five adjacent saved x_i(t) values using a fourth-order finite-difference stencil (one-sided near boundaries), and rejects contradictions. This addresses an energy-observer blind spot: v_i and -v_i yield the same kinetic energy and instantaneous damping v_i² but different displacement dynamics/wall-power phase. No new fluid model, aerodynamic work law or phonator is introduced.
+
+## 2026-11-02 third independent-review amendment — mechanical force witness
+The independent observer now checks the declared tissue ODE `m_i a_i = g(p-Pext) - Kx_i - d_i v_i` at each saved timestep using an independently reconstructed signed acceleration (five-point, fourth-order finite differences of saved velocities). Thus a constant nonequilibrium trajectory with `v=0` and the correct static pressure cannot pass merely by conserving energy. This is a model-consistency check, NOT measured airway physics. The original gas-tissue solver and its force/energy laws are unchanged.
