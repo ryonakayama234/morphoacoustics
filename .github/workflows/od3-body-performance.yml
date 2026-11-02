@@ -30,6 +30,7 @@ jobs:
           python experiments/od3_body_performance/run.py inspect
           python experiments/od3_body_performance/run.py perform-suite --output-dir od3-evidence
           python experiments/od3_body_performance/run.py verify --output-dir od3-evidence
+          python -c "import json; x=json.load(open('od3-evidence/decision.json')); print('OD3_MEASURED', json.dumps({'metrics':x['metrics'],'interactions':x['interactions'],'source':x['source_sha256_le_f64']},sort_keys=True))"
       - name: Reused selected body paired G0/G1 and fresh readback
         run: |
           python experiments/od3_body_performance/run.py perform-pair --center 4 --ratio 1.10 --output-dir od3-selected-pair
