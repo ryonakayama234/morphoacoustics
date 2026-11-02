@@ -66,6 +66,16 @@ class R0Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "BAD_TIME_CLOCK"):
             audit(a)
 
+    def test_forged_nonfinite_fixture_rejected(self):
+        a = simulate(Fixture(), 2e-6)
+        a["fixture"]["P0_abs_Pa"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "INVALID_FIXTURE"):
+            audit(a)
+        b = simulate(Fixture(), 2e-6)
+        b["fixture"]["rho0_kg_m3"] = -1.0
+        with self.assertRaisesRegex(ValueError, "INVALID_FIXTURE"):
+            audit(b)
+
     def test_domain_refusals(self):
         with self.assertRaisesRegex(ValueError, "UNSUPPORTED_CONTACT"):
             simulate(replace(Fixture(), x_L0_m=-0.00021), 1e-6)
