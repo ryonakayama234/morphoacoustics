@@ -90,6 +90,11 @@ def test_actual_six_physical_cases_and_frozen_regression(tmp_path):
     assert result["status"] == "GO_LIMITED_OD3_RESEARCH_EXECUTION"
     assert result["verified_bodies"] == 3 and result["verified_new_physical_cases"] == 6
     assert all(np.isfinite(x) and x > 1e-8 for x in result["timing_effect_l2"])
+    assert len(result["timing_log_area_at_020"]) == 3
+    assert all(x > 1e-9 for x in result["timing_log_area_at_020"])
+    assert len(result["body_motor_interactions"]) == 2
+    assert all(row["body_x_schedule_log_area_linf_at_020"] <= 1e-10
+               for row in result["body_motor_interactions"])
     assert OD3["verify_archive"](output) == result
     decision = OD3["read_json"](output / "decision.json")
     assert len(decision["conditions"]) == 6
@@ -105,7 +110,18 @@ def test_selected_pair_restart_and_coordinated_false_pressure(tmp_path):
     output = tmp_path / "pair"
     result = OD3["perform_archive"](output, kind="pair", center=4, ratio="1.10")
     assert result["verified_new_physical_cases"] == 2
+    assert result["body_motor_interactions"] == []
     assert OD3["verify_archive"](output) == result
+    marker = output / "manifest.json"
+    saved_marker = marker.read_bytes()
+    try:
+        changed = json.loads(saved_marker)
+        changed["unexpected"] = "same-audio-no-change"
+        marker.write_bytes(OD3["canonical"](changed))
+        with pytest.raises(OD3["OD3Error"], match="manifest fields"):
+            OD3["verify_archive"](output)
+    finally:
+        marker.write_bytes(saved_marker)
     with pytest.raises(OD3["OD3Error"], match="overwritten"):
         OD3["perform_archive"](output, kind="pair", center=4, ratio="1.10")
     marker = output / "manifest.json"
