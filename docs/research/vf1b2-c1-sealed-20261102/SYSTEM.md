@@ -10,3 +10,6 @@ Exact law: dH/dt = - d_L v_L^2 - d_U v_U^2. Thus H(t)+ integral_0^t d_i v_i^2 dt
 Independently compare fluid p(V), gas mass, and H from raw saved x(t),v(t) not by importing solver routines. Pressure-gradient separate *analytic oracle only*: p_g(z)=b+a z/L -> F_L=ell L (b+a/3), F_U=ell L (b+2a/3); F_L-F_U=-ell L a/3. A gradient does not arise dynamically in this sealed model.
 No SFI/p'U' port in this exercise. Spatial FV, nonzero mean flow, reservoir enthalpy and genuine phonation are **not implemented** and remain separate staged dependencies.
 Studio V2 ADR: Character/Inspector own future organ parameter edit refs; Motion task/drive intent; Scene speaker/listener; bottom Take Dock only valid audio; Research Drawer hidden receipts. All Studio code and V2 registry remain untouched.
+
+## 2026-11-02 engineering review amendment — independent signed kinematics
+The original system equations remain unchanged. The data audit now reconstructs each signed v_i(t) from the five adjacent saved x_i(t) values using a fourth-order finite-difference stencil (one-sided near boundaries), and rejects contradictions. This addresses an energy-observer blind spot: v_i and -v_i yield the same kinetic energy and instantaneous damping v_i² but different displacement dynamics/wall-power phase. No new fluid model, aerodynamic work law or phonator is introduced.
