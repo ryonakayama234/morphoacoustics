@@ -20,9 +20,20 @@ def produce(out: Path) -> dict:
     report = {"schema": "vf1b2.c1r0.receipt.v0-research", "cases": {}, "quadrature": {}}
     for name, fixture, dt in cases:
         trace = simulate(fixture, dt)
-        receipt = audit(trace)
         path = out / f"{name}.json"
-        save_trace(path, trace)
+        save_trace(path, trace)  # Preserve even if the independent audit refuses.
+        try:
+            receipt = audit(trace)
+        except Exception as exc:
+            failure = {"status": "AUDIT_FAILED", "case": name, "error_type": type(exc).__name__,
+                       "error": str(exc), "raw_trace": path.name,
+                       "raw_sha256": sha256(path.read_bytes()).hexdigest()}
+            (out / f"{name}.failure.json").write_text(
+                json.dumps(failure, indent=2, sort_keys=True), encoding="utf-8")
+            report["cases"][name] = failure
+            (out / "receipt.json").write_text(
+                json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+            raise
         receipt.update({"trace_filename": path.name,
                         "sha256": sha256(path.read_bytes()).hexdigest(),
                         "sample_count": len(trace["samples"]),
