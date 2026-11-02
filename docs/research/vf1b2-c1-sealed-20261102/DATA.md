@@ -7,3 +7,6 @@ ScientificVerdict separates code/numeric pass from source, biological, autonomy 
 C1_R0_G1_PASS_MATHEMATICAL_SEALED_ONLY / G1_FAIL / NUMERICALLY_UNRESOLVED / INVALID / NO_FLOW_OR_PHONATION / NOT_STUDIO_ADOPTED. These statements never imply self-oscillating source or ear-quality speech.
 Research digest is tamper detection of saved bytes, not authentication of malicious Git edits. Exact source SHA and environment must be recorded. Cross-environment binary equality of floating-point arrays is not promised; independent numerical floors distinct from archive hashes.
 No second BodyRevision registry; no imports into Core main or src/morphoacoustics_graph.
+
+## Review amendment — stricter raw data binding
+For this frozen 6ms/4–2–1us study, the saved trace must contain the complete finite timestamps, exact start state from the declared immutable Fixture, SI-valid finite positive physical parameters, and finite pressure/mass/energy. All saved velocities must agree with the independent signed kinematic witness; max derivative discrepancy in m/s is recorded with the audit engineering tolerance. The output receipt includes `max_energy_residual_J`, `max_energy_residual_relative`, `kinematic_velocity_error_max_m_s` and `kinematic_tolerance_m_s`. This is research trace integrity, not a newly published Studio contract.
