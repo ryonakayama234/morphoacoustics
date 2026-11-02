@@ -139,7 +139,23 @@ def test_selected_pair_restart_and_coordinated_false_pressure(tmp_path):
         marker.write_bytes(OD3["canonical"](manifest))
         # Even when all simple hashes agree with the changed bytes, full
         # replay from the exact Core body + task schedule refuses the forged Pa.
-        with pytest.raises(OD3["OD3Error"], match="saved Pa not reproduced"):
+        with pytest.raises(OD3["OD3Error"], match="model-authoritative raw SHA"):
+            OD3["verify_archive"](output)
+    finally:
+        raw.write_bytes(original_raw)
+        marker.write_bytes(original_manifest)
+    # Reviewer P2: one-ULP pressure change is inside numerical replay tolerance,
+    # but MUST fail immutable SHA receipt integrity even with a rewritten
+    # artifact inventory hash.
+    try:
+        data = np.load(raw, allow_pickle=False)
+        data[1024] = np.nextafter(data[1024], np.inf)
+        with raw.open("wb") as handle:
+            np.save(handle, data, allow_pickle=False)
+        forged = json.loads(original_manifest)
+        forged["artifact_sha256"][raw.name] = OD3["sha"](raw.read_bytes())
+        marker.write_bytes(OD3["canonical"](forged))
+        with pytest.raises(OD3["OD3Error"], match="model-authoritative raw SHA"):
             OD3["verify_archive"](output)
     finally:
         raw.write_bytes(original_raw)
