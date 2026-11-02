@@ -303,35 +303,36 @@ def _generate(kind: str, choices: tuple[tuple[int, str], ...],
     # Descriptive two-factor contrast. The log-area body × schedule
     # interaction is predicted to be zero by the chosen separable model;
     # acoustic interaction need not be zero because transmission is nonlinear.
-    reference = by_body["c04_r100"]
-    ref_g0 = waveforms[reference["G0"]["id"]]
-    ref_g1 = waveforms[reference["G1"]["id"]]
-    ref_norm = float(np.linalg.norm(ref_g0))
     interactions = []
-    for body_key, rows in by_body.items():
-        if body_key == "c04_r100":
-            continue
-        b0 = waveforms[rows["G0"]["id"]]
-        b1 = waveforms[rows["G1"]["id"]]
-        contrast = (b1 - b0) - (ref_g1 - ref_g0)
-        probe_b0 = rows["G0"]["probes"][1]["areas_hex"]
-        probe_b1 = rows["G1"]["probes"][1]["areas_hex"]
-        probe_r0 = reference["G0"]["probes"][1]["areas_hex"]
-        probe_r1 = reference["G1"]["probes"][1]["areas_hex"]
-        log_area_interaction = float(np.max(np.abs(
-            np.log(np.array([float.fromhex(x) for x in probe_b1])
-                   / np.array([float.fromhex(x) for x in probe_b0]))
-            - np.log(np.array([float.fromhex(x) for x in probe_r1])
-                     / np.array([float.fromhex(x) for x in probe_r0]))
-        )))
-        require(log_area_interaction <= GEOMETRY_TOL, "LOG_AREA_INTERACTION",
-                "rest-body change and task timing must be separable in log area")
-        interactions.append({
-            "body": body_key,
-            "G0_body_vs_M0_relative_l2": float(np.linalg.norm(b0 - ref_g0) / ref_norm),
-            "body_x_schedule_raw_pa_relative_l2": float(np.linalg.norm(contrast) / ref_norm),
-            "body_x_schedule_log_area_linf_at_020": log_area_interaction,
-        })
+    if "c04_r100" in by_body and len(by_body) > 1:
+        reference = by_body["c04_r100"]
+        ref_g0 = waveforms[reference["G0"]["id"]]
+        ref_g1 = waveforms[reference["G1"]["id"]]
+        ref_norm = float(np.linalg.norm(ref_g0))
+        for body_key, rows in by_body.items():
+            if body_key == "c04_r100":
+                continue
+            b0 = waveforms[rows["G0"]["id"]]
+            b1 = waveforms[rows["G1"]["id"]]
+            contrast = (b1 - b0) - (ref_g1 - ref_g0)
+            probe_b0 = rows["G0"]["probes"][1]["areas_hex"]
+            probe_b1 = rows["G1"]["probes"][1]["areas_hex"]
+            probe_r0 = reference["G0"]["probes"][1]["areas_hex"]
+            probe_r1 = reference["G1"]["probes"][1]["areas_hex"]
+            log_area_interaction = float(np.max(np.abs(
+                np.log(np.array([float.fromhex(x) for x in probe_b1])
+                       / np.array([float.fromhex(x) for x in probe_b0]))
+                - np.log(np.array([float.fromhex(x) for x in probe_r1])
+                         / np.array([float.fromhex(x) for x in probe_r0]))
+            )))
+            require(log_area_interaction <= GEOMETRY_TOL, "LOG_AREA_INTERACTION",
+                    "rest-body change and task timing must be separable in log area")
+            interactions.append({
+                "body": body_key,
+                "G0_body_vs_M0_relative_l2": float(np.linalg.norm(b0 - ref_g0) / ref_norm),
+                "body_x_schedule_raw_pa_relative_l2": float(np.linalg.norm(contrast) / ref_norm),
+                "body_x_schedule_log_area_linf_at_020": log_area_interaction,
+            })
 
     decision = {
         "schema": SCHEMA,
