@@ -14,3 +14,6 @@ Publisher gain note https://audiogroup.web.th-koeln.de/FILES/NF_Datasets_Gains_i
 - Rehosting or re-zipping KU100 produces no independent new head. All four shells share the same head and acquisition/postprocessing lineage.
 ## Data receipt
 Maintain original hash, individual member hashes from PR270, source link, edition, access terms, physical plane, timing, coordinate convention, head identity, effective angular blocks, role hashes, model hashes, accepted/refused counts, training/selection/calibration/final truth first-read receipt. Null=unverified, NOT_RUN!=FAIL, metadata PASS!=physics PASS.
+
+## 2026-11-03 verified original geometry ledger (M1)
+Original CI run https://github.com/ryonakayama234/morphoacoustics/actions/runs/41481623538 confirmed original archive/source hashes; full-sphere four shells all share ordered 2702 source directions and exact angular cells. Hash-locked spatial role manifest `edbe71aafe0ddf1b604dfbed98cd57f1a3cba51bf2cebbd5ce33c818c777cb71` and retained fit manifest `aaef951c2cdc8c1aabb6df3066fa03fb31b5a43c21a1de14c949c44ad956c767`. No source ZIP or original acoustic samples committed. Dataset author paper explicitly reports apparatus rear shadow and position-specific compensation; see [SOURCE_METHOD_REVIEW](SOURCE_METHOD_REVIEW.md). Source rights still require independent edition-specific review.

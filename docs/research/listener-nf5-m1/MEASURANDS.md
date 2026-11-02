@@ -16,3 +16,6 @@ At stationary identified artificial head H and measured source coordinate q=(r,a
 A finite 128-tap measured HRIR may have an arbitrary analysis origin and endpoint; a real/causal reconstruction is relative to that declared window. A bare FFT round-trip does not establish physical causality, passivity, eardrum calibration or minimum phase.
 ## Status
 Q1–Q4 unresolved for physical claims; Q5 needs original-geometry-only job; Q6 RIGHTS_CONFLICT_REVIEW_REQUIRED. Conditional limited *relative stored-channel* modeling remains a hypothesis, not a new qualification verdict. Prior G0-A2's structural validation remains valid.
+
+## 2026-11-03 executed G0-B and source method update (no physical promotion)
+Q5 = `G0B_GEOMETRY_FEASIBLE`, 54 final spatial cells/395 final source directions, verified shell alignment and 5° split buffer; model coverage NOT_MEASURED. Q1–Q4/Q6 not fully qualified. Author paper confirms reference omnidirectional microphone measured at head physical origin for each speaker radius, ALFE at 200Hz, distance-specific phase/magnitude correction and 128-tap window; zero-time remains unverified. Robot arm's rear response artifacts contaminate stored measured relative HRIR. This changes the ceiling of future interpretation, not the registered primary ILD thresholds. See [SOURCE_METHOD_REVIEW](SOURCE_METHOD_REVIEW.md).

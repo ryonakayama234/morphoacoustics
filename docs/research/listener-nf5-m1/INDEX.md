@@ -18,3 +18,6 @@ Geometry metadata, source integrity and mathematical specifications are not evid
 - https://github.com/ryonakayama234/morphoacoustics/pull/261
 - https://zenodo.org/records/4297951
 - https://www.sofaconventions.org/mediawiki/index.php/SimpleFreeFieldHRIR
+
+## M1 completion evidence
+Read [SOURCE_METHOD_REVIEW](SOURCE_METHOD_REVIEW.md) and the append-only executed [RESULTS](RESULTS.md), then [DECISIONS](DECISIONS.md). Current limited geometry outcome: 395 final directions in 54 angular cells, source-pinned G0-B SUCCESS, but full scientific readiness BLOCKED (measurement reference/rights independent review). Draft PR #280 remains unmerged.
