@@ -1,0 +1,144 @@
+"""Prospective controls from EXPERIMENT.md; standard-library unittest."""
+from __future__ import annotations
+from dataclasses import replace
+import copy
+import math
+import unittest
+from solver import Fixture, midpoint_linear_force, simulate
+from audit import audit
+
+
+class R0Tests(unittest.TestCase):
+    def test_frozen_fixture_passive_and_lossless(self):
+        for f in (Fixture(), replace(Fixture(), d_L_Ns_m=0, d_U_Ns_m=0)):
+            report = audit(simulate(f, 1e-6))
+            self.assertLessEqual(abs(report["energy_residual_J"]), 3e-10)
+            self.assertLessEqual(report["energy_residual_relative"], 5e-4)
+
+    def test_identically_static(self):
+        f = replace(Fixture(), x_L0_m=0, x_U0_m=0)
+        a = simulate(f, 4e-6)
+        audit(a)
+        for s in a["samples"]:
+            self.assertLessEqual(max(abs(i) for i in s["x_m"]), 1e-14)
+            self.assertLessEqual(max(abs(i) for i in s["v_m_s"]), 1e-9)
+            self.assertAlmostEqual(s["p_abs_Pa"], f.P0_abs_Pa, places=8)
+
+    def test_raw_trace_tampering_rejected(self):
+        a = simulate(Fixture(), 2e-6)
+        b = copy.deepcopy(a)
+        b["samples"][len(b["samples"]) // 2]["p_abs_Pa"] += 1e-4
+        with self.assertRaisesRegex(ValueError, "RAW_TRACE"):
+            audit(b)
+        c = copy.deepcopy(a)
+        c["samples"][len(c["samples"]) // 2]["rho_kg_m3"] *= 1.0001
+        with self.assertRaisesRegex(ValueError, "RAW_TRACE"):
+            audit(c)
+
+    def test_midtrajectory_energy_forgery_rejected(self):
+        f = replace(Fixture(), d_L_Ns_m=0, d_U_Ns_m=0)
+        a = simulate(f, 1e-6)
+        b = copy.deepcopy(a)
+        b["samples"][3000]["v_m_s"][0] = 100.0
+        with self.assertRaisesRegex(ValueError, "ENERGY_LEDGER_FAIL"):
+            audit(b)
+
+    def test_truncated_trace_and_initial_binding_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        b = copy.deepcopy(a)
+        b["samples"] = b["samples"][:2]
+        with self.assertRaisesRegex(ValueError, "INCOMPLETE_TRACE"):
+            audit(b)
+        null = simulate(replace(Fixture(), x_L0_m=0.0, x_U0_m=0.0), 4e-6)
+        null["fixture"] = __import__("dataclasses").asdict(Fixture())
+        with self.assertRaisesRegex(ValueError, "INITIAL_STATE_MISMATCH"):
+            audit(null)
+
+    def test_velocity_sign_corruption_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        a["samples"][3000]["v_m_s"][0] *= -1
+        with self.assertRaisesRegex(ValueError, "KINEMATIC_MISMATCH"):
+            audit(a)
+
+    def test_nonfinite_timestamp_rejected(self):
+        a = simulate(Fixture(), 2e-6)
+        a["samples"][500]["t_s"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "BAD_TIME_CLOCK"):
+            audit(a)
+
+    def test_forged_nonfinite_fixture_rejected(self):
+        a = simulate(Fixture(), 2e-6)
+        a["fixture"]["P0_abs_Pa"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "INVALID_FIXTURE"):
+            audit(a)
+        b = simulate(Fixture(), 2e-6)
+        b["fixture"]["rho0_kg_m3"] = -1.0
+        with self.assertRaisesRegex(ValueError, "INVALID_FIXTURE"):
+            audit(b)
+
+    def test_frozen_non_equilibrium_trajectory_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        first = copy.deepcopy(a["samples"][0])
+        for record in a["samples"]:
+            for key in ("x_m", "v_m_s", "V_m3", "p_abs_Pa", "rho_kg_m3"):
+                record[key] = copy.deepcopy(first[key])
+        with self.assertRaisesRegex(ValueError, "MOMENTUM_FORCE_MISMATCH"):
+            audit(a)
+
+    def test_failed_audit_preserves_raw_evidence(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from run import produce
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            with patch("run.audit", side_effect=ValueError("FORCED_AUDIT_FAILURE")):
+                with self.assertRaisesRegex(ValueError, "FORCED_AUDIT_FAILURE"):
+                    produce(path)
+            self.assertTrue((path / "damped_4us.json").exists())
+            failure = __import__("json").loads((path / "damped_4us.failure.json").read_text())
+            self.assertEqual(failure["status"], "AUDIT_FAILED")
+            self.assertEqual(failure["raw_sha256"], __import__("hashlib").sha256(
+                (path / "damped_4us.json").read_bytes()).hexdigest())
+            self.assertTrue((path / "receipt.json").exists())
+
+    def test_domain_refusals(self):
+        with self.assertRaisesRegex(ValueError, "UNSUPPORTED_CONTACT"):
+            simulate(replace(Fixture(), x_L0_m=-0.00021), 1e-6)
+        with self.assertRaisesRegex(ValueError, "INVALID_MATERIAL"):
+            simulate(replace(Fixture(), d_L_Ns_m=-0.01), 1e-6)
+        with self.assertRaisesRegex(ValueError, "INVALID_TIME"):
+            simulate(Fixture(), -1e-6)
+
+    def test_spatial_force_oracle(self):
+        f = Fixture()
+        expect_L = f.ell_m*f.L_g_m*(100+120/3)
+        expect_U = f.ell_m*f.L_g_m*(100+2*120/3)
+        errs = []
+        for n in [8, 16, 32]:
+            fl, fu = midpoint_linear_force(n, 100, 120, f.L_g_m, f.ell_m)
+            errs.append(max(abs(fl-expect_L), abs(fu-expect_U)))
+            self.assertLessEqual(abs((fl-fu) + f.ell_m*f.L_g_m*120/3), 2*errs[-1]+1e-14)
+        self.assertGreaterEqual(errs[0]/errs[1], 3)
+        self.assertGreaterEqual(errs[1]/errs[2], 3)
+        fl, fu = midpoint_linear_force(16, 100, -120, f.L_g_m, f.ell_m)
+        self.assertLessEqual(abs((fl-fu) - f.ell_m*f.L_g_m*120/3), 2*errs[1]+1e-14)
+
+    def test_convergence(self):
+        f = Fixture()
+        x4 = simulate(f, 4e-6)["samples"][-1]
+        x2 = simulate(f, 2e-6)["samples"][-1]
+        x1 = simulate(f, 1e-6)["samples"][-1]
+        resolved = 0
+        for k, floor in [("x_m", 1e-14), ("v_m_s", 1e-9)]:
+            for i in [0, 1]:
+                d4 = abs(x4[k][i] - x2[k][i])
+                d2 = abs(x2[k][i] - x1[k][i])
+                if d4 > floor:
+                    resolved += 1
+                    self.assertLessEqual(d2, d4/8)
+        self.assertGreater(resolved, 0, "No convergent components above floor")
+
+
+if __name__ == "__main__":
+    unittest.main()
