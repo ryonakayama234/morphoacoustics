@@ -51,3 +51,15 @@ python experiments/044_el_r2_s1_source_load/run_b2.py /tmp/el-r2-s1-b2-results.j
 ```
 
 Claim classification: synthetic computation and CI **observed PASS**; physiological/psychophysical validation **NOT TESTED**; public API **NOT ADOPTED**; production Studio **UNCHANGED**.
+
+## Post-implementation independent automated code review (2026-11-02)
+
+An automated Codex review of PR #275 at `f16a29e` found one **P2 fail-open audit defect** (see [discussion](https://github.com/ryonakayama234/morphoacoustics/pull/275#discussion_r4438615245)): `verify_b2_generated.py` compared arrays using `zip(left,right)` without verifying full row width; a regenerated row containing just A/L/f could be falsely accepted, because all scientific outputs were silently skipped. This is a verification **false positive**, not evidence that the underlying Core solver or 24 genuine results were numerically wrong.
+
+**Remediation (not part of preregistered Gate A):**
+- Commit [0d5e8c2](https://github.com/ryonakayama234/morphoacoustics/commit/0d5e8c23f3ca60ca156c2cbe72c6a7b0a40cb7cd): compare exact 15-column width and row type *before* zip, on both frozen and regenerated records.
+- Commit [fc5040f](https://github.com/ryonakayama234/morphoacoustics/commit/fc5040f2e2982e8cb742822e17984ec264a1d30e): regression test that truncates every regenerated 24-row sample to just A/L/f and requires explicit failure. No relaxation of the immutable numerical tolerances.
+- Initial acceptance at previous code head `68a0ab0` is historical; subsequent code changes need current-head CI. [Corrected-head push CI](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41382492216) reported SUCCESS, including Python 3.11/3.12, frozen 18 and 24, cross-language regeneration; separate [PR workflow](https://github.com/ryonakayama234/morphoacoustics/actions/runs/41382499053) was triggered for corrected head. The latest head must be inspected after this document-only commit; no blanket CI claim is carried across SHAs.
+- New guard also rejects malformed/nonfinite 24-row input and changed absolute source/load/air parameters in the 24-row audit (commit [2be6c6d](https://github.com/ryonakayama234/morphoacoustics/commit/2be6c6de63af62d4ff2d054e414fc8a174d509c9)). The prior original 18-row oracle has not changed.
+
+**Audit interpretation:** the review identified a real quality-control vulnerability which the regression now reproduces and prevents. Any independent review still applies to this final amended code; automated Codex findings are not a substitute for independent physical auditory-science evaluation.
