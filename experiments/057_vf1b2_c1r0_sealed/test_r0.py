@@ -35,6 +35,25 @@ class R0Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "RAW_TRACE"):
             audit(c)
 
+    def test_midtrajectory_energy_forgery_rejected(self):
+        f = replace(Fixture(), d_L_Ns_m=0, d_U_Ns_m=0)
+        a = simulate(f, 1e-6)
+        b = copy.deepcopy(a)
+        b["samples"][3000]["v_m_s"][0] = 100.0
+        with self.assertRaisesRegex(ValueError, "ENERGY_LEDGER_FAIL"):
+            audit(b)
+
+    def test_truncated_trace_and_initial_binding_rejected(self):
+        a = simulate(Fixture(), 1e-6)
+        b = copy.deepcopy(a)
+        b["samples"] = b["samples"][:2]
+        with self.assertRaisesRegex(ValueError, "INCOMPLETE_TRACE"):
+            audit(b)
+        null = simulate(replace(Fixture(), x_L0_m=0.0, x_U0_m=0.0), 4e-6)
+        null["fixture"] = __import__("dataclasses").asdict(Fixture())
+        with self.assertRaisesRegex(ValueError, "INITIAL_STATE_MISMATCH"):
+            audit(null)
+
     def test_domain_refusals(self):
         with self.assertRaisesRegex(ValueError, "UNSUPPORTED_CONTACT"):
             simulate(replace(Fixture(), x_L0_m=-0.00021), 1e-6)
