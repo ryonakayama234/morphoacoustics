@@ -13,3 +13,10 @@ Original failed output and corrected output were captured locally in the convers
 - Git SHA/content integrity and fresh recomputation are separate; no claim of cryptographic authentication against a hostile repository editor.
 - No human audition. No uploaded sound. No Studio panels or Takes.
 - Scientific status must remain C1_R0_G1_PASS_MATHEMATICAL_SEALED_ONLY even if code CI is green.
+
+## 2026-11-02 exact-HEAD independent Codex P2 corrective amendment
+The initial 6/6 CI success at `a8034c4f40c53173625356fcb3a705c0e593eee1` was NOT a sufficient audit. Independent Codex review identified two material P2 flaws:
+1. An intermediate raw trace velocity could be changed to 100 m/s, injecting approximately 0.5 J of fake kinetic energy, and still pass because only final accumulated energy was checked.
+2. A saved 6001-tick trace could be truncated to two ticks, or a static null could be relabeled with nonzero initial fixture metadata, because coverage/fixture initial state were unchecked.
+
+Fixed with no modification to original source generator or original prereg thresholds: independent audit now computes signed energy residual at **every tick** using cumulative damping quadrature, and checks complete duration, sample count, sample time and exact initial-state binding. Added two adversarial tests; local result **8/8 PASS** on Python 3.13.5. Damped 1us maximal trajectory residual (not merely final) = **7.711825241826593e-14 J**, normalized **1.0748189915569494e-6**; lossless maximal = **2.1123438399338974e-15 J**. Both meet the original `3e-10 J` and `5e-4` limits at every tick. Earlier CI evidence remains historical and must not be relabeled as a current-head independent review success. New GitHub exact-head CI and Codex re-review needed.
