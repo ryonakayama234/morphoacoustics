@@ -1,0 +1,37 @@
+name: VF1B2 C1-R0 sealed mathematical control
+on:
+  push:
+    branches:
+      - research/vf1b2-c1-sealed-control-20261102
+  pull_request:
+    paths:
+      - "experiments/057_vf1b2_c1r0_sealed/**"
+      - "docs/research/vf1b2-c1-sealed-20261102/**"
+      - ".github/workflows/vf1b2-c1r0-sealed.yml"
+  workflow_dispatch:
+jobs:
+  sealed-control:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run preregistered scientific controls
+        working-directory: experiments/057_vf1b2_c1r0_sealed
+        run: python -m unittest -v test_r0.py
+      - name: Generate full physical traces and independent receipts
+        working-directory: experiments/057_vf1b2_c1r0_sealed
+        run: python run.py vf1b2-c1r0-artifacts
+      - name: Archive raw evidence even after scientific failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1b2-c1r0-sealed-${{ matrix.python-version }}
+          path: experiments/057_vf1b2_c1r0_sealed/vf1b2-c1r0-artifacts/
+          if-no-files-found: warn
+          retention-days: 90
