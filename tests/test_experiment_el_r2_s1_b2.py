@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STUDY = ROOT / "experiments" / "044_el_r2_s1_source_load"
 sys.path.insert(0, str(STUDY))
 from listener_port import Fixture, PortObservation, solve
+from verify_b2_generated import verify as verify_b2_generated
 
 ORACLE_PATH = STUDY / "holdout_oracle_24.json"
 ORACLE_GIT_BLOB_SHA1 = "0c3476899de4d3cdeaad46816895b8318b43cde0"
@@ -222,3 +223,12 @@ def test_oracle_byte_edit_rejected(tmp_path):
     path.write_bytes(original.replace(b"750", b"751", 1))
     with pytest.raises(ValueError, match="modified"):
         load_b2(path)
+
+def test_regenerated_reference_rejects_missing_columns(tmp_path):
+    """Review regression: zip() must never attest to identity-only data."""
+    mutilated = json.loads(ORACLE_PATH.read_bytes())
+    mutilated["rows"] = [row[:3] for row in mutilated["rows"]]
+    path = tmp_path / "truncated-rebuilt.json"
+    path.write_text(json.dumps(mutilated), encoding="utf-8")
+    with pytest.raises(AssertionError, match="15 columns"):
+        verify_b2_generated(path)
