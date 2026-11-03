@@ -1,0 +1,37 @@
+name: el-r2-s1-gateb-numerical
+
+on:
+  push:
+    branches:
+      - research/el-r2-s1-gateb-numerical-20261028
+  pull_request:
+    paths:
+      - "experiments/044_el_r2_s1_source_load/**"
+      - "tests/test_experiment_el_r2_s1.py"
+      - "docs/research/listener-r2-s1-gateb-implementation/**"
+      - ".github/workflows/el-r2-s1-gateb.yml"
+  workflow_dispatch:
+
+jobs:
+  synthetic-boundary-audit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install unchanged Core and test dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Frozen blob pin and numerical/mutation/control tests plus Core regression
+        run: python -m pytest -q tests/test_experiment_el_r2_s1.py tests/test_acoustics_uniform_tube.py
+      - name: Reproduce all 18 typed complex observations (without --no-pin)
+        run: python experiments/044_el_r2_s1_source_load/run.py --output "el-r2-s1-gateb-observations-${{ matrix.python-version }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: el-r2-s1-gateb-observations-${{ matrix.python-version }}
+          path: el-r2-s1-gateb-observations-${{ matrix.python-version }}.json
+          if-no-files-found: error
