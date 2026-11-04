@@ -56,7 +56,7 @@ jobs:
           python -m pip install -e .
           python -m pip check
           python -m pip freeze | sort
-      - name: Independently regenerate B0 reference using JS and compare bytes
+      - name: Independently regenerate B0 using JS, enforce 16x15 structure and prereg E2 numeric tolerances
         shell: bash
         run: |
           set -euo pipefail
