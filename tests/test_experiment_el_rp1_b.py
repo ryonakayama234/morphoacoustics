@@ -42,7 +42,9 @@ class TestElRp1GateB(unittest.TestCase):
                 capture_output=True,check=True,timeout=20)
         except FileNotFoundError:
             self.skipTest("Node.js not present locally; GitHub CI checks it")
-        self.assertEqual(proc.stdout,(EXPERIMENT/"b0_wave_oracle_16.json").read_bytes())
+        stats=audit.compare_regenerated_bytes(proc.stdout)
+        self.assertLessEqual(stats["max_pressure_error_pa"],1e-11)
+        self.assertLessEqual(stats["max_scaled_flow_error_pa"],1e-11)
 
     def test_e2_all_sixteen_ports_match_independent_oracle_and_conserve_power(self):
         for idx,row in enumerate(self.oracle["rows"]):
@@ -121,6 +123,18 @@ class TestElRp1GateB(unittest.TestCase):
         for item in mutants:
             with self.subTest(item=repr(item)),self.assertRaises(audit.OracleError):
                 audit.compare_row(row,item)
+
+    def test_cross_runtime_comparison_detects_scientific_mutations(self):
+        import json
+        original=audit.load_oracle()
+        modified=deepcopy(original)
+        modified["rows"][0][3]+=1e-6
+        with self.assertRaises(audit.OracleError):
+            audit.compare_regenerated_bytes(json.dumps(modified).encode())
+        modified=deepcopy(original)
+        modified["rows"][0]=modified["rows"][0][:3]
+        with self.assertRaises(audit.OracleError):
+            audit.compare_regenerated_bytes(json.dumps(modified).encode())
 
     def test_no_measured_human_reinterpretation_and_bad_split(self):
         with self.assertRaises(qual.ResearchRefusal) as ctx:

@@ -119,3 +119,44 @@ def compare_row(row, obs):
         "max_zc_scaled_flow_error_pa": max(errors[i] for i in (2,3,6,7)),
         "max_power_error_w": max(errors[i] for i in (8,9,10,11)),
     }
+
+
+def compare_regenerated_bytes(raw: bytes):
+    """Cross-runtime JS regeneration: strictly same 16x15 structure AND E2 tolerances.
+
+    The original B0 Git blob is byte-exact; external JavaScript engine/libm
+    roundoff is compared numerically, not silently treated as a new oracle.
+    """
+    if not isinstance(raw, bytes):
+        raise OracleError("regenerated reference must be original bytes")
+    recreated = json.loads(raw.decode("utf-8"), object_pairs_hook=_strict_object)
+    validate_oracle(recreated)
+    original = load_oracle()
+    for key in ("schema","scientific_scope","preregistration_sha","method","fixed","fields"):
+        if recreated[key] != original[key]:
+            raise OracleError(f"regenerated metadata changed: {key}")
+    max_press = max_flow = max_power = 0.
+    for idx, (ref, other) in enumerate(zip(original["rows"],recreated["rows"],strict=True)):
+        if ref[:3] != other[:3]:
+            raise OracleError(f"row {idx}: order or input fixture changed")
+        zc = original["fixed"]["air_density_kg_m3"] * original["fixed"]["sound_speed_m_s"] / ref[0]
+        for j in range(3,len(FIELDS)):
+            err = abs(ref[j]-other[j])
+            if j in (3,4,7,8):
+                max_press = max(max_press,err)
+                tol = 1e-11
+            elif j in (5,6,9,10):
+                err *= zc
+                max_flow = max(max_flow,err)
+                tol = 1e-11
+            else:
+                max_power = max(max_power,err)
+                tol = max(1e-13, 1e-10*max(abs(ref[j]),abs(other[j]),1e-12))
+            if err > tol:
+                raise OracleError(f"row {idx} column {FIELDS[j]} differs: {err} > {tol}")
+    return {
+        "max_pressure_error_pa":max_press,
+        "max_scaled_flow_error_pa":max_flow,
+        "max_power_error_w":max_power,
+        "comparison":"cross_js_runtime_numeric_not_byte_exact",
+    }

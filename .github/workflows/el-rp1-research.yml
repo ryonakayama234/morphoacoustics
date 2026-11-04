@@ -62,7 +62,14 @@ jobs:
           set -euo pipefail
           node --version
           node experiments/045_el_rp1_receiver_port/rebuild_b0.mjs > /tmp/el-rp1-b0-regenerated.json
-          cmp experiments/045_el_rp1_receiver_port/b0_wave_oracle_16.json /tmp/el-rp1-b0-regenerated.json
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,"experiments/045_el_rp1_receiver_port")
+          from audit_b import compare_regenerated_bytes
+          result=compare_regenerated_bytes(Path("/tmp/el-rp1-b0-regenerated.json").read_bytes())
+          print("Cross-runtime numerical/structural regeneration:",result)
+          PY
       - name: Gate B frozen wave oracle, metamorphic and Core regressions
         run: |
           python -m pytest -q -v \
