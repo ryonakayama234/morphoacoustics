@@ -1,0 +1,70 @@
+name: el-rp1-gate-a-research
+
+on:
+  push:
+    branches:
+      - research/asmr-el-rp1-qualification-d0-20261104
+  pull_request:
+    paths:
+      - "docs/research/listener-rp1/**"
+      - "experiments/045_el_rp1_receiver_port/**"
+      - "tests/test_experiment_el_rp1.py"
+      - ".github/workflows/el-rp1-research.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-gate-a:
+    name: EL-RP1 Gate A / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # pinned v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # pinned v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify preregistration ancestor and unchanged science contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          D0=a33c8c68879f732cd830b2caab6b8024b5322297
+          git merge-base --is-ancestor "$D0" HEAD
+          git diff --exit-code "$D0" HEAD -- \
+            docs/research/listener-rp1/SYSTEM.md \
+            docs/research/listener-rp1/DATA.md \
+            docs/research/listener-rp1/HYPOTHESES.md \
+            docs/research/listener-rp1/EXPERIMENT.md
+          echo "D0 protocol SHA $D0 is ancestor and source docs unchanged"
+      - name: Run E0 E1 and mutation tests (stdlib, no proprietary data)
+        run: python -m unittest discover -s tests -p test_experiment_el_rp1.py -v
+      - name: Save and check original synthetic E0 receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python experiments/045_el_rp1_receiver_port/run.py > el-rp1-gatea-receipt.json
+          python - <<'PY'
+          import json
+          x=json.load(open("el-rp1-gatea-receipt.json", encoding="utf-8"))
+          assert x["preregistration_sha"] == "a33c8c68879f732cd830b2caab6b8024b5322297"
+          assert x["pressure_only_changed_load"] == "UNIDENTIFIABLE"
+          assert x["synthetic_eligibility"] == "SYNTHETIC_GATE_B_ELIGIBLE"
+          assert abs(x["computed"]["counterfactual_b"] - 4/3) <= 1e-14
+          assert x["human_ear_validation"] == "NOT_TESTED"
+          assert x["studio_api"] == "NOT_ADOPTED"
+          print("Synthetic Gate A receipt validated")
+          PY
+      - name: Upload machine-readable synthetic Gate A evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # pinned v4
+        with:
+          name: el-rp1-gatea-py${{ matrix.python-version }}
+          path: el-rp1-gatea-receipt.json
+          if-no-files-found: error
+          retention-days: 90
