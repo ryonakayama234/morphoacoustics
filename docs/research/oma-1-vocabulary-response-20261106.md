@@ -127,6 +127,7 @@ This is **closed within v0**, not a catch-all "other"; any genuinely new effect 
 | realization | UNSUPPORTED | `TOPOLOGY_BACKEND_UNSUPPORTED` | Valid branch on serial-only realizer, with coherent prior rest binding. |
 | realization | UNSUPPORTED | `PORT_LAW_UNMODELED` | Required currently unavailable physical port law at execution. |
 | realization | UNSUPPORTED | `MATERIAL_LAW_UNMODELED` | Bindable geometry, but selected realization cannot simulate requested material effect. |
+| realization | UNSUPPORTED | `PHYSICAL_MODEL_UNMODELED` | Required aeroacoustic/loss operator is absent and is neither a material nor port law. |
 | realization | UNSUPPORTED | `BOUNDARY_BACKEND_UNSUPPORTED` | Valid imposed source/load outside current supported fixture. |
 | realization | INFEASIBLE | `ARTICULATOR_REACH_EXCEEDED` | **Supported** constriction outside the real body's permitted interval. |
 | evaluation | INVALID | `OBSERVATION_REQUEST_INVALID` | Bad observation grid/units/receiver reference. |
@@ -250,11 +251,11 @@ This is **closed within v0**, not a catch-all "other"; any genuinely new effect 
 | `ideal.series.p_u` | law / `EXECUTABLE_LIMITED` | Existing series junction, OG-3 fixed2 and scoped OG-4; QD2 | A; not arbitrary series graph |
 | `ideal.branch3.p_u` | law / `EXECUTABLE_LIMITED` | Existing OG-4 exact one passive junction, #108; QD2 | A; not anatomical nasal branch |
 | `rigid-wall` | assumption / `MODELED_LIMITED` | Zero normal wall velocity idealization, Fidelity-0/OG-3/OG-4; QD3 | A; no tissue modulus |
-| `effect.viscothermal_loss` | effect / `UNMODELED` | Dissipative boundary layers; QD3 | R `MATERIAL_LAW_UNMODELED`; no loss computed |
+| `effect.viscothermal_loss` | effect / `UNMODELED` | Dissipative boundary layers; QD3 | R `PHYSICAL_MODEL_UNMODELED`; no loss computed |
 | `effect.wall_compliance` | effect / `UNMODELED` | Pressure/displacement wall law; QD3 | R `MATERIAL_LAW_UNMODELED`; no moving wall |
 | `effect.wall_damping` | effect / `UNMODELED` | Constitutive dissipation; QD3 | R `MATERIAL_LAW_UNMODELED`; no damping |
 | `effect.radiation_impedance` | effect / `UNMODELED` | External complex radiation; QD3 | R `PORT_LAW_UNMODELED`; no realistic radiation |
-| `effect.turbulence_noise` | effect / `UNMODELED` | Aeroacoustic noise law; QD3 | R `MATERIAL_LAW_UNMODELED`; no noise model |
+| `effect.turbulence_noise` | effect / `UNMODELED` | Aeroacoustic noise law; QD3 | R `PHYSICAL_MODEL_UNMODELED`; no noise model |
 | `effect.source_tract_coupling` | effect / `UNMODELED` | Bidirectional source load; QD3 | R `PORT_LAW_UNMODELED`; no FSI/feedback |
 | `effect.tissue_stress_strain` | effect / `UNMODELED` | Stress/strain constitutive law; QD3 | R `MATERIAL_LAW_UNMODELED`; no tissue physics |
 | `MODELED_LIMITED` | state / `VOCABULARY_ONLY` | Effective only in named actual backend; QD3 | D; no generic promise |
@@ -275,6 +276,7 @@ This is **closed within v0**, not a catch-all "other"; any genuinely new effect 
 | `REST_BINDING_UNAVAILABLE` | reason / `VOCABULARY_ONLY` | binding UNSUPPORTED, no rest state; QD4 | D; never a solver shortcut |
 | `PORT_LAW_UNMODELED` | reason / `VOCABULARY_ONLY` | binding (rare)/realization UNSUPPORTED; D0/QD4 | D; no fake port |
 | `MATERIAL_LAW_UNMODELED` | reason / `VOCABULARY_ONLY` | binding (rare)/realization UNSUPPORTED; D0/QD4 | D; no fake material |
+| `PHYSICAL_MODEL_UNMODELED` | reason / `VOCABULARY_ONLY` | realization UNSUPPORTED for other missing physical operators; QD4 | D; never a generic no-op |
 | `REQUEST_MALFORMED` | reason / `VOCABULARY_ONLY` | realization INVALID; QD4 | D; not legacy wire code |
 | `TASK_BACKEND_UNSUPPORTED` | reason / `VOCABULARY_ONLY` | realization UNSUPPORTED; QD4 | D; not INFEASIBLE |
 | `TOPOLOGY_BACKEND_UNSUPPORTED` | reason / `VOCABULARY_ONLY` | realization UNSUPPORTED; QD4 | D; not anatomy |
