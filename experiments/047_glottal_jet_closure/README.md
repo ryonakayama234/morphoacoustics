@@ -1,0 +1,1 @@
+JET-P0 opt-in actual Core physical acoustic research. See ../../docs/research/jet-p0/INDEX.md. Run: python experiments/047_glottal_jet_closure/run.py --out /tmp/jet-p0-fresh . Never mistake listening WAV gain for physics or a self-oscillating vocal fold.\n
