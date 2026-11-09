@@ -1,0 +1,33 @@
+name: smc3-independent-package-research
+
+on:
+  push:
+    paths:
+      - 'packages/speech-motor-compiler/**'
+      - '.github/workflows/smc3-independent-package-research.yml'
+  pull_request:
+    paths:
+      - 'packages/speech-motor-compiler/**'
+      - '.github/workflows/smc3-independent-package-research.yml'
+
+jobs:
+  isolated-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install isolated SMC package only
+        run: python -m pip install -e './packages/speech-motor-compiler[dev]'
+      - name: Assert not importing Core runtime
+        run: |
+          python -c "import morphoacoustics_smc as s; from morphoacoustics_smc import SymbolicPlan; assert not hasattr(s, 'simulate_snapshot')"
+          python -m pip show morphoacoustics-smc
+      - name: Synthetic package tests
+        run: python -m pytest packages/speech-motor-compiler/tests -q
+      - name: Mypy strict package check
+        run: python -m mypy packages/speech-motor-compiler/src/morphoacoustics_smc
