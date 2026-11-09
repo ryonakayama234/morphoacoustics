@@ -1,0 +1,40 @@
+name: VM-1D passive finite inlet source (research)
+on:
+  pull_request:
+    paths:
+      - "tools/vm1d_finite_inlet_source.py"
+      - "tests/test_vm1d_finite_inlet_source.py"
+      - "docs/research/voice-metrology/VM1D_*"
+      - ".github/workflows/vm1d-finite-inlet.yml"
+      - "experiments/028_task_field_morphology_transfer/frozen_reference.json"
+  workflow_dispatch:
+jobs:
+  scientific-reference:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install bounded Core scientific dependencies
+        run: python -m pip install -e . pytest
+      - name: Independent reference and adversarial pytest
+        id: tests
+        run: python -m pytest -q tests/test_vm1d_finite_inlet_source.py
+      - name: Always preserve positive or failed scientific receipt
+        if: always()
+        run: |
+          mkdir -p evidence
+          python tools/vm1d_finite_inlet_source.py --out evidence/vm1d_result.json
+      - name: Upload experiment receipt even after test failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vm1d-scientific-receipt
+          path: evidence/
+          retention-days: 90
+          if-no-files-found: error
