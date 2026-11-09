@@ -1,0 +1,63 @@
+name: VF-1B2b independent measured M6 flow comparison (research only)
+on:
+  pull_request:
+    paths:
+      - 'experiments/047_vf1b2b_m6_flow_reference/**'
+      - 'docs/research/vf1b2b/**'
+      - '.github/workflows/vf1b2b-m6-measured-flow.yml'
+  workflow_dispatch:
+
+jobs:
+  independent-m6-science:
+    name: exact-head M6 fixture / transfer sentinel (not G2 phonation)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independent stdlib unit tests, preserve RED evidence
+        shell: bash
+        run: |
+          mkdir -p evidence/vf1b2b
+          set +e
+          python -m unittest discover -s experiments/047_vf1b2b_m6_flow_reference -p test_reference.py -v > evidence/vf1b2b/test.log 2>&1
+          suite_rc=$?
+          set -e
+          cat evidence/vf1b2b/test.log
+          VF1B2B_TEST_RC="$suite_rc" python - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, sys
+          sys.path.insert(0,"experiments/047_vf1b2b_m6_flow_reference")
+          from run import TRACKED
+          code=int(os.environ["VF1B2B_TEST_RC"])
+          checked_sha=subprocess.run(["git","rev-parse","HEAD"],check=True,
+                                      capture_output=True,text=True).stdout.strip()
+          tested_files={name:hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()
+                        for name in TRACKED}
+          status={"schema":"vf1b2b.unittest.v2","passed":code==0,"exit_code":code,
+                  "tested_commit_sha":checked_sha,"tested_source_sha256":tested_files}
+          pathlib.Path("evidence/vf1b2b/test_status.json").write_text(
+              json.dumps(status,sort_keys=True)+"\n",encoding="utf-8")
+          PY
+      - name: Run empirical-ratio transfer comparison (gated on actual tests)
+        if: always()
+        env:
+          VF1B2B_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python experiments/047_vf1b2b_m6_flow_reference/run.py \
+            --output-dir evidence/vf1b2b \
+            --test-status-file evidence/vf1b2b/test_status.json
+      - name: Archive original observations, RED/PASS and receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1b2b-m6-flow-reference-evidence
+          path: evidence/vf1b2b/
+          if-no-files-found: warn
