@@ -71,7 +71,7 @@ def test_exact_closed_catalog_rederived_from_core(released):
         entries, P1["LEDGER"], strict=True
     ):
         assert entry["body"]["revision_id"] == expected_revision
-        assert entry["body"]["preparation_digest"].startswith(expected_anchor)
+        assert entry["body"]["preparation_digest"] == expected_anchor
         assert entry == P1["derive"](
             entry["body"]["center_index"], entry["body"]["rest_area_ratio"])
 
