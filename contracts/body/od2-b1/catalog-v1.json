@@ -11,7 +11,7 @@
       "center_index": 4,
       "rest_area_ratio": "0.90",
       "revision_id": "od2-bfb4199f5d3a38ded992d42cbd7858ad5b4ebc34b297c9f1a8411dde88bdbf0b",
-      "preparation_digest_anchor": "sha256:129bf045"
+      "preparation_digest_anchor": "sha256:129bf045594b5581e67a079807c0c9c76e79e8e0b68b95709d548162d33d8713"
     },
     {
       "center_index": 4,
@@ -41,7 +41,7 @@
       "center_index": 8,
       "rest_area_ratio": "1.10",
       "revision_id": "od2-b04351e9865aef8af2953ed8b585eefa7bf40ec0887214daf4c0e32590478716",
-      "preparation_digest_anchor": "sha256:649c0b17"
+      "preparation_digest_anchor": "sha256:649c0b17a5d62c4cdb272acd3e1b7efeb06609d6321d26dcd7e650548283018b"
     }
   ]
 }
