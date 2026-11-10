@@ -16,6 +16,8 @@ import subprocess
 import sys
 from typing import Any
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 OD2 = runpy.run_path(str(ROOT / "tools" / "od2_body_cli.py"))
 PROTOCOL = "od2.b1.core-catalog-receipt/1"
@@ -139,6 +141,12 @@ def _case(center: object, ratio: object) -> tuple[int, str]:
 
 def _receipt(exp: Any, body: dict[str, Any], head: str) -> dict[str, Any]:
     manifest = _manifest()
+    # This is a newly computed source-buffer digest on *this* numerical host.
+    # It is not the missing actual-performer source attestation for Studio Takes;
+    # raw f64 bytes need not be portable across NumPy CPU math backends.
+    sources, _ = exp.EXP26.EXP13.build_sources()
+    source = np.asarray(sources["lf_fixed"].source, dtype="<f8")
+    source_digest = OD2["digest"](source.tobytes(order="C"))
     return {
         "schema": PROTOCOL,
         "catalog_version": VERSION,
@@ -151,6 +159,8 @@ def _receipt(exp: Any, body: dict[str, Any], head: str) -> dict[str, Any]:
             "numpy": __import__("numpy").__version__,
         },
         "source_id": "lf_fixed",
+        "recomputed_source_sha256_le_f64": source_digest,
+        "source_digest_status": "RECOMPUTED_ON_THIS_HOST_NOT_ACTUAL_PERFORMER_ATTESTATION",
         "task_plan_sha256": exp.sha256_json(exp.task_plan_payload()),
         "body": body,
     }
