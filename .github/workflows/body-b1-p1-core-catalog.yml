@@ -40,6 +40,7 @@ jobs:
         run: |
           python -m pytest -v tests/test_od2_b1_catalog.py
           python tools/od2_b1_catalog.py catalog > "$RUNNER_TEMP/body-b1-p1-evidence/catalog-resolved.json"
+          python -c 'import json,sys; d=json.load(open(sys.argv[1])); print("B1 P1 full Core rederived preparation digests:",[(e["body"]["center_index"],e["body"]["rest_area_ratio"],e["body"]["preparation_digest"]) for e in d["entries"]])' "$RUNNER_TEMP/body-b1-p1-evidence/catalog-resolved.json"
           python tools/od2_b1_catalog.py issue --center 4 --ratio 1.10 --output "$RUNNER_TEMP/body-b1-p1-evidence/revision-c4-r110.json"
           python tools/od2_b1_catalog.py resolve --receipt "$RUNNER_TEMP/body-b1-p1-evidence/revision-c4-r110.json" --revision-id od2-7c2663189d907111665544c67def56c885576f5394e4220ec12251e0ca5ebf67 > "$RUNNER_TEMP/body-b1-p1-evidence/readback-c4-r110.json"
           python tools/od2_b1_catalog.py issue --center 8 --ratio 1.00 --output "$RUNNER_TEMP/body-b1-p1-evidence/alias-c8-r100.json"
