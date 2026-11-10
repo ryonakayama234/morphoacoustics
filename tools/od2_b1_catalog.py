@@ -26,17 +26,17 @@ VERSION = "od2-b1-core-closed-catalog/1"
 MANIFEST = ROOT / "contracts" / "body" / "od2-b1" / "catalog-v1.json"
 PARENT_DIGEST = "sha256:a98d484f8740bf40a419ac117a2deb41ab659dea095577874455aec0713258de"
 
-# Owner-authorized *finite* case IDs. The two short digest anchors were the
-# only digest bytes published in the independent P0 acceptance comment.
-# Full digests are always returned by physical Core re-derivation and checked
-# against the available P0 anchor, never fabricated from an abbreviated hash.
+# Owner-authorized finite case IDs. P0 published digest prefixes for two
+# entries; their complete values were obtained by P1 exact-head Core replay
+# (Actions 42813911604) and now frozen as full expected digests. They still
+# require independent Muse exact-head audit before product pin adoption.
 LEDGER = (
-    (4, "0.90", "od2-bfb4199f5d3a38ded992d42cbd7858ad5b4ebc34b297c9f1a8411dde88bdbf0b", "sha256:129bf045"),
+    (4, "0.90", "od2-bfb4199f5d3a38ded992d42cbd7858ad5b4ebc34b297c9f1a8411dde88bdbf0b", "sha256:129bf045594b5581e67a079807c0c9c76e79e8e0b68b95709d548162d33d8713"),
     (4, "1.00", "v3b-axial-M0@1", PARENT_DIGEST),
     (4, "1.10", "od2-7c2663189d907111665544c67def56c885576f5394e4220ec12251e0ca5ebf67", "sha256:f2778205243970d43ca3ea0151b91286fd9c46fb85b8867a8efbb7b811e6da0a"),
     (8, "0.90", "od2-d722dfb9595672f0d19c46a8780c610c9d41fc3a8935b93d3d01a5d68aab4084", "sha256:4b4300f05d0ea98d2edc3e6c17d8075fd29a51c8de91af599a94fa663b602375"),
     (8, "1.00", "v3b-axial-M0@1", PARENT_DIGEST),
-    (8, "1.10", "od2-b04351e9865aef8af2953ed8b585eefa7bf40ec0887214daf4c0e32590478716", "sha256:649c0b17"),
+    (8, "1.10", "od2-b04351e9865aef8af2953ed8b585eefa7bf40ec0887214daf4c0e32590478716", "sha256:649c0b17a5d62c4cdb272acd3e1b7efeb06609d6321d26dcd7e650548283018b"),
 )
 
 
@@ -105,7 +105,7 @@ def _trusted_cases() -> tuple[Any, dict[tuple[int, str], dict[str, Any]]]:
     for c, r, expected_id, digest_anchor in LEDGER:
         body = OD2["_receipt"](runner, exp, parent, c, r)
         if (body["revision_id"] != expected_id
-            or not body["preparation_digest"].startswith(digest_anchor)
+            or body["preparation_digest"] != digest_anchor
             or body["parent_preparation_digest"] != PARENT_DIGEST
             or body["family"] != OD2["FAMILY"]
             or body["backend_id"] != parent.prepared.backend_id
