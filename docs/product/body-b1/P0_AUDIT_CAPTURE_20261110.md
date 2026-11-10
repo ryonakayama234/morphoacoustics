@@ -31,7 +31,7 @@ Old pin: `b569f044bfda309dff1a00cccf8365754e6b1355`. Compared Core candidate: `0
 | 8 | 1.00 | `v3b-axial-M0@1` | same exact parent digest | parent alias |
 | 8 | 1.10 | `od2-b04351e9865aef8af2953ed8b585eefa7bf40ec0887214daf4c0e32590478716` | `sha256:649c0b17…` | nonnull |
 
-**Do not complete abbreviated digests by guessing.** The Core P1 catalog checks those P0 prefixes and re-derives the full `preparation_digest` from source-pinned physical Core. Fully resolved values are emitted in the exact-head P1 protocol receipt and must be compared against Muse's independently executed ledger before product pin adoption. The published c4/r1.10 and c8/r0.90 full SHA values are corroborated by the OD-2 RESULTS.
+**Do not complete abbreviated digests by guessing.** In P1 [exact-head Actions run 42813911604](https://github.com/ryonakayama234/morphoacoustics/actions/runs/42813911604), Core re-derived the two previously abbreviated SHA values as `sha256:129bf045594b5581e67a079807c0c9c76e79e8e0b68b95709d548162d33d8713` (c4 r0.90) and `sha256:649c0b17a5d62c4cdb272acd3e1b7efeb06609d6321d26dcd7e650548283018b` (c8 r1.10). These are P1-run measurements, **not retroactively asserted as strings printed in Muse's P0 comment**. The six-entry versioned product manifest now freezes their complete bytes. Independent Muse exact-head audit remains required before pin adoption. The published c4/r1.10 and c8/r0.90 full SHA values are corroborated by the OD-2 RESULTS.
 
 P0 supervisor's Core runtime: Python 3.12.3, NumPy 2.4.6. Source and task are fixed `lf_fixed` / inherited three-task. Observed OD-2 raw-Pa relative L2 examples: center4 about 5.63%; center8 about 2.66%. This does not measure human-perceived voice quality or a new sound model.
 
