@@ -60,6 +60,9 @@ def test_exact_closed_catalog_rederived_from_core(released):
     assert all(e["core_pin_status"] == "CANDIDATE_UNADOPTED"
                and e["candidate_core_head"] == released["candidate_core_head"]
                and e["source_id"] == "lf_fixed"
+               and len(e["recomputed_source_sha256_le_f64"]) == 64
+               and e["source_digest_status"] ==
+                   "RECOMPUTED_ON_THIS_HOST_NOT_ACTUAL_PERFORMER_ATTESTATION"
                and e["numerical_environment"]["numpy"] == "2.4.6"
                for e in entries)
     # Not a shortened hash masquerading as an exact release digest.
