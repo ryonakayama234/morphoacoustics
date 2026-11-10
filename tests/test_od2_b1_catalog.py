@@ -88,7 +88,7 @@ def test_disallowed_case_fail_closed(center, ratio):
 def test_unchanged_frozen_source_and_v1_contract():
     OD2["verify_pins"]()
     b = (ROOT / "contracts/performance/v1/common.schema.json").read_bytes()
-    assert OD2["_blob"](b) == "37e4403f1192a940bc9d61fcb35fe698527aab"
+    assert OD2["_blob"](b) == "37e4403f1192a940bc9d61fcb35fe698527c9fef"
     assert P1["_manifest"]()["entries"] == P1["_expected_manifest"]()["entries"]
 
 
