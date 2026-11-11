@@ -1,0 +1,108 @@
+name: el-rp1-synthetic-research
+
+on:
+  push:
+    branches:
+      - research/asmr-el-rp1-qualification-d0-20261104
+  pull_request:
+    paths:
+      - "docs/research/listener-rp1/**"
+      - "experiments/045_el_rp1_receiver_port/**"
+      - "tests/test_experiment_el_rp1*.py"
+      - ".github/workflows/el-rp1-research.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-gates:
+    name: EL-RP1 Gate A+B / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # pinned v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # pinned v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify D0 science and B0 oracle were frozen BEFORE implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          D0=a33c8c68879f732cd830b2caab6b8024b5322297
+          B0=624ce156a4c377ec742794ea6a3278e61a6651e4
+          git merge-base --is-ancestor "$D0" "$B0"
+          git merge-base --is-ancestor "$B0" HEAD
+          git diff --exit-code "$D0" HEAD -- \
+            docs/research/listener-rp1/SYSTEM.md \
+            docs/research/listener-rp1/DATA.md \
+            docs/research/listener-rp1/HYPOTHESES.md \
+            docs/research/listener-rp1/EXPERIMENT.md
+          git diff --exit-code "$B0" HEAD -- \
+            experiments/045_el_rp1_receiver_port/b0_wave_oracle_16.json \
+            experiments/045_el_rp1_receiver_port/rebuild_b0.mjs
+          echo "D0+B0 original science and independent reference frozen"
+      - name: Gate A analytic/refusal tests — standard library
+        run: python -m unittest discover -s tests -p test_experiment_el_rp1.py -v
+      - name: Install explicitly versioned Core numerical test dependencies
+        run: |
+          python -m pip install "numpy==2.4.6" "pytest==8.4.2"
+          python -m pip install -e .
+          python -m pip check
+          python -m pip freeze | sort
+      - name: Independently regenerate B0 using JS, enforce 16x15 structure and prereg E2 numeric tolerances
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node experiments/045_el_rp1_receiver_port/rebuild_b0.mjs > /tmp/el-rp1-b0-regenerated.json
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,"experiments/045_el_rp1_receiver_port")
+          from audit_b import compare_regenerated_bytes
+          result=compare_regenerated_bytes(Path("/tmp/el-rp1-b0-regenerated.json").read_bytes())
+          print("Cross-runtime numerical/structural regeneration:",result)
+          PY
+      - name: Gate B frozen wave oracle, metamorphic and Core regressions
+        run: |
+          python -m pytest -q -v \
+            tests/test_experiment_el_rp1.py \
+            tests/test_experiment_el_rp1_b.py \
+            tests/test_acoustics_uniform_tube.py
+      - name: Produce actual E0 and E2/E3 synthetic-only receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p el-rp1-research-output
+          python experiments/045_el_rp1_receiver_port/run.py > el-rp1-research-output/gatea.json
+          python experiments/045_el_rp1_receiver_port/run_b.py > el-rp1-research-output/gateb.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path("el-rp1-research-output")
+          a=json.loads((base/"gatea.json").read_text())
+          b=json.loads((base/"gateb.json").read_text())
+          assert a["pressure_only_changed_load"]=="UNIDENTIFIABLE"
+          assert a["synthetic_eligibility"]=="SYNTHETIC_GATE_B_ELIGIBLE"
+          assert b["count"]==16 and len(b["rows"])==16
+          assert b["b0_sha"]=="624ce156a4c377ec742794ea6a3278e61a6651e4"
+          assert b["max_errors"]["max_pressure_error_pa"]<=1e-11
+          assert b["max_errors"]["max_zc_scaled_flow_error_pa"]<=1e-11
+          assert b["scope"]=="SYNTHETIC_1D_NOT_HUMAN_EAR"
+          assert b["public_api"]=="NOT_ADOPTED"
+          print("EL-RP1 synthetic receipts accepted; physical review still pending")
+          PY
+      - name: Upload reproducible research receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # pinned v4
+        with:
+          name: el-rp1-gates-a-b-py${{ matrix.python-version }}
+          path: el-rp1-research-output/
+          if-no-files-found: error
+          retention-days: 90
