@@ -1,6 +1,11 @@
 """Small component-only checks, not full-grid FZ acceptance evaluations."""
 import math
 import pytest
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 pytest.importorskip("scipy")
 from experiments.bodymap_b2_passive_loss.prereg_binding import (
     Refusal,FREQUENCIES_HZ,validate_lambda,validate_envelope)
