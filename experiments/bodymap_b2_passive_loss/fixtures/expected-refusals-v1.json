@@ -1,0 +1,62 @@
+{
+  "schema": "bodymap-b2-expected-refusals/1",
+  "engineering_only": true,
+  "max_invocations_per_family": 2,
+  "oracle_review_required": true,
+  "families": [
+    {
+      "id": "NEG-LAMBDA",
+      "expected_code": "INVALID_LOSS_PARAMETER",
+      "phase": "input",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "ACTIVE-ZY",
+      "expected_code": "NONPASSIVE_MODEL",
+      "phase": "internal_coefficient_and_network",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "SWAP-COEFF",
+      "expected_code": "MODEL_IDENTITY_MISMATCH|ORACLE_MISMATCH",
+      "phase": "coefficient_and_oracle",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "SWAP-LOAD",
+      "expected_code": "LOAD_MISMATCH",
+      "phase": "terminal",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "SWAP-GEOM-PORT",
+      "expected_code": "PHYSICAL_IDENTITY_MISMATCH",
+      "phase": "trusted_geometry_and_port",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "RAW-FORGE",
+      "expected_code": "WAVEFORM_ORACLE_MISMATCH",
+      "phase": "independent_raw",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "LOSS-IGNORED",
+      "expected_code": "ORACLE_MISMATCH",
+      "phase": "independent_loss",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "OLD-ATTENUATION",
+      "expected_code": "UNREGISTERED_ATTENUATION|NOT_COMPARABLE",
+      "phase": "law_and_plane",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    },
+    {
+      "id": "SHA-SOURCE",
+      "expected_code": "ARTIFACT_MISMATCH|SOURCE_NOT_ATTESTED",
+      "phase": "trusted_bytes_and_chain",
+      "prohibited": "no accepted waveform/study Take on refusal"
+    }
+  ]
+}

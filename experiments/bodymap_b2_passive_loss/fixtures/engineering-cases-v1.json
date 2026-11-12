@@ -1,0 +1,70 @@
+{
+  "schema": "bodymap-b2-engineering-cases/1",
+  "engineering_only": true,
+  "study_evaluations_authorized": 0,
+  "governed_prereg": "BODYMAP-B2-PREREG/1",
+  "prereg_content_sha256": "9a022469264b4789c2d677d163470c4f7f393451635b264920463e6d70d3e41e",
+  "plan_content_sha256": "1705c3bfd63b2d9ffa78f39a0ecba155ed9055e3cba989a376122d3b94ae64b8",
+  "law": "b2.lrf.circular-rigid-isothermal/1",
+  "source": "lf_fixed",
+  "source_pin": "OD2-audited-Exp013-transitive",
+  "source_actual_run_sha256": null,
+  "expected": "FZ-M1/M2/E1/O1/V1/T1; qualitative passive; no guaranteed effect size",
+  "max_full_grid_evaluations": 8,
+  "max_separate_process_repeats": 1,
+  "cases": [
+    {
+      "id": "ENG-U6-NULL",
+      "geometry": "U6_REF",
+      "lambda": 0
+    },
+    {
+      "id": "ENG-U6-NEAR",
+      "geometry": "U6_REF",
+      "lambda": 0.000001
+    },
+    {
+      "id": "ENG-U6-HALF",
+      "geometry": "U6_REF",
+      "lambda": 0.5
+    },
+    {
+      "id": "ENG-U6-FULL",
+      "geometry": "U6_REF",
+      "lambda": 1
+    },
+    {
+      "id": "ENG-U19-NULL",
+      "geometry": "U19_REF",
+      "lambda": 0
+    },
+    {
+      "id": "ENG-U19-FULL",
+      "geometry": "U19_REF",
+      "lambda": 1
+    },
+    {
+      "id": "ENG-M0-NULL",
+      "geometry": "M0_REST",
+      "lambda": 0
+    },
+    {
+      "id": "ENG-M0-FULL",
+      "geometry": "M0_REST",
+      "lambda": 1
+    }
+  ],
+  "repeat": {
+    "id": "ENG-M0-NULL-REPEAT",
+    "geometry": "M0_REST",
+    "lambda": 0,
+    "independent_process": true
+  },
+  "excluded_from_engineering": [
+    "U19:1e-6",
+    "U19:.5",
+    "M0:1e-6",
+    "M0:.5"
+  ],
+  "M0_lambda1_disclosure": "KNOWN_ENGINEERING_DATA"
+}
