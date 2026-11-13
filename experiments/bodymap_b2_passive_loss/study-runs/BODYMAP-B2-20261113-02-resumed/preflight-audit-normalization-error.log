@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/e78146ad74f5/study-package/preflight.py", line 33, in <module>
+    assert packages == {'attrs':'26.1.0', 'iniconfig':'2.3.1', 'jsonschema':'4.26.0',
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
