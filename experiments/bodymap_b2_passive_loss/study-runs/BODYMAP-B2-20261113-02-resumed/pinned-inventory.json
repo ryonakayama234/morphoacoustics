@@ -1,0 +1,114 @@
+{
+  "experiments/bodymap_b2_passive_loss/README.md": {
+    "sha256": "a4641429c538e4c70c0e46e103de39aefb539d6f66ee9e71e7786d89e4a2cbc4",
+    "git_blob_oid": "61fdc99d8019153788db75e9a766eb7579daab9d"
+  },
+  "experiments/bodymap_b2_passive_loss/__init__.py": {
+    "sha256": "a16aef2dbfe7eb82709d7616cff298a9f0ce8dbda45d59bb38fc69a2c26a021d",
+    "git_blob_oid": "eb309e6e4a2433793f3c769dc4854dcb91aaa926"
+  },
+  "experiments/bodymap_b2_passive_loss/candidate/__init__.py": {
+    "sha256": "2e3073045bc5fb6be92c3cd266cad9f6cbed8e567dc510f2359eae8f16968468",
+    "git_blob_oid": "c528f986dd06e0c8bf2d924bc68148e6c04bbcad"
+  },
+  "experiments/bodymap_b2_passive_loss/candidate/coefficients.py": {
+    "sha256": "64c199aa00e63f3744ab9a07d3a00d8d303dfaca4c1cb13dbfb0129df57c128f",
+    "git_blob_oid": "da50e9ade31323cec7fd4abbf8d8cad52823a213"
+  },
+  "experiments/bodymap_b2_passive_loss/candidate/pressure.py": {
+    "sha256": "ee2a33841f2adddd9560adefeb7c148622da24b0dac87186654ac5bd71b97a16",
+    "git_blob_oid": "3a088dfa56d4055b1e7a9387e928422e858b4bec"
+  },
+  "experiments/bodymap_b2_passive_loss/candidate/transfer.py": {
+    "sha256": "f4e4c83e3f78e8143933f9e741ac8aedf53199ce9c87f44dfe3c4669b41dc40c",
+    "git_blob_oid": "15222abab041ae936177bf4b37f0aec1f2bcfcac"
+  },
+  "experiments/bodymap_b2_passive_loss/cli.py": {
+    "sha256": "53bd842b29aba638023469941ce1ed6377f832d39a097d3533edddddef6db61e",
+    "git_blob_oid": "f76eb5470ef80b2964b325eb1ac4ce426c45f44a"
+  },
+  "experiments/bodymap_b2_passive_loss/fixtures/engineering-cases-v1.json": {
+    "sha256": "2eba19d76adf7d03ee64fc0dd9e45d02310eb484f1fdc884c6d5cf0d35366306",
+    "git_blob_oid": "3755bf7c2234faed3d522c06b78fa38c334dbe69"
+  },
+  "experiments/bodymap_b2_passive_loss/fixtures/expected-refusals-v1.json": {
+    "sha256": "a72a3acd5caad7ef52f847bce574a2d2d6fbc6519f10a44afaac308f86ad6a19",
+    "git_blob_oid": "1b1c60c57a9cafca337406e1cc2a7a9d9529b56d"
+  },
+  "experiments/bodymap_b2_passive_loss/geometry_binding.py": {
+    "sha256": "1c44227433d3496093aec4d6aabcdd533580b33adc5d687cc23cf1b24464e1c4",
+    "git_blob_oid": "12dca94b2ff38292ed5b7099c6c08378cb3adab3"
+  },
+  "experiments/bodymap_b2_passive_loss/prereg_binding.py": {
+    "sha256": "7123c62f93e9198182819a1e2766694e1d081cdc3316201cf0fe5953d7bcc929",
+    "git_blob_oid": "851672ead911d81a1a7c92a86e8c73d93a8ef4e2"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/__init__.py": {
+    "sha256": "ea057b871819cccf7f56cee015301eeb229678dcba8dfd2b241b21b7ccd0f5b6",
+    "git_blob_oid": "fb42548fd148cc3f3610d07be7d3f40476e33856"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/direct_pressure.py": {
+    "sha256": "7cf1e08ced59094a772cdaef9a7bf5fac7b3ee20a9055540c6999de62ddedfec",
+    "git_blob_oid": "c4a608fccbe1d4a83fd63e11a6842894a1343cb2"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/quadrature.py": {
+    "sha256": "513560369d76d8d7bd5b76141c512e67274473e6bd02d5249ec262367b2f53c5",
+    "git_blob_oid": "2aadffb2cf096c47270b3c21548563559172f168"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/recursion.py": {
+    "sha256": "99dfd4514a4ed3c7a596531902358bfc8103c992c8678cdaf8ff9466e3975ae9",
+    "git_blob_oid": "1d84d09a8c57b98d3cb662aa4f088b3cf5c4dbb0"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/run_acceptance.py": {
+    "sha256": "9c44c311bf421b22af76727c4218ed85e417e65b978366cf379584d284859f0c",
+    "git_blob_oid": "5b41e46d5c6721882825b3510f069b62dac5e05b"
+  },
+  "experiments/bodymap_b2_passive_loss/reviewer_oracle/series.py": {
+    "sha256": "ce93d67ff91bde07deb1a5a6f376994cbb5b64c42623f96de76435c99f5ec070",
+    "git_blob_oid": "8cb5654b0e7a8b992f8794a4f5a7aae963a69311"
+  },
+  "experiments/bodymap_b2_passive_loss/source_binding.py": {
+    "sha256": "f3d8dabff3a8d8b1380bce1001e316ccc9435bdfeb9d28d99f9b0b0371e8e9ff",
+    "git_blob_oid": "3d5b874e4397961f8a04ccd0983ccc28b6b31ef5"
+  },
+  "experiments/bodymap_b2_passive_loss/verification/__init__.py": {
+    "sha256": "d6112e9279325eafad583fc6846bd5146f81cf1f62689d846a76079a13993ed9",
+    "git_blob_oid": "449e9b7154225957dc2a56887ec2a40cfa453790"
+  },
+  "experiments/bodymap_b2_passive_loss/verification/identity.py": {
+    "sha256": "ccab6fcd8946c9c682fbe69a892e0ae69a83bba23e9c9fe13e64e3ce06987c72",
+    "git_blob_oid": "f12c1fe2292a7282882b48c33ed92581875f4c0f"
+  },
+  "experiments/bodymap_b2_passive_loss/verification/mutations.py": {
+    "sha256": "30e0070f55392cc95c187ec36446538e7e6ddbce0a06fc6fa7c667d36570bd31",
+    "git_blob_oid": "9144fcf592ceca34f0f010fd651f1c773a1c5d84"
+  },
+  "experiments/bodymap_b2_passive_loss/verification/pack_v0.py": {
+    "sha256": "c8cc836c0aac55ddad0f931a74b61a8ac60c4cf2ede1e43c31d72da61bb352db",
+    "git_blob_oid": "79a5b7b3b683aed4262bdcb246ac96dc090ec426"
+  },
+  "experiments/bodymap_b2_passive_loss/verification/physics.py": {
+    "sha256": "27715327e4893397d21489b9efbdfe69e1d3dcf418c23faf44c0af2374a2d2be",
+    "git_blob_oid": "194bf9a07308e17e8bf3c2fad9db031f76b820f9"
+  },
+  "experiments/od1_local_shape/oracle.py": {
+    "sha256": "641b243d5f18b2ec1bfb3ecc8295bf925ae6359cdde5590afee752d9810a3400",
+    "git_blob_oid": "19152cf9a6a9a70b0cf251325ddacdcec1853317"
+  },
+  "experiments/od1_local_shape/run.py": {
+    "sha256": "6ea2b33790e0fad3a020c5c34cd7d2d7f2c401bf38daee76c1dddb2f606c39dc",
+    "git_blob_oid": "5ef1c4605a5a0e5c2490aa3e8ec79a7c23a0aaea"
+  },
+  "requirements/bodymap-b2-physical-py311.lock.txt": {
+    "sha256": "c0bd046498882beb61408440d9eadd1b9708ad8a49ad0035e0bdbaa5d3a6afd7",
+    "git_blob_oid": "db72ecfc2c64363fc25a91592e7b54992117eba4"
+  },
+  "src/morphoacoustics/integration/body_presets.py": {
+    "sha256": "52022e72e8287952db276e8d671c8c60297c0de62104595ce64aea41d0ee134f",
+    "git_blob_oid": "1402393208fa4b1b154d6b18a20f9ca8dbddc1cd"
+  },
+  "tools/cc_a2_live.py": {
+    "sha256": "586b794cd4777ba23bb9ea3b37558d5b670ee78132af57405a49f346fe127763",
+    "git_blob_oid": "dd90ab5e83082c0da1b2f527288f7154bdd38aae"
+  }
+}
