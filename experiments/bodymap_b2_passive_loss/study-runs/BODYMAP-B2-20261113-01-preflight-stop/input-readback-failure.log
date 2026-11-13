@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/8b9772122a02/preflight-staging/collect_preflight.py", line 42, in <module>
+    geometries = {name: resolve_geometry(name) for name in ('M0_REST', 'U6_REF', 'U19_REF')}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/8b9772122a02/preflight-staging/collect_preflight.py", line 42, in <dictcomp>
+    geometries = {name: resolve_geometry(name) for name in ('M0_REST', 'U6_REF', 'U19_REF')}
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/8b9772122a02/core/experiments/bodymap_b2_passive_loss/geometry_binding.py", line 48, in resolve_geometry
+    return trusted_m0()
+           ^^^^^^^^^^^^
+  File "/workspace/scratch/8b9772122a02/core/experiments/bodymap_b2_passive_loss/geometry_binding.py", line 15, in trusted_m0
+    runner, exp, parent, _ = authority["_load_context"]()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/8b9772122a02/core/tools/od2_body_cli.py", line 94, in _load_context
+    cc_a2 = runpy.run_path(str(ROOT / "tools/cc_a2_live.py"))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/scratch/8b9772122a02/core/tools/cc_a2_live.py", line 22, in <module>
+    from jsonschema import Draft202012Validator
+ModuleNotFoundError: No module named 'jsonschema'
