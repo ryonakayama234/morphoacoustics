@@ -1,0 +1,31 @@
+name: BODYMAP B2 engineering (manual, fail-closed pending reviewer lock)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "ENGINEERING_ONLY; not 15-case study"
+        required: true
+        type: string
+jobs:
+  b2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONHASHSEED: "0"
+      TZ: UTC
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail closed without independent lock and oracle receipt
+        run: |
+          set -eu
+          test -s requirements/bodymap-b2-physical-py311.lock.txt || {
+            echo "STOP: independent Python 3.11/SciPy/mpmath/NumPy 2.4.6 hash lock missing"
+            exit 2
+          }
+          echo "STOP: independent oracle author/commit/receipt and offline wheelhouse not yet attested"
+          exit 2
