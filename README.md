@@ -76,6 +76,10 @@ experiments/             executable research experiments
 tests/                   software and scientific tests
 ```
 
+## Future research: embodied listener and two-body interaction
+
+The documentation-only, parked [Embodied Listener Research INDEX](docs/research/embodied-listener/INDEX.md) covers listener morphology, very-near-field reception, deformable contact, and two-body coupled acoustics. These are unvalidated hypotheses, not implemented functionality or authorization to change production contracts. It extends the existing [non-vocal/near-field research candidate](docs/research/nonvocal-oral-nearfield-candidate-v0.md) without replacing it.
+
 ## Status
 
 Early research scaffold. Domain and causal contracts come first; higher-fidelity numerical solvers follow.
