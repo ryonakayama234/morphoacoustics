@@ -1,0 +1,130 @@
+{
+  "schema": "el-nf4.frozen-measured-summary.v1",
+  "date_jst": "2026-10-31",
+  "status": "RESEARCH_ONLY_NOT_ADOPTED",
+  "scientific_gate": "G3_REVISE_OR_REJECT",
+  "git": {
+    "D0_prereg_sha": "401089c3d5e25379b1a2c361d78a296092b5418b",
+    "G0_geometry_amend_sha": "bf8a5119032d9330afa2409669450e853e282987",
+    "measured_workflow_head_sha": "e12c98c79fd9ff652bb3f61549abcbbdd801a231"
+  },
+  "evidence": {
+    "run": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/41186553120",
+    "artifact": "https://github.com/ryonakayama234/morphoacoustics/actions/runs/41186553120/artifacts/13037051526",
+    "arithmetic_audit": "PASS_ARITHMETIC_ONLY",
+    "human_science_review": "NOT_PERFORMED",
+    "prediction_seals": 20
+  },
+  "data": {
+    "source": "publisher-hosted SCUT original measured human nearfield SOFA subjects 0001..0010",
+    "reference_plane": "UNVERIFIED",
+    "license_in_source": "CC 3.0 BY-SA-NC / non-commercial, no redistribution",
+    "subjects": 10,
+    "final_subjects": [
+      9,
+      10
+    ],
+    "sample_rate_hz": 96000,
+    "taps": 512,
+    "points_per_subject": 6048,
+    "radii_m": [
+      0.2,
+      0.25,
+      0.3,
+      0.4,
+      0.5,
+      0.75,
+      1
+    ],
+    "occupied_angular_blocks": 216,
+    "final_blocks": 43,
+    "all_source_sha256": [
+      "267819899fc548a95eed6c1fd687fc6e38aa492e55a38834431c23f7cf041b9f",
+      "c2159d2c21c98f947e67b093f5e2f380d40cb976d35092b42b5d1b95dc4de150",
+      "1526f2382da282f78fd1a7fe25c2f86364570c63d1e981606ed0d115398f6c5b",
+      "7ede01d71d7c8c4f18cf0f4fd224d5c83cb2e7012650ee2afb15f099fe120c57",
+      "506758a87df10206437825a4e44a7676fa714f3b97219fafb66bb811155a060f",
+      "ffd2fbb15c8facf94d33d22c467e9ffc0bd18216703ee08db60471cd208c54f1",
+      "328d197ada3777e4a0cd8caee6ae29068f792689d100f6423768ad2885dfec34",
+      "48b5b8fcaf190b5c1c3da78fa62a3c4b3b2d80e9e97bf33d8418fe66105c4da5",
+      "ac109e37c9bf2a8c278ee74ccf486ebe4b1e1d59d00a61ac1a2f6355384179f7",
+      "9ee7c3cfdca6cb8fd88f875f101fc0242020d7fd54bac5882e3bcf38170e6279"
+    ],
+    "geometry_sha256": "55bc7a65040348932343c0be6124b6fba79d10f2989c92af1c3d427bc2af47d3"
+  },
+  "model_selection": {
+    "baseline": "B3-o4-l0.03",
+    "baseline_dev_median_ild_db": 1.4532,
+    "candidate": "C4-o2-l0.1",
+    "candidate_dev_median_ild_db": 2.6045
+  },
+  "G3": {
+    "eligible_final": 344,
+    "candidate_geometrically_computable": 344,
+    "accepted": 242,
+    "coverage": 0.7034883720930233,
+    "minimum_required_coverage": 0.8,
+    "matched_baseline_median_ild_db": 2.067080363223586,
+    "candidate_median_ild_db": 2.341705646685513,
+    "baseline_minus_candidate_95ci_db": [
+      -0.8393777181953339,
+      0.10474083073094231
+    ],
+    "ilp95_baseline_db": 10.703226584543025,
+    "ildp95_candidate_db": 11.628715034541466,
+    "itd_error_baseline_us": 93.75,
+    "itd_error_candidate_us": 20.833333333333343,
+    "spectral_rmse_baseline_db": 4.921707955968648,
+    "spectral_rmse_candidate_db": 4.4612002896401215,
+    "calibration_risk_threshold_m": {
+      "S1": 0.08715574274765815,
+      "S2": 0.12679471122691502
+    },
+    "fold": {
+      "S1": {
+        "accepted": 114,
+        "eligible": 172,
+        "baseline_ild_db": 1.9320305245739078,
+        "candidate_ild_db": 2.4881169917269816
+      },
+      "S2": {
+        "accepted": 128,
+        "eligible": 172,
+        "baseline_ild_db": 2.122501185517565,
+        "candidate_ild_db": 2.305311478065543
+      }
+    },
+    "frequency_band_median_ild_error_db": {
+      "500-1000": {
+        "baseline": 0.5316,
+        "candidate": 4.4241
+      },
+      "1000-2000": {
+        "baseline": 0.8752,
+        "candidate": 2.4406
+      },
+      "2000-4000": {
+        "baseline": 2.9646,
+        "candidate": 1.7794
+      },
+      "4000-8000": {
+        "baseline": 6.0277,
+        "candidate": 2.237
+      }
+    },
+    "posthoc_angular_block_bootstrap_sensitivity_95ci_db": [
+      -0.927431838728822,
+      0.25095479434189505
+    ],
+    "posthoc_B0_ILD_median_on_C4_accepted_db": 1.5352721462622596,
+    "posthoc_B0_ILD_median_all_eligible_db": 1.5890590623530647
+  },
+  "notes": [
+    "Frequency-band and angular-only bootstrap sensitivity are POSTHOC descriptive analyses, NOT preregistered alternative acceptance tests.",
+    "All numbers refer to comparative measured-relative binaural HRIR prediction, not absolute ear/eardrum pressure or subjective ASMR.",
+    "Numerical CI success is not a scientific gate success.",
+    "No original SOFA samples, model coefficients or raw HRIR redistributed.",
+    "POSTHOC only: B0 nearest neighbor was not the development-selected frozen baseline B3. On the SAME 242 C4-accepted final positions its ILD median was 1.53527 dB, better than B3 2.06708 and C4 2.34171. This cannot retroactively alter model selection or gates; it strengthens the complexity-not-justified diagnostic."
+  ],
+  "production": "FORBIDDEN_UNTIL_SEPARATE_EVIDENCE_AND_EXPLICIT_APPROVAL"
+}
