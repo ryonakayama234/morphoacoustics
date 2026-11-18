@@ -1,0 +1,17 @@
+{
+  "frozen_at_utc": "2026-11-13T03:36:07.993044+00:00",
+  "scientific_evaluations_at_freeze": 0,
+  "engineering_evaluations_at_freeze": 0,
+  "files": {
+    "study_runner.py": "5c7f69b3167b24a38945a36cf5db1a2009adc7abf29d045e92b699f220ef9fa6",
+    "preflight.py": "8dabe4ac43c86154233491e9234bb7533895932db9818911cca624fde943803c",
+    "preflight-receipt.json": "dbba4f669b456957b3e4d17e2e7e7e2bc15e8220908bd23bd65a961eb4d03bf1",
+    "pinned-inventory.json": "8f56f2e87cfa304f3299e731052d49fb68f5e1889d35ba4104f49371f4b970e1",
+    "source.le-f64": "724412c20feddd9e00112cc362bac56bd8aa428670c5dcb789461df858b512fc",
+    "source-dft.le-c128": "a33c54be89317bbd09bd7e07a85f4306260d7a13623318fff2054a54630076d1",
+    "inputs/addendum-01.md": "6214dba2532d1b567ac1876cabbf84429ffdc42bed26fecf5ef5ef21fffb581f",
+    "inputs/aux.lock.txt": "884ca8de62840b3e41b0204872936ae696504d308b1b16394893c1889d759d22",
+    "inputs/manifest.md": "e662141d1f79c7f1bb3663acdd33e476e2c949bf757fcf734a97005ede27aca8",
+    "inputs/prereg.md": "9a022469264b4789c2d677d163470c4f7f393451635b264920463e6d70d3e41e"
+  }
+}
