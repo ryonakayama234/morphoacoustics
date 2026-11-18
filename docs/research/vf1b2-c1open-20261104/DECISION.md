@@ -1,0 +1,10 @@
+# C1-Open DECISION — scientific STOP, not a model adoption
+**Decision (2026-11-04 JST):** `STOP_NUMERICALLY_UNRESOLVED_REFINED_GRID` for the agreed forward-only subsonic, low-drive, noncontact mathematical C1-Open candidate. This is a **meaningful failed gate**, not a software execution failure and not a claim that real tissue/air cannot produce voice.
+
+**What can be retained:** validated A1 volume/force/power derivation; pre-implementation A3 protocol; standalone quasi-1D conservative FV+2DOF research source; independent all-time observer; exact local pressure/mass/energy control traces and negative-state artifacts. Keep all on an unmerged Draft PR; C1-R0 sealed reference and OD-3 baseline remain intact.
+
+**Why stop:** at finer N32/N64 under the prospectively fixed +10Pa nonperiodic reservoir and noncontact tissue, right outlet characteristic briefly enters reverse flow. Forward-only characteristic boundary does not qualify that regime. N8/N16 energetic correctness cannot substitute for converged capability or validate the observed reverse flow. The A3 STOP rule forbids changing the threshold/cell scheme to claim a green result.
+
+**Future alternatives to decide with creator, not silently implement:** (a) expand mathematically well-posed reservoir characteristics to support bounded reversible subsonic flow, preregister independent reverse-flow manufactured control and repeat A3; (b) isolate a fixed-wall/reservoir boundary study first; (c) change scope to a restricted stationary-throughflow initial state using a **new prospective protocol** rather than retrospectively editing initial data. Choose only after reviewing why the negative boundary appears and whether it is a model/numerical issue.
+
+**No adoption:** no main merge; no `GO_LIMITED_G1_C1OPEN`, no G2 physiology, no G3 phonator, no G4 voice or Studio interface/Take. Retain PR Draft and Issue open. Software green means only that the experiments reproduced the documented pass/failure conditions. Creator determines continuation after reviewing evidence.

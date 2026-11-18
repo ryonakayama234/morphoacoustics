@@ -1,0 +1,37 @@
+name: VF-1B2 C1-Open research — expected numerical stop
+on:
+  pull_request:
+    paths:
+      - "experiments/058_vf1b2_c1_open/**"
+      - "docs/research/vf1b2-c1open-20261104/**"
+      - ".github/workflows/vf1b2-c1open-research.yml"
+  workflow_dispatch:
+jobs:
+  bounded-science:
+    name: Bounded scientific tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pinned physics dependencies
+        run: python -m pip install "numpy==2.4.6"
+      - name: Run independent controls and expected-stop tests
+        run: python -m unittest discover -s experiments/058_vf1b2_c1_open -p "test_c1.py" -v
+      - name: Generate real raw physics and preserved negative evidence
+        if: matrix.python-version == '3.11'
+        run: |
+          python experiments/058_vf1b2_c1_open/run.py "${{ runner.temp }}/c1open-evidence"
+      - name: Upload raw physics and failure receipts
+        if: always() && matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vf1b2-c1open-raw-expected-stop
+          path: ${{ runner.temp }}/c1open-evidence/
+          if-no-files-found: warn
+          retention-days: 60
