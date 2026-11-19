@@ -1,0 +1,80 @@
+name: exp043-character-variation-research
+
+on:
+  push:
+    paths:
+      - "experiments/043_character_voice_variation/**"
+      - "tests/test_experiment_043_character_variation.py"
+      - ".github/workflows/experiment-043-character-variation.yml"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+  pull_request:
+    paths:
+      - "experiments/043_character_voice_variation/**"
+      - "tests/test_experiment_043_character_variation.py"
+      - ".github/workflows/experiment-043-character-variation.yml"
+      - "experiments/013_parametric_source_prosody/**"
+      - "experiments/023_static_vowel_calibration/**"
+      - "experiments/026_moving_vowel_transition/**"
+      - "experiments/027_task_field_vowel_transition/**"
+      - "src/morphoacoustics/**"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  experimental-physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+      - name: Install pinned baseline environment
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r requirements/sv1-physical-py311.lock.txt
+          python -m pip install --no-deps --no-build-isolation -e .
+          python -c "import numpy; assert numpy.__version__ == '2.4.6'"
+          python -m pip check
+      - name: Run four-case structural and physical tests
+        env:
+          EXP043_REAL_PHYSICS: "1"
+        run: python -m pytest -v tests/test_experiment_043_character_variation.py
+      - name: Generate fresh four-case observation bundle
+        run: |
+          python experiments/043_character_voice_variation/run.py --out exp043-output
+          python - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import wave
+          import numpy as np
+          p = pathlib.Path("exp043-output")
+          receipt = json.loads((p / "receipt.json").read_text(encoding="utf-8"))
+          assert receipt["status"] == "NUMERICAL_PILOT_ONLY"
+          assert len(receipt["cases"]) == 4
+          for name, item in receipt["cases"].items():
+              pressure = np.load(p / (name + "_pressure_pa.npy"), allow_pickle=False)
+              assert pressure.shape == (24000,) and np.isfinite(pressure).all()
+              assert hashlib.sha256(np.asarray(pressure, dtype="<f8").tobytes()).hexdigest() == item["pressure_sha256_float64"]
+              with wave.open(str(p / (name + ".wav"))) as audio:
+                  assert (audio.getnchannels(), audio.getsampwidth(), audio.getframerate(), audio.getnframes()) == (1, 2, 48000, 24000)
+                  pcm = audio.readframes(24000)
+              assert hashlib.sha256(pcm).hexdigest() == item["pcm_sha256"]
+          print("Four true physical observations and their WAV receipts verified; quality and identity NOT evaluated")
+          PY
+      - name: Archive experimental evidence (not a Studio Take)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: exp043-research-physical-observations
+          path: exp043-output/
+          if-no-files-found: warn
+          retention-days: 90
